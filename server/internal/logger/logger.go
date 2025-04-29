@@ -15,16 +15,13 @@ func New(debug bool) *slog.Logger {
 		}
 		return a
 	}
+	options := &slog.HandlerOptions{Level: slog.LevelDebug, AddSource: true, ReplaceAttr: attrs}
 	if !debug {
-		handler = slog.NewJSONHandler(
-			os.Stdout,
-			&slog.HandlerOptions{Level: slog.LevelDebug, AddSource: true, ReplaceAttr: attrs},
-		)
+
+		options.Level = slog.LevelInfo
+		handler = slog.NewJSONHandler(os.Stdout, options)
 	} else {
-		handler = slog.NewTextHandler(
-			os.Stdout,
-			&slog.HandlerOptions{Level: slog.LevelDebug, AddSource: true, ReplaceAttr: attrs},
-		)
+		handler = slog.NewTextHandler(os.Stdout, options)
 	}
 
 	return slog.New(handler)

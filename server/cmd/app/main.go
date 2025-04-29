@@ -2,7 +2,7 @@ package main
 
 import (
 	"task-trail/config"
-	logger "task-trail/internal"
+	"task-trail/internal/app"
 )
 
 func main() {
@@ -11,8 +11,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	logger := logger.New(config.App.Debug)
-
-	logger.Info("App started")
-
+	app.Run(config)
 }
