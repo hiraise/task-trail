@@ -1,7 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"task-trail/config"
+)
 
 func main() {
-	fmt.Println("start")
+
+	config, err := config.New()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(config.App.Debug)
+
 }
