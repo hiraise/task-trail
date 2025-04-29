@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"task-trail/config"
+	logger "task-trail/internal"
 )
 
 func main() {
@@ -11,6 +11,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(config.App.Debug)
+	logger := logger.New(config.App.Debug)
+
+	logger.Info("App started")
 
 }
