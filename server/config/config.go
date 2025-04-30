@@ -9,8 +9,14 @@ type App struct {
 	Debug bool `env:"APP_DEBUG,required"`
 }
 
+type PG struct {
+	ConnString  string `env:"PG_CONNECTION_STRING,required"`
+	MaxPoolSize int    `env:"PG_MAX_POOL_SIZE,required"`
+}
+
 type Config struct {
 	App App
+	PG  PG
 }
 
 func New() (*Config, error) {

@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"log"
 	"log/slog"
 	"os"
 	"path"
@@ -19,10 +20,13 @@ func New(debug bool) *slog.Logger {
 	if !debug {
 
 		options.Level = slog.LevelInfo
-		handler = slog.NewJSONHandler(os.Stdout, options)
+		handler = slog.NewJSONHandler(os.Stderr, options)
 	} else {
-		handler = slog.NewTextHandler(os.Stdout, options)
+		handler = slog.NewTextHandler(os.Stderr, options)
 	}
 
-	return slog.New(handler)
+	kek := slog.New(handler)
+	slog.SetDefault(kek)
+	log.SetFlags(log.Lshortfile)
+	return kek
 }
