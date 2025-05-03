@@ -3,8 +3,26 @@ package repo
 import (
 	"context"
 	"task-trail/internal/entity"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type AuthenticationRepo interface {
-	GetUserBy(context.Context, string) (entity.User, error)
+type TxManager interface {
+	DoWithTx(ctx context.Context, fn func(ctx context.Context) error) error
+}
+
+type UserRepository interface {
+	Create(ctx context.Context, user *entity.User) error
+	// GetUserBy(ctx context.Context, email string) (entity.User, error)
+}
+type VerificationRepository interface {
+	Create(ctx context.Context, userId int, code int) error
+	Verify(ctx context.Context, code int) error
+}
+
+type pgConn interface {
+	Exec(ctx context.Context, sql string, arguments ...any) (commandTag pgconn.CommandTag, err error)
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
