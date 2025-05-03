@@ -28,11 +28,11 @@ func New(connString string, l *slog.Logger, opts ...Option) (*Postgres, error) {
 		connAttempts: _defConnAttempts,
 		connTimeout:  _defConnTimeout,
 	}
-	// Set options
+
 	for _, opt := range opts {
 		opt(pg)
 	}
-	// Create config
+
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, err
