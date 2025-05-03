@@ -7,14 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type authenticationRoutes struct {
-	u usecase.Authentication
-	l *slog.Logger
-}
+func NewRouter(router *gin.Engine, u usecase.Registration, l *slog.Logger) {
 
-func NewAuthenticationRouter(router *gin.Engine, u usecase.Authentication, l *slog.Logger) {
-	r := &authenticationRoutes{u: u, l: l}
-	g := router.Group("/authentication")
-
-	g.GET("/", r.authenticate)
+	g := router.Group("/v1")
+	NewRegistrationRouter(g, u, l)
 }

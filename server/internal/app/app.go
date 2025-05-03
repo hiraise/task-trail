@@ -4,8 +4,9 @@ import (
 	"os"
 	"task-trail/config"
 	"task-trail/internal/controller/http"
-	"task-trail/internal/repo/db/postgresql"
-	"task-trail/internal/usecase/authentication"
+	"task-trail/internal/repo"
+
+	"task-trail/internal/usecase/registration"
 	"task-trail/pkg/logger"
 	"task-trail/pkg/postgres"
 
@@ -14,9 +15,8 @@ import (
 
 func Run(cfg *config.Config) {
 	logger := logger.New(cfg.App.Debug)
-	// Init pg
 
-	// Init repo
+	// Init db
 	opts := []postgres.Option{postgres.MaxPoolSize(cfg.PG.MaxPoolSize)}
 	pg, err := postgres.New(cfg.PG.ConnString, logger, opts...)
 	if err != nil {
@@ -25,11 +25,12 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	_ = pg
-	authRepo := postgresql.New()
-	authUsecase := authentication.New(authRepo)
+	// Init repo layer
+	txManager := repo.NewPgTxManager(pg.Pool)
+	userRepo := repo.NewUserRepo(pg.Pool)
 
+	registrationUC := registration.New(txManager, userRepo)
 	httpServer := gin.Default()
-	http.NewRouter(httpServer, logger, authUsecase)
+	http.NewRouter(httpServer, logger, registrationUC)
 	httpServer.Run()
 }

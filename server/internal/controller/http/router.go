@@ -9,8 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(app *gin.Engine, l *slog.Logger, u usecase.Authentication) {
-	v1.NewAuthenticationRouter(app, u, l)
+func NewRouter(app *gin.Engine, l *slog.Logger, u usecase.Registration) {
+	v1.NewRouter(app, u, l)
+
 	app.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "kek", "status": http.StatusOK})
 	})
