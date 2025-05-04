@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"fmt"
 	"task-trail/internal/entity"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -23,11 +24,22 @@ func (r *PgUserRepository) getDb(ctx context.Context) pgConn {
 }
 
 func (r *PgUserRepository) Create(ctx context.Context, user *entity.User) error {
-
-	_, err := r.getDb(ctx).Exec(ctx, `INSERT INTO users (email, password_hash)
-	VALUES ($1, $2)`, user.Email, user.PasswordHash)
+	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2)`
+	_, err := r.getDb(ctx).Exec(ctx, query, user.Email, user.PasswordHash)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (r *PgUserRepository) EmailIsTaken(ctx context.Context, email string) error {
+	var kek bool
+	query := `SELECT EXISTS (SELECT 1 FROM users WHERE email = $1)`
+	if err := r.getDb(ctx).QueryRow(ctx, query, email).Scan(&kek); err != nil {
+		return err
+	}
+	if kek {
+		return fmt.Errorf("email already taken")
 	}
 	return nil
 }
