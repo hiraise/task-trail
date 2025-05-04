@@ -16,7 +16,7 @@ import (
 func Run(cfg *config.Config) {
 	logger := logger.New(cfg.App.Debug)
 
-	// Init db
+	// init db
 	opts := []postgres.Option{postgres.MaxPoolSize(cfg.PG.MaxPoolSize)}
 	pg, err := postgres.New(cfg.PG.ConnString, logger, opts...)
 	if err != nil {
@@ -25,11 +25,13 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	// Init repo layer
+	// init repo
 	txManager := repo.NewPgTxManager(pg.Pool)
 	userRepo := repo.NewUserRepo(pg.Pool)
-
+	// init uc
 	registrationUC := registration.New(txManager, userRepo)
+
+	// init http server
 	httpServer := gin.Default()
 	http.NewRouter(httpServer, logger, registrationUC)
 	httpServer.Run()
