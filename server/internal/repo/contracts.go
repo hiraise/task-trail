@@ -14,6 +14,7 @@ type TxManager interface {
 
 type UserRepository interface {
 	Create(ctx context.Context, user *entity.User) error
+	EmailIsTaken(ctx context.Context, email string) error
 	// GetUserBy(ctx context.Context, email string) (entity.User, error)
 }
 type VerificationRepository interface {
