@@ -14,6 +14,15 @@ type registrationRoutes struct {
 	l *slog.Logger
 }
 
+// @Summary registration route
+// @Schemes
+// @Description endpoint for register new user
+// @Tags /v1/registration
+// @Accept json
+// @Produce json
+// @Param data body request.Registration true "user email and password"
+// @Success 204
+// @Router /v1/registration [post]
 func (a *registrationRoutes) register(c *gin.Context) {
 	var body request.Registration
 
@@ -25,7 +34,8 @@ func (a *registrationRoutes) register(c *gin.Context) {
 	}
 	err := a.u.Register(c, body.Email, body.Password)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"messsage": "invalid login or password"})
+		c.JSON(http.StatusBadRequest, gin.H{"messsage": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, nil)
 }

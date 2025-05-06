@@ -1,0 +1,40 @@
+definitions:
+  request.Registration:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+info:
+  contact:
+    email: musaev.ae@hiraise.net
+    name: HiRaise
+    url: https://hiraise.net/
+  license:
+    name: MIT License
+    url: https://mit-license.org/
+  title: Task Trail API
+  version: "1.0"
+paths:
+  /v1/registration:
+    post:
+      consumes:
+      - application/json
+      description: endpoint for register new user
+      parameters:
+      - description: user email and password
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/request.Registration'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: registration route
+      tags:
+      - /v1/registration
+swagger: "2.0"
