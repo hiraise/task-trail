@@ -1,13 +1,10 @@
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --foreground: #000000;
+  --grey: #ebebeb;
+  --grey-70: rgba(0, 0, 0, 0.7);
+  --dark-grey: rgba(57, 57, 57, 1);
+  --btn-primary: #393939;
 }
 
 html,
@@ -25,6 +22,7 @@ body {
 }
 
 * {
+  font-family: "Inter", sans-serif;
   box-sizing: border-box;
   padding: 0;
   margin: 0;
@@ -33,10 +31,4 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
 }
