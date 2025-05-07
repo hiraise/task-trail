@@ -4,9 +4,11 @@ import (
 	"os"
 	"task-trail/config"
 	"task-trail/internal/controller/http"
+	"task-trail/internal/controller/http/middleware"
+	"task-trail/internal/pkg/password"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase"
 
-	"task-trail/internal/usecase/registration"
 	"task-trail/pkg/logger"
 	"task-trail/pkg/postgres"
 
@@ -28,11 +30,16 @@ func Run(cfg *config.Config) {
 	// init repo
 	txManager := repo.NewPgTxManager(pg.Pool)
 	userRepo := repo.NewUserRepo(pg.Pool)
+
+	// init services
+	pwdService := password.NewBcryptService()
+
 	// init uc
-	registrationUC := registration.New(txManager, userRepo)
+	userUC := usecase.NewUserUC(txManager, userRepo, pwdService)
 
 	// init http server
 	httpServer := gin.Default()
-	http.NewRouter(httpServer, logger, registrationUC)
+	httpServer.Use(middleware.ErrorHandler())
+	http.NewRouter(httpServer, logger, userUC)
 	httpServer.Run()
 }

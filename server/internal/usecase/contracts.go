@@ -6,9 +6,11 @@ import (
 )
 
 type Authentication interface {
-	Authenticate(context.Context, string, string) (entity.User, error)
+	Login(ctx context.Context, email string, password string) (entity.User, error)
+	Logout(ctx context.Context) error
+	Refresh(ctx context.Context) error
 }
 
-type Registration interface {
-	Register(ctx context.Context, login string, password string) error
+type User interface {
+	CreateNew(ctx context.Context, email string, password string) error
 }

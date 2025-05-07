@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"task-trail/internal/entity"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -24,8 +25,9 @@ func (r *PgUserRepository) getDb(ctx context.Context) pgConn {
 }
 
 func (r *PgUserRepository) Create(ctx context.Context, user *entity.User) error {
-	query := `INSERT INTO users (email, password_hash) VALUES ($1, $2)`
-	_, err := r.getDb(ctx).Exec(ctx, query, user.Email, user.PasswordHash)
+	// TODO: remove verified_at after apply user verification
+	query := `INSERT INTO users (email, password_hash, verified_at) VALUES ($1, $2, $3)`
+	_, err := r.getDb(ctx).Exec(ctx, query, user.Email, user.PasswordHash, time.Now())
 	if err != nil {
 		return err
 	}

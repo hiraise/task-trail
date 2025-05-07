@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(router *gin.Engine, u usecase.Registration, l *slog.Logger) {
+func NewRouter(router *gin.Engine, u usecase.User, l *slog.Logger) {
 
 	g := router.Group("/v1")
-	NewRegistrationRouter(g, u, l)
+	NewUserRouter(g, u, l)
 }

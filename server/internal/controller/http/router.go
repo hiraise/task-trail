@@ -23,7 +23,7 @@ import (
 // @license.name  MIT License
 // @license.url   https://mit-license.org/
 
-func NewRouter(app *gin.Engine, l *slog.Logger, u usecase.Registration) {
+func NewRouter(app *gin.Engine, l *slog.Logger, u usecase.User) {
 	v1.NewRouter(app, u, l)
 
 	app.GET("/", func(c *gin.Context) {

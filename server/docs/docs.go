@@ -23,9 +23,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/registration": {
+        "/v1/users": {
             "post": {
-                "description": "endpoint for register new user",
+                "description": "endpoint for create new user",
                 "consumes": [
                     "application/json"
                 ],
@@ -33,37 +33,64 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/registration"
+                    "/v1/users"
                 ],
-                "summary": "registration route",
+                "summary": "create new user",
                 "parameters": [
                     {
                         "description": "user email and password",
-                        "name": "data",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.Registration"
+                            "$ref": "#/definitions/request.NewUser"
                         }
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Http"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Http"
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
-        "request.Registration": {
+        "customerrors.Http": {
             "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "metadata": {}
+            }
+        },
+        "request.NewUser": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
             "properties": {
                 "email": {
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 8
                 }
             }
         }
