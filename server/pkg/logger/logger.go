@@ -32,7 +32,6 @@ func New(debug bool) *slog.Logger {
 		options.Level = slog.LevelInfo
 		handler = slog.NewJSONHandler(os.Stderr, options)
 	} else {
-		// handler = slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{})
 		handler = NewHandler(options)
 	}
 
