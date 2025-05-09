@@ -14,9 +14,17 @@ type PG struct {
 	MaxPoolSize int    `env:"PG_MAX_POOL_SIZE,required"`
 }
 
+type AUTH struct {
+	AccessTokenSecret       string `env:"AUTH_ACCESS_TOKEN_SECRET,required"`
+	AccessTokenLifetimeMin  int    `env:"AUTH_ACCESS_TOKEN_LIFETIME_MIN,required"`
+	RefreshTokenSecret      string `env:"AUTH_REFRESH_TOKEN_SECRET,required"`
+	RefreshTokenLifetimeMin int    `env:"AUTH_REFRESH_TOKEN_LIFETIME_MIN,required"`
+	TokenIssuer             string `env:"AUTH_TOKEN_ISSUER,required"`
+}
 type Config struct {
-	App App
-	PG  PG
+	App  App
+	PG   PG
+	AUTH AUTH
 }
 
 func New() (*Config, error) {
