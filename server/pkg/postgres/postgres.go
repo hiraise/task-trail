@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"log/slog"
+	"task-trail/pkg/logger"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,7 +22,7 @@ type Postgres struct {
 	Pool *pgxpool.Pool
 }
 
-func New(connString string, l *slog.Logger, opts ...Option) (*Postgres, error) {
+func New(connString string, l logger.Logger, opts ...Option) (*Postgres, error) {
 	pg := &Postgres{
 		maxPoolSize:  _defMaxPoolSize,
 		connAttempts: _defConnAttempts,
