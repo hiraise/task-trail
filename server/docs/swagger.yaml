@@ -1,11 +1,13 @@
 definitions:
-  customerrors.Http:
+  customerrors.ErrBase:
     properties:
-      description:
+      metadata:
+        additionalProperties: {}
+        type: object
+      msg:
         type: string
-      metadata: {}
     type: object
-  request.NewUser:
+  request.User:
     properties:
       email:
         type: string
@@ -28,6 +30,38 @@ info:
   title: Task Trail API
   version: "1.0"
 paths:
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: endpoint for login user
+      parameters:
+      - description: user email and password
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerrors.ErrBase'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/customerrors.ErrBase'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/customerrors.ErrBase'
+      summary: login user
+      tags:
+      - /v1/auth
   /v1/users:
     post:
       consumes:
@@ -39,20 +73,12 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/request.NewUser'
+          $ref: '#/definitions/request.User'
       produces:
       - application/json
       responses:
         "200":
           description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/customerrors.Http'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/customerrors.Http'
       summary: create new user
       tags:
       - /v1/users

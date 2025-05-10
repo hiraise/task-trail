@@ -2,10 +2,11 @@ package repo
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"task-trail/internal/entity"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -29,19 +30,33 @@ func (r *PgUserRepository) Create(ctx context.Context, user *entity.User) error 
 	query := `INSERT INTO users (email, password_hash, verified_at) VALUES ($1, $2, $3)`
 	_, err := r.getDb(ctx).Exec(ctx, query, user.Email, user.PasswordHash, time.Now())
 	if err != nil {
-		return err
+		// TODO: log error
+		return Wrap(ErrDB, err)
 	}
 	return nil
 }
 
-func (r *PgUserRepository) EmailIsTaken(ctx context.Context, email string) error {
-	var kek bool
+func (r *PgUserRepository) EmailIsTaken(ctx context.Context, email string) (bool, error) {
+	var isTaken bool
 	query := `SELECT EXISTS (SELECT 1 FROM users WHERE email = $1)`
-	if err := r.getDb(ctx).QueryRow(ctx, query, email).Scan(&kek); err != nil {
-		return err
+	if err := r.getDb(ctx).QueryRow(ctx, query, email).Scan(&isTaken); err != nil {
+		return false, Wrap(ErrDB, err)
 	}
-	if kek {
-		return fmt.Errorf("email already taken")
+	if isTaken {
+		return true, nil
 	}
-	return nil
+	return false, nil
+}
+
+func (r *PgUserRepository) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
+	query := `SELECT id, email, password_hash, verified_at FROM users WHERE email = $1`
+	var user entity.User
+	if err := r.getDb(ctx).QueryRow(ctx, query, email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.VerifiedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+
+			return user, Wrap(ErrNotFound, err)
+		}
+		return user, Wrap(ErrDB, err)
+	}
+	return user, nil
 }

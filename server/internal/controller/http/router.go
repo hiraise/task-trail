@@ -23,8 +23,8 @@ import (
 // @license.name  MIT License
 // @license.url   https://mit-license.org/
 
-func NewRouter(app *gin.Engine, l *slog.Logger, u usecase.User) {
-	v1.NewRouter(app, u, l)
+func NewRouter(app *gin.Engine, l *slog.Logger, userUC usecase.User, authUC usecase.Authentication) {
+	v1.NewRouter(app, userUC, authUC, l)
 
 	app.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "kek", "status": http.StatusOK})

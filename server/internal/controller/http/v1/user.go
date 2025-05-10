@@ -3,7 +3,7 @@ package v1
 import (
 	"log/slog"
 	"net/http"
-	customerrors "task-trail/error"
+	"task-trail/error/validationerr"
 	"task-trail/internal/controller/http/v1/request"
 	"task-trail/internal/usecase"
 
@@ -20,15 +20,15 @@ type usersRoutes struct {
 // @Tags 		/v1/users
 // @Accept 		json
 // @Produce 	json
-// @Param 		body body request.NewUser true "user email and password"
+// @Param 		body body request.User true "user email and password"
 // @Success 	200
-// @Failure		400 {object} customerrors.Http
-// @Failure		409 {object} customerrors.Http
+// @Failure		400 {object} customerrors.ErrBase
+// @Failure		409 {object} customerrors.ErrBase
 // @Router 		/v1/users [post]
 func (r *usersRoutes) createNew(c *gin.Context) {
 	var body request.User
 	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
-		c.Error(customerrors.NewValidationError(err))
+		c.Error(validationerr.New(err))
 		return
 	}
 	err := r.u.CreateNew(c, body.Email, body.Password)

@@ -2,13 +2,13 @@ package usecase
 
 import (
 	"context"
-	"task-trail/internal/entity"
+	"task-trail/internal/pkg/token"
 )
 
 type Authentication interface {
-	Login(ctx context.Context, email string, password string) (entity.User, error)
-	Logout(ctx context.Context) error
-	Refresh(ctx context.Context) error
+	Login(ctx context.Context, email string, password string) (*token.Token, *token.Token, error)
+	// Logout(ctx context.Context) error
+	// Refresh(ctx context.Context) error
 }
 
 type User interface {

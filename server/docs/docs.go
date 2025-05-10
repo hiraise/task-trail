@@ -23,6 +23,55 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/v1/auth/login": {
+            "post": {
+                "description": "endpoint for login user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "login user",
+                "parameters": [
+                    {
+                        "description": "user email and password",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.User"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.ErrBase"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.ErrBase"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.ErrBase"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/users": {
             "post": {
                 "description": "endpoint for create new user",
@@ -43,41 +92,32 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.NewUser"
+                            "$ref": "#/definitions/request.User"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/customerrors.Http"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/customerrors.Http"
-                        }
                     }
                 }
             }
         }
     },
     "definitions": {
-        "customerrors.Http": {
+        "customerrors.ErrBase": {
             "type": "object",
             "properties": {
-                "description": {
-                    "type": "string"
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
                 },
-                "metadata": {}
+                "msg": {
+                    "type": "string"
+                }
             }
         },
-        "request.NewUser": {
+        "request.User": {
             "type": "object",
             "required": [
                 "email",

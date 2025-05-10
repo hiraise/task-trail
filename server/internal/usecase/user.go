@@ -20,9 +20,14 @@ func NewUserUC(txManager repo.TxManager, repo repo.UserRepository, pwdService pa
 
 func (u *UserUseCase) CreateNew(ctx context.Context, email string, password string) error {
 
-	if err := u.repo.EmailIsTaken(ctx, email); err != nil {
-		return customerrors.NewEmailTakenError()
+	isTaken, err := u.repo.EmailIsTaken(ctx, email)
+	if err != nil {
+		return err
 	}
+	if isTaken {
+		return customerrors.NewErrConflict(map[string]any{"email": email})
+	}
+
 	return u.txManager.DoWithTx(ctx, func(ctx context.Context) error {
 		// TODO: replace in separated method or helper utils
 		hash, err := u.pwdService.HashPassword(password)

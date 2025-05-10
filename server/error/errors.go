@@ -3,77 +3,34 @@ package customerrors
 import (
 	"fmt"
 	"net/http"
-	"strings"
-
-	"github.com/go-playground/validator/v10"
 )
 
-type Http struct {
-	Description string `json:"description,omitempty"`
-	Metadata    any    `json:"metadata,omitempty"`
-	StatusCode  int    `json:"-"`
+type ErrBase struct {
+	Status   int            `json:"-"`
+	Msg      string         `json:"msg,omitempty"`
+	Metadata map[string]any `json:"metadata,omitempty"`
 }
 
-func (e Http) Error() string {
-	return fmt.Sprintf("description: %s,  metadata: %s", e.Description, e.Metadata)
+func (e *ErrBase) Error() string {
+	return fmt.Sprintf("msg: %s, status: %d metadata: %s", e.Msg, e.Status, e.Metadata)
 }
 
-func NewHttpError(description, metadata string, statusCode int) Http {
-	return Http{
-		Description: description,
-		Metadata:    metadata,
-		StatusCode:  statusCode,
-	}
+func NewErrBase(msg string, metadata map[string]any) *ErrBase {
+	return &ErrBase{Msg: msg, Metadata: metadata}
 }
 
-func NewValidationError(err error) Http {
-
-	switch e := err.(type) {
-	case validator.ValidationErrors:
-		metadata := make(map[string]string)
-		for _, v := range e {
-			metadata[strings.ToLower(v.Field())] = msgForTag(v)
-		}
-		return Http{
-			Description: "validation error",
-			Metadata:    metadata,
-			StatusCode:  http.StatusBadRequest,
-		}
-	default:
-		return Http{
-			Description: "validation error",
-			Metadata:    nil,
-			StatusCode:  http.StatusBadRequest,
-		}
-	}
-
+func NewErrNotFound(metadata map[string]any) *ErrBase {
+	return &ErrBase{Msg: "entity not found", Metadata: metadata, Status: http.StatusNotFound}
 }
 
-func NewConflictError(msg string) Http {
-	return Http{
-		Description: "conflict",
-		Metadata:    msg,
-		StatusCode:  http.StatusConflict,
-	}
+func NewErrConflict(metadata map[string]any) *ErrBase {
+	return &ErrBase{Msg: "entity already exists", Metadata: metadata, Status: http.StatusConflict}
 }
 
-func NewEmailTakenError() Http {
-	return Http{
-		Description: "email already taken",
-		StatusCode:  http.StatusConflict,
-	}
+func NewErrInvalidCredentials(metadata map[string]any) *ErrBase {
+	return &ErrBase{Msg: "invalid credentials", Metadata: metadata, Status: http.StatusUnauthorized}
 }
-func msgForTag(fe validator.FieldError) string {
-	switch fe.Tag() {
-	case "required":
-		return "field required"
-	case "email":
-		return "format is incorrect"
-	case "min":
-		return fmt.Sprintf("min length: %s symbols", fe.Param())
-	case "max":
-		return fmt.Sprintf("max length: %s symbols", fe.Param())
-	default:
-		return "invalid value"
-	}
+
+func NewErrInternal(metadata map[string]any) *ErrBase {
+	return &ErrBase{Msg: "internal error", Metadata: metadata, Status: http.StatusInternalServerError}
 }
