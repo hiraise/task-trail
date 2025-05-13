@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/caarlos0/env/v11"
 	"github.com/joho/godotenv"
 )
@@ -28,10 +30,12 @@ type Config struct {
 }
 
 func New() (*Config, error) {
+	fmt.Println("build confing")
 	_ = godotenv.Load("../../.env") // If file not found try load anyway
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
 		return nil, err
 	}
+	fmt.Println(cfg)
 	return cfg, nil
 }
