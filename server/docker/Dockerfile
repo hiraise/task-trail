@@ -7,7 +7,7 @@ ADD go.mod .
 
 COPY . .
 
-RUN go build -C ./cmd/app -o ./app
+RUN go build -C ./cmd/app -o app
 
 FROM alpine
 
@@ -15,4 +15,4 @@ WORKDIR /build
 
 COPY --from=builder /build/app /build/app
 
-CMD [". /app"]
+CMD ["./app"]
