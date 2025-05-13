@@ -1,10 +1,10 @@
 package http
 
 import (
-	"log/slog"
 	"net/http"
 	v1 "task-trail/internal/controller/http/v1"
 	"task-trail/internal/usecase"
+	"task-trail/pkg/logger"
 
 	_ "task-trail/docs"
 
@@ -23,8 +23,8 @@ import (
 // @license.name  MIT License
 // @license.url   https://mit-license.org/
 
-func NewRouter(app *gin.Engine, l *slog.Logger, userUC usecase.User, authUC usecase.Authentication) {
-	v1.NewRouter(app, userUC, authUC, l)
+func NewRouter(app *gin.Engine, l logger.Logger, userUC usecase.User, authUC usecase.Authentication, authMW gin.HandlerFunc) {
+	v1.NewRouter(app, userUC, authUC, l, authMW)
 
 	app.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "kek", "status": http.StatusOK})

@@ -1,18 +1,18 @@
 package v1
 
 import (
-	"log/slog"
 	"net/http"
 	"task-trail/error/validationerr"
 	"task-trail/internal/controller/http/v1/request"
 	"task-trail/internal/usecase"
+	"task-trail/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
 type usersRoutes struct {
 	u usecase.User
-	l *slog.Logger
+	l logger.Logger
 }
 
 // @Summary 	create new user
@@ -39,8 +39,22 @@ func (r *usersRoutes) createNew(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-func NewUserRouter(router *gin.RouterGroup, u usecase.User, l *slog.Logger) {
+// @Summary 	return user by id
+// @Description ...
+// @Tags 		/v1/users
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "user id"
+// @Success 	200
+// @Router 		/v1/users/{id} [get]
+func (r *usersRoutes) getUser(c *gin.Context) {
+	// id := c.Param("id")
+	c.JSON(http.StatusOK, c.Keys["userId"])
+}
+
+func NewUserRouter(router *gin.RouterGroup, u usecase.User, l logger.Logger, authMW gin.HandlerFunc) {
 	r := &usersRoutes{u: u, l: l}
 	g := router.Group("/users")
 	g.POST("", r.createNew)
+	g.GET(":id", authMW, r.getUser)
 }

@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -9,13 +8,14 @@ import (
 	"task-trail/internal/controller/http/v1/request"
 	"task-trail/internal/pkg/token"
 	"task-trail/internal/usecase"
+	"task-trail/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
 type authRoutes struct {
 	u usecase.Authentication
-	l *slog.Logger
+	l logger.Logger
 }
 
 // @Summary 	login user
@@ -52,7 +52,7 @@ func setTokens(c *gin.Context, at *token.Token, rt *token.Token) {
 	c.SetCookie("at", at.Token, kek, "/", "", true, true)
 	c.SetCookie("rt", rt.Token, lol, "/v1/auth/refresh", "", true, true)
 }
-func NewAuthRouter(router *gin.RouterGroup, u usecase.Authentication, l *slog.Logger) {
+func NewAuthRouter(router *gin.RouterGroup, u usecase.Authentication, l logger.Logger) {
 	r := &authRoutes{u: u, l: l}
 	g := router.Group("/auth")
 	g.POST("/login", r.login)

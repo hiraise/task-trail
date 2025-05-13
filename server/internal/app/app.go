@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log/slog"
 	"os"
 	"task-trail/config"
 	"task-trail/internal/controller/http"
@@ -12,7 +11,6 @@ import (
 	"task-trail/internal/repo"
 	"task-trail/internal/usecase"
 
-	"task-trail/pkg/logger"
 	slogger "task-trail/pkg/logger/slog"
 	"task-trail/pkg/postgres"
 
@@ -49,43 +47,17 @@ func Run(cfg *config.Config) {
 	// init uc
 	userUC := usecase.NewUserUC(txManager, userRepo, pwdService)
 	authUC := usecase.NewAuthUC(logger, txManager, userRepo, tokenRepo, pwdService, tokenService)
+
+	// init middlewares
+
+	recoveryMW := middleware.RecoveryWithLogger(logger)
+	logMW := middleware.CustomLogger(logger)
+	authMW := middleware.AuthHandler(tokenService)
 	// init http server
 	httpServer := gin.New()
-	httpServer.Use(CustomLogger(logger))
-	httpServer.Use(RecoveryWithLogger(logger))
+	httpServer.Use(logMW)
+	httpServer.Use(recoveryMW)
 	httpServer.Use(middleware.ErrorHandler())
-	http.NewRouter(httpServer, logger, userUC, authUC)
+	http.NewRouter(httpServer, logger, userUC, authUC, authMW)
 	httpServer.Run()
-}
-
-// TODO: replace and user id
-func CustomLogger(l logger.Logger) gin.HandlerFunc {
-	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		l.Info("http request",
-			slog.Int("status", param.StatusCode),
-			slog.String("client_ip", param.ClientIP),
-			slog.String("method", param.Method),
-			slog.String("path", param.Path),
-			slog.String("user_agent", param.Request.UserAgent()),
-			slog.String("latency", param.Latency.String()),
-		)
-		return ""
-	})
-}
-
-func RecoveryWithLogger(l logger.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		defer func() {
-			if r := recover(); r != nil {
-				l.Error("panic recovered",
-					slog.Any("error", r),
-					slog.String("path", c.Request.URL.Path),
-					slog.String("method", c.Request.Method),
-					slog.String("client_ip", c.ClientIP()),
-				)
-				c.AbortWithStatus(500)
-			}
-		}()
-		c.Next()
-	}
 }
