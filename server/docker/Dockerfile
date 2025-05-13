@@ -1,6 +1,9 @@
 FROM golang:1.24 AS builder
 # Setting working directory
 
+
+ENV CGO_ENABLED=0
+
 WORKDIR /build
 
 COPY . .
