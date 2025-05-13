@@ -7,7 +7,7 @@ ADD go.mod .
 
 COPY . .
 
-RUN go build -C ./cmd/app -o app
+RUN go build -C ./cmd/app -o /build/app
 
 FROM alpine
 
