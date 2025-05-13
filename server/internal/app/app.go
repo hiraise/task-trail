@@ -18,7 +18,8 @@ import (
 )
 
 func Run(cfg *config.Config) {
-	logger := slogger.New(cfg.App.Debug)
+	logger := slogger.New(cfg.App.Debug, true)
+	logger1 := slogger.New(cfg.App.Debug, false)
 	// init db
 	opts := []postgres.Option{postgres.MaxPoolSize(cfg.PG.MaxPoolSize)}
 	pg, err := postgres.New(cfg.PG.ConnString, logger, opts...)
@@ -50,14 +51,14 @@ func Run(cfg *config.Config) {
 
 	// init middlewares
 
-	recoveryMW := middleware.RecoveryWithLogger(logger)
-	logMW := middleware.CustomLogger(logger)
-	authMW := middleware.AuthHandler(tokenService)
+	recoveryMW := middleware.RecoveryWithLogger(logger1)
+	logMW := middleware.CustomLogger(logger1)
+	authMW := middleware.AuthHandler(tokenService, logger)
 	// init http server
 	httpServer := gin.New()
 	httpServer.Use(logMW)
 	httpServer.Use(recoveryMW)
-	httpServer.Use(middleware.ErrorHandler())
+	httpServer.Use(middleware.ErrorHandler(logger1))
 	http.NewRouter(httpServer, logger, userUC, authUC, authMW)
 	httpServer.Run()
 }

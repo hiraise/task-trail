@@ -43,19 +43,19 @@
                         "description": "OK"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid request body",
                         "schema": {
                             "$ref": "#/definitions/customerrors.ErrBase"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "invalid credentials",
                         "schema": {
                             "$ref": "#/definitions/customerrors.ErrBase"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal error",
                         "schema": {
                             "$ref": "#/definitions/customerrors.ErrBase"
                         }
@@ -85,6 +85,47 @@
                         "schema": {
                             "$ref": "#/definitions/request.User"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.ErrBase"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.ErrBase"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/{id}": {
+            "get": {
+                "description": "...",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/users"
+                ],
+                "summary": "return user by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

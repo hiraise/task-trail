@@ -48,15 +48,15 @@ paths:
         "200":
           description: OK
         "400":
-          description: Bad Request
+          description: invalid request body
           schema:
             $ref: '#/definitions/customerrors.ErrBase'
         "401":
-          description: Unauthorized
+          description: invalid credentials
           schema:
             $ref: '#/definitions/customerrors.ErrBase'
         "500":
-          description: Internal Server Error
+          description: internal error
           schema:
             $ref: '#/definitions/customerrors.ErrBase'
       summary: login user
@@ -79,7 +79,34 @@ paths:
       responses:
         "200":
           description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/customerrors.ErrBase'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/customerrors.ErrBase'
       summary: create new user
+      tags:
+      - /v1/users
+  /v1/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: '...'
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: return user by id
       tags:
       - /v1/users
 swagger: "2.0"

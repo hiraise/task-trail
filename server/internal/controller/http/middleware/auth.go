@@ -1,34 +1,37 @@
 package middleware
 
 import (
-	"net/http"
 	customerrors "task-trail/error"
+	"task-trail/internal/controller/http/helper"
 	"task-trail/internal/pkg/token"
+	"task-trail/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
-func AuthHandler(t token.Service) gin.HandlerFunc {
+func AuthHandler(t token.Service, l logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		at, err := c.Cookie("at")
 		if err != nil {
-			e := customerrors.NewErrUnauthorized(nil)
-			c.AbortWithStatusJSON(e.Status, e)
-			c.Errors = nil
+			l.Warn("access token not found", "error", err.Error())
+			abort(c)
 			return
 		}
 		userId, err := t.VerifyAccessToken(at)
 		if err != nil {
-			e := customerrors.NewErrUnauthorized(nil)
-			// TODO: replace to helper for delete cookie
-			c.SetSameSite(http.SameSiteLaxMode)
-			c.SetCookie("at", "", -1, "/", "/", true, true)
-			c.AbortWithStatusJSON(e.Status, e)
-			c.Errors = nil
+			l.Warn("invalid access token", "error", err.Error())
+			helper.DeleteAccessToken(c)
+			abort(c)
 			return
 		}
 		c.Set("userId", userId)
 		c.Next()
 	}
+}
+
+func abort(c *gin.Context) {
+	e := customerrors.NewErrUnauthorized(nil)
+	c.AbortWithStatusJSON(e.Status, e)
+	c.Errors = nil
 }

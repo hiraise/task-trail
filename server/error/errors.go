@@ -32,7 +32,7 @@ func NewErrInvalidCredentials(metadata map[string]any) *ErrBase {
 }
 
 func NewErrUnauthorized(metadata map[string]any) *ErrBase {
-	return &ErrBase{Msg: "Unauthorized", Metadata: metadata, Status: http.StatusUnauthorized}
+	return &ErrBase{Msg: "authentication required", Metadata: metadata, Status: http.StatusUnauthorized}
 }
 
 func NewErrInternal(metadata map[string]any) *ErrBase {

@@ -8,12 +8,10 @@ import (
 	"strings"
 )
 
-
-
-func New(debug bool) *slog.Logger {
+func New(debug bool, source bool) *slog.Logger {
 	var handler slog.Handler
 	attrs := func(groups []string, a slog.Attr) slog.Attr {
-		if a.Key == slog.SourceKey {
+		if a.Key == slog.SourceKey && source {
 			s := a.Value.Any().(*slog.Source)
 			p := strings.Split(s.Function, ".")
 			s.File = p[0] + "/" + path.Base(s.File)
@@ -21,7 +19,10 @@ func New(debug bool) *slog.Logger {
 		}
 		return a
 	}
-	options := &slog.HandlerOptions{Level: slog.LevelDebug, AddSource: true, ReplaceAttr: attrs}
+	options := &slog.HandlerOptions{Level: slog.LevelDebug, ReplaceAttr: attrs}
+	if source {
+		options.AddSource = true
+	}
 	if !debug {
 
 		options.Level = slog.LevelInfo

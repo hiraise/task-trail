@@ -2,11 +2,12 @@ package middleware
 
 import (
 	customerrors "task-trail/error"
+	"task-trail/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
-func ErrorHandler() gin.HandlerFunc {
+func ErrorHandler(l logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 		for _, err := range c.Errors {

@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
+
 func NewRouter(router *gin.Engine, userUC usecase.User, authUC usecase.Authentication, l logger.Logger, authMW gin.HandlerFunc) {
 
 	g := router.Group("/v1")

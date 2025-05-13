@@ -70,7 +70,7 @@ func (s *JWTService) GenRefreshToken(userId int) (*Token, error) {
 	exp := time.Now().Add(time.Minute * s.rtLifetime)
 	claims := jwt.MapClaims{
 		"sub": strconv.Itoa(userId),
-		"exp": exp,
+		"exp": exp.Unix(),
 		"jti": jti,
 		"iss": s.iss,
 	}
@@ -87,32 +87,26 @@ func (s *JWTService) genToken(claims jwt.Claims) (string, error) {
 	return token.SignedString(s.acSecret)
 }
 
-func (s *JWTService) VerifyAccessToken(token string) (userId int, err error) {
+func (s *JWTService) VerifyAccessToken(token string) (int, error) {
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
-		}
-
-		// Возвращаем ключ для проверки подписи
-		// return []byte("my_secret_key"), nil
 		return s.acSecret, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if err != nil {
-		return
+		return 0, err
 	}
 	claims, ok := t.Claims.(jwt.MapClaims)
 	if !ok {
-		return 0, fmt.Errorf("всратые данные в токене")
+		return 0, fmt.Errorf("claims are invalid, claims: %v", claims)
 	}
 	sub, ok := claims["sub"].(string)
 	if !ok {
-		return 0, fmt.Errorf("invalid user ID format: %v", err)
+		return 0, fmt.Errorf("sub is not a string, sub: %v", sub)
 	}
-	retVal, err := strconv.Atoi(sub)
+	v, err := strconv.Atoi(sub)
 	if err != nil {
-		return 0, fmt.Errorf("JOPA")
+		return 0, fmt.Errorf("sub is not an int, sub: %v", sub)
 	}
-	return retVal, nil
+	return v, nil
 }
 func (s *JWTService) VerifyRefreshToken(token string) error {
 	return nil
