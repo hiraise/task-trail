@@ -6,7 +6,8 @@ import (
 )
 
 type App struct {
-	Debug bool `env:"APP_DEBUG,required"`
+	Debug    bool   `env:"APP_DEBUG,required"`
+	RootPath string `env:"APP_ROOT_PATH,required"`
 }
 
 type PG struct {

@@ -59,6 +59,6 @@ func Run(cfg *config.Config) {
 	httpServer.Use(logMW)
 	httpServer.Use(recoveryMW)
 	httpServer.Use(middleware.ErrorHandler(logger1))
-	http.NewRouter(httpServer, logger, userUC, authUC, authMW)
+	http.NewRouter(httpServer, logger, userUC, authUC, authMW, cfg)
 	httpServer.Run()
 }
