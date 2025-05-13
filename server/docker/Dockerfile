@@ -3,11 +3,11 @@ FROM golang:1.24 AS builder
 
 WORKDIR /build
 
-ADD go.mod /build/
+ADD go.mod .
 
-COPY . /build/
+COPY . .
 
-RUN go build -C ./cmd/app ./app
+RUN go build -C ./cmd/app -o ./app
 
 FROM alpine
 
