@@ -3,9 +3,9 @@ FROM golang:1.24 AS builder
 
 WORKDIR /build
 
-ADD go.mod .
+ADD go.mod /build/
 
-COPY . .
+COPY . /build/
 
 RUN go build -C ./cmd/app ./app
 
