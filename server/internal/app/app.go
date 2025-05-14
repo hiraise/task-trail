@@ -18,6 +18,7 @@ import (
 )
 
 func Run(cfg *config.Config) {
+	// TODO: run background gorutine and break when app is down
 	logger := slogger.New(cfg.App.Debug, true)
 	logger1 := slogger.New(cfg.App.Debug, false)
 	// migrate
@@ -45,10 +46,10 @@ func Run(cfg *config.Config) {
 	pwdService := password.NewBcryptService()
 	uuidGenerator := &uuid.UUIDGenerator{}
 	tokenService := token.NewJwtService(
-		cfg.AUTH.AccessTokenSecret,
-		cfg.AUTH.AccessTokenLifetimeMin,
-		cfg.AUTH.RefreshTokenSecret,
-		cfg.AUTH.RefreshTokenLifetimeMin,
+		cfg.AUTH.ATSecret,
+		cfg.AUTH.ATLifeMin,
+		cfg.AUTH.RTSecret,
+		cfg.AUTH.RTLifeMin,
 		cfg.AUTH.TokenIssuer,
 		uuidGenerator)
 
@@ -60,7 +61,7 @@ func Run(cfg *config.Config) {
 
 	recoveryMW := middleware.RecoveryWithLogger(logger1)
 	logMW := middleware.CustomLogger(logger1)
-	authMW := middleware.AuthHandler(tokenService, logger)
+	authMW := middleware.AuthHandler(tokenService, logger, cfg.AUTH.ATName)
 	// init http server
 	httpServer := gin.New()
 	httpServer.Use(logMW)

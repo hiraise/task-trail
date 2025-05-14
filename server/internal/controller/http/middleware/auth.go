@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthHandler(t token.Service, l logger.Logger) gin.HandlerFunc {
+func AuthHandler(t token.Service, l logger.Logger, atName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		at, err := c.Cookie("at")
@@ -21,7 +21,7 @@ func AuthHandler(t token.Service, l logger.Logger) gin.HandlerFunc {
 		userId, err := t.VerifyAccessToken(at)
 		if err != nil {
 			l.Warn("invalid access token", "error", err.Error())
-			helper.DeleteAccessToken(c)
+			helper.DeleteAccessToken(c, atName)
 			abort(c)
 			return
 		}

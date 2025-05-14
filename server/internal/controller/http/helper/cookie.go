@@ -9,28 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	ATName = "at"
-	RTName = "rt"
-)
-
-func DeleteAccessToken(c *gin.Context) {
-	DeleteCookie(c, ATName)
-}
-
-func DeleteRefreshToken(c *gin.Context) {
-	DeleteCookie(c, RTName)
-}
-
-func DeleteCookie(c *gin.Context, name string) {
+func DeleteAccessToken(c *gin.Context, name string) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(name, "", -1, "/", "", true, true)
 }
 
-func SetTokens(c *gin.Context, at *token.Token, rt *token.Token, refreshPath string) {
+func DeleteTokens(c *gin.Context, atName string, rtName string, refreshPath string) {
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie(atName, "", -1, "/", "", true, true)
+	c.SetCookie(rtName, "", -1, refreshPath, "", true, true)
+}
+
+func SetTokens(c *gin.Context, at *token.Token, rt *token.Token, atName string, rtName string, refreshPath string) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	atTime := int(time.Until(at.Exp).Seconds())
 	rtTime := int(time.Until(rt.Exp).Seconds())
-	c.SetCookie(ATName, at.Token, atTime, "/", "", true, true)
-	c.SetCookie(RTName, rt.Token, rtTime, refreshPath, "", true, true)
+	c.SetCookie(atName, at.Token, atTime, "/", "", true, true)
+	c.SetCookie(rtName, rt.Token, rtTime, refreshPath, "", true, true)
 }
