@@ -72,9 +72,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/users": {
+        "/v1/auth/register": {
             "post": {
-                "description": "endpoint for create new user",
+                "description": "endpoint for register new user",
                 "consumes": [
                     "application/json"
                 ],
@@ -82,9 +82,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/users"
+                    "/v1/auth"
                 ],
-                "summary": "create new user",
+                "summary": "register new user",
                 "parameters": [
                     {
                         "description": "user email and password",

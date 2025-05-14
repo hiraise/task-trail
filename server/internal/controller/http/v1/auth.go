@@ -24,6 +24,30 @@ type authRoutes struct {
 	appRootPath string
 }
 
+// @Summary 	register new user
+// @Description endpoint for register new user
+// @Tags 		/v1/auth
+// @Accept 		json
+// @Produce 	json
+// @Param 		body body request.User true "user email and password"
+// @Success 	200
+// @Failure		400 {object} customerrors.ErrBase
+// @Failure		409 {object} customerrors.ErrBase
+// @Router 		/v1/auth/register [post]
+func (r *authRoutes) register(c *gin.Context) {
+	var body request.User
+	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
+		c.Error(validationerr.New(err))
+		return
+	}
+	err := r.u.Register(c, body.Email, body.Password)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
+
 // @Summary 	login user
 // @Description endpoint for login user
 // @Tags 		/v1/auth
@@ -56,4 +80,5 @@ func NewAuthRouter(router *gin.RouterGroup, u usecase.Authentication, l logger.L
 	r := &authRoutes{u: u, l: l, appRootPath: cfg.App.RootPath}
 	g := router.Group("/auth")
 	g.POST("/login", r.login)
+	g.POST("/register", r.register)
 }

@@ -39,6 +39,30 @@ func NewAuthUC(
 	}
 }
 
+func (u *AuthUC) Register(ctx context.Context, email string, password string) error {
+
+	isTaken, err := u.userRepo.EmailIsTaken(ctx, email)
+	if err != nil {
+		return err
+	}
+	if isTaken {
+		return customerrors.NewErrConflict(map[string]any{"email": email})
+	}
+
+	return u.txManager.DoWithTx(ctx, func(ctx context.Context) error {
+		hash, err := u.passwordSvc.HashPassword(password)
+		if err != nil {
+			return err
+		}
+
+		user := &entity.User{Email: email, PasswordHash: string(hash)}
+		if err := u.userRepo.Create(ctx, user); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (u *AuthUC) Login(ctx context.Context, email string, password string) (*token.Token, *token.Token, error) {
 	user, err := u.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
