@@ -11,7 +11,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func Migrate(dbUrl string, l logger.Logger) error {
+func Migrate(dbUrl string, migrationPath string, l logger.Logger) error {
 	var (
 		attempts = 5
 		timeout  = time.Second
@@ -19,7 +19,7 @@ func Migrate(dbUrl string, l logger.Logger) error {
 		err      error
 	)
 	for attempts > 0 {
-		m, err = migrate.New("file://../../migrations", dbUrl+"?sslmode=disable")
+		m, err = migrate.New(migrationPath, dbUrl+"?sslmode=disable")
 		if err != nil {
 			l.Info("try connect to postgresql db for migrate", "attempts", attempts)
 			time.Sleep(timeout)

@@ -22,7 +22,7 @@ func Run(cfg *config.Config) {
 	logger1 := slogger.New(cfg.App.Debug, false)
 	// migrate
 	if cfg.PG.MigrationEnabled {
-		if err := postgres.Migrate(cfg.PG.ConnString, logger); err != nil {
+		if err := postgres.Migrate(cfg.PG.ConnString, cfg.PG.MigrationPath, logger); err != nil {
 			logger.Error("db migration error", "raw_error", err.Error())
 			os.Exit(1)
 		}

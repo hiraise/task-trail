@@ -14,7 +14,7 @@ type PG struct {
 	ConnString       string `env:"PG_CONNECTION_STRING,required"`
 	MaxPoolSize      int    `env:"PG_MAX_POOL_SIZE,required"`
 	MigrationEnabled bool   `env:"PG_MIGRATION_ENABLED" envDefault:"false"`
-	MigrationPath    bool   `env:"PG_MIGRATION_ENABLED" envDefault:"../../migrations"`
+	MigrationPath    string `env:"PG_MIGRATION_PATH" envDefault:"file://../../migrations"`
 }
 
 type AUTH struct {
