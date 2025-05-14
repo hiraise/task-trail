@@ -3,6 +3,7 @@ package v1
 import (
 	"net/http"
 
+	"task-trail/config"
 	"task-trail/error/validationerr"
 
 	"task-trail/internal/controller/http/helper"
@@ -18,8 +19,9 @@ const (
 )
 
 type authRoutes struct {
-	u usecase.Authentication
-	l logger.Logger
+	u           usecase.Authentication
+	l           logger.Logger
+	appRootPath string
 }
 
 // @Summary 	login user
@@ -45,13 +47,13 @@ func (r *authRoutes) login(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	helper.SetTokens(c, at, rt, refreshPath)
+	helper.SetTokens(c, at, rt, r.appRootPath+refreshPath)
 	c.JSON(http.StatusOK, nil)
 
 }
 
-func NewAuthRouter(router *gin.RouterGroup, u usecase.Authentication, l logger.Logger) {
-	r := &authRoutes{u: u, l: l}
+func NewAuthRouter(router *gin.RouterGroup, u usecase.Authentication, l logger.Logger, cfg *config.Config) {
+	r := &authRoutes{u: u, l: l, appRootPath: cfg.App.RootPath}
 	g := router.Group("/auth")
 	g.POST("/login", r.login)
 }

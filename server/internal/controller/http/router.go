@@ -25,7 +25,7 @@ import (
 // @license.url   https://mit-license.org/
 
 func NewRouter(app *gin.Engine, l logger.Logger, userUC usecase.User, authUC usecase.Authentication, authMW gin.HandlerFunc, cfg *config.Config) {
-	v1.NewRouter(app, userUC, authUC, l, authMW)
+	v1.NewRouter(app, cfg, userUC, authUC, l, authMW)
 
 	app.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "kek", "status": http.StatusOK})
