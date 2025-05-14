@@ -20,6 +20,13 @@ import (
 func Run(cfg *config.Config) {
 	logger := slogger.New(cfg.App.Debug, true)
 	logger1 := slogger.New(cfg.App.Debug, false)
+	// migrate
+	if cfg.PG.MigrationEnabled {
+		if err := postgres.Migrate(cfg.PG.ConnString, logger); err != nil {
+			logger.Error("db migration error", "raw_error", err.Error())
+			os.Exit(1)
+		}
+	}
 	// init db
 	opts := []postgres.Option{postgres.MaxPoolSize(cfg.PG.MaxPoolSize)}
 	pg, err := postgres.New(cfg.PG.ConnString, logger, opts...)

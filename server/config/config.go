@@ -11,8 +11,10 @@ type App struct {
 }
 
 type PG struct {
-	ConnString  string `env:"PG_CONNECTION_STRING,required"`
-	MaxPoolSize int    `env:"PG_MAX_POOL_SIZE,required"`
+	ConnString       string `env:"PG_CONNECTION_STRING,required"`
+	MaxPoolSize      int    `env:"PG_MAX_POOL_SIZE,required"`
+	MigrationEnabled bool   `env:"PG_MIGRATION_ENABLED" envDefault:"false"`
+	MigrationPath    bool   `env:"PG_MIGRATION_ENABLED" envDefault:"../../migrations"`
 }
 
 type AUTH struct {
