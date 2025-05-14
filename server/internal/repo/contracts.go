@@ -36,6 +36,8 @@ type VerificationRepository interface {
 type TokenRepository interface {
 	Create(ctx context.Context, token entity.Token) error
 	GetTokenById(ctx context.Context, tokenId string, userId int) (entity.Token, error)
+	RevokeToken(ctx context.Context, tokenId string) error
+	RevokeAllUsersTokens(ctx context.Context, userId int) (int, error)
 }
 
 type pgConn interface {

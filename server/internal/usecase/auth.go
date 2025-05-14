@@ -9,6 +9,7 @@ import (
 	"task-trail/internal/pkg/token"
 	"task-trail/internal/repo"
 	"task-trail/pkg/logger"
+	"time"
 )
 
 type AuthUC struct {
@@ -79,39 +80,92 @@ func (u *AuthUC) Login(ctx context.Context, email string, password string) (*tok
 		return u.invalidCredentials(nil, "user enter wrong password", "email", email)
 	}
 
-	// gen tokens
-	at, err := u.tokenSvc.GenAccessToken(user.ID)
+	return u.generateTokens(ctx, user.ID)
+}
+
+func (u *AuthUC) Refresh(ctx context.Context, oldRT string) (*token.Token, *token.Token, error) {
+	userId, tokenId, err := u.tokenSvc.VerifyRefreshToken(oldRT)
 	if err != nil {
-		return u.internalTrouble(err, "generation access token error", "userId", user.ID)
+		return u.unatuhorized(err, "invalid refresh token")
 	}
-	rt, err := u.tokenSvc.GenRefreshToken(user.ID)
+	oldDbToken, err := u.tokenRepo.GetTokenById(ctx, tokenId, userId)
 	if err != nil {
-		return u.internalTrouble(err, "generation refresh token error", "userId", user.ID)
+		if errors.Is(err, repo.ErrNotFound) {
+			return u.unatuhorized(err, "refresh token not found", "tokenId", tokenId, "userId", userId)
+		}
+		return u.internalTrouble(err, "database error", "tokenId", tokenId, "userId", userId)
+	}
+	if oldDbToken.ExpiredAt.Unix() < time.Now().Unix() {
+		return u.unatuhorized(nil, "refresh token is to old", "tokenId", tokenId, "userId", userId)
+	}
+	if oldDbToken.RevokedAt != nil {
+		revoked_tokens, err := u.tokenRepo.RevokeAllUsersTokens(ctx, userId)
+		if err != nil {
+			return u.internalTrouble(err, "database error", "tokenId", tokenId, "userId", userId)
+		}
+		return u.unatuhorized(
+			nil,
+			"refresh token is revoked, all user tokens was revoked",
+			"tokenId", tokenId,
+			"userId", userId,
+			"revoked_tokens", revoked_tokens)
+
+	}
+	var at, rt *token.Token
+	u.txManager.DoWithTx(ctx, func(ctx context.Context) error {
+		at, rt, err = u.generateTokens(ctx, userId)
+		if err != nil {
+			return err
+		}
+		if err := u.tokenRepo.RevokeToken(ctx, tokenId); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return at, rt, nil
+}
+
+func (u *AuthUC) generateTokens(ctx context.Context, userId int) (*token.Token, *token.Token, error) {
+	at, err := u.tokenSvc.GenAccessToken(userId)
+	if err != nil {
+		return u.internalTrouble(err, "generation access token error", "userId", userId)
+	}
+	rt, err := u.tokenSvc.GenRefreshToken(userId)
+	if err != nil {
+		return u.internalTrouble(err, "generation refresh token error", "userId", userId)
 
 	}
 
 	token := entity.Token{
 		ID:        rt.Jti,
 		ExpiredAt: rt.Exp,
-		UserId:    user.ID,
+		UserId:    userId,
 	}
 	if err := u.tokenRepo.Create(ctx, token); err != nil {
-		return u.internalTrouble(err, "database error", "userId", user.ID)
+		return u.internalTrouble(err, "database error", "userId", userId)
 	}
 	return at, rt, nil
 }
-
 func (u *AuthUC) invalidCredentials(err error, msg string, args ...any) (*token.Token, *token.Token, error) {
 	if err != nil {
-		args = append(args, "err", err.Error())
+		args = append(args, "error", err.Error())
 	}
 	u.logger.Warn(msg, args...)
 	return &token.Token{}, &token.Token{}, customerrors.NewErrInvalidCredentials(nil)
 }
 
+func (u *AuthUC) unatuhorized(err error, msg string, args ...any) (*token.Token, *token.Token, error) {
+	if err != nil {
+		args = append(args, "error", err.Error())
+	}
+	u.logger.Warn(msg, args...)
+	return &token.Token{}, &token.Token{}, customerrors.NewErrUnauthorized(nil)
+}
+
 func (u *AuthUC) internalTrouble(err error, msg string, args ...any) (*token.Token, *token.Token, error) {
 	if err != nil {
-		args = append(args, "err", err.Error())
+		args = append(args, "error", err.Error())
 	}
 	u.logger.Error(msg, args...)
 	return &token.Token{}, &token.Token{}, customerrors.NewErrInternal(nil)

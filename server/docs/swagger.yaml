@@ -62,6 +62,27 @@ paths:
       summary: login user
       tags:
       - /v1/auth
+  /v1/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: refresh user tokens pair
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: refresh token is invalid
+          schema:
+            $ref: '#/definitions/customerrors.ErrBase'
+        "500":
+          description: internal error
+          schema:
+            $ref: '#/definitions/customerrors.ErrBase'
+      summary: refresh tokens
+      tags:
+      - /v1/auth
   /v1/auth/register:
     post:
       consumes:
@@ -80,11 +101,15 @@ paths:
         "200":
           description: OK
         "400":
-          description: Bad Request
+          description: invalid request body
           schema:
             $ref: '#/definitions/customerrors.ErrBase'
         "409":
-          description: Conflict
+          description: user already exists
+          schema:
+            $ref: '#/definitions/customerrors.ErrBase'
+        "500":
+          description: internal error
           schema:
             $ref: '#/definitions/customerrors.ErrBase'
       summary: register new user

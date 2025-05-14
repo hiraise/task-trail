@@ -72,6 +72,38 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/auth/refresh": {
+            "post": {
+                "description": "refresh user tokens pair",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "refresh tokens",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "refresh token is invalid",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.ErrBase"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.ErrBase"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/auth/register": {
             "post": {
                 "description": "endpoint for register new user",
@@ -101,13 +133,19 @@ const docTemplate = `{
                         "description": "OK"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid request body",
                         "schema": {
                             "$ref": "#/definitions/customerrors.ErrBase"
                         }
                     },
                     "409": {
-                        "description": "Conflict",
+                        "description": "user already exists",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.ErrBase"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
                         "schema": {
                             "$ref": "#/definitions/customerrors.ErrBase"
                         }

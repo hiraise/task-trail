@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"task-trail/internal/entity"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -41,7 +42,7 @@ func (r *PgTokenRepository) GetTokenById(
 		WHERE id = $1 and user_id = $2`
 	var token entity.Token
 	err := r.getDb(ctx).
-		QueryRow(ctx, query).
+		QueryRow(ctx, query, tokenId, userId).
 		Scan(
 			&token.ID,
 			&token.UserId,
@@ -56,4 +57,32 @@ func (r *PgTokenRepository) GetTokenById(
 		return token, Wrap(ErrDB, err)
 	}
 	return token, nil
+}
+
+func (r *PgTokenRepository) RevokeToken(ctx context.Context, tokenId string) error {
+	query := `
+		UPDATE refresh_tokens
+		SET revoked_at = $1
+		WHERE id = $2`
+	tag, err := r.getDb(ctx).Exec(ctx, query, time.Now(), tokenId)
+
+	if err != nil {
+		if tag.RowsAffected() == 0 {
+			return Wrap(ErrNotFound, err)
+		}
+		return Wrap(ErrDB, err)
+	}
+	return nil
+}
+
+func (r *PgTokenRepository) RevokeAllUsersTokens(ctx context.Context, userId int) (int, error) {
+	query := `
+		UPDATE refresh_tokens
+		SET revoked_at = $1
+		WHERE user_id = $2 AND revoked_at IS NULL AND expired_at >= $3`
+	tag, err := r.getDb(ctx).Exec(ctx, query, time.Now(), userId, time.Now())
+	if err != nil {
+		return 0, Wrap(ErrDB, err)
+	}
+	return int(tag.RowsAffected()), nil
 }
