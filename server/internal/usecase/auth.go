@@ -42,26 +42,32 @@ func NewAuthUC(
 
 func (u *AuthUC) Register(ctx context.Context, email string, password string) error {
 
-	isTaken, err := u.userRepo.EmailIsTaken(ctx, email)
-	if err != nil {
-		return err
-	}
-	if isTaken {
-		return customerrors.NewErrConflict(map[string]any{"email": email})
+	if isTaken, err := u.userRepo.EmailIsTaken(ctx, email); err != nil {
+		u.logger.Error("unique email verification failed", "error", err, "email", email)
+		return customerrors.NewErrInternal(nil)
+	} else {
+		if isTaken {
+			u.logger.Warn("email is taken", "email", email)
+			return customerrors.NewErrConflict(map[string]any{"email": email})
+		}
 	}
 
-	return u.txManager.DoWithTx(ctx, func(ctx context.Context) error {
+	f := func(ctx context.Context) error {
 		hash, err := u.passwordSvc.HashPassword(password)
 		if err != nil {
-			return err
+			u.logger.Warn("password hashing failed", "error", err)
+			return customerrors.NewErrInternal(nil)
 		}
 
 		user := &entity.User{Email: email, PasswordHash: string(hash)}
 		if err := u.userRepo.Create(ctx, user); err != nil {
-			return err
+			u.logger.Error("failed to create new user", "error", err)
+			return customerrors.NewErrInternal(nil)
 		}
 		return nil
-	})
+	}
+
+	return u.txManager.DoWithTx(ctx, f)
 }
 
 func (u *AuthUC) Login(ctx context.Context, email string, password string) (*token.Token, *token.Token, error) {
