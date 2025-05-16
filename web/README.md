@@ -6,10 +6,11 @@ This project is a web application built using **Next.js**. It follows a modular 
 
 ## Key Features
 
-- **Authentication**: Includes login functionality with Redux Toolkit for state management.
+- **Authentication**: Includes login and signup functionality with Redux Toolkit for state management.
 - **Responsive Design**: Components are optimized for both desktop and mobile devices.
 - **Localization**: Supports localization for text and images.
 - **Reusable Components**: Includes a library of reusable UI components and widgets.
+- **Error Handling**: Centralized error handling for global and local errors.
 
 ## Project Goals
 
@@ -35,11 +36,21 @@ The project is organized as follows:
 ```
 src/
 ├── app/                     # Application entry points and pages
+│   ├── (auth)/              # Authentication pages (login, signup)
+│   ├── dashboard/           # Dashboard layout and pages
 ├── application/             # Application-specific use-cases and logic
+│   ├── auth/                # Authentication logic (hooks, slices, thunks)
 ├── domain/                  # Core business logic and domain entities
 ├── infrastructure/          # Infrastructure and external dependencies
+│   ├── api/                 # API clients and endpoints
+│   ├── redux/               # Redux store and middleware
 ├── presentation/            # UI components and widgets
+│   ├── ui/                  # Reusable UI components
+│   ├── widgets/             # Complex widgets (e.g., forms)
 ├── shared/                  # Shared utilities and modules
+│   ├── errors/              # Error handling utilities
+│   ├── hooks/               # Custom React hooks
+│   ├── locales/             # Localization files
 ```
 
 ## Prerequisites
@@ -121,7 +132,7 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 ## Roadmap
 
 - [x] Login system with mock API
-- [ ] Protect routes with auth guard
+- [x] Protect routes with auth guard
 - [ ] Implement task board UI
 - [ ] Integrate real backend (Go)
 - [ ] Add project management features
