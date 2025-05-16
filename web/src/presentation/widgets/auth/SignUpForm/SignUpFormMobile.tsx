@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { LoginFields } from "../../common/LoginFields";
 import { PrivacyText } from "../../common/PrivacyText";
@@ -10,12 +9,10 @@ import { MobileContainer } from "../../primitives/MobileContainer";
 import { Form } from "../LoginForm/LoginForm.styled";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
-import { ROUTES } from "@/infrastructure/config/routes";
+import { signupTexts } from "@/shared/locales/signup";
 import { useSignUp } from "@/application/auth/hooks/useSignUp";
-import { toastSignUp } from "@/shared/lib/toastSignUp";
 
 export const SignUpFormMobile = () => {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -23,13 +20,7 @@ export const SignUpFormMobile = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    //TODO: add signup logic
-    try {
-      await toastSignUp(() => signUp(email, password));
-      router.push(ROUTES.dashboard);
-    } catch (error) {
-      console.error("Registration failed:", error);
-    }
+    await signUp({ email, password });
   };
 
   return (
@@ -43,8 +34,7 @@ export const SignUpFormMobile = () => {
         ></LoginFields>
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading}>
-          {/* TODO: move text to constants */}
-          {loading ? "Регистрация..." : sharedTexts.signUp}
+          {loading ? signupTexts.signingUp : sharedTexts.signUp}
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
