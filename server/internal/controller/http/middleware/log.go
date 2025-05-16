@@ -1,26 +1,31 @@
 package middleware
 
 import (
+	"task-trail/internal/pkg/contextmanager"
 	"task-trail/pkg/logger"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func CustomLogger(l logger.Logger) gin.HandlerFunc {
-	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		args := []any{"status", param.StatusCode,
-			"client_ip", param.ClientIP,
-			"method", param.Method,
-			"path", param.Path,
-			"user_agent", param.Request.UserAgent(),
-			"latency", param.Latency.String(),
+// log each http event
+func NewLog(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		c.Next()
+		latency := time.Since(start)
+		status := c.Writer.Status()
+		args := []any{
+			"status", status,
+			"userId", m.GetUserID(c),
+			"reqId", m.GetRequestID(c),
+			"client_ip", c.ClientIP(),
+			"method", c.Request.Method,
+			"path", c.Request.URL.Path,
+			"user_agent", c.Request.UserAgent(),
+			"latency", latency.String(),
 		}
 
-		userId, ok := param.Keys["userId"]
-		if ok {
-			args = append(args, "userId", userId.(int))
-		}
 		l.Info("http request", args...)
-		return ""
-	})
+	}
 }
