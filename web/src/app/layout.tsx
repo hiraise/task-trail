@@ -4,13 +4,14 @@ import { Toaster } from "sonner";
 
 import "./globals.css";
 import { StoreProvider } from "./StoreProvider";
+import { AuthRedirectWatcher } from "@/presentation/ui/AuthRedirectWatcher";
+import { metadataTexts } from "@/shared/locales/metadata";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  //TODO: move strings to text file
-  title: "Task Trail",
-  description: "Self-hosted система управления задачами",
+  title: metadataTexts.app.title,
+  description: metadataTexts.app.description,
 };
 
 export default function RootLayout({
@@ -22,8 +23,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <StoreProvider>
+          <AuthRedirectWatcher />
           {children}
-          <Toaster position="bottom-right" richColors />{" "}
+          <Toaster position="bottom-right" richColors />
         </StoreProvider>
       </body>
     </html>
