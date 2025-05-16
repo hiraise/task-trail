@@ -25,7 +25,6 @@ const docTemplate = `{
     "paths": {
         "/v1/auth/login": {
             "post": {
-                "description": "endpoint for login user",
                 "consumes": [
                     "application/json"
                 ],
@@ -54,27 +53,26 @@ const docTemplate = `{
                     "400": {
                         "description": "invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.ErrBase"
+                            "$ref": "#/definitions/customerrors.Err"
                         }
                     },
                     "401": {
                         "description": "invalid credentials",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.ErrBase"
+                            "$ref": "#/definitions/customerrors.Err"
                         }
                     },
                     "500": {
                         "description": "internal error",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.ErrBase"
+                            "$ref": "#/definitions/customerrors.Err"
                         }
                     }
                 }
             }
         },
-        "/v1/auth/refresh": {
+        "/v1/auth/logout": {
             "post": {
-                "description": "refresh user tokens pair",
                 "consumes": [
                     "application/json"
                 ],
@@ -84,7 +82,32 @@ const docTemplate = `{
                 "tags": [
                     "/v1/auth"
                 ],
-                "summary": "refresh tokens",
+                "summary": "logout user",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Err"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/refresh": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "refresh tokens pair",
                 "responses": {
                     "200": {
                         "description": "OK"
@@ -92,13 +115,13 @@ const docTemplate = `{
                     "401": {
                         "description": "refresh token is invalid",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.ErrBase"
+                            "$ref": "#/definitions/customerrors.Err"
                         }
                     },
                     "500": {
                         "description": "internal error",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.ErrBase"
+                            "$ref": "#/definitions/customerrors.Err"
                         }
                     }
                 }
@@ -135,19 +158,19 @@ const docTemplate = `{
                     "400": {
                         "description": "invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.ErrBase"
+                            "$ref": "#/definitions/customerrors.Err"
                         }
                     },
                     "409": {
                         "description": "user already exists",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.ErrBase"
+                            "$ref": "#/definitions/customerrors.Err"
                         }
                     },
                     "500": {
                         "description": "internal error",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.ErrBase"
+                            "$ref": "#/definitions/customerrors.Err"
                         }
                     }
                 }
@@ -184,15 +207,28 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "customerrors.ErrBase": {
+        "customerrors.Err": {
             "type": "object",
             "properties": {
-                "metadata": {
-                    "type": "object",
-                    "additionalProperties": {}
+                "data": {
+                    "type": "array",
+                    "items": {}
                 },
                 "msg": {
                     "type": "string"
+                },
+                "responseData": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "source": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "type": {
+                    "type": "integer"
                 }
             }
         },

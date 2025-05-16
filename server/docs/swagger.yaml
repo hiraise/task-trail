@@ -1,11 +1,20 @@
 definitions:
-  customerrors.ErrBase:
+  customerrors.Err:
     properties:
-      metadata:
-        additionalProperties: {}
-        type: object
+      data:
+        items: {}
+        type: array
       msg:
         type: string
+      responseData:
+        additionalProperties: {}
+        type: object
+      source:
+        additionalProperties:
+          type: string
+        type: object
+      type:
+        type: integer
     type: object
   request.User:
     properties:
@@ -34,7 +43,6 @@ paths:
     post:
       consumes:
       - application/json
-      description: endpoint for login user
       parameters:
       - description: user email and password
         in: body
@@ -50,23 +58,38 @@ paths:
         "400":
           description: invalid request body
           schema:
-            $ref: '#/definitions/customerrors.ErrBase'
+            $ref: '#/definitions/customerrors.Err'
         "401":
           description: invalid credentials
           schema:
-            $ref: '#/definitions/customerrors.ErrBase'
+            $ref: '#/definitions/customerrors.Err'
         "500":
           description: internal error
           schema:
-            $ref: '#/definitions/customerrors.ErrBase'
+            $ref: '#/definitions/customerrors.Err'
       summary: login user
+      tags:
+      - /v1/auth
+  /v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/customerrors.Err'
+      summary: logout user
       tags:
       - /v1/auth
   /v1/auth/refresh:
     post:
       consumes:
       - application/json
-      description: refresh user tokens pair
       produces:
       - application/json
       responses:
@@ -75,12 +98,12 @@ paths:
         "401":
           description: refresh token is invalid
           schema:
-            $ref: '#/definitions/customerrors.ErrBase'
+            $ref: '#/definitions/customerrors.Err'
         "500":
           description: internal error
           schema:
-            $ref: '#/definitions/customerrors.ErrBase'
-      summary: refresh tokens
+            $ref: '#/definitions/customerrors.Err'
+      summary: refresh tokens pair
       tags:
       - /v1/auth
   /v1/auth/register:
@@ -103,15 +126,15 @@ paths:
         "400":
           description: invalid request body
           schema:
-            $ref: '#/definitions/customerrors.ErrBase'
+            $ref: '#/definitions/customerrors.Err'
         "409":
           description: user already exists
           schema:
-            $ref: '#/definitions/customerrors.ErrBase'
+            $ref: '#/definitions/customerrors.Err'
         "500":
           description: internal error
           schema:
-            $ref: '#/definitions/customerrors.ErrBase'
+            $ref: '#/definitions/customerrors.Err'
       summary: register new user
       tags:
       - /v1/auth
