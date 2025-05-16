@@ -3,17 +3,17 @@ package usecase
 import (
 	"context"
 	"errors"
-	customerrors "task-trail/error"
+
+	"task-trail/customerrors"
 	"task-trail/internal/entity"
 	"task-trail/internal/pkg/password"
 	"task-trail/internal/pkg/token"
 	"task-trail/internal/repo"
-	"task-trail/pkg/logger"
 	"time"
 )
 
 type AuthUC struct {
-	logger      logger.Logger
+	errHandler  customerrors.ErrorHandler
 	txManager   repo.TxManager
 	userRepo    repo.UserRepository
 	tokenRepo   repo.TokenRepository
@@ -21,9 +21,8 @@ type AuthUC struct {
 	tokenSvc    token.Service
 }
 
-// NewAuthUC creates a new instance of AuthUseCase.
 func NewAuthUC(
-	logger logger.Logger,
+	errHandler customerrors.ErrorHandler,
 	txManager repo.TxManager,
 	userRepo repo.UserRepository,
 	tokenRepo repo.TokenRepository,
@@ -31,7 +30,7 @@ func NewAuthUC(
 	tokenSvc token.Service,
 ) *AuthUC {
 	return &AuthUC{
-		logger:      logger,
+		errHandler:  errHandler,
 		txManager:   txManager,
 		userRepo:    userRepo,
 		tokenRepo:   tokenRepo,
@@ -43,26 +42,22 @@ func NewAuthUC(
 func (u *AuthUC) Register(ctx context.Context, email string, password string) error {
 
 	if isTaken, err := u.userRepo.EmailIsTaken(ctx, email); err != nil {
-		u.logger.Error("unique email verification failed", "error", err, "email", email)
-		return customerrors.NewErrInternal(nil)
+		return u.errHandler.InternalTrouble(err, "unique email verification failed", "email", email)
 	} else {
 		if isTaken {
-			u.logger.Warn("email is taken", "email", email)
-			return customerrors.NewErrConflict(map[string]any{"email": email})
+			return u.errHandler.Conflict(err, "email already taken", "email", email)
 		}
 	}
 
 	f := func(ctx context.Context) error {
 		hash, err := u.passwordSvc.HashPassword(password)
 		if err != nil {
-			u.logger.Warn("password hashing failed", "error", err)
-			return customerrors.NewErrInternal(nil)
+			return u.errHandler.InternalTrouble(err, "password hashing failed")
 		}
 
 		user := &entity.User{Email: email, PasswordHash: string(hash)}
 		if err := u.userRepo.Create(ctx, user); err != nil {
-			u.logger.Error("failed to create new user", "error", err)
-			return customerrors.NewErrInternal(nil)
+			return u.errHandler.InternalTrouble(err, "failed to create new user", "email", email)
 		}
 		return nil
 	}
@@ -70,109 +65,119 @@ func (u *AuthUC) Register(ctx context.Context, email string, password string) er
 	return u.txManager.DoWithTx(ctx, f)
 }
 
-func (u *AuthUC) Login(ctx context.Context, email string, password string) (*token.Token, *token.Token, error) {
+func (u *AuthUC) Login(ctx context.Context, email string, password string) (int, *token.Token, *token.Token, error) {
 	user, err := u.userRepo.GetUserByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
-			return u.invalidCredentials(err, "user not found", "email", email)
+			return 0, nil, nil, u.errHandler.InvalidCredentials(err, "user not found", "email", email)
 		}
-		return u.internalTrouble(err, "database error", "email", email)
+		return 0, nil, nil, u.errHandler.InternalTrouble(err, "user loading failed", "email", email)
 
 	}
 	if user.VerifiedAt == nil {
-		return u.invalidCredentials(nil, "user is unverified", "email", email)
+		return 0, nil, nil, u.errHandler.InvalidCredentials(nil, "user is unverified", "email", email)
 	}
 	if err := u.passwordSvc.ComparePassword(password, user.PasswordHash); err != nil {
-		return u.invalidCredentials(nil, "user enter wrong password", "email", email)
+		return 0, nil, nil, u.errHandler.InvalidCredentials(err, "user enter wrong password", "email", email)
 	}
 
-	return u.generateTokens(ctx, user.ID)
+	at, rt, err := u.generateTokens(user.ID)
+	if err != nil {
+		return 0, nil, nil, err
+	}
+
+	t := entity.Token{
+		ID:        rt.Jti,
+		ExpiredAt: rt.Exp,
+		UserId:    user.ID,
+	}
+	if err := u.tokenRepo.Create(ctx, t); err != nil {
+		if errors.Is(err, repo.ErrConflict) {
+			return 0, nil, nil, u.errHandler.Conflict(err, "refresh token already exists", "tokenId", t.ID, "userId", user.ID)
+		}
+		return 0, nil, nil, u.errHandler.InternalTrouble(err, "failed to create new refresh token", "tokenId", t.ID, "userId", user.ID)
+	}
+	return user.ID, at, rt, nil
 }
 
 func (u *AuthUC) Refresh(ctx context.Context, oldRT string) (*token.Token, *token.Token, error) {
-	userId, tokenId, err := u.tokenSvc.VerifyRefreshToken(oldRT)
+	userId, tokenId, err := u.verifyRefreshToken(ctx, oldRT)
 	if err != nil {
-		return u.unatuhorized(err, "invalid refresh token")
+		return nil, nil, err
 	}
-	oldDbToken, err := u.tokenRepo.GetTokenById(ctx, tokenId, userId)
+	var at, rt *token.Token
+	f := func(ctx context.Context) error {
+		at, rt, err = u.generateTokens(userId)
+		if err != nil {
+			return err
+		}
+		return u.revokeToken(ctx, tokenId, userId)
+	}
+
+	if err := u.txManager.DoWithTx(ctx, f); err != nil {
+		return nil, nil, err
+	}
+
+	return at, rt, nil
+}
+
+func (u *AuthUC) Logout(ctx context.Context, rt string) error {
+	userId, tokenId, err := u.verifyRefreshToken(ctx, rt)
+	if err != nil {
+		return err
+	}
+	return u.revokeToken(ctx, tokenId, userId)
+}
+
+func (u *AuthUC) verifyRefreshToken(ctx context.Context, rt string) (int, string, error) {
+	userId, tokenId, err := u.tokenSvc.VerifyRefreshToken(rt)
+	if err != nil {
+		return 0, "", u.errHandler.Unauthorized(err, "invalid refresh token")
+	}
+	dbToken, err := u.tokenRepo.GetTokenById(ctx, tokenId, userId)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
-			return u.unatuhorized(err, "refresh token not found", "tokenId", tokenId, "userId", userId)
+			return 0, "", u.errHandler.Unauthorized(err, "refresh token not found", "tokenId", tokenId, "userId", userId)
 		}
-		return u.internalTrouble(err, "database error", "tokenId", tokenId, "userId", userId)
+		return 0, "", u.errHandler.InternalTrouble(err, "refresh token loading failed", "tokenId", tokenId, "userId", userId)
 	}
-	if oldDbToken.ExpiredAt.Unix() < time.Now().Unix() {
-		return u.unatuhorized(nil, "refresh token is to old", "tokenId", tokenId, "userId", userId)
+	if dbToken.ExpiredAt.Unix() < time.Now().Unix() {
+		return 0, "", u.errHandler.Unauthorized(nil, "refresh token is to old", "tokenId", tokenId, "userId", userId)
 	}
-	if oldDbToken.RevokedAt != nil {
+	if dbToken.RevokedAt != nil {
 		revoked_tokens, err := u.tokenRepo.RevokeAllUsersTokens(ctx, userId)
 		if err != nil {
-			return u.internalTrouble(err, "database error", "tokenId", tokenId, "userId", userId)
+			return 0, "", u.errHandler.InternalTrouble(err, "revoke all users refresh tokens failed", "tokenId", tokenId, "userId", userId)
 		}
-		return u.unatuhorized(
+		return 0, "", u.errHandler.Unauthorized(
 			nil,
 			"refresh token is revoked, all user tokens was revoked",
 			"tokenId", tokenId,
 			"userId", userId,
-			"revoked_tokens", revoked_tokens)
-
+			"revoked_tokens", revoked_tokens,
+		)
 	}
-	var at, rt *token.Token
-	u.txManager.DoWithTx(ctx, func(ctx context.Context) error {
-		at, rt, err = u.generateTokens(ctx, userId)
-		if err != nil {
-			return err
-		}
-		if err := u.tokenRepo.RevokeToken(ctx, tokenId); err != nil {
-			return err
-		}
-		return nil
-	})
-
-	return at, rt, nil
+	return userId, tokenId, nil
 }
 
-func (u *AuthUC) generateTokens(ctx context.Context, userId int) (*token.Token, *token.Token, error) {
+func (u *AuthUC) revokeToken(ctx context.Context, tokenId string, userId int) error {
+	if err := u.tokenRepo.RevokeToken(ctx, tokenId); err != nil {
+		if errors.Is(err, repo.ErrNotFound) {
+			return u.errHandler.Unauthorized(err, "refresh token not found", "tokenId", tokenId, "userId", userId)
+		}
+		return u.errHandler.InternalTrouble(err, "revoke refresh token failed", "tokenId", tokenId, "userId", userId)
+	}
+	return nil
+}
+
+func (u *AuthUC) generateTokens(userId int) (*token.Token, *token.Token, error) {
 	at, err := u.tokenSvc.GenAccessToken(userId)
 	if err != nil {
-		return u.internalTrouble(err, "generation access token error", "userId", userId)
+		return nil, nil, u.errHandler.InternalTrouble(err, "generation access token failed", "userId", userId)
 	}
 	rt, err := u.tokenSvc.GenRefreshToken(userId)
 	if err != nil {
-		return u.internalTrouble(err, "generation refresh token error", "userId", userId)
-
-	}
-
-	token := entity.Token{
-		ID:        rt.Jti,
-		ExpiredAt: rt.Exp,
-		UserId:    userId,
-	}
-	if err := u.tokenRepo.Create(ctx, token); err != nil {
-		return u.internalTrouble(err, "database error", "userId", userId)
+		return nil, nil, u.errHandler.InternalTrouble(err, "generation refresh token failed", "userId", userId)
 	}
 	return at, rt, nil
-}
-func (u *AuthUC) invalidCredentials(err error, msg string, args ...any) (*token.Token, *token.Token, error) {
-	if err != nil {
-		args = append(args, "error", err.Error())
-	}
-	u.logger.Warn(msg, args...)
-	return &token.Token{}, &token.Token{}, customerrors.NewErrInvalidCredentials(nil)
-}
-
-func (u *AuthUC) unatuhorized(err error, msg string, args ...any) (*token.Token, *token.Token, error) {
-	if err != nil {
-		args = append(args, "error", err.Error())
-	}
-	u.logger.Warn(msg, args...)
-	return &token.Token{}, &token.Token{}, customerrors.NewErrUnauthorized(nil)
-}
-
-func (u *AuthUC) internalTrouble(err error, msg string, args ...any) (*token.Token, *token.Token, error) {
-	if err != nil {
-		args = append(args, "error", err.Error())
-	}
-	u.logger.Error(msg, args...)
-	return &token.Token{}, &token.Token{}, customerrors.NewErrInternal(nil)
 }

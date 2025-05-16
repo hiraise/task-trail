@@ -6,9 +6,9 @@ import (
 )
 
 type Authentication interface {
-	Login(ctx context.Context, email string, password string) (*token.Token, *token.Token, error)
+	Login(ctx context.Context, email string, password string) (int, *token.Token, *token.Token, error)
 	Register(ctx context.Context, email string, password string) error
-	// Logout(ctx context.Context) error
+	Logout(ctx context.Context, rt string) error
 	Refresh(ctx context.Context, rt string) (*token.Token, *token.Token, error)
 }
 
