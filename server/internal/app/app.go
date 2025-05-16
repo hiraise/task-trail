@@ -6,13 +6,14 @@ import (
 	"task-trail/customerrors"
 	"task-trail/internal/controller/http"
 	"task-trail/internal/controller/http/middleware"
+	authuc "task-trail/internal/usecase/auth"
+	useruc "task-trail/internal/usecase/user"
 
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/pkg/password"
 	"task-trail/internal/pkg/token"
 	"task-trail/internal/pkg/uuid"
 	"task-trail/internal/repo"
-	"task-trail/internal/usecase"
 
 	slogger "task-trail/pkg/logger/slog"
 	"task-trail/pkg/postgres"
@@ -58,8 +59,8 @@ func Run(cfg *config.Config) {
 	errHandler := customerrors.NewErrHander()
 	contextm := contextmanager.NewGin(uuidGenerator)
 	// init uc
-	userUC := usecase.NewUserUC(txManager, userRepo, pwdService)
-	authUC := usecase.NewAuthUC(errHandler, txManager, userRepo, tokenRepo, pwdService, tokenService)
+	userUC := useruc.New(txManager, userRepo, pwdService)
+	authUC := authuc.New(errHandler, txManager, userRepo, tokenRepo, pwdService, tokenService)
 
 	// init middlewares
 
