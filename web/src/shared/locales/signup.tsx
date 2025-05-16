@@ -7,4 +7,5 @@ export const signupTexts = {
     </>
   ),
   hasAccount: "Уже есть аккаунт?",
+  signingUp: "Регистрация...",
 };

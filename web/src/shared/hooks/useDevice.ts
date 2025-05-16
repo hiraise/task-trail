@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 
 type DeviceType = "mobile" | "tablet" | "desktop";
 
+const breakpoints: Record<string, number> = {
+  mobile: 767,
+  tablet: 1024,
+};
+
 export const useDevice = (): DeviceType => {
   const [device, setDevice] = useState<DeviceType>("desktop");
 
@@ -9,9 +14,9 @@ export const useDevice = (): DeviceType => {
     const detectDevice = () => {
       const width = window.innerWidth;
 
-      if (width <= 767) {
+      if (width <= breakpoints.mobile) {
         setDevice("mobile");
-      } else if (width <= 1024) {
+      } else if (width <= breakpoints.tablet) {
         setDevice("tablet");
       } else {
         setDevice("desktop");

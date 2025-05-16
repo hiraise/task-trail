@@ -12,4 +12,5 @@ export const loginTexts = {
   passwordPlaceholder: "*********",
   forgotPassword: "Забыли пароль?",
   noAccount: "Нет аккаунта?",
+  loggingIn: "Вход в систему...",
 };
