@@ -2,8 +2,10 @@ package v1
 
 import (
 	"task-trail/config"
+	"task-trail/customerrors"
+
+	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/usecase"
-	"task-trail/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,11 +15,13 @@ func NewRouter(
 	cfg *config.Config,
 	userUC usecase.User,
 	authUC usecase.Authentication,
-	l logger.Logger,
+	contextmanager contextmanager.Gin,
+	errHandler customerrors.ErrorHandler,
+
 	authMW gin.HandlerFunc,
 ) {
 
 	g := router.Group("/v1")
-	NewUserRouter(g, userUC, l, authMW)
-	NewAuthRouter(g, authUC, l, cfg)
+	NewUserRouter(g, userUC, authMW)
+	NewAuthRouter(contextmanager, g, authUC, errHandler, cfg, authMW)
 }

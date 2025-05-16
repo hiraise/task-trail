@@ -3,14 +3,12 @@ package v1
 import (
 	"net/http"
 	"task-trail/internal/usecase"
-	"task-trail/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
 
 type usersRoutes struct {
 	u usecase.User
-	l logger.Logger
 }
 
 // @Summary 	return user by id
@@ -26,8 +24,8 @@ func (r *usersRoutes) getUser(c *gin.Context) {
 	c.JSON(http.StatusOK, c.Keys["userId"])
 }
 
-func NewUserRouter(router *gin.RouterGroup, u usecase.User, l logger.Logger, authMW gin.HandlerFunc) {
-	r := &usersRoutes{u: u, l: l}
+func NewUserRouter(router *gin.RouterGroup, u usecase.User, authMW gin.HandlerFunc) {
+	r := &usersRoutes{u: u}
 	g := router.Group("/users")
 	g.GET(":id", authMW, r.getUser)
 }

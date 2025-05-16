@@ -3,8 +3,11 @@ package app
 import (
 	"os"
 	"task-trail/config"
+	"task-trail/customerrors"
 	"task-trail/internal/controller/http"
 	"task-trail/internal/controller/http/middleware"
+
+	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/pkg/password"
 	"task-trail/internal/pkg/token"
 	"task-trail/internal/pkg/uuid"
@@ -52,21 +55,25 @@ func Run(cfg *config.Config) {
 		cfg.AUTH.RTLifeMin,
 		cfg.AUTH.TokenIssuer,
 		uuidGenerator)
-
+	errHandler := customerrors.NewErrHander()
+	contextm := contextmanager.NewGin(uuidGenerator)
 	// init uc
 	userUC := usecase.NewUserUC(txManager, userRepo, pwdService)
-	authUC := usecase.NewAuthUC(logger, txManager, userRepo, tokenRepo, pwdService, tokenService)
+	authUC := usecase.NewAuthUC(errHandler, txManager, userRepo, tokenRepo, pwdService, tokenService)
 
 	// init middlewares
 
-	recoveryMW := middleware.RecoveryWithLogger(logger1)
-	logMW := middleware.CustomLogger(logger1)
-	authMW := middleware.AuthHandler(tokenService, logger, cfg.AUTH.ATName)
+	recoveryMW := middleware.NewRecovery(logger1, contextm)
+	requestMW := middleware.NewRequest(contextm)
+	logMW := middleware.NewLog(logger1, contextm)
+	authMW := middleware.NewAuth(tokenService, errHandler, contextm, cfg.AUTH.ATName)
+	errorMW := middleware.NewError(logger1, contextm)
 	// init http server
 	httpServer := gin.New()
+	httpServer.Use(requestMW)
 	httpServer.Use(logMW)
 	httpServer.Use(recoveryMW)
-	httpServer.Use(middleware.ErrorHandler(logger1))
-	http.NewRouter(httpServer, logger, userUC, authUC, authMW, cfg)
+	httpServer.Use(errorMW)
+	http.NewRouter(httpServer, errHandler, contextm, userUC, authUC, authMW, cfg)
 	httpServer.Run()
 }

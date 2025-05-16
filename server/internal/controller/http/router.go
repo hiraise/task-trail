@@ -3,9 +3,11 @@ package http
 import (
 	"net/http"
 	"task-trail/config"
+	"task-trail/customerrors"
+
 	v1 "task-trail/internal/controller/http/v1"
+	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/usecase"
-	"task-trail/pkg/logger"
 
 	docs "task-trail/docs"
 
@@ -24,8 +26,17 @@ import (
 // @license.name  MIT License
 // @license.url   https://mit-license.org/
 
-func NewRouter(app *gin.Engine, l logger.Logger, userUC usecase.User, authUC usecase.Authentication, authMW gin.HandlerFunc, cfg *config.Config) {
-	v1.NewRouter(app, cfg, userUC, authUC, l, authMW)
+func NewRouter(
+
+	app *gin.Engine,
+	errHandler customerrors.ErrorHandler,
+	contextmanager contextmanager.Gin,
+	userUC usecase.User,
+	authUC usecase.Authentication,
+	authMW gin.HandlerFunc,
+	cfg *config.Config,
+) {
+	v1.NewRouter(app, cfg, userUC, authUC, contextmanager, errHandler, authMW)
 
 	app.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "kek", "status": http.StatusOK})
