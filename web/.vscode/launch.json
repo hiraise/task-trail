@@ -11,7 +11,8 @@
       "name": "Next.js: debug client-side",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3000"
+      "url": "http://localhost:3000",
+      "runtimeArgs": ["--disable-web-security"]
     },
     {
       "name": "Next.js: debug full stack",
@@ -21,11 +22,10 @@
       "runtimeArgs": ["--inspect"],
       "skipFiles": ["<node_internals>/**"],
       "serverReadyAction": {
-        "action": "debugWithEdge",
+        "action": "startDebugging",
         "killOnServerStop": true,
         "pattern": "- Local:.+(https?://.+)",
-        "uriFormat": "%s",
-        "webRoot": "${workspaceFolder}"
+        "name": "Next.js: debug client-side"
       }
     }
   ]
