@@ -1,20 +1,21 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-import { LoginPayload, LoginResponse } from "../types/types";
+import { AuthPayload } from "../types/types";
 import { authService } from "@/infrastructure/api/auth";
 import { AUTH_SIGNUP } from "@/application/constants/actionTypes";
+import { AppError, AppErrorProps } from "@/shared/errors/types";
 
-export const signUpThunk = createAsyncThunk<LoginResponse, LoginPayload>(
-  AUTH_SIGNUP,
-  async (payload, { rejectWithValue }) => {
-    try {
-      const response = await authService.signUp(payload);
-      localStorage.setItem("token", response.token);
-      return response;
-    } catch (error: unknown) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Ошибка регистрации"
-      );
+export const signUpThunk = createAsyncThunk<
+  void,
+  AuthPayload,
+  { rejectValue: AppErrorProps }
+>(AUTH_SIGNUP, async (payload, { rejectWithValue }) => {
+  try {
+    await authService.signUp(payload);
+  } catch (error: unknown) {
+    if (error instanceof AppError) {
+      return rejectWithValue(error.toPlain());
     }
+    throw error;
   }
-);
+});
