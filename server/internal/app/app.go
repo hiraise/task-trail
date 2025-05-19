@@ -51,11 +51,11 @@ func Run(cfg *config.Config) {
 	pwdService := bcrypt.New()
 	uuidGenerator := guuid.New()
 	tokenService := jwt.New(
-		cfg.AUTH.ATSecret,
-		cfg.AUTH.ATLifeMin,
-		cfg.AUTH.RTSecret,
-		cfg.AUTH.RTLifeMin,
-		cfg.AUTH.TokenIssuer,
+		cfg.Auth.ATSecret,
+		cfg.Auth.ATLifeMin,
+		cfg.Auth.RTSecret,
+		cfg.Auth.RTLifeMin,
+		cfg.Auth.TokenIssuer,
 		uuidGenerator)
 	errHandler := customerrors.NewErrHander()
 	contextm := contextmanager.NewGin(uuidGenerator)
@@ -68,7 +68,7 @@ func Run(cfg *config.Config) {
 	recoveryMW := middleware.NewRecovery(logger1, contextm)
 	requestMW := middleware.NewRequest(contextm)
 	logMW := middleware.NewLog(logger1, contextm)
-	authMW := middleware.NewAuth(tokenService, errHandler, contextm, cfg.AUTH.ATName)
+	authMW := middleware.NewAuth(tokenService, errHandler, contextm, cfg.Auth.ATName)
 	errorMW := middleware.NewError(logger1, contextm)
 	// init http server
 	httpServer := gin.New()

@@ -13,6 +13,7 @@ type usersRoutes struct {
 
 // @Summary 	return user by id
 // @Description ...
+// @Security BearerAuth
 // @Tags 		/v1/users
 // @Accept 		json
 // @Produce 	json

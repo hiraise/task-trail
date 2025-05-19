@@ -178,6 +178,11 @@ const docTemplate = `{
         },
         "/v1/users/{id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "...",
                 "consumes": [
                     "application/json"
@@ -248,6 +253,13 @@ const docTemplate = `{
                     "minLength": 8
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "at",
+            "in": "cookie"
         }
     }
 }`

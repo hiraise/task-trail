@@ -154,7 +154,14 @@ paths:
       responses:
         "200":
           description: OK
+      security:
+      - BearerAuth: []
       summary: return user by id
       tags:
       - /v1/users
+securityDefinitions:
+  BearerAuth:
+    in: cookie
+    name: at
+    type: apiKey
 swagger: "2.0"

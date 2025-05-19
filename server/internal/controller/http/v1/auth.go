@@ -37,8 +37,8 @@ func new(
 		contextmanager: contextmanager,
 		errHandler:     errHandler,
 		u:              u,
-		atName:         cfg.AUTH.ATName,
-		rtName:         cfg.AUTH.RTName,
+		atName:         cfg.Auth.ATName,
+		rtName:         cfg.Auth.RTName,
 		rtPath:         cfg.App.RootPath + refreshPath,
 	}
 }
@@ -121,6 +121,7 @@ func (r *authRoutes) refresh(c *gin.Context) {
 }
 
 // @Summary 	logout user
+// @Security BearerAuth
 // @Tags 		/v1/auth
 // @Accept 		json
 // @Produce 	json

@@ -25,6 +25,9 @@ import (
 
 // @license.name  MIT License
 // @license.url   https://mit-license.org/
+// @securityDefinitions.apikey BearerAuth
+// @in cookie
+// @name at
 
 func NewRouter(
 
@@ -41,6 +44,11 @@ func NewRouter(
 	app.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "kek", "status": http.StatusOK})
 	})
-	docs.SwaggerInfo.BasePath = cfg.App.RootPath
-	app.GET("/docs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	if cfg.Docs.Enabled {
+		authMiddleware := gin.BasicAuth(gin.Accounts{
+			cfg.Docs.Login: cfg.Docs.Password, // логин и пароль
+		})
+		docs.SwaggerInfo.BasePath = cfg.App.RootPath
+		app.GET("/docs/*any", authMiddleware, ginSwagger.WrapHandler(swaggerfiles.Handler))
+	}
 }

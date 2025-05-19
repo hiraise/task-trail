@@ -17,6 +17,12 @@ type PGConfig struct {
 	MigrationPath    string `env:"PG_MIGRATION_PATH" envDefault:"file://../../migrations"`
 }
 
+type Docs struct {
+	Enabled  bool   `env:"SWAGGER_ENABLED" envDefault:"true"`
+	Login    string `env:"SWAGGER_LOGIN" envDefault:"root"`
+	Password string `env:"SWAGGER_PASSWORD" envDefault:"root"`
+}
+
 type AuthConfig struct {
 	ATSecret    string `env:"AUTH_ACCESS_TOKEN_SECRET,required"`
 	ATLifeMin   int    `env:"AUTH_ACCESS_TOKEN_LIFETIME_MIN,required"`
@@ -29,7 +35,8 @@ type AuthConfig struct {
 type Config struct {
 	App  AppConfig
 	PG   PGConfig
-	AUTH AuthConfig
+	Auth AuthConfig
+	Docs Docs
 }
 
 func New() (*Config, error) {
