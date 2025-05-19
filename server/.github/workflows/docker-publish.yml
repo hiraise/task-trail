@@ -45,21 +45,23 @@ jobs:
           push: "${{ github.event_name != 'pull_request' }}"
           tags: "${{ steps.meta.outputs.tags }}"
           labels: "${{ steps.meta.outputs.labels }}"
-          build-args: |
-            TOKEN=${{ secrets.TOKEN }}
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Invoke deployment DEV stack hook
-        if: ${{ inputs.envType == 'dev' }} 
+      - name: Fail if required webhook URL is missing
+        run: |
+          if [[ "${{ inputs.envType }}" == "dev" && -z "${{ secrets.DEV_WEBHOOK_URL }}" ]]; then
+            echo "DEV_WEBHOOK_URL secret is required for dev environment"
+            exit 1
+          fi
+          if [[ "${{ inputs.envType }}" == "prod" && -z "${{ secrets.PROD_WEBHOOK_URL }}" ]]; then
+            echo "PROD_WEBHOOK_URL secret is required for prod environment"
+            exit 1
+          fi
+      - name: Invoke deployment stack hook
         uses: distributhor/workflow-webhook@v3
         with:
-          webhook_url: ${{ secrets.DEV_WEBHOOK_URL }}
-      - name: Invoke deployment PROD stack hook
-        if: ${{ inputs.envType == 'prod' }} 
-        uses: distributhor/workflow-webhook@v3
-        with:
-          webhook_url: ${{ secrets.PROD_WEBHOOK_URL }}
+          webhook_url: ${{ (inputs.envType == 'dev' && secrets.DEV_WEBHOOK_URL) || (inputs.envType == 'prod' && secrets.PROD_WEBHOOK_URL) }}
 
