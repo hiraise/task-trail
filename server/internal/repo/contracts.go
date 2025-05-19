@@ -26,7 +26,7 @@ type TxManager interface {
 type UserRepository interface {
 	Create(ctx context.Context, user *entity.User) error
 	EmailIsTaken(ctx context.Context, email string) (bool, error)
-	GetUserByEmail(ctx context.Context, email string) (entity.User, error)
+	GetUserByEmail(ctx context.Context, email string) (*entity.User, error)
 }
 type VerificationRepository interface {
 	Create(ctx context.Context, userId int, code int) error
@@ -34,8 +34,8 @@ type VerificationRepository interface {
 }
 
 type TokenRepository interface {
-	Create(ctx context.Context, token entity.Token) error
-	GetTokenById(ctx context.Context, tokenId string, userId int) (entity.Token, error)
+	Create(ctx context.Context, token *entity.Token) error
+	GetTokenById(ctx context.Context, tokenId string, userId int) (*entity.Token, error)
 	RevokeToken(ctx context.Context, tokenId string) error
 	RevokeAllUsersTokens(ctx context.Context, userId int) (int, error)
 }

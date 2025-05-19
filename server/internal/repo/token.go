@@ -25,7 +25,7 @@ func (r *PgTokenRepository) getDb(ctx context.Context) pgConn {
 	return r.pg
 }
 
-func (r *PgTokenRepository) Create(ctx context.Context, token entity.Token) error {
+func (r *PgTokenRepository) Create(ctx context.Context, token *entity.Token) error {
 	query := `INSERT INTO refresh_tokens (id, user_id, expired_at) VALUES ($1, $2, $3)`
 	_, err := r.getDb(ctx).Exec(ctx, query, token.ID, token.UserId, token.ExpiredAt)
 	return err
@@ -35,7 +35,7 @@ func (r *PgTokenRepository) GetTokenById(
 	ctx context.Context,
 	tokenId string,
 	userId int,
-) (entity.Token, error) {
+) (*entity.Token, error) {
 	query := `
 		SELECT id, user_id, expired_at, created_at, revoked_at
 		FROM refresh_tokens 
@@ -52,11 +52,11 @@ func (r *PgTokenRepository) GetTokenById(
 		)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return token, Wrap(ErrNotFound, err)
+			return nil, Wrap(ErrNotFound, err)
 		}
-		return token, Wrap(ErrDB, err)
+		return nil, Wrap(ErrDB, err)
 	}
-	return token, nil
+	return &token, nil
 }
 
 func (r *PgTokenRepository) RevokeToken(ctx context.Context, tokenId string) error {

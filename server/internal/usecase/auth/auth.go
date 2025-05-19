@@ -73,7 +73,7 @@ func (u *UseCase) Login(ctx context.Context, email string, password string) (int
 		return 0, nil, nil, u.errHandler.InvalidCredentials(nil, "user is unverified", "email", email)
 	}
 	if err := u.passwordSvc.ComparePassword(password, user.PasswordHash); err != nil {
-		return 0, nil, nil, u.errHandler.InvalidCredentials(err, "user enter wrong password", "email", email)
+		return 0, nil, nil, u.errHandler.InvalidCredentials(err, "user password is invalid", "email", email)
 	}
 
 	at, rt, err := u.generateTokens(user.ID)
@@ -81,7 +81,7 @@ func (u *UseCase) Login(ctx context.Context, email string, password string) (int
 		return 0, nil, nil, err
 	}
 
-	t := entity.Token{
+	t := &entity.Token{
 		ID:        rt.Jti,
 		ExpiredAt: rt.Exp,
 		UserId:    user.ID,
@@ -105,6 +105,12 @@ func (u *UseCase) Refresh(ctx context.Context, oldRT string) (*token.Token, *tok
 		at, rt, err = u.generateTokens(userId)
 		if err != nil {
 			return err
+		}
+		if err := u.tokenRepo.Create(ctx, &entity.Token{ID: rt.Jti, ExpiredAt: rt.Exp, UserId: userId}); err != nil {
+			if errors.Is(err, repo.ErrConflict) {
+				return u.errHandler.Conflict(err, "refresh token already exists")
+			}
+			return u.errHandler.InternalTrouble(err, "failed to create new refresh token")
 		}
 		return u.revokeToken(ctx, tokenId, userId)
 	}
@@ -136,8 +142,8 @@ func (u *UseCase) verifyRefreshToken(ctx context.Context, rt string) (int, strin
 		}
 		return 0, "", u.errHandler.InternalTrouble(err, "refresh token loading failed", "tokenId", tokenId, "userId", userId)
 	}
-	if dbToken.ExpiredAt.Unix() < time.Now().Unix() {
-		return 0, "", u.errHandler.Unauthorized(nil, "refresh token is to old", "tokenId", tokenId, "userId", userId)
+	if dbToken.ExpiredAt.Unix() <= time.Now().Unix() {
+		return 0, "", u.errHandler.Unauthorized(nil, "refresh token is expired", "tokenId", tokenId, "userId", userId)
 	}
 	if dbToken.RevokedAt != nil {
 		revoked_tokens, err := u.tokenRepo.RevokeAllUsersTokens(ctx, userId)
