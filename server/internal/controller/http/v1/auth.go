@@ -106,13 +106,14 @@ func (r *authRoutes) login(c *gin.Context) {
 func (r *authRoutes) refresh(c *gin.Context) {
 	oldRT, err := c.Cookie(r.rtName)
 	if err != nil {
-		c.Error(r.errHandler.Unauthorized(err, "refresh token not found"))
+		_ = c.Error(r.errHandler.Unauthorized(err, "refresh token not found"))
+
 		return
 	}
 	at, rt, err := r.u.Refresh(c, oldRT)
 	if err != nil {
 		r.contextmanager.DeleteTokens(c, r.atName, r.rtName, r.rtPath)
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	r.contextmanager.SetTokens(c, at, rt, r.atName, r.rtName, r.rtPath)

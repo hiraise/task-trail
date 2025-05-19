@@ -32,7 +32,15 @@ func Migrate(dbUrl string, migrationPath string, l logger.Logger) error {
 		return err
 	}
 
-	defer m.Close()
+	defer func() {
+		serr, derr := m.Close()
+		if serr != nil {
+			l.Error("failed to close migration", "error", serr)
+		}
+		if derr != nil {
+			l.Error("failed to close migration", "error", derr)
+		}
+	}()
 	err = m.Up()
 	if err != nil {
 		if errors.Is(err, migrate.ErrNoChange) {
