@@ -83,6 +83,8 @@ paths:
           description: authentication required
           schema:
             $ref: '#/definitions/customerrors.Err'
+      security:
+      - BearerAuth: []
       summary: logout user
       tags:
       - /v1/auth

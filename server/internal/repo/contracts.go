@@ -38,6 +38,7 @@ type TokenRepository interface {
 	GetTokenById(ctx context.Context, tokenId string, userId int) (*entity.Token, error)
 	RevokeToken(ctx context.Context, tokenId string) error
 	RevokeAllUsersTokens(ctx context.Context, userId int) (int, error)
+	DeleteRevokedAndOldTokens(ctx context.Context, olderThan int) (int, error)
 }
 
 type pgConn interface {

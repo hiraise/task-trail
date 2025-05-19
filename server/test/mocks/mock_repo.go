@@ -215,6 +215,21 @@ func (mr *MockTokenRepositoryMockRecorder) Create(ctx, token any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTokenRepository)(nil).Create), ctx, token)
 }
 
+// DeleteRevokedAndOldTokens mocks base method.
+func (m *MockTokenRepository) DeleteRevokedAndOldTokens(ctx context.Context, olderThan int) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRevokedAndOldTokens", ctx, olderThan)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteRevokedAndOldTokens indicates an expected call of DeleteRevokedAndOldTokens.
+func (mr *MockTokenRepositoryMockRecorder) DeleteRevokedAndOldTokens(ctx, olderThan any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRevokedAndOldTokens", reflect.TypeOf((*MockTokenRepository)(nil).DeleteRevokedAndOldTokens), ctx, olderThan)
+}
+
 // GetTokenById mocks base method.
 func (m *MockTokenRepository) GetTokenById(ctx context.Context, tokenId string, userId int) (*entity.Token, error) {
 	m.ctrl.T.Helper()

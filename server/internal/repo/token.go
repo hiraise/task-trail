@@ -86,3 +86,19 @@ func (r *PgTokenRepository) RevokeAllUsersTokens(ctx context.Context, userId int
 	}
 	return int(tag.RowsAffected()), nil
 }
+
+func (r *PgTokenRepository) DeleteRevokedAndOldTokens(ctx context.Context, olderThan int) (int, error) {
+	query := `
+		DELETE 
+		FROM refresh_tokens
+		WHERE
+			(revoked_at IS NOT NULL AND revoked_at < NOW() - make_interval(days => $1))
+			OR
+			(expired_at < NOW() - make_interval(days => $1));
+	`
+	tag, err := r.getDb(ctx).Exec(ctx, query, olderThan)
+	if err != nil {
+		return 0, Wrap(ErrDB, err)
+	}
+	return int(tag.RowsAffected()), nil
+}
