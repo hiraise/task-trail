@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"errors"
-	"task-trail/pkg/logger"
+	"task-trail/internal/pkg/logger"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"

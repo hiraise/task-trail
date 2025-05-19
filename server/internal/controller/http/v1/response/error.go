@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"task-trail/customerrors"
+	"task-trail/internal/customerrors"
 
 	"github.com/go-playground/validator/v10"
 )

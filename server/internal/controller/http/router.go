@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 	"task-trail/config"
-	"task-trail/customerrors"
+	"task-trail/internal/customerrors"
 
 	v1 "task-trail/internal/controller/http/v1"
 	"task-trail/internal/pkg/contextmanager"

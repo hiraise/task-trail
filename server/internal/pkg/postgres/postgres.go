@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"context"
-	"task-trail/pkg/logger"
+	"task-trail/internal/pkg/logger"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"

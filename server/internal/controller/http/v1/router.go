@@ -2,7 +2,7 @@ package v1
 
 import (
 	"task-trail/config"
-	"task-trail/customerrors"
+	"task-trail/internal/customerrors"
 
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/usecase"

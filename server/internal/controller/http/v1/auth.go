@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"task-trail/config"
-	"task-trail/customerrors"
+	"task-trail/internal/customerrors"
 
 	"task-trail/internal/controller/http/v1/request"
 	"task-trail/internal/pkg/contextmanager"

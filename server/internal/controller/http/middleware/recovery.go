@@ -3,7 +3,7 @@ package middleware
 import (
 	"runtime"
 	"task-trail/internal/pkg/contextmanager"
-	"task-trail/pkg/logger"
+	"task-trail/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )

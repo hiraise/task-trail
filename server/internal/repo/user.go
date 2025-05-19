@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -30,7 +31,12 @@ func (r *PgUserRepository) Create(ctx context.Context, user *entity.User) error 
 	query := `INSERT INTO users (email, password_hash, verified_at) VALUES ($1, $2, $3)`
 	_, err := r.getDb(ctx).Exec(ctx, query, user.Email, user.PasswordHash, time.Now())
 	if err != nil {
-		// TODO: log error
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" {
+				return Wrap(ErrConflict, err)
+			}
+		}
 		return Wrap(ErrDB, err)
 	}
 	return nil

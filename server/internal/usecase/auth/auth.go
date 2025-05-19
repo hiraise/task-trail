@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"task-trail/customerrors"
+	"task-trail/internal/customerrors"
 	"task-trail/internal/entity"
 	"task-trail/internal/pkg/password"
 	"task-trail/internal/pkg/token"
@@ -41,14 +41,6 @@ func New(
 
 func (u *UseCase) Register(ctx context.Context, email string, password string) error {
 
-	if isTaken, err := u.userRepo.EmailIsTaken(ctx, email); err != nil {
-		return u.errHandler.InternalTrouble(err, "unique email verification failed", "email", email)
-	} else {
-		if isTaken {
-			return u.errHandler.Conflict(err, "email already taken", "email", email)
-		}
-	}
-
 	f := func(ctx context.Context) error {
 		hash, err := u.passwordSvc.HashPassword(password)
 		if err != nil {
@@ -57,6 +49,9 @@ func (u *UseCase) Register(ctx context.Context, email string, password string) e
 
 		user := &entity.User{Email: email, PasswordHash: string(hash)}
 		if err := u.userRepo.Create(ctx, user); err != nil {
+			if errors.Is(err, repo.ErrConflict) {
+				return u.errHandler.Conflict(err, "email already taken", "email", email)
+			}
 			return u.errHandler.InternalTrouble(err, "failed to create new user", "email", email)
 		}
 		return nil

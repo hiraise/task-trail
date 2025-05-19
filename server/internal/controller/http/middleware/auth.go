@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"task-trail/customerrors"
+	"task-trail/internal/customerrors"
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/pkg/token"
 

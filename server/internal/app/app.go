@@ -3,20 +3,21 @@ package app
 import (
 	"os"
 	"task-trail/config"
-	"task-trail/customerrors"
 	"task-trail/internal/controller/http"
 	"task-trail/internal/controller/http/middleware"
+	"task-trail/internal/customerrors"
 	authuc "task-trail/internal/usecase/auth"
 	useruc "task-trail/internal/usecase/user"
 
 	"task-trail/internal/pkg/contextmanager"
-	"task-trail/internal/pkg/password"
-	"task-trail/internal/pkg/token"
-	"task-trail/internal/pkg/uuid"
+	"task-trail/internal/pkg/password/bcrypt"
+	"task-trail/internal/pkg/token/jwt"
+	"task-trail/internal/pkg/uuid/guuid"
+
 	"task-trail/internal/repo"
 
-	slogger "task-trail/pkg/logger/slog"
-	"task-trail/pkg/postgres"
+	slogger "task-trail/internal/pkg/logger/slog"
+	"task-trail/internal/pkg/postgres"
 
 	"github.com/gin-gonic/gin"
 )
@@ -47,9 +48,9 @@ func Run(cfg *config.Config) {
 	tokenRepo := repo.NewTokenRepo(pg.Pool)
 
 	// init services
-	pwdService := password.NewBcryptService()
-	uuidGenerator := &uuid.UUIDGenerator{}
-	tokenService := token.NewJwtService(
+	pwdService := bcrypt.New()
+	uuidGenerator := guuid.New()
+	tokenService := jwt.New(
 		cfg.AUTH.ATSecret,
 		cfg.AUTH.ATLifeMin,
 		cfg.AUTH.RTSecret,

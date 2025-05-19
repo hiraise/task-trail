@@ -1,30 +1,17 @@
-package token
+package jwt
 
 import (
 	"fmt"
+
 	"strconv"
+	"task-trail/internal/pkg/token"
 	"task-trail/internal/pkg/uuid"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-type Token struct {
-	Token string
-	Exp   time.Time
-	Jti   string
-}
-
-type Service interface {
-	// Generate access token by user id
-	GenAccessToken(userId int) (*Token, error)
-	// Generate refresh token and jti by user id
-	GenRefreshToken(userId int) (*Token, error)
-	VerifyAccessToken(token string) (userId int, err error)
-	VerifyRefreshToken(token string) (userId int, jti string, err error)
-}
-
-type JWTService struct {
+type jwtService struct {
 	acSecret   []byte
 	acLifetime time.Duration
 	rtSecret   []byte
@@ -33,15 +20,15 @@ type JWTService struct {
 	uuidGen    uuid.Generator
 }
 
-func NewJwtService(
+func New(
 	atSecret string,
 	atLifeMin int,
 	rtSecret string,
 	rtLifeMin int,
 	tokenIssuer string,
 	uuidGenerator uuid.Generator,
-) *JWTService {
-	return &JWTService{
+) token.Service {
+	return &jwtService{
 		acSecret:   []byte(atSecret),
 		acLifetime: time.Duration(atLifeMin),
 		rtSecret:   []byte(rtSecret),
@@ -51,21 +38,21 @@ func NewJwtService(
 	}
 }
 
-func (s *JWTService) GenAccessToken(userId int) (*Token, error) {
+func (s *jwtService) GenAccessToken(userId int) (*token.Token, error) {
 	exp := time.Now().Add(time.Minute * s.acLifetime)
 	claims := jwt.MapClaims{
 		"sub": strconv.Itoa(userId),
 		"exp": exp.Unix(),
 		"iss": s.iss,
 	}
-	token, err := s.genToken(claims)
+	t, err := s.genToken(claims)
 	if err != nil {
-		return &Token{}, err
+		return nil, err
 	}
-	return &Token{Token: token, Exp: exp}, nil
+	return &token.Token{Token: t, Exp: exp}, nil
 }
 
-func (s *JWTService) GenRefreshToken(userId int) (*Token, error) {
+func (s *jwtService) GenRefreshToken(userId int) (*token.Token, error) {
 	jti := s.uuidGen.Generate()
 	exp := time.Now().Add(time.Minute * s.rtLifetime)
 	claims := jwt.MapClaims{
@@ -74,20 +61,20 @@ func (s *JWTService) GenRefreshToken(userId int) (*Token, error) {
 		"jti": jti,
 		"iss": s.iss,
 	}
-	token, err := s.genToken(claims)
+	t, err := s.genToken(claims)
 	if err != nil {
-		return &Token{}, err
+		return nil, err
 	}
-	return &Token{Token: token, Exp: exp, Jti: jti}, nil
+	return &token.Token{Token: t, Exp: exp, Jti: jti}, nil
 
 }
 
-func (s *JWTService) genToken(claims jwt.Claims) (string, error) {
+func (s *jwtService) genToken(claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.acSecret)
 }
 
-func (s *JWTService) VerifyAccessToken(token string) (userId int, err error) {
+func (s *jwtService) VerifyAccessToken(token string) (userId int, err error) {
 	claims, err := s.verifyToken(token, s.acSecret)
 	if err != nil {
 		return
@@ -98,7 +85,7 @@ func (s *JWTService) VerifyAccessToken(token string) (userId int, err error) {
 	}
 	return
 }
-func (s *JWTService) VerifyRefreshToken(token string) (userId int, jti string, err error) {
+func (s *jwtService) VerifyRefreshToken(token string) (userId int, jti string, err error) {
 	claims, err := s.verifyToken(token, s.rtSecret)
 	if err != nil {
 		return
@@ -114,7 +101,7 @@ func (s *JWTService) VerifyRefreshToken(token string) (userId int, jti string, e
 	return
 }
 
-func (s *JWTService) verifyToken(token string, secret []byte) (jwt.MapClaims, error) {
+func (s *jwtService) verifyToken(token string, secret []byte) (jwt.MapClaims, error) {
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		return secret, nil
 	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
@@ -128,7 +115,7 @@ func (s *JWTService) verifyToken(token string, secret []byte) (jwt.MapClaims, er
 	return claims, nil
 }
 
-func (s *JWTService) extractSub(claims jwt.MapClaims) (int, error) {
+func (s *jwtService) extractSub(claims jwt.MapClaims) (int, error) {
 	sub, err := s.extractClaim(claims, "sub")
 	if err != nil {
 		return 0, err
@@ -140,7 +127,7 @@ func (s *JWTService) extractSub(claims jwt.MapClaims) (int, error) {
 	return v, nil
 }
 
-func (s *JWTService) extractClaim(claims jwt.MapClaims, name string) (string, error) {
+func (s *jwtService) extractClaim(claims jwt.MapClaims, name string) (string, error) {
 	claim, ok := claims[name].(string)
 	if !ok {
 		return claim, fmt.Errorf("%s is not a string, %s: %v", name, name, claim)
