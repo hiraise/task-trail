@@ -111,10 +111,10 @@ func (mr *MockUserRepositoryMockRecorder) EmailIsTaken(ctx, email any) *gomock.C
 }
 
 // GetUserByEmail mocks base method.
-func (m *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (entity.User, error) {
+func (m *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
-	ret0, _ := ret[0].(entity.User)
+	ret0, _ := ret[0].(*entity.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -202,7 +202,7 @@ func (m *MockTokenRepository) EXPECT() *MockTokenRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockTokenRepository) Create(ctx context.Context, token entity.Token) error {
+func (m *MockTokenRepository) Create(ctx context.Context, token *entity.Token) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, token)
 	ret0, _ := ret[0].(error)
@@ -216,10 +216,10 @@ func (mr *MockTokenRepositoryMockRecorder) Create(ctx, token any) *gomock.Call {
 }
 
 // GetTokenById mocks base method.
-func (m *MockTokenRepository) GetTokenById(ctx context.Context, tokenId string, userId int) (entity.Token, error) {
+func (m *MockTokenRepository) GetTokenById(ctx context.Context, tokenId string, userId int) (*entity.Token, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetTokenById", ctx, tokenId, userId)
-	ret0, _ := ret[0].(entity.Token)
+	ret0, _ := ret[0].(*entity.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
