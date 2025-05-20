@@ -1,17 +1,16 @@
 package app
 
 import (
-	"context"
 	"os"
 	"task-trail/config"
 	"task-trail/internal/controller/http"
 	"task-trail/internal/controller/http/middleware"
 	"task-trail/internal/customerrors"
+	"task-trail/internal/tasks"
 	authuc "task-trail/internal/usecase/auth"
 	useruc "task-trail/internal/usecase/user"
 
 	"task-trail/internal/pkg/contextmanager"
-	"task-trail/internal/pkg/logger"
 	"task-trail/internal/pkg/password/bcrypt"
 	"task-trail/internal/pkg/token/jwt"
 	"task-trail/internal/pkg/uuid/guuid"
@@ -21,7 +20,6 @@ import (
 	"task-trail/internal/repo"
 
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
 )
 
 func Run(cfg *config.Config) {
@@ -80,29 +78,10 @@ func Run(cfg *config.Config) {
 	httpServer.Use(recoveryMW)
 	httpServer.Use(errorMW)
 	http.NewRouter(httpServer, errHandler, contextm, userUC, authUC, authMW, cfg)
-
-	cleanupTokens(tokenRepo, logger)
+	tasks.CleanupTokens(tokenRepo, logger)
 	if err := httpServer.Run(); err != nil {
 		logger.Error("http server start failed", "error", err.Error())
 		os.Exit(1)
 	}
 
-}
-
-func cleanupTokens(r repo.TokenRepository, l logger.Logger) {
-	c := cron.New()
-	_, err := c.AddFunc("0 3 * * *", func() {
-		deleted, err := r.DeleteRevokedAndOldTokens(context.Background(), 7)
-		if err != nil {
-			l.Error("Failed to delete old and revoked tokens", "error", err)
-			return
-		}
-		l.Info("Complete delete old and revoked tokens", "deleted_tokens", deleted)
-
-	})
-	if err != nil {
-		l.Error("cron task start failed", "error", err.Error())
-		os.Exit(1)
-	}
-	c.Start()
 }
