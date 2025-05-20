@@ -2,6 +2,14 @@ import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { API_ROUTES } from "@/infrastructure/config/apiRoutes";
 
+// Extend Axios config for custom flags
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    _skipAuthRefresh?: boolean;
+    _retry?: boolean;
+  }
+}
+
 const axiosClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 5000,
@@ -11,61 +19,72 @@ const axiosClient = axios.create({
   withCredentials: true,
 });
 
-let isRefreshing = false;
-let failedQueue: {
+type RefreshQueueItem = {
   resolve: (value?: unknown) => void;
   reject: (reason?: unknown) => void;
-}[] = [];
+};
 
+let isRefreshing = false;
+let refreshQueue: RefreshQueueItem[] = [];
+
+// Resolve or reject all queued requests
 function resolveQueue(error: AxiosError | null) {
-  failedQueue.forEach((p) => (error ? p.reject(error) : p.resolve()));
-  failedQueue = [];
+  refreshQueue.forEach((p) => (error ? p.reject(error) : p.resolve()));
+  refreshQueue = [];
 }
 
+// Refresh token request
+async function refreshToken(): Promise<void> {
+  await axiosClient.post(API_ROUTES.REFRESH, undefined, { _skipAuthRefresh: true });
+}
+
+// Should refresh on 401
+function shouldRefresh(error: AxiosError, config?: AxiosRequestConfig): boolean {
+  if (config?._skipAuthRefresh || config?.url?.includes(API_ROUTES.LOGIN)) return false;
+  return error.response?.status === 401 && !config?._retry;
+}
+
+// Retry original request
+function retryRequest(request: AxiosRequestConfig) {
+  return axiosClient(request);
+}
+
+// Interceptor for handling 401 and refresh logic
 axiosClient.interceptors.response.use(
   (response: AxiosResponse) => response,
 
   async (error: AxiosError) => {
-    const { response, config } = error;
-    const originalRequest = config as AxiosRequestConfig & { _retry?: boolean };
+    const { config } = error;
+    const originalRequest = config as AxiosRequestConfig;
 
-    // Check if the error is due to a 401 Unauthorized response
-    // and if the request is not for the login endpoint
-    if (response?.config.url?.includes(API_ROUTES.LOGIN)) {
+    if (!shouldRefresh(error, config)) {
       return Promise.reject(error);
     }
 
-    // Handle 401 Unauthorized error
-    if (response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    originalRequest._retry = true;
 
-      // If the request is already in the queue, wait for it to finish
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then(() => axiosClient(originalRequest))
-          .catch((err) => Promise.reject(err));
-      }
-
-      isRefreshing = true;
-
-      try {
-        // Try to refresh the token
-        await axiosClient.post(API_ROUTES.REFRESH);
-        resolveQueue(null);
-        return axiosClient(originalRequest);
-      } catch (refreshErr) {
-        // Reject all queued requests and throw Error
-        resolveQueue(refreshErr as AxiosError);
-        throw new Error();
-      } finally {
-        isRefreshing = false;
-      }
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        refreshQueue.push({ resolve, reject });
+      })
+        .then(() => retryRequest(originalRequest))
+        .catch((err) => Promise.reject(err));
     }
 
-    return Promise.reject(error);
+    isRefreshing = true;
+
+    try {
+      await refreshToken();
+      resolveQueue(null);
+      return retryRequest(originalRequest);
+    } catch (refreshErr) {
+      resolveQueue(refreshErr as AxiosError);
+      throw refreshErr;
+    } finally {
+      isRefreshing = false;
+    }
   }
 );
 
 export default axiosClient;
+
