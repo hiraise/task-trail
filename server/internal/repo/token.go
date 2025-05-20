@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -28,10 +29,22 @@ func (r *PgTokenRepository) getDb(ctx context.Context) pgConn {
 func (r *PgTokenRepository) Create(ctx context.Context, token *entity.Token) error {
 	query := `INSERT INTO refresh_tokens (id, user_id, expired_at) VALUES ($1, $2, $3)`
 	_, err := r.getDb(ctx).Exec(ctx, query, token.ID, token.UserId, token.ExpiredAt)
-	return err
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23503" {
+				return Wrap(ErrNotFound, err)
+			}
+			if pgErr.Code == "23505" {
+				return Wrap(ErrConflict, err)
+			}
+		}
+		return Wrap(ErrDB, err)
+	}
+	return nil
 }
 
-func (r *PgTokenRepository) GetTokenById(
+func (r *PgTokenRepository) GetById(
 	ctx context.Context,
 	tokenId string,
 	userId int,
@@ -59,7 +72,7 @@ func (r *PgTokenRepository) GetTokenById(
 	return &token, nil
 }
 
-func (r *PgTokenRepository) RevokeToken(ctx context.Context, tokenId string) error {
+func (r *PgTokenRepository) Revoke(ctx context.Context, tokenId string) error {
 	query := `
 		UPDATE refresh_tokens
 		SET revoked_at = $1
@@ -67,10 +80,10 @@ func (r *PgTokenRepository) RevokeToken(ctx context.Context, tokenId string) err
 	tag, err := r.getDb(ctx).Exec(ctx, query, time.Now(), tokenId)
 
 	if err != nil {
-		if tag.RowsAffected() == 0 {
-			return Wrap(ErrNotFound, err)
-		}
 		return Wrap(ErrDB, err)
+	}
+	if tag.RowsAffected() == 0 {
+		return Wrap(ErrNotFound, err)
 	}
 	return nil
 }

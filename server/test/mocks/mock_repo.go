@@ -110,19 +110,19 @@ func (mr *MockUserRepositoryMockRecorder) EmailIsTaken(ctx, email any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EmailIsTaken", reflect.TypeOf((*MockUserRepository)(nil).EmailIsTaken), ctx, email)
 }
 
-// GetUserByEmail mocks base method.
-func (m *MockUserRepository) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+// GetByEmail mocks base method.
+func (m *MockUserRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByEmail", ctx, email)
+	ret := m.ctrl.Call(m, "GetByEmail", ctx, email)
 	ret0, _ := ret[0].(*entity.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserByEmail indicates an expected call of GetUserByEmail.
-func (mr *MockUserRepositoryMockRecorder) GetUserByEmail(ctx, email any) *gomock.Call {
+// GetByEmail indicates an expected call of GetByEmail.
+func (mr *MockUserRepositoryMockRecorder) GetByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetUserByEmail), ctx, email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockUserRepository)(nil).GetByEmail), ctx, email)
 }
 
 // MockVerificationRepository is a mock of VerificationRepository interface.
@@ -230,19 +230,33 @@ func (mr *MockTokenRepositoryMockRecorder) DeleteRevokedAndOldTokens(ctx, olderT
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRevokedAndOldTokens", reflect.TypeOf((*MockTokenRepository)(nil).DeleteRevokedAndOldTokens), ctx, olderThan)
 }
 
-// GetTokenById mocks base method.
-func (m *MockTokenRepository) GetTokenById(ctx context.Context, tokenId string, userId int) (*entity.Token, error) {
+// GetById mocks base method.
+func (m *MockTokenRepository) GetById(ctx context.Context, tokenId string, userId int) (*entity.Token, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTokenById", ctx, tokenId, userId)
+	ret := m.ctrl.Call(m, "GetById", ctx, tokenId, userId)
 	ret0, _ := ret[0].(*entity.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetTokenById indicates an expected call of GetTokenById.
-func (mr *MockTokenRepositoryMockRecorder) GetTokenById(ctx, tokenId, userId any) *gomock.Call {
+// GetById indicates an expected call of GetById.
+func (mr *MockTokenRepositoryMockRecorder) GetById(ctx, tokenId, userId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenById", reflect.TypeOf((*MockTokenRepository)(nil).GetTokenById), ctx, tokenId, userId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockTokenRepository)(nil).GetById), ctx, tokenId, userId)
+}
+
+// Revoke mocks base method.
+func (m *MockTokenRepository) Revoke(ctx context.Context, tokenId string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Revoke", ctx, tokenId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Revoke indicates an expected call of Revoke.
+func (mr *MockTokenRepositoryMockRecorder) Revoke(ctx, tokenId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Revoke", reflect.TypeOf((*MockTokenRepository)(nil).Revoke), ctx, tokenId)
 }
 
 // RevokeAllUsersTokens mocks base method.
@@ -258,20 +272,6 @@ func (m *MockTokenRepository) RevokeAllUsersTokens(ctx context.Context, userId i
 func (mr *MockTokenRepositoryMockRecorder) RevokeAllUsersTokens(ctx, userId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeAllUsersTokens", reflect.TypeOf((*MockTokenRepository)(nil).RevokeAllUsersTokens), ctx, userId)
-}
-
-// RevokeToken mocks base method.
-func (m *MockTokenRepository) RevokeToken(ctx context.Context, tokenId string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RevokeToken", ctx, tokenId)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RevokeToken indicates an expected call of RevokeToken.
-func (mr *MockTokenRepositoryMockRecorder) RevokeToken(ctx, tokenId any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeToken", reflect.TypeOf((*MockTokenRepository)(nil).RevokeToken), ctx, tokenId)
 }
 
 // MockpgConn is a mock of pgConn interface.

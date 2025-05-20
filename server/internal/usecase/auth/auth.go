@@ -61,7 +61,7 @@ func (u *UseCase) Register(ctx context.Context, email string, password string) e
 }
 
 func (u *UseCase) Login(ctx context.Context, email string, password string) (int, *token.Token, *token.Token, error) {
-	user, err := u.userRepo.GetUserByEmail(ctx, email)
+	user, err := u.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
 			return 0, nil, nil, u.errHandler.InvalidCredentials(err, "user not found", "email", email)
@@ -89,6 +89,9 @@ func (u *UseCase) Login(ctx context.Context, email string, password string) (int
 	if err := u.tokenRepo.Create(ctx, t); err != nil {
 		if errors.Is(err, repo.ErrConflict) {
 			return 0, nil, nil, u.errHandler.Conflict(err, "refresh token already exists", "tokenId", t.ID, "userId", user.ID)
+		}
+		if errors.Is(err, repo.ErrNotFound) {
+			return 0, nil, nil, u.errHandler.InternalTrouble(err, "user not found", "tokenId", t.ID, "userId", user.ID)
 		}
 		return 0, nil, nil, u.errHandler.InternalTrouble(err, "failed to create new refresh token", "tokenId", t.ID, "userId", user.ID)
 	}
@@ -135,7 +138,7 @@ func (u *UseCase) verifyRefreshToken(ctx context.Context, rt string) (int, strin
 	if err != nil {
 		return 0, "", u.errHandler.Unauthorized(err, "invalid refresh token")
 	}
-	dbToken, err := u.tokenRepo.GetTokenById(ctx, tokenId, userId)
+	dbToken, err := u.tokenRepo.GetById(ctx, tokenId, userId)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
 			return 0, "", u.errHandler.Unauthorized(err, "refresh token not found", "tokenId", tokenId, "userId", userId)
@@ -162,7 +165,7 @@ func (u *UseCase) verifyRefreshToken(ctx context.Context, rt string) (int, strin
 }
 
 func (u *UseCase) revokeToken(ctx context.Context, tokenId string, userId int) error {
-	if err := u.tokenRepo.RevokeToken(ctx, tokenId); err != nil {
+	if err := u.tokenRepo.Revoke(ctx, tokenId); err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
 			return u.errHandler.Unauthorized(err, "refresh token not found", "tokenId", tokenId, "userId", userId)
 		}

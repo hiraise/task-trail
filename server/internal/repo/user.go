@@ -54,7 +54,7 @@ func (r *PgUserRepository) EmailIsTaken(ctx context.Context, email string) (bool
 	return false, nil
 }
 
-func (r *PgUserRepository) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (r *PgUserRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
 	query := `SELECT id, email, password_hash, verified_at FROM users WHERE email = $1`
 	var user entity.User
 	if err := r.getDb(ctx).QueryRow(ctx, query, email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.VerifiedAt); err != nil {
