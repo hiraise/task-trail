@@ -22,10 +22,9 @@ func (u *PgTxManager) DoWithTx(ctx context.Context, fn func(ctx context.Context)
 	}
 
 	if err := fn(injectTx(ctx, &tx)); err != nil {
-		_ = tx.Rollback(ctx)
+		err = tx.Rollback(ctx)
 		return err
 	}
-
 	return tx.Commit(ctx)
 
 }

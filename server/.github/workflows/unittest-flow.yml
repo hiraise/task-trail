@@ -3,12 +3,14 @@ name: test
 on:     
   pull_request:
     branches:           
-      - '**'       
+      - '**' 
+  push:
+    branches:
+      - 'master'      
 
 jobs:
   lint:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -17,4 +19,51 @@ jobs:
       - uses: golangci/golangci-lint-action@v8
         with:
           args: --timeout 3m0s --verbose
-          
+  test:
+    env:
+      APP_DEBUG: True
+      APP_ROOT_PATH: 
+      PG_MIGRATION_ENABLED: True
+      PG_MIGRATION_PATH: 
+      PG_CONNECTION_STRING: postgresql://root:root@postgres:5432/test_db
+      PG_MAX_POOL_SIZE: 10
+      AUTH_ACCESS_TOKEN_SECRET: kek
+      AUTH_ACCESS_TOKEN_LIFETIME_MIN: 5
+      AUTH_REFRESH_TOKEN_SECRET: kek
+      AUTH_REFRESH_TOKEN_LIFETIME_MIN: 1440
+      AUTH_TOKEN_ISSUER: dev.tasktrail.net
+    runs-on: ubuntu-latest
+    container: golang:1.24
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:17
+        # Provide the password for postgres
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: root
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+      - name: Run tests and generate coverage report
+        run: make test-integration
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          slug: hiraise/tt-backend
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.out
+          flags: unittests
+          name: codecov-coverage
+          fail_ci_if_error: true

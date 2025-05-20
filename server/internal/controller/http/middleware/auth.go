@@ -19,13 +19,13 @@ func NewAuth(
 
 		at, err := c.Cookie("at")
 		if err != nil {
-			c.Error(errHandler.Unauthorized(err, "access token not found"))
+			_ = c.Error(errHandler.Unauthorized(err, "access token not found"))
 			c.Abort()
 			return
 		}
 		userId, err := t.VerifyAccessToken(at)
 		if err != nil {
-			c.Error(errHandler.Unauthorized(err, "invalid access token"))
+			_ = c.Error(errHandler.Unauthorized(err, "invalid access token"))
 			m.DeleteAccessToken(c, atName)
 			c.Abort()
 			return

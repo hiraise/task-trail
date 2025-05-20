@@ -57,12 +57,12 @@ func new(
 func (r *authRoutes) register(c *gin.Context) {
 	var body request.User
 	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
-		c.Error(r.errHandler.Validation(err))
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	err := r.u.Register(c, body.Email, body.Password)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusOK, nil)
@@ -81,12 +81,12 @@ func (r *authRoutes) register(c *gin.Context) {
 func (r *authRoutes) login(c *gin.Context) {
 	var body request.User
 	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
-		c.Error(r.errHandler.Validation(err))
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	userId, at, rt, err := r.u.Login(c, body.Email, body.Password)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	c.Set("userId", userId)
@@ -106,13 +106,14 @@ func (r *authRoutes) login(c *gin.Context) {
 func (r *authRoutes) refresh(c *gin.Context) {
 	oldRT, err := c.Cookie(r.rtName)
 	if err != nil {
-		c.Error(r.errHandler.Unauthorized(err, "refresh token not found"))
+		_ = c.Error(r.errHandler.Unauthorized(err, "refresh token not found"))
+
 		return
 	}
 	at, rt, err := r.u.Refresh(c, oldRT)
 	if err != nil {
 		r.contextmanager.DeleteTokens(c, r.atName, r.rtName, r.rtPath)
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 	r.contextmanager.SetTokens(c, at, rt, r.atName, r.rtName, r.rtPath)

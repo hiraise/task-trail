@@ -11,6 +11,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.4
 	github.com/joho/godotenv v1.5.1
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.4
@@ -19,9 +20,11 @@ require (
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 )
 

@@ -13,6 +13,10 @@ mock:
 test:
 	go test -v -race -covermode atomic -coverprofile=coverage.out ./internal/...
 
+test-integration:
+	go test -v -race -covermode atomic -coverprofile=coverage.out ./internal/... --tags=integration
+
 testcov: 
-	go test -v -race -covermode atomic -coverprofile=coverage.out ./internal/...
+	go test -v -race -covermode atomic -coverprofile=coverage.out ./internal/... --tags=integration
 	go tool cover -html=coverage.out 
+
