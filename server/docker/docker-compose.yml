@@ -1,0 +1,14 @@
+services:
+  backend:
+    image: ghcr.io/hiraise/tt-backend-img:dev
+    restart: unless-stopped
+    networks:
+      - postgres
+    env_file:
+      - ../.env
+     
+
+
+networks:
+  postgres:
+    external: true

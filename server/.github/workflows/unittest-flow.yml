@@ -3,7 +3,10 @@ name: test
 on:     
   pull_request:
     branches:           
-      - '**'       
+      - '**' 
+  push:
+    branches:
+      - 'main'      
 
 jobs:
   lint:
@@ -62,3 +65,5 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.out
           flags: unittests
+          name: codecov-coverage
+          fail_ci_if_error: true
