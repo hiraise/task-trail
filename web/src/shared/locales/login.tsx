@@ -1,12 +1,6 @@
 export const loginTexts = {
   title: "Вход",
-  subtitle: (
-    <>
-      Введите почту и пароль <br />
-      для входа в свою учетную запись
-    </>
-  ),
-  emailLabel: "Введите email",
+  subtitle: "Введите почту и пароль\r\n для входа в свою учетную запись",
   emailPlaceholder: "example@gmail.com",
   passwordLabel: "Введите пароль",
   passwordPlaceholder: "*********",
