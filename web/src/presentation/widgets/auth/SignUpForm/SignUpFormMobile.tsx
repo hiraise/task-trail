@@ -3,7 +3,6 @@
 import { FormEvent, useState } from "react";
 
 import { LoginFields } from "../../common/LoginFields";
-import { PrivacyText } from "../../common/PrivacyText";
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
 import { Form } from "../LoginForm/LoginForm.styled";
@@ -11,6 +10,7 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { signupTexts } from "@/shared/locales/signup";
 import { useSignUp } from "@/application/auth/hooks/useSignUp";
+import PrivacyText from "../../common/PrivacyText";
 
 export const SignUpFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -38,7 +38,7 @@ export const SignUpFormMobile = () => {
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
-      <PrivacyText />
+      <PrivacyText btnName={sharedTexts.login}/>
     </MobileContainer>
   );
 };

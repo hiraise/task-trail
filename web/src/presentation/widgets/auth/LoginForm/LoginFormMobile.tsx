@@ -1,5 +1,4 @@
 import { FormEvent, useState } from "react";
-import styled from "styled-components";
 
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
@@ -7,18 +6,10 @@ import { Form } from "./LoginForm.styled";
 import { loginTexts } from "@/shared/locales/login";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { LoginFields } from "../../common/LoginFields";
-import { PrivacyText } from "../../common/PrivacyText";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { TextButton } from "@/presentation/ui/TextButton";
 import { useLogin } from "@/application/auth/hooks/useLogin";
-
-export const ErrorText = styled.p`
-  color: red;
-  font-size: 14px;
-  margin-top: -8px;
-  margin-bottom: 8px;
-  text-align: center;
-`;
+import PrivacyText from "../../common/PrivacyText";
 
 export const LoginFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -48,7 +39,7 @@ export const LoginFormMobile = () => {
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
-      <PrivacyText />
+      <PrivacyText btnName={sharedTexts.login} />
     </MobileContainer>
   );
 };

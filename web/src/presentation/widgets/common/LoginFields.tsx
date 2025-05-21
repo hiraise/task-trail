@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { Stack } from "../primitives/Stack";
 import { loginTexts } from "@/shared/locales/login";
 import { Input, InputLabel } from "../auth/LoginForm/LoginForm.styled";
+import { sharedTexts } from "@/shared/locales/sharedTexts";
 
 const InputContainer = styled.div`
   display: flex;
@@ -26,7 +27,7 @@ export const LoginFields = ({
   return (
     <InputContainer>
       <Stack gap="4px">
-        <InputLabel htmlFor="email">{loginTexts.emailLabel}</InputLabel>
+        <InputLabel htmlFor="email">{sharedTexts.emailLabel}</InputLabel>
         <Input
           id="email"
           type="email"
