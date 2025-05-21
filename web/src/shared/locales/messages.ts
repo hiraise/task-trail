@@ -1,6 +1,7 @@
 export const errorTexts = {
   networkProblem: "Нет подключения к интернету",
   invalidCredentials: "Неверный логин или пароль",
+  invalidRequestBody: "Произошла непредвиденная ошибка. Обратитесь в службу поддержки",
   userAlreadyExists: "Пользователь уже существует",
   sessionExpired: "Сессия истекла. Пожалуйста, войдите снова",
   serverError: "Ошибка сервера. Попробуйте позже",

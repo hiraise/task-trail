@@ -7,6 +7,19 @@ export const localErrorHandlers: Record<
   string,
   (error: unknown) => AppError | null
 > = {
+  login: (error) => {
+    const isAxiosError = error instanceof AxiosError;
+    switch (isAxiosError && error?.response?.status) {
+      case 400:
+        return new AppError(AppErrorType.AUTH, errorTexts.invalidRequestBody);
+      case 401:
+        return new AppError(AppErrorType.AUTH, errorTexts.invalidCredentials);
+      case 500:
+        return new AppError(AppErrorType.AUTH, errorTexts.somethingWentWrong);
+      default:
+        return null;
+    }
+  },
   signUp: (error) => {
     const isAxiosError = error instanceof AxiosError;
     switch (isAxiosError && error?.response?.status) {
@@ -14,6 +27,8 @@ export const localErrorHandlers: Record<
         return new AppError(AppErrorType.AUTH, errorTexts.invalidCredentials);
       case 409:
         return new AppError(AppErrorType.AUTH, errorTexts.userAlreadyExists);
+      case 500:
+        return new AppError(AppErrorType.AUTH, errorTexts.somethingWentWrong);
       default:
         return null;
     }
