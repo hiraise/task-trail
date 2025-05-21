@@ -10,7 +10,7 @@ export const authService = {
       await axiosClient.post(API_ROUTES.LOGIN, payload);
     } catch (error) {
       // Rethrow the error to maintain the return type contract
-      throw mapHttpError(error, Domain.AUTH);
+      throw mapHttpError(error, Domain.LOGIN);
     }
   },
   signUp: async (payload: AuthPayload): Promise<void> => {
@@ -18,7 +18,7 @@ export const authService = {
       await axiosClient.post(API_ROUTES.SIGNUP, payload);
     } catch (error) {
       // Rethrow the error to maintain the return type contract
-      throw mapHttpError(error, Domain.AUTH);
+      throw mapHttpError(error, Domain.SIGNUP);
     }
   },
 };
