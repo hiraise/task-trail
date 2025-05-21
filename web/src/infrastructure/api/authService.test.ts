@@ -5,17 +5,10 @@ import { authService } from "./authService";
 import { API_ROUTES } from "../config/apiRoutes";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 import { errorTexts } from "@/shared/locales/messages";
-
-type AuthPayload = {
-  email: string;
-  password: string;
-};
-
-let authPayload: AuthPayload;
+import { authPayload } from "@/shared/constants/testConstants";
 
 describe("AuthService login", () => {
   let mockAxiosClient: MockAdapter;
-  authPayload = { email: "example@rambler.ru", password: "password" };
 
   beforeEach(() => {
     mockAxiosClient = new MockAdapter(axiosClient);
