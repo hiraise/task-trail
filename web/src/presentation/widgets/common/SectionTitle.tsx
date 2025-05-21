@@ -17,6 +17,7 @@ const Subtitle = styled.h2`
   font-weight: 400;
   color: var(--foreground);
   opacity: 0.5;
+  white-space: pre-line;
 `;
 
 interface SectionTitleProps {
