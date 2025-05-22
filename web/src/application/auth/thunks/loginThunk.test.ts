@@ -8,19 +8,32 @@ import { AUTH_LOGIN } from "@/application/constants/actionTypes";
 jest.mock("@/infrastructure/api/authService");
 
 const mockedAuthService = authService as jest.Mocked<typeof authService>;
+const mockedLogin = mockedAuthService.login;
 
-describe("loginThunk", () => {
+let thunk: ReturnType<typeof loginThunk>;
+let dispatch: jest.Mock;
+let getState: jest.Mock;
+let extra: unknown = {};
+
+describe("login thunk", () => {
+  beforeEach(() => {
+    dispatch = jest.fn();
+    getState = jest.fn();
+    extra = {};
+    thunk = loginThunk(authPayload);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("dispatches fulfilled when login succeeds", async () => {
     // Arrange
-    mockedAuthService.login.mockResolvedValueOnce(undefined);
-    const dispatch = jest.fn();
-    const getState = jest.fn();
-    const extra = {};
-    const thunk = loginThunk(authPayload);
+    mockedLogin.mockResolvedValueOnce(undefined);
     // Act
     const result = await thunk(dispatch, getState, extra);
     // Assert
-    expect(mockedAuthService.login).toHaveBeenCalledWith(authPayload);
+    expect(mockedLogin).toHaveBeenCalledWith(authPayload);
     expect(result.payload).toBeUndefined();
     expect(result.type).toBe(`${AUTH_LOGIN}/fulfilled`);
   });
@@ -31,32 +44,24 @@ describe("loginThunk", () => {
       AppErrorType.AUTH,
       errorTexts.invalidCredentials
     );
-    mockedAuthService.login.mockRejectedValueOnce(error);
-    const dispatch = jest.fn();
-    const getState = jest.fn();
-    const extra = {};
-    const thunk = loginThunk(authPayload);
+    mockedLogin.mockRejectedValueOnce(error);
     // Act
     const result = await thunk(dispatch, getState, extra);
     // Assert
     expect(result.payload).toEqual(error.toPlain());
-    expect(mockedAuthService.login).toHaveBeenCalledWith(authPayload);
+    expect(mockedLogin).toHaveBeenCalledWith(authPayload);
     expect(result.type).toBe(`${AUTH_LOGIN}/rejected`);
   });
 
   it("returns rejected action with error payload when login fails with non-AppError", async () => {
     // Arrange
     const error = new Error("Network error");
-    mockedAuthService.login.mockRejectedValueOnce(error);
-    const dispatch = jest.fn();
-    const getState = jest.fn();
-    const extra = {};
-    const thunk = loginThunk(authPayload);
+    mockedLogin.mockRejectedValueOnce(error);
     // Act
     const result = await thunk(dispatch, getState, extra);
     // Assert
     expect(result.type).toBe(`${AUTH_LOGIN}/rejected`);
-    expect(mockedAuthService.login).toHaveBeenCalledWith(authPayload);
+    expect(mockedLogin).toHaveBeenCalledWith(authPayload);
     expect((result as { error: unknown }).error).toEqual({
       message: "Rejected",
     });
