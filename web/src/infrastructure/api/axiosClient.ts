@@ -34,18 +34,24 @@ function resolveQueue(error: AxiosError | null) {
 }
 
 // Refresh token request
-async function refreshToken(): Promise<void> {
-  await axiosClient.post(API_ROUTES.REFRESH, undefined, { _skipAuthRefresh: true });
+async function refreshTokenRequest(): Promise<void> {
+  await axiosClient.post(API_ROUTES.REFRESH, undefined, {
+    _skipAuthRefresh: true,
+  });
 }
 
 // Should refresh on 401
-function shouldRefresh(error: AxiosError, config?: AxiosRequestConfig): boolean {
-  if (config?._skipAuthRefresh || config?.url?.includes(API_ROUTES.LOGIN)) return false;
+function shouldRefresh(
+  error: AxiosError,
+  config?: AxiosRequestConfig
+): boolean {
+  if (config?._skipAuthRefresh || config?.url?.includes(API_ROUTES.LOGIN))
+    return false;
   return error.response?.status === 401 && !config?._retry;
 }
 
 // Retry original request
-function retryRequest(request: AxiosRequestConfig) {
+function retryOriginalRequest(request: AxiosRequestConfig) {
   return axiosClient(request);
 }
 
@@ -67,16 +73,16 @@ axiosClient.interceptors.response.use(
       return new Promise((resolve, reject) => {
         refreshQueue.push({ resolve, reject });
       })
-        .then(() => retryRequest(originalRequest))
+        .then(() => retryOriginalRequest(originalRequest))
         .catch((err) => Promise.reject(err));
     }
 
     isRefreshing = true;
 
     try {
-      await refreshToken();
+      await refreshTokenRequest();
       resolveQueue(null);
-      return retryRequest(originalRequest);
+      return retryOriginalRequest(originalRequest);
     } catch (refreshErr) {
       resolveQueue(refreshErr as AxiosError);
       throw refreshErr;
@@ -87,4 +93,3 @@ axiosClient.interceptors.response.use(
 );
 
 export default axiosClient;
-
