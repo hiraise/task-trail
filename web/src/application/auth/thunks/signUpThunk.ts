@@ -3,7 +3,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AuthPayload } from "../types/types";
 import { authService } from "@/infrastructure/api/authService";
 import { AUTH_SIGNUP } from "@/application/constants/actionTypes";
-import { AppError, AppErrorProps } from "@/shared/errors/types";
+import { AppError, AppErrorProps, AppErrorType } from "@/shared/errors/types";
 
 export const signUpThunk = createAsyncThunk<
   void,
@@ -16,6 +16,9 @@ export const signUpThunk = createAsyncThunk<
     if (error instanceof AppError) {
       return rejectWithValue(error.toPlain());
     }
-    throw error;
+    return rejectWithValue({
+          type: AppErrorType.UNKNOWN,
+          message: (error as Error).message,
+        });
   }
 });
