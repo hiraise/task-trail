@@ -18,15 +18,14 @@ export async function middleware(req: NextRequest) {
   const cookie = req.headers.get("cookie") || "";
   const loginUrl = new URL(ROUTES.login, req.url);
 
-  if(cookie === "") {
+  if (cookie === "") {
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   try {
-    //TODO: replace with current user request
     const response = await fetch(
-      process.env.NEXT_PUBLIC_API_URL + API_ROUTES.USER(1),
+      process.env.NEXT_PUBLIC_API_URL + API_ROUTES.AUTH_CHECK,
       { headers: { cookie } }
     );
 
