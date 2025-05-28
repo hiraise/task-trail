@@ -15,7 +15,7 @@ jest.mock("next/server", () => {
 });
 
 function getMockRequest(pathname: string, cookie: string = ""): NextRequest {
-  const url = new URL(process.env.NEXT_PUBLIC_API_URL + pathname);
+  const url = new URL(process.env.API_URL + pathname);
   const headers = new Headers();
   if (cookie) headers.set("cookie", cookie);
   return new NextRequest(url, { headers });
@@ -33,7 +33,7 @@ describe("middleware", () => {
     jest.resetModules();
     cookie = "access_token=valid";
     apiUrl = "http://test-backend";
-    process.env.NEXT_PUBLIC_API_URL = apiUrl;
+    process.env.API_URL = apiUrl;
     (global.fetch as unknown) = undefined; // reset fetch
   });
 

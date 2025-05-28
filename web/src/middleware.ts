@@ -24,10 +24,9 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      process.env.NEXT_PUBLIC_API_URL + API_ROUTES.AUTH_CHECK,
-      { headers: { cookie } }
-    );
+    const response = await fetch(process.env.API_URL + API_ROUTES.AUTH_CHECK, {
+      headers: { cookie },
+    });
 
     if (response.status !== 200) {
       loginUrl.searchParams.set("from", pathname);
