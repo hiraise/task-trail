@@ -1,0 +1,28 @@
+package auth
+
+import (
+	"context"
+	"task-trail/internal/entity"
+)
+
+func (u *UseCase) ResendVerificationEmail(ctx context.Context, email string) error {
+
+	f := func(ctx context.Context) error {
+		user, err := u.getUserByEmail(ctx, email)
+		if err != nil {
+			return err
+		}
+		// create email token
+		tokenID, err := u.createEmailToken(ctx, user.ID, entity.PurposeVerification)
+		if err != nil {
+			return err
+		}
+		// send verification
+		if err := u.notificationRepo.SendVerificationEmail(ctx, email, tokenID); err != nil {
+			return u.errHandler.InternalTrouble(err, "verification email sending failed", "userID", user.ID)
+		}
+		return nil
+	}
+
+	return u.txManager.DoWithTx(ctx, f)
+}

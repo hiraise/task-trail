@@ -16,6 +16,25 @@ definitions:
       type:
         type: integer
     type: object
+  request.EmailRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  request.ResetPasswordRequest:
+    properties:
+      password:
+        maxLength: 50
+        minLength: 8
+        type: string
+      token:
+        type: string
+    required:
+    - password
+    - token
+    type: object
   request.User:
     properties:
       email:
@@ -39,6 +58,24 @@ info:
   title: Task Trail API
   version: "1.0"
 paths:
+  /v1/auth/check:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/customerrors.Err'
+      security:
+      - BearerAuth: []
+      summary: check user authentication
+      tags:
+      - /v1/auth
   /v1/auth/login:
     post:
       consumes:
@@ -86,6 +123,52 @@ paths:
       security:
       - BearerAuth: []
       summary: logout user
+      tags:
+      - /v1/auth
+  /v1/auth/password/forgot:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: user email
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.EmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: invalid request body
+          schema:
+            $ref: '#/definitions/customerrors.Err'
+      summary: send reset password email
+      tags:
+      - /v1/auth
+  /v1/auth/password/reset:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: user email
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: invalid request body
+          schema:
+            $ref: '#/definitions/customerrors.Err'
+      summary: reset user password
       tags:
       - /v1/auth
   /v1/auth/refresh:
@@ -138,6 +221,55 @@ paths:
           schema:
             $ref: '#/definitions/customerrors.Err'
       summary: register new user
+      tags:
+      - /v1/auth
+  /v1/auth/resend-verification:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: user email
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.EmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: invalid request body
+          schema:
+            $ref: '#/definitions/customerrors.Err'
+      summary: resend account verification email
+      tags:
+      - /v1/auth
+  /v1/auth/verify:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: token is invalid
+          schema:
+            $ref: '#/definitions/customerrors.Err'
+        "404":
+          description: token or user not found
+          schema:
+            $ref: '#/definitions/customerrors.Err'
+      summary: verify user account
       tags:
       - /v1/auth
   /v1/users/{id}:

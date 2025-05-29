@@ -30,8 +30,8 @@ func NewRecovery(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
 					"method", c.Request.Method,
 					"client_ip", c.ClientIP(),
 					"source", path,
-					"userId", m.GetUserID(c),
-					"reqId", m.GetRequestID(c),
+					"userID", m.GetUserID(c),
+					"reqID", m.GetRequestID(c),
 				)
 				c.AbortWithStatus(500)
 			}

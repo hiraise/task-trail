@@ -25,3 +25,5 @@ go.work.sum
 .env
 
 .vscode
+.DS_Store
+rules.txt

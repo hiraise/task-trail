@@ -22,7 +22,7 @@ type usersRoutes struct {
 // @Router 		/v1/users/{id} [get]
 func (r *usersRoutes) getUser(c *gin.Context) {
 	// id := c.Param("id")
-	c.JSON(http.StatusOK, c.Keys["userId"])
+	c.JSON(http.StatusOK, c.Keys["userID"])
 }
 
 func NewUserRouter(router *gin.RouterGroup, u usecase.User, authMW gin.HandlerFunc) {

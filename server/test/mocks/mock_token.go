@@ -41,33 +41,33 @@ func (m *MockTokenService) EXPECT() *MockTokenServiceMockRecorder {
 }
 
 // GenAccessToken mocks base method.
-func (m *MockTokenService) GenAccessToken(userId int) (*token.Token, error) {
+func (m *MockTokenService) GenAccessToken(userID int) (*token.Token, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenAccessToken", userId)
+	ret := m.ctrl.Call(m, "GenAccessToken", userID)
 	ret0, _ := ret[0].(*token.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GenAccessToken indicates an expected call of GenAccessToken.
-func (mr *MockTokenServiceMockRecorder) GenAccessToken(userId any) *gomock.Call {
+func (mr *MockTokenServiceMockRecorder) GenAccessToken(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenAccessToken", reflect.TypeOf((*MockTokenService)(nil).GenAccessToken), userId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenAccessToken", reflect.TypeOf((*MockTokenService)(nil).GenAccessToken), userID)
 }
 
 // GenRefreshToken mocks base method.
-func (m *MockTokenService) GenRefreshToken(userId int) (*token.Token, error) {
+func (m *MockTokenService) GenRefreshToken(userID int) (*token.Token, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenRefreshToken", userId)
+	ret := m.ctrl.Call(m, "GenRefreshToken", userID)
 	ret0, _ := ret[0].(*token.Token)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GenRefreshToken indicates an expected call of GenRefreshToken.
-func (mr *MockTokenServiceMockRecorder) GenRefreshToken(userId any) *gomock.Call {
+func (mr *MockTokenServiceMockRecorder) GenRefreshToken(userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenRefreshToken", reflect.TypeOf((*MockTokenService)(nil).GenRefreshToken), userId)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenRefreshToken", reflect.TypeOf((*MockTokenService)(nil).GenRefreshToken), userID)
 }
 
 // VerifyAccessToken mocks base method.

@@ -38,10 +38,10 @@ func New(
 	}
 }
 
-func (s *jwtService) GenAccessToken(userId int) (*token.Token, error) {
+func (s *jwtService) GenAccessToken(userID int) (*token.Token, error) {
 	exp := time.Now().Add(time.Minute * s.acLifetime)
 	claims := jwt.MapClaims{
-		"sub": strconv.Itoa(userId),
+		"sub": strconv.Itoa(userID),
 		"exp": exp.Unix(),
 		"iss": s.iss,
 	}
@@ -52,11 +52,11 @@ func (s *jwtService) GenAccessToken(userId int) (*token.Token, error) {
 	return &token.Token{Token: t, Exp: exp}, nil
 }
 
-func (s *jwtService) GenRefreshToken(userId int) (*token.Token, error) {
+func (s *jwtService) GenRefreshToken(userID int) (*token.Token, error) {
 	jti := s.uuidGen.Generate()
 	exp := time.Now().Add(time.Minute * s.rtLifetime)
 	claims := jwt.MapClaims{
-		"sub": strconv.Itoa(userId),
+		"sub": strconv.Itoa(userID),
 		"exp": exp.Unix(),
 		"jti": jti,
 		"iss": s.iss,
@@ -74,23 +74,23 @@ func (s *jwtService) genToken(claims jwt.Claims) (string, error) {
 	return token.SignedString(s.acSecret)
 }
 
-func (s *jwtService) VerifyAccessToken(token string) (userId int, err error) {
+func (s *jwtService) VerifyAccessToken(token string) (userID int, err error) {
 	claims, err := s.verifyToken(token, s.acSecret)
 	if err != nil {
 		return
 	}
-	userId, err = s.extractSub(claims)
+	userID, err = s.extractSub(claims)
 	if err != nil {
 		return
 	}
 	return
 }
-func (s *jwtService) VerifyRefreshToken(token string) (userId int, jti string, err error) {
+func (s *jwtService) VerifyRefreshToken(token string) (userID int, jti string, err error) {
 	claims, err := s.verifyToken(token, s.rtSecret)
 	if err != nil {
 		return
 	}
-	userId, err = s.extractSub(claims)
+	userID, err = s.extractSub(claims)
 	if err != nil {
 		return
 	}

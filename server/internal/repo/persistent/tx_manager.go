@@ -1,7 +1,8 @@
-package repo
+package persistent
 
 import (
 	"context"
+	"task-trail/internal/repo"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -22,7 +23,10 @@ func (u *PgTxManager) DoWithTx(ctx context.Context, fn func(ctx context.Context)
 	}
 
 	if err := fn(injectTx(ctx, &tx)); err != nil {
-		err = tx.Rollback(ctx)
+		rollbackErr := tx.Rollback(ctx)
+		if rollbackErr != nil {
+			return repo.Wrap(rollbackErr, err)
+		}
 		return err
 	}
 	return tx.Commit(ctx)

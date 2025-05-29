@@ -1,2 +1,2 @@
 ALTER TABLE users
-DROP COLUMN verified_at
+DROP COLUMN IF EXISTS verified_at

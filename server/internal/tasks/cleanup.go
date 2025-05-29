@@ -9,7 +9,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func CleanupTokens(r repo.TokenRepository, l logger.Logger) {
+func CleanupTokens(r repo.RefreshTokenRepository, l logger.Logger) {
 	c := cron.New()
 	_, err := c.AddFunc("0 3 * * *", func() {
 		deleted, err := r.DeleteRevokedAndOldTokens(context.Background(), 7)

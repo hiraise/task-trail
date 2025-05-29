@@ -17,8 +17,8 @@ func NewLog(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
 		status := c.Writer.Status()
 		args := []any{
 			"status", status,
-			"userId", m.GetUserID(c),
-			"reqId", m.GetRequestID(c),
+			"userID", m.GetUserID(c),
+			"reqID", m.GetRequestID(c),
 			"client_ip", c.ClientIP(),
 			"method", c.Request.Method,
 			"path", c.Request.URL.Path,

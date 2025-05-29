@@ -23,13 +23,13 @@ func NewAuth(
 			c.Abort()
 			return
 		}
-		userId, err := t.VerifyAccessToken(at)
+		userID, err := t.VerifyAccessToken(at)
 		if err != nil {
 			_ = c.Error(errHandler.Unauthorized(err, "invalid access token"))
 			m.DeleteAccessToken(c, atName)
 			c.Abort()
 			return
 		}
-		m.SetUserID(c, userId)
+		m.SetUserID(c, userID)
 	}
 }

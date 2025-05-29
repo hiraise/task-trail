@@ -10,9 +10,9 @@ type Token struct {
 
 type Service interface {
 	// Generate access token by user id
-	GenAccessToken(userId int) (*Token, error)
+	GenAccessToken(userID int) (*Token, error)
 	// Generate refresh token and jti by user id
-	GenRefreshToken(userId int) (*Token, error)
-	VerifyAccessToken(token string) (userId int, err error)
-	VerifyRefreshToken(token string) (userId int, jti string, err error)
+	GenRefreshToken(userID int) (*Token, error)
+	VerifyAccessToken(token string) (userID int, err error)
+	VerifyRefreshToken(token string) (userID int, jti string, err error)
 }

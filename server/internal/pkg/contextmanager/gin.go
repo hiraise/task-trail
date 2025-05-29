@@ -13,7 +13,7 @@ type Gin interface {
 	DeleteAccessToken(c *gin.Context, name string)
 	DeleteTokens(c *gin.Context, atName string, rtName string, refreshPath string)
 	SetTokens(c *gin.Context, at *token.Token, rt *token.Token, atName string, rtName string, refreshPath string)
-	SetUserID(c *gin.Context, userId any)
+	SetUserID(c *gin.Context, userID any)
 	GetUserID(c *gin.Context) any
 	SetRequestID(c *gin.Context)
 	GetRequestID(c *gin.Context) any
@@ -46,20 +46,20 @@ func (m *GinContextManager) SetTokens(c *gin.Context, at *token.Token, rt *token
 	c.SetCookie(rtName, rt.Token, rtTime, refreshPath, "", true, true)
 }
 
-func (m *GinContextManager) SetUserID(c *gin.Context, userId any) {
-	c.Set("userId", userId)
+func (m *GinContextManager) SetUserID(c *gin.Context, userID any) {
+	c.Set("userID", userID)
 }
 
 func (m *GinContextManager) GetUserID(c *gin.Context) any {
-	return c.Keys["userId"]
+	return c.Keys["userID"]
 }
 
 func (m *GinContextManager) SetRequestID(c *gin.Context) {
-	c.Set("reqId", m.uuidGenerator.Generate())
+	c.Set("reqID", m.uuidGenerator.Generate())
 }
 
 // return request id or nil if not found
 func (m *GinContextManager) GetRequestID(c *gin.Context) any {
-	return c.Keys["reqId"]
+	return c.Keys["reqID"]
 
 }

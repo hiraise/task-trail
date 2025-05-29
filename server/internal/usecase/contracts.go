@@ -10,6 +10,10 @@ type Authentication interface {
 	Register(ctx context.Context, email string, password string) error
 	Logout(ctx context.Context, rt string) error
 	Refresh(ctx context.Context, rt string) (*token.Token, *token.Token, error)
+	Verify(ctx context.Context, tokenID string) error
+	ResendVerificationEmail(ctx context.Context, email string) error
+	SendPasswordResetEmail(ctx context.Context, email string) error
+	ResetPassword(ctx context.Context, email string, password string) error
 }
 
 type User interface {

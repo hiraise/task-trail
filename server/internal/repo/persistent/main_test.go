@@ -1,6 +1,6 @@
 //go:build integration
 
-package repo
+package persistent
 
 import (
 	"context"
@@ -17,7 +17,8 @@ import (
 
 var pg *postgres.Postgres
 var userRepo *PgUserRepository
-var tokenRepo *PgTokenRepository
+var tokenRepo *PgRefreshTokenRepository
+var emailTokenRepo *PgEmailTokenRepository
 var txManager *PgTxManager
 
 func TestMain(m *testing.M) {
@@ -49,8 +50,9 @@ func TestMain(m *testing.M) {
 	}
 	defer pg.Close()
 	userRepo = NewUserRepo(pg.Pool)
-	tokenRepo = NewTokenRepo(pg.Pool)
+	tokenRepo = NewRefreshTokenRepo(pg.Pool)
 	txManager = NewPgTxManager(pg.Pool)
+	emailTokenRepo = NewEmailTokenRepo(pg.Pool)
 	os.Exit(m.Run())
 }
 

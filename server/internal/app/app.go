@@ -6,27 +6,27 @@ import (
 	"task-trail/internal/controller/http"
 	"task-trail/internal/controller/http/middleware"
 	"task-trail/internal/customerrors"
+	"task-trail/internal/repo/api"
+	"task-trail/internal/repo/persistent"
 	"task-trail/internal/tasks"
 	authuc "task-trail/internal/usecase/auth"
 	useruc "task-trail/internal/usecase/user"
 
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/pkg/password/bcrypt"
+	"task-trail/internal/pkg/smtp/gomail"
 	"task-trail/internal/pkg/token/jwt"
 	"task-trail/internal/pkg/uuid/guuid"
 
 	slogger "task-trail/internal/pkg/logger/slog"
 	"task-trail/internal/pkg/postgres"
-	"task-trail/internal/repo"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Run(cfg *config.Config) {
-	// TODO: run background gorutine and break when app is down
 	logger := slogger.New(cfg.App.Debug, true)
 	logger1 := slogger.New(cfg.App.Debug, false)
-
 	// migrate
 	if cfg.PG.MigrationEnabled {
 		if err := postgres.Migrate(cfg.PG.ConnString, cfg.PG.MigrationPath, logger); err != nil {
@@ -43,11 +43,6 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	// init repo
-	txManager := repo.NewPgTxManager(pg.Pool)
-	userRepo := repo.NewUserRepo(pg.Pool)
-	tokenRepo := repo.NewTokenRepo(pg.Pool)
-
 	// init services
 	pwdService := bcrypt.New()
 	uuidGenerator := guuid.New()
@@ -60,9 +55,31 @@ func Run(cfg *config.Config) {
 		uuidGenerator)
 	errHandler := customerrors.NewErrHander()
 	contextm := contextmanager.NewGin(uuidGenerator)
+	smtp := gomail.New(logger, cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.User, cfg.SMTP.Password, cfg.SMTP.Sender)
+
+	// init repo
+	txManager := persistent.NewPgTxManager(pg.Pool)
+	userRepo := persistent.NewUserRepo(pg.Pool)
+	tokenRepo := persistent.NewRefreshTokenRepo(pg.Pool)
+	notificationRepo := api.NewSmtpNotificationRepo(smtp, logger, uuidGenerator, cfg.Frontend.VerifyURL, cfg.Frontend.ResetPasswordURL)
+	emailTokenRepo := persistent.NewEmailTokenRepo(pg.Pool)
 	// init uc
-	userUC := useruc.New(txManager, userRepo, pwdService)
-	authUC := authuc.New(errHandler, txManager, userRepo, tokenRepo, pwdService, tokenService)
+	userUC := useruc.New(
+		txManager,
+		userRepo,
+		pwdService,
+	)
+	authUC := authuc.New(
+		errHandler,
+		txManager,
+		userRepo,
+		tokenRepo,
+		emailTokenRepo,
+		notificationRepo,
+		pwdService,
+		tokenService,
+		uuidGenerator,
+	)
 
 	// init middlewares
 

@@ -1,23 +1,24 @@
 //go:build integration
 
-package repo
+package persistent
 
 import (
 	"context"
 	"task-trail/internal/entity"
+	"task-trail/internal/repo"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
-const testTokenId = "6ff51bb9-e02a-4155-9f76-bfff8c68e3ac"
-const testTokenId1 = "d7e2ec56-b4cb-44eb-879b-8b6b1b2b2fb8"
-const testTokenId2 = "eb660031-8825-43ca-af3a-b7191bd12e15"
+const testTokenID = "6ff51bb9-e02a-4155-9f76-bfff8c68e3ac"
+const testTokenID1 = "d7e2ec56-b4cb-44eb-879b-8b6b1b2b2fb8"
+const testTokenID2 = "eb660031-8825-43ca-af3a-b7191bd12e15"
 
-var testToken entity.Token = entity.Token{ID: testTokenId, UserId: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
-var testToken1 entity.Token = entity.Token{ID: testTokenId1, UserId: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
-var testToken2 entity.Token = entity.Token{ID: testTokenId2, UserId: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
+var testToken entity.RefreshToken = entity.RefreshToken{ID: testTokenID, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
+var testToken1 entity.RefreshToken = entity.RefreshToken{ID: testTokenID1, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
+var testToken2 entity.RefreshToken = entity.RefreshToken{ID: testTokenID2, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
 
 func verifyTokensCount(t *testing.T, ctx context.Context, connection pgConn, c int) {
 	var count int
@@ -25,8 +26,9 @@ func verifyTokensCount(t *testing.T, ctx context.Context, connection pgConn, c i
 	require.Equal(t, c, count)
 }
 func initToken(t *testing.T) {
-	err := userRepo.Create(t.Context(), &basicUser)
+	id, err := userRepo.Create(t.Context(), &basicUser)
 	require.NoError(t, err)
+	require.Equal(t, 1, id)
 	err = tokenRepo.Create(t.Context(), &testToken)
 	require.NoError(t, err)
 }
@@ -38,43 +40,43 @@ func TestTokenCreate(t *testing.T) {
 	})
 	t.Run("user not found", func(t *testing.T) {
 		newToken := testToken
-		newToken.UserId = 2
-		newToken.ID = testTokenId1
+		newToken.UserID = 2
+		newToken.ID = testTokenID1
 		err := tokenRepo.Create(t.Context(), &newToken)
-		require.ErrorIs(t, err, ErrNotFound)
+		require.ErrorIs(t, err, repo.ErrNotFound)
 	})
 	t.Run("token already exists", func(t *testing.T) {
 		err := tokenRepo.Create(t.Context(), &testToken)
-		require.ErrorIs(t, err, ErrConflict)
+		require.ErrorIs(t, err, repo.ErrConflict)
 	})
 	t.Run("database internal error", func(t *testing.T) {
 		err := tokenRepo.Create(getBadContext(t), &testToken)
-		require.ErrorIs(t, err, ErrDB)
+		require.ErrorIs(t, err, repo.ErrInternal)
 	})
 
 }
 
-func TestTokenGetById(t *testing.T) {
+func TestTokenGetByID(t *testing.T) {
 	cleanDB(t)
 	initToken(t)
 	t.Run("successfully get token by ID", func(t *testing.T) {
-		token, err := tokenRepo.GetById(t.Context(), testTokenId, 1)
+		token, err := tokenRepo.GetByID(t.Context(), testTokenID, 1)
 		require.NoError(t, err)
-		require.Equal(t, token.ID, testTokenId)
-		require.Equal(t, token.UserId, 1)
+		require.Equal(t, token.ID, testTokenID)
+		require.Equal(t, token.UserID, 1)
 	})
 	t.Run("token not found", func(t *testing.T) {
-		token, err := tokenRepo.GetById(t.Context(), testTokenId, 2)
+		token, err := tokenRepo.GetByID(t.Context(), testTokenID, 2)
 		require.Nil(t, token)
-		require.ErrorIs(t, err, ErrNotFound)
-		token, err = tokenRepo.GetById(t.Context(), testTokenId1, 1)
+		require.ErrorIs(t, err, repo.ErrNotFound)
+		token, err = tokenRepo.GetByID(t.Context(), testTokenID1, 1)
 		require.Nil(t, token)
-		require.ErrorIs(t, err, ErrNotFound)
+		require.ErrorIs(t, err, repo.ErrNotFound)
 	})
 	t.Run("database internal error", func(t *testing.T) {
-		token, err := tokenRepo.GetById(getBadContext(t), testTokenId, 1)
+		token, err := tokenRepo.GetByID(getBadContext(t), testTokenID, 1)
 		require.Nil(t, token)
-		require.ErrorIs(t, err, ErrDB)
+		require.ErrorIs(t, err, repo.ErrInternal)
 	})
 }
 
@@ -82,22 +84,26 @@ func TestTokenRevoke(t *testing.T) {
 	cleanDB(t)
 	initToken(t)
 	t.Run("successfully revoke token", func(t *testing.T) {
-		token, err := tokenRepo.GetById(t.Context(), testTokenId, 1)
+		token, err := tokenRepo.GetByID(t.Context(), testTokenID, 1)
 		require.NoError(t, err)
 		require.Nil(t, token.RevokedAt)
-		err = tokenRepo.Revoke(t.Context(), testTokenId)
+		err = tokenRepo.Revoke(t.Context(), testTokenID)
 		require.NoError(t, err)
-		token, err = tokenRepo.GetById(t.Context(), testTokenId, 1)
+		token, err = tokenRepo.GetByID(t.Context(), testTokenID, 1)
 		require.NoError(t, err)
 		require.NotNil(t, token.RevokedAt)
 	})
 	t.Run("token not found", func(t *testing.T) {
-		err := tokenRepo.Revoke(t.Context(), testTokenId1)
-		require.ErrorIs(t, err, ErrNotFound)
+		err := tokenRepo.Revoke(t.Context(), testTokenID1)
+		require.ErrorIs(t, err, repo.ErrNotFound)
+	})
+	t.Run("token already used", func(t *testing.T) {
+		err := tokenRepo.Revoke(t.Context(), testTokenID)
+		require.ErrorIs(t, err, repo.ErrNotFound)
 	})
 	t.Run("database internal error", func(t *testing.T) {
-		err := tokenRepo.Revoke(getBadContext(t), testTokenId)
-		require.ErrorIs(t, err, ErrDB)
+		err := tokenRepo.Revoke(getBadContext(t), testTokenID)
+		require.ErrorIs(t, err, repo.ErrInternal)
 	})
 }
 
@@ -105,7 +111,7 @@ func TestTokenRevokeAllUsersTokens(t *testing.T) {
 	cleanDB(t)
 	initToken(t)
 	t.Run("successfully revoke all user tokens", func(t *testing.T) {
-		token, err := tokenRepo.GetById(t.Context(), testTokenId, 1)
+		token, err := tokenRepo.GetByID(t.Context(), testTokenID, 1)
 		require.NoError(t, err)
 		require.Nil(t, token.RevokedAt)
 		num, err := tokenRepo.RevokeAllUsersTokens(t.Context(), 1)
@@ -120,7 +126,7 @@ func TestTokenRevokeAllUsersTokens(t *testing.T) {
 	t.Run("database internal error", func(t *testing.T) {
 		num, err := tokenRepo.RevokeAllUsersTokens(getBadContext(t), 1)
 		require.Equal(t, 0, num)
-		require.ErrorIs(t, err, ErrDB)
+		require.ErrorIs(t, err, repo.ErrInternal)
 	})
 }
 
@@ -137,7 +143,7 @@ func TestTokenDeleteRevokedAndOldTokens(t *testing.T) {
 			t.Context(),
 			`UPDATE refresh_tokens SET expired_at = $1 WHERE id = $2`,
 			time.Now().Add(time.Hour*-7*24),
-			testTokenId,
+			testTokenID,
 		)
 		require.NoError(t, err)
 		// make token2 revoked
@@ -145,7 +151,7 @@ func TestTokenDeleteRevokedAndOldTokens(t *testing.T) {
 			t.Context(),
 			`UPDATE refresh_tokens SET revoked_at = $1 WHERE id = $2`,
 			time.Now().Add(time.Hour*-7*24),
-			testTokenId1,
+			testTokenID1,
 		)
 		require.NoError(t, err)
 		num, err := tokenRepo.DeleteRevokedAndOldTokens(t.Context(), 7)
@@ -155,6 +161,6 @@ func TestTokenDeleteRevokedAndOldTokens(t *testing.T) {
 	t.Run("database internal error", func(t *testing.T) {
 		num, err := tokenRepo.DeleteRevokedAndOldTokens(getBadContext(t), 1)
 		require.Equal(t, 0, num)
-		require.ErrorIs(t, err, ErrDB)
+		require.ErrorIs(t, err, repo.ErrInternal)
 	})
 }

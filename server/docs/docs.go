@@ -23,6 +23,36 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/v1/auth/check": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "check user authentication",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Err"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/auth/login": {
             "post": {
                 "consumes": [
@@ -94,6 +124,78 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Err"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/password/forgot": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "send reset password email",
+                "parameters": [
+                    {
+                        "description": "user email",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.EmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Err"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/password/reset": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "reset user password",
+                "parameters": [
+                    {
+                        "description": "user email",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ResetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "invalid request body",
                         "schema": {
                             "$ref": "#/definitions/customerrors.Err"
                         }
@@ -181,6 +283,82 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/auth/resend-verification": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "resend account verification email",
+                "parameters": [
+                    {
+                        "description": "user email",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.EmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Err"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/verify": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "verify user account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "token is invalid",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Err"
+                        }
+                    },
+                    "404": {
+                        "description": "token or user not found",
+                        "schema": {
+                            "$ref": "#/definitions/customerrors.Err"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/users/{id}": {
             "get": {
                 "security": [
@@ -239,6 +417,34 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "integer"
+                }
+            }
+        },
+        "request.EmailRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.ResetPasswordRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "token"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 8
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },

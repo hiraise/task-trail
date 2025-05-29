@@ -20,8 +20,8 @@ func NewError(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
 				a := response.NewFromErrBase(e)
 				c.AbortWithStatusJSON(a.Status, a)
 			default:
-				// TODO: add iternal error
-				c.AbortWithStatusJSON(500, "jopa")
+				l.Error("unexpected error", "error", err)
+				c.AbortWithStatusJSON(500, "unexpected error")
 			}
 		}
 
@@ -30,8 +30,8 @@ func NewError(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
 	}
 }
 
-func logError(e *customerrors.Err, l logger.Logger, reqId any) {
-	args := append(e.Data, "source", e.Source, "requestId", reqId, "error", e.Unwrap())
+func logError(e *customerrors.Err, l logger.Logger, reqID any) {
+	args := append(e.Data, "source", e.Source, "requestID", reqID, "error", e.Unwrap())
 	switch e.Type {
 	case customerrors.InvalidCredentialsErr:
 		l.Warn(e.Msg, args...)
