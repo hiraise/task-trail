@@ -4,10 +4,12 @@ import styled from "styled-components";
 
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 
-import DashboardHeader from "./DashboardHeader";
-import DashboardCard, { mockDashboardCardsData } from "./DashboardCard";
-import BottomNavBar from "./BottomNavBar";
-
+import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
+import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
+import {
+  DashboardCard,
+  mockDashboardCardsData,
+} from "@/presentation/widgets/dashboard/DashboardCard";
 
 const SectionTitle = styled.h1`
   font-size: 34px;
@@ -34,11 +36,16 @@ export default function DashboardPage() {
       <SectionTitle>{mainPageTexts.title}</SectionTitle>
       <CardsContainer>
         {/* Example of rendering multiple DashboardCards */}
-        {Array.from({ length: mockDashboardCardsData.length }).map((_, index) => (
-          <DashboardCard key={index} {...(mockDashboardCardsData[index] || {})} />
-        ))}
+        {Array.from({ length: mockDashboardCardsData.length }).map(
+          (_, index) => (
+            <DashboardCard
+              key={index}
+              {...(mockDashboardCardsData[index] || {})}
+            />
+          )
+        )}
       </CardsContainer>
-      <BottomNavBar/>
+      <BottomNavBar />
     </MainContainer>
   );
 }
