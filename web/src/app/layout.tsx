@@ -23,9 +23,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <StoreProvider>
+          <Toaster position="bottom-right" richColors />
           <AuthRedirectWatcher />
           {children}
-          <Toaster position="bottom-right" richColors />
         </StoreProvider>
       </body>
     </html>
