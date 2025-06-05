@@ -33,11 +33,11 @@ jobs:
         id: select
         run: |
           if [ "${{ inputs.envType }}" = 'prod' ]; then
-            echo "ROOT_PATH=${PROD_ROOT_PATH}" >> $GITHUB_OUTPUT
-            echo "API_URL=${PROD_API_URL}" >> $GITHUB_OUTPUT
+            echo "ROOT_PATH=${{ secrets.PROD_ROOT_PATH }}" >> $GITHUB_OUTPUT
+            echo "API_URL=${{ secrets.PROD_API_URL }}" >> $GITHUB_OUTPUT
           else
-            echo "ROOT_PATH=${DEV_ROOT_PATH}" >> $GITHUB_OUTPUT
-            echo "API_URL=${DEV_API_URL}" >> $GITHUB_OUTPUT
+            echo "ROOT_PATH=${{ secrets.DEV_ROOT_PATH }}" >> $GITHUB_OUTPUT
+            echo "API_URL=${{ secrets.DEV_API_URL }}" >> $GITHUB_OUTPUT
           fi
       - run: echo ${{ steps.select.outputs.ROOT_PATH }}
       - run: echo ${{ steps.select.outputs.API_URL }}
