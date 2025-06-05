@@ -12,7 +12,7 @@ import { ASSETS } from "@/infrastructure/config/assets";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import EmailResendContainer from "@/presentation/widgets/auth/EmailConfirm/EmailResendContainer";
 import { emailConfirmTexts } from "@/shared/locales/emailConfirm";
-import { useEmailConfirm } from "@/application/auth/hooks/useEmailConfirm";
+import { useResendEmail } from "@/application/auth/hooks/useResendEmail";
 
 const ImageContainer = styled.div`
   display: flex;
@@ -26,10 +26,10 @@ const ImageContainer = styled.div`
   border-radius: 15px;
 `;
 
-export default function EmailConfirmPage() {
+export default function EmailAfterRegisterPage() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "example@gmail.com";
-  const emailConfirm = useEmailConfirm(email);
+  const emailConfirm = useResendEmail(email);
 
   return (
     <MainContainer>
