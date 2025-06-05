@@ -6,7 +6,7 @@ import { MobileLogo } from "@/presentation/ui/MobileLogo";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import PasswordRecoveryForm from "@/presentation/widgets/auth/PasswordRecoveryForm/PasswordRecoveryForm";
 
-export const passwordRecoveryTexts = {
+const passwordRecoveryTexts = {
   title: "Восстановление пароля",
   subtitle:
     "Введите e-mail, указанный при регистрации — мы отправим вам письмо для восстановления пароля",
