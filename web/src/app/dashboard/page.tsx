@@ -25,7 +25,7 @@ const CardsContainer = styled.div`
   margin-bottom: 66px; /* Space for the bottom navigation bar + 4px*/
 `;
 
-export const mainPageTexts = {
+const mainPageTexts = {
   title: "Организуй планы",
 };
 
