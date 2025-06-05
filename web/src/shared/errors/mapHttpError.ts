@@ -6,6 +6,8 @@ import { AppError, AppErrorType } from "./types";
 export enum Domain {
   LOGIN = "login",
   SIGNUP = "signup",
+  RESEND_VERIFICATION = "resendVerification",
+  CONFIRM_EMAIL = "confirmEmail",
 }
 
 type LocalErrorHandler = (error: unknown) => AppError | null;
@@ -13,6 +15,8 @@ type LocalErrorHandler = (error: unknown) => AppError | null;
 const localHandlers: Record<Domain, LocalErrorHandler> = {
   login: localErrorHandlers.login,
   signup: localErrorHandlers.signUp,
+  resendVerification: localErrorHandlers.resendVerification,
+  confirmEmail: localErrorHandlers.confirmEmail,
 };
 
 export function mapHttpError(error: unknown, domain: Domain): AppError {

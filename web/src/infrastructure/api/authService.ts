@@ -9,7 +9,6 @@ export const authService = {
     try {
       await axiosClient.post(API_ROUTES.LOGIN, payload);
     } catch (error) {
-      // Rethrow the error to maintain the return type contract
       throw mapHttpError(error, Domain.LOGIN);
     }
   },
@@ -17,8 +16,21 @@ export const authService = {
     try {
       await axiosClient.post(API_ROUTES.SIGNUP, payload);
     } catch (error) {
-      // Rethrow the error to maintain the return type contract
       throw mapHttpError(error, Domain.SIGNUP);
+    }
+  },
+  resendVerification: async (email: string): Promise<void> => {
+    try {
+      await axiosClient.post(API_ROUTES.RESEND_VERIFICATION, { email });
+    } catch (error) {
+      throw mapHttpError(error, Domain.RESEND_VERIFICATION);
+    }
+  },
+  verifyEmail: async (token: string): Promise<void> => {
+    try {
+      await axiosClient.post(API_ROUTES.VERIFY, { token });
+    } catch (error) {
+      throw mapHttpError(error, Domain.CONFIRM_EMAIL);
     }
   },
 };
