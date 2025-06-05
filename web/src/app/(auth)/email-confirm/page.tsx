@@ -1,7 +1,8 @@
 "use client";
 
-import Image from "next/image";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 import styled from "styled-components";
 
 import { MobileLogo } from "@/presentation/ui/MobileLogo";
@@ -26,7 +27,15 @@ const ImageContainer = styled.div`
   border-radius: 15px;
 `;
 
-export default function EmailConfirmPage() {
+export default function EmailConfirmPageWrapper() {
+  return (
+    <Suspense>
+      <EmailConfirmPage />
+    </Suspense>
+  );
+}
+
+function EmailConfirmPage() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "example@gmail.com";
   const emailConfirm = useEmailConfirm(email);

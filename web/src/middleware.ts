@@ -4,7 +4,7 @@ import { API_ROUTES } from "./infrastructure/config/apiRoutes";
 import { protectedRoutes, ROUTES } from "./infrastructure/config/routes";
 
 export const config = {
-  matcher: [`${ROUTES.dashboard}/:path*`],
+  matcher: ["/dashboard/:path*"],
 };
 
 export async function middleware(req: NextRequest) {
