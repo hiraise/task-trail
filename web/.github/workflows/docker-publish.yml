@@ -38,6 +38,7 @@ jobs:
           else
             echo "ROOT_PATH=${DEV_ROOT_PATH}" >> $GITHUB_OUTPUT
             echo "API_URL=${DEV_API_URL}" >> $GITHUB_OUTPUT
+          fi
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
