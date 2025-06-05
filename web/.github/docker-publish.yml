@@ -1,0 +1,80 @@
+name: Delivery
+on:
+  workflow_dispatch:
+    inputs:
+      envType:
+        type: choice
+        description: 'Type of environment "dev" or "prod'
+        default: 'dev'
+        options:
+          - dev
+          - prod
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: "${{ github.repository }}"
+jobs:
+  
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: "Log into registry ${{ env.REGISTRY }}"
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: "${{ env.REGISTRY }}"
+          username: "${{ github.actor }}"
+          password: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Select environments
+        id: select
+        run: |
+          if [ "${{ inputs.envType }}" = 'prod' ]; then
+            echo "ROOT_PATH=${PROD_ROOT_PATH}" >> $GITHUB_OUTPUT
+            echo "API_URL=${PROD_API_URL}" >> $GITHUB_OUTPUT
+          else
+            echo "ROOT_PATH=${DEV_ROOT_PATH}" >> $GITHUB_OUTPUT
+            echo "API_URL=${DEV_API_URL}" >> $GITHUB_OUTPUT
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-img"
+          tags: |
+            type=raw,value=${{ inputs.envType }}
+            type=semver,pattern={{version}}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: "${{ github.event_name != 'pull_request' }}"
+          tags: "${{ steps.meta.outputs.tags }}"
+          labels: "${{ steps.meta.outputs.labels }}"
+          build-args: |
+            ROOT_PATH=${{ steps.select.outputs.ROOT_PATH }}
+            API_URL=${{ steps.select.outputs.API_URL }}
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if required webhook URL is missing
+        run: |
+          if [[ "${{ inputs.envType }}" == "dev" && -z "${{ secrets.DEV_WEBHOOK_URL }}" ]]; then
+            echo "DEV_WEBHOOK_URL secret is required for dev environment"
+            exit 1
+          fi
+          if [[ "${{ inputs.envType }}" == "prod" && -z "${{ secrets.PROD_WEBHOOK_URL }}" ]]; then
+            echo "PROD_WEBHOOK_URL secret is required for prod environment"
+            exit 1
+          fi
+      - name: Invoke deployment stack hook
+        uses: distributhor/workflow-webhook@v3
+        with:
+          webhook_url: ${{ (inputs.envType == 'dev' && secrets.DEV_WEBHOOK_URL) || (inputs.envType == 'prod' && secrets.PROD_WEBHOOK_URL) }}
+
