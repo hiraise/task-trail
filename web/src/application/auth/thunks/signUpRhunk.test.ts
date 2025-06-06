@@ -24,8 +24,8 @@ describe("signUp thunk", () => {
   });
 
   afterEach(() => {
-  jest.clearAllMocks();
-});
+    jest.clearAllMocks();
+  });
 
   it("dispatches fulfilled when signup succeeds", async () => {
     // Arrange
@@ -59,19 +59,19 @@ describe("signUp thunk", () => {
   });
 
   it("returns rejected action with error payload when signup fails with non-AppError", async () => {
-      // Arrange
-      const error = new Error("Network error");
-      mockedSignUp.mockRejectedValueOnce(error);
-      // Act
-      const result = await thunk(dispatch, getState, extra);
-      // Assert
-      expect(dispatch).toHaveBeenCalled();
-      expect(mockedSignUp).toHaveBeenCalledTimes(1);
-      expect(mockedSignUp).toHaveBeenCalledWith(authPayload);
-      expect(result.payload?.type).toBe(AppErrorType.UNKNOWN);
-      expect(result.type).toBe(`${AUTH_SIGNUP}/rejected`);
-      expect((result as { error: unknown }).error).toEqual({
-        message: "Rejected",
-      });
+    // Arrange
+    const error = new Error("Network error");
+    mockedSignUp.mockRejectedValueOnce(error);
+    // Act
+    const result = await thunk(dispatch, getState, extra);
+    // Assert
+    expect(dispatch).toHaveBeenCalled();
+    expect(mockedSignUp).toHaveBeenCalledTimes(1);
+    expect(mockedSignUp).toHaveBeenCalledWith(authPayload);
+    expect(result.payload?.type).toBe(AppErrorType.UNKNOWN);
+    expect(result.type).toBe(`${AUTH_SIGNUP}/rejected`);
+    expect((result as { error: unknown }).error).toEqual({
+      message: "Rejected",
     });
+  });
 });

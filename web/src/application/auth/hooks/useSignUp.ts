@@ -22,8 +22,7 @@ export const useSignUp = () => {
     try {
       await dispatch(thunk).unwrap();
       toast.success(successTexts.signUpSuccessCheckEmail);
-      router.push(ROUTES.emailConfirm + `?email=${encodeURIComponent(email)}`);
-
+      router.push(ROUTES.confirm + `?email=${encodeURIComponent(email)}`);
     } catch (error) {
       //TODO: add log to sentry
       console.log(errorTexts.somethingWentWrong, error);

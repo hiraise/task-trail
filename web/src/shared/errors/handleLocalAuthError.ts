@@ -33,4 +33,25 @@ export const localErrorHandlers: Record<
         return null;
     }
   },
+  confirmEmail: (error) => {
+    const isAxiosError = error instanceof AxiosError;
+    switch (isAxiosError && error?.response?.status) {
+      case 400:
+        return new AppError(AppErrorType.AUTH, errorTexts.somethingWentWrong);
+      default:
+        return null;
+    }
+  },
+  resendVerification: (error) => {
+    if (error instanceof AxiosError) {
+      const status = error.response?.status;
+      switch (status) {
+        case 400:
+          return new AppError(AppErrorType.AUTH, errorTexts.somethingWentWrong);
+        default:
+          return null;
+      }
+    }
+    return null;
+  },
 };

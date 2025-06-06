@@ -2,29 +2,30 @@ import { useEffect, useState } from "react";
 
 type DeviceType = "mobile" | "tablet" | "desktop";
 
-const breakpoints: Record<string, number> = {
+const BREAKPOINTS: Record<DeviceType, number> = {
   mobile: 767,
   tablet: 1024,
+  desktop: Infinity, // No upper limit for desktop
 };
 
-export const useDevice = (): DeviceType => {
-  const [device, setDevice] = useState<DeviceType>("desktop");
+const getDeviceType = (width: number): DeviceType => {
+  if (width <= BREAKPOINTS.mobile) return "mobile";
+  if (width <= BREAKPOINTS.tablet) return "tablet";
+  return "desktop";
+};
+
+export const useDevice = (): DeviceType | null => {
+  const [device, setDevice] = useState<DeviceType | null>(null);
 
   useEffect(() => {
     const detectDevice = () => {
-      const width = window.innerWidth;
-
-      if (width <= breakpoints.mobile) {
-        setDevice("mobile");
-      } else if (width <= breakpoints.tablet) {
-        setDevice("tablet");
-      } else {
-        setDevice("desktop");
-      }
+      const currentType = getDeviceType(window.innerWidth);
+      setDevice((prev) => (prev !== currentType ? currentType : prev));
     };
 
-    detectDevice(); // check device on initial load
-    window.addEventListener("resize", detectDevice); // check device on resize
+    detectDevice();
+    window.addEventListener("resize", detectDevice);
+
     return () => window.removeEventListener("resize", detectDevice);
   }, []);
 

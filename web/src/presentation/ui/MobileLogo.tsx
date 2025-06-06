@@ -8,15 +8,23 @@ const LogoContainer = styled.div`
   position: relative;
   width: 100%;
   height: 25px;
-  margin-top: 24px;
+  margin-top: 25px;
 `;
 
-export const MobileLogo = () => {
+interface MobileLogoProps {
+  src?: string;
+  alt?: string;
+}
+
+export const MobileLogo = ({
+  src = ASSETS.logo.mobile,
+  alt = imagesTexts.mobileLogo,
+}: MobileLogoProps) => {
   return (
     <LogoContainer>
       <Image
-        alt={imagesTexts.mobileLogo}
-        src={ASSETS.logo.mobile}
+        alt={alt}
+        src={src}
         fill
         sizes="100vw"
         style={{ objectFit: "contain" }}

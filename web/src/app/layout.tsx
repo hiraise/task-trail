@@ -6,6 +6,7 @@ import "./globals.css";
 import { StoreProvider } from "./StoreProvider";
 import { AuthRedirectWatcher } from "@/presentation/ui/AuthRedirectWatcher";
 import { metadataTexts } from "@/shared/locales/metadata";
+import { ClientOnly } from "./ClientOnly";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,9 +24,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <StoreProvider>
-          <AuthRedirectWatcher />
-          {children}
           <Toaster position="bottom-right" richColors />
+          <AuthRedirectWatcher />
+          <ClientOnly>{children}</ClientOnly>
         </StoreProvider>
       </body>
     </html>

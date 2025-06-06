@@ -7,4 +7,8 @@ export const sharedTexts = {
   send: "Отправить",
   sending: "Отправляем...",
   emailLabel: "Введите email",
+  projects: "Проекты",
+  boards: "Доски",
+  tasks: "Задачи",
+  archive: "Архив",
 };
