@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  basePath: process.env.NEXT_PUBLIC_ROOT_PATH,
+  trailingSlash: true,
 };
 
 export default nextConfig;
