@@ -1,7 +1,9 @@
 import { ICONS } from "./icons";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH;
+
 function addBasePath(path: string) {
-  return process.env.NEXT_PUBLIC_BASE_PATH + path;
+  return basePath + path;
 }
 
 export const ASSETS = {
