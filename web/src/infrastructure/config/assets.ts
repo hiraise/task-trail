@@ -1,6 +1,6 @@
 import { ICONS } from "./icons";
 
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH;
+const basePath = process.env.NEXT_PUBLIC_ROOT_PATH;
 
 function addBasePath(path: string) {
   return basePath + path;
