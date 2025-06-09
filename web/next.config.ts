@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
   },
   basePath: process.env.NEXT_PUBLIC_ROOT_PATH,
   trailingSlash: true,
+  reactStrictMode: true,
 };
 
 export default nextConfig;
