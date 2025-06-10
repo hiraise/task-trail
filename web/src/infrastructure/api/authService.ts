@@ -1,4 +1,5 @@
 import { API_ROUTES } from "../config/apiRoutes";
+import { clientLogger } from "../config/clientLogger";
 
 import axiosClient from "./axiosClient";
 import { AuthPayload } from "@/application/auth/types/types";
@@ -9,6 +10,7 @@ export const authService = {
     try {
       await axiosClient.post(API_ROUTES.LOGIN, payload);
     } catch (error) {
+      clientLogger.error("Login error", { error: error });
       throw mapHttpError(error, Domain.LOGIN);
     }
   },
@@ -16,6 +18,7 @@ export const authService = {
     try {
       await axiosClient.post(API_ROUTES.SIGNUP, payload);
     } catch (error) {
+      clientLogger.error("SignUp error", { error: error });
       throw mapHttpError(error, Domain.SIGNUP);
     }
   },
@@ -23,6 +26,7 @@ export const authService = {
     try {
       await axiosClient.post(API_ROUTES.RESEND_VERIFICATION, { email });
     } catch (error) {
+      clientLogger.error("ResendVerification error", { error: error });
       throw mapHttpError(error, Domain.RESEND_VERIFICATION);
     }
   },
@@ -30,6 +34,7 @@ export const authService = {
     try {
       await axiosClient.post(API_ROUTES.VERIFY, { token });
     } catch (error) {
+      clientLogger.error("Verify Email error", { error: error });
       throw mapHttpError(error, Domain.CONFIRM_EMAIL);
     }
   },
