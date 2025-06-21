@@ -11,8 +11,12 @@ export const StyledSvg = styled.svg<{
   $color?: string;
   $inheritColor?: boolean;
 }>`
-  width: ${({ $size = "28px" }) => $size};
-  height: ${({ $size = "28px" }) => $size};
+  ${({ $size }) =>
+    $size &&
+    `
+    width: ${$size};
+    height: ${$size};
+  `}
 
   color: ${({ $inheritColor, $color }) =>
     $inheritColor ? "inherit" : $color ?? "var(--icon-grey)"};

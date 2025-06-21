@@ -6,6 +6,7 @@ const MainContainer = styled.main.withConfig({
   display: flex;
   flex-direction: column;
   padding: 0 20px;
+  min-height: 100vh;
 `;
 
 export default MainContainer;
