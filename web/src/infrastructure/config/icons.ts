@@ -7,6 +7,7 @@ import ArchiveIcon from "../../../public/icons/material-symbols-light_archive-ou
 import ProfileLargeIcon from "../../../public/icons/profile-large.svg";
 import CameraIcon from "../../../public/icons/camera.svg";
 import RightArrowIcon from "../../../public/icons/Right_arrow.svg";
+import LeftArrowIcon from "../../../public/icons/Left_arrow.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -18,4 +19,5 @@ export const ICONS = {
   profileLarge: ProfileLargeIcon,
   camera: CameraIcon,
   rightArrow: RightArrowIcon,
+  leftArrow: LeftArrowIcon,
 };
