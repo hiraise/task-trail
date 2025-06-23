@@ -11,7 +11,7 @@ export const ROUTES = {
   confirm: "/confirm",
   profile: PROFILE_BASE,
   profileEditPersonalData: `${PROFILE_BASE}/edit-personal-data`,
-  profileChangePassword: `${PROFILE_BASE}/edit-password`,
+  profileChangePassword: `${PROFILE_BASE}/change-password`,
 };
 
 export const protectedRoutes = [
