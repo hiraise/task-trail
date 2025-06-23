@@ -4,7 +4,7 @@ const NavBar = styled.nav`
   position: fixed;
   left: 0;
   bottom: 0;
-  height: 62px;
+  height: var(--bottom-nav-height);
   width: 100vw;
   padding: 0 20px;
   background-color: var(--background);
