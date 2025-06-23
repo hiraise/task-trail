@@ -1,0 +1,21 @@
+.button {
+  height: 24px;
+  display: flex;
+  align-self: flex-start;
+  align-items: center;
+  border: none;
+  background: none;
+
+  span {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 18px;
+    color: var(--icon-grey);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
