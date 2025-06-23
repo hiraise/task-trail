@@ -44,3 +44,7 @@ _Coming soon_
 | `SMTP_USER`                          | `noreply@example.com` | SMTP server authentication email |
 | `SMTP_PASSWORD`                      | `password123`         | SMTP server authentication password |
 | `SMTP_SENDER`                        | `TaskTrail <noreply@example.com>` | Sender email and name. Can be empty; defaults to `SMTP_USER` |
+| **REDIRECT SETTINGS**                |                       |             |
+| `FRONTEND_URL`                       | `https://tasktrail.com`    | Base URL for the frontend application, used for redirection purposes |
+| `FRONTEND_VERIFY_URL`                | `https://tasktrail.com/auth/verify?token=` | URL template for user account verification, with the `token` parameter appended dynamically |
+| `FRONTEND_RESET_PASSWORD_URL`        | `https://tasktrail.com/auth/reset?token=` | URL template for password reset functionality, with the `token` parameter appended dynamically |

@@ -340,6 +340,21 @@ func (mr *MockEmailTokenRepositoryMockRecorder) Create(ctx, token any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockEmailTokenRepository)(nil).Create), ctx, token)
 }
 
+// DeleteUsedAndOldTokens mocks base method.
+func (m *MockEmailTokenRepository) DeleteUsedAndOldTokens(ctx context.Context, olderThan int) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUsedAndOldTokens", ctx, olderThan)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteUsedAndOldTokens indicates an expected call of DeleteUsedAndOldTokens.
+func (mr *MockEmailTokenRepositoryMockRecorder) DeleteUsedAndOldTokens(ctx, olderThan any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUsedAndOldTokens", reflect.TypeOf((*MockEmailTokenRepository)(nil).DeleteUsedAndOldTokens), ctx, olderThan)
+}
+
 // GetByID mocks base method.
 func (m *MockEmailTokenRepository) GetByID(ctx context.Context, tokenID string) (*entity.EmailToken, error) {
 	m.ctrl.T.Helper()

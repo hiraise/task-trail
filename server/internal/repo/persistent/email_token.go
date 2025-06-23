@@ -60,3 +60,19 @@ func (r *PgEmailTokenRepository) Use(ctx context.Context, tokenID string) error 
 	}
 	return nil
 }
+
+func (r *PgEmailTokenRepository) DeleteUsedAndOldTokens(ctx context.Context, olderThan int) (int, error) {
+	query := `
+		DELETE 
+		FROM email_tokens
+		WHERE
+			(used_at IS NOT NULL AND used_at < NOW() - make_interval(days => $1))
+			OR
+			(expired_at < NOW() - make_interval(days => $1));
+	`
+	tag, err := r.getDb(ctx).Exec(ctx, query, olderThan)
+	if err != nil {
+		return 0, r.handleError(err)
+	}
+	return int(tag.RowsAffected()), nil
+}

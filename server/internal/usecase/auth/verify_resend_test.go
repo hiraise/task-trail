@@ -8,6 +8,7 @@ import (
 	"task-trail/internal/entity"
 	"task-trail/internal/repo"
 	"testing"
+	"time"
 
 	"go.uber.org/mock/gomock"
 )
@@ -86,6 +87,20 @@ func TestUseCaseResendVerificationEmail(t *testing.T) {
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
 			wantErrMsg:  "failed to get user",
+		},
+		{
+			name: "user already verified",
+			args: a,
+			uc: func(ctrl *gomock.Controller) *UseCase {
+				uc, deps := mockUseCase(ctrl)
+				mockTx(ctx, deps.txManager)
+				now := time.Now()
+				deps.userRepo.EXPECT().GetByEmail(gomock.Any(), gomock.Any()).Return(&entity.User{ID: 1, Email: testEmail, VerifiedAt: &now}, nil)
+				return uc
+			},
+			wantErr:     true,
+			wantErrType: customerrors.ValidationErr,
+			wantErrMsg:  "user already verified",
 		},
 		{
 			name: "user not found",

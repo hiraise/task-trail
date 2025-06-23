@@ -11,6 +11,9 @@ func (u *UseCase) SendPasswordResetEmail(ctx context.Context, email string) erro
 		if err != nil {
 			return err
 		}
+		if user.VerifiedAt == nil {
+			return u.errHandler.BadRequest(nil, "user is not verified", "userID", user.ID)
+		}
 		// create email token
 		tokenID, err := u.createEmailToken(ctx, user.ID, entity.PurposeVerification)
 		if err != nil {

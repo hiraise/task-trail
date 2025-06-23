@@ -47,7 +47,7 @@ const docTemplate = `{
                     "401": {
                         "description": "authentication required",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -83,19 +83,19 @@ const docTemplate = `{
                     "400": {
                         "description": "invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     },
                     "401": {
                         "description": "invalid credentials",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     },
                     "500": {
                         "description": "internal error",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -125,7 +125,7 @@ const docTemplate = `{
                     "401": {
                         "description": "authentication required",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -161,7 +161,7 @@ const docTemplate = `{
                     "400": {
                         "description": "invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -181,7 +181,7 @@ const docTemplate = `{
                 "summary": "reset user password",
                 "parameters": [
                     {
-                        "description": "user email",
+                        "description": "token and new password",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -197,7 +197,7 @@ const docTemplate = `{
                     "400": {
                         "description": "invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -222,13 +222,13 @@ const docTemplate = `{
                     "401": {
                         "description": "refresh token is invalid",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     },
                     "500": {
                         "description": "internal error",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -265,19 +265,19 @@ const docTemplate = `{
                     "400": {
                         "description": "invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     },
                     "409": {
                         "description": "user already exists",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     },
                     "500": {
                         "description": "internal error",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -313,7 +313,7 @@ const docTemplate = `{
                     "400": {
                         "description": "invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -333,11 +333,13 @@ const docTemplate = `{
                 "summary": "verify user account",
                 "parameters": [
                     {
-                        "type": "string",
                         "description": "token",
-                        "name": "token",
-                        "in": "path",
-                        "required": true
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.VerifyRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -347,13 +349,13 @@ const docTemplate = `{
                     "400": {
                         "description": "token is invalid",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     },
                     "404": {
                         "description": "token or user not found",
                         "schema": {
-                            "$ref": "#/definitions/customerrors.Err"
+                            "$ref": "#/definitions/response.ErrAPI"
                         }
                     }
                 }
@@ -395,31 +397,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "customerrors.Err": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {}
-                },
-                "msg": {
-                    "type": "string"
-                },
-                "responseData": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
-                "source": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "type": {
-                    "type": "integer"
-                }
-            }
-        },
         "request.EmailRequest": {
             "type": "object",
             "required": [
@@ -462,6 +439,29 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 8
+                }
+            }
+        },
+        "request.VerifyRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ErrAPI": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "msg": {
+                    "type": "string"
                 }
             }
         }

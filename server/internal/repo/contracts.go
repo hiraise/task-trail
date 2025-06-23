@@ -43,6 +43,7 @@ type EmailTokenRepository interface {
 	GetByID(ctx context.Context, tokenID string) (*entity.EmailToken, error)
 	Create(ctx context.Context, token entity.EmailToken) error
 	Use(ctx context.Context, tokenID string) error
+	DeleteUsedAndOldTokens(ctx context.Context, olderThan int) (int, error)
 }
 
 type NotificationRepository interface {

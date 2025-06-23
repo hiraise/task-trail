@@ -12,6 +12,9 @@ func (u *UseCase) ResendVerificationEmail(ctx context.Context, email string) err
 		if err != nil {
 			return err
 		}
+		if user.VerifiedAt != nil {
+			return u.errHandler.BadRequest(nil, "user already verified", "userID", user.ID)
+		}
 		// create email token
 		tokenID, err := u.createEmailToken(ctx, user.ID, entity.PurposeVerification)
 		if err != nil {

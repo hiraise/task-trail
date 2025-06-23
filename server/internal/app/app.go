@@ -95,7 +95,8 @@ func Run(cfg *config.Config) {
 	httpServer.Use(recoveryMW)
 	httpServer.Use(errorMW)
 	http.NewRouter(httpServer, errHandler, contextm, userUC, authUC, authMW, cfg)
-	tasks.CleanupTokens(tokenRepo, logger)
+	tasks.CleanupRefreshTokens(tokenRepo, logger)
+	tasks.CleanupEmailTokens(emailTokenRepo, logger)
 	if err := httpServer.Run(); err != nil {
 		logger.Error("http server start failed", "error", err.Error())
 		os.Exit(1)

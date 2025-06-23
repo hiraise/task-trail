@@ -100,3 +100,42 @@ func TestEmailTokenUse(t *testing.T) {
 		require.ErrorIs(t, err, repo.ErrInternal)
 	})
 }
+
+func TestTokenDeleteUsedAndOldTokens(t *testing.T) {
+	cleanDB(t)
+	_, err := userRepo.Create(t.Context(), &basicUser)
+	require.NoError(t, err)
+
+	var testToken1 entity.EmailToken = entity.EmailToken{ID: testTokenID1, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10), Purpose: entity.PurposeVerification}
+	var testToken2 entity.EmailToken = entity.EmailToken{ID: testTokenID2, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10), Purpose: entity.PurposeVerification}
+	t.Run("successfully delete used and old tokens", func(t *testing.T) {
+		err := emailTokenRepo.Create(t.Context(), testToken1)
+		require.NoError(t, err)
+		err = emailTokenRepo.Create(t.Context(), testToken2)
+		require.NoError(t, err)
+		// make token1 is older
+		_, err = pg.Pool.Exec(
+			t.Context(),
+			`UPDATE email_tokens SET expired_at = $1 WHERE id = $2`,
+			time.Now().Add(time.Hour*-7*24),
+			testTokenID1,
+		)
+		require.NoError(t, err)
+		// make token2 used
+		_, err = pg.Pool.Exec(
+			t.Context(),
+			`UPDATE email_tokens SET used_at = $1 WHERE id = $2`,
+			time.Now().Add(time.Hour*-7*24),
+			testTokenID2,
+		)
+		require.NoError(t, err)
+		num, err := emailTokenRepo.DeleteUsedAndOldTokens(t.Context(), 7)
+		require.NoError(t, err)
+		require.Equal(t, 2, num)
+	})
+	t.Run("database internal error", func(t *testing.T) {
+		num, err := emailTokenRepo.DeleteUsedAndOldTokens(getBadContext(t), 1)
+		require.Equal(t, 0, num)
+		require.ErrorIs(t, err, repo.ErrInternal)
+	})
+}

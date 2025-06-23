@@ -67,7 +67,7 @@ func TestUseCaseVerify(t *testing.T) {
 				return uc
 			},
 			wantErr:     true,
-			wantErrType: customerrors.NotFoundErr,
+			wantErrType: customerrors.ValidationErr,
 			wantErrMsg:  "email token not found",
 		},
 		{
@@ -97,7 +97,7 @@ func TestUseCaseVerify(t *testing.T) {
 				return uc
 			},
 			wantErr:     true,
-			wantErrType: customerrors.NotFoundErr,
+			wantErrType: customerrors.ValidationErr,
 			wantErrMsg:  "user not found",
 		},
 		{
@@ -155,7 +155,7 @@ func TestUseCaseVerify(t *testing.T) {
 				return uc
 			},
 			wantErr:     true,
-			wantErrType: customerrors.NotFoundErr,
+			wantErrType: customerrors.ValidationErr,
 			wantErrMsg:  "email token not found",
 		},
 		{

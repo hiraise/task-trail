@@ -71,7 +71,7 @@ func TestUseCaseResetPassword(t *testing.T) {
 				return uc
 			},
 			wantErr:     true,
-			wantErrType: customerrors.NotFoundErr,
+			wantErrType: customerrors.ValidationErr,
 			wantErrMsg:  "email token not found",
 		},
 		{
@@ -103,7 +103,7 @@ func TestUseCaseResetPassword(t *testing.T) {
 				return uc
 			},
 			wantErr:     true,
-			wantErrType: customerrors.NotFoundErr,
+			wantErrType: customerrors.ValidationErr,
 			wantErrMsg:  "user not found",
 		},
 		{
@@ -162,7 +162,7 @@ func TestUseCaseResetPassword(t *testing.T) {
 				return uc
 			},
 			wantErr:     true,
-			wantErrType: customerrors.NotFoundErr,
+			wantErrType: customerrors.ValidationErr,
 			wantErrMsg:  "email token not found",
 		},
 		{

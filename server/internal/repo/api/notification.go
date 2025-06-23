@@ -36,7 +36,7 @@ func (r *SmtpNotificationRepo) SendVerificationEmail(ctx context.Context, email 
 	msg := smtp.Message{
 		Recipients: []string{email},
 		Subject:    "Account Verification",
-		Text:       r.verificationUrl + token,
+		Text:       r.verificationUrl + token + "&email=" + email,
 	}
 	return r.send(msg)
 }

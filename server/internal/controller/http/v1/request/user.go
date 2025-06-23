@@ -6,7 +6,7 @@ type User struct {
 }
 
 type VerifyRequest struct {
-	Token string `validate:"required,uuid"`
+	Token string `json:"token" binding:"required,uuid"`
 }
 
 type EmailRequest struct {
@@ -14,6 +14,6 @@ type EmailRequest struct {
 }
 
 type ResetPasswordRequest struct {
-	Token    string `validate:"required,uuid"`
+	Token    string `json:"token" binding:"required,uuid"`
 	Password string `json:"password" binding:"required,min=8,max=50"`
 }
