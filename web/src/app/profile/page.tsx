@@ -10,17 +10,13 @@ import { Icon } from "@/presentation/ui/Icon";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { MenuButton } from "@/presentation/ui/MenuButton";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-
-const profileTexts = {
-  title: "Личный кабинет",
-  userName: "Салунин Максим",
-  userEmail: "skvp138@gmail.com",
-  editPersonalData: "Изменить личные данные",
-  changePassword: "Изменить пароль",
-  logoutFromAccount: "Выйти из аккаунта",
-};
+import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { getDisplayName } from "@/shared/utils/getDisplayName";
+import { profileTexts } from "@/shared/locales/profile";
 
 export default function ProfilePage() {
+  const user = useAppSelector((state) => state.user.data);
+
   return (
     <MainContainer>
       <DashboardHeader />
@@ -37,8 +33,8 @@ export default function ProfilePage() {
           />
         </div>
         <div className="text-info-container">
-          <p className="user-name">{profileTexts.userName}</p>
-          <p className="user-email">{profileTexts.userEmail}</p>
+          <p className="user-name">{getDisplayName(user)}</p>
+          <p className="user-email">{user?.email}</p>
         </div>
       </div>
       <Spacer size="20px" />
