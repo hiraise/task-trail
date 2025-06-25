@@ -12,6 +12,8 @@ const Spinner = styled.div<{ size?: number }>`
   border-top: 4px solid var(--foreground);
   border-radius: 50%;
   animation: ${spin} 1s linear infinite;
+  align-self: center;
+  justify-self: center;
 `;
 
 export default Spinner;
