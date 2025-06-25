@@ -3,10 +3,90 @@ import reducer, {
   resetRedirect,
   setError,
   clearError,
+  AuthState,
 } from "./authSlice";
-import { loginThunk } from "../thunks/loginThunk";
-import { signUpThunk } from "../thunks/signUpThunk";
+
 import { AppErrorProps, AppErrorType } from "@/shared/errors/types";
+import { loginThunk, logoutThunk, signUpThunk } from "../thunks/authThunks";
+
+/**
+ * Props for testing thunk action cases in authentication slice tests.
+ *
+ * @property thunk - An object containing the action types for the thunk's pending, fulfilled, and rejected states.
+ * @property thunk.pending - The action type string for the pending state.
+ * @property thunk.fulfilled - The action type string for the fulfilled state.
+ * @property thunk.rejected - The action type string for the rejected state.
+ * @property initialState - The initial authentication state before the thunk is dispatched.
+ * @property errorMessage - The error message expected when the thunk is rejected.
+ */
+interface ThunkCasesProps {
+  thunk: {
+    pending: { type: string };
+    fulfilled: { type: string };
+    rejected: { type: string };
+  };
+  initialState: AuthState;
+  errorMessage: string;
+}
+
+/**
+ * Runs a suite of unit tests for Redux thunk action cases (pending, fulfilled, rejected)
+ * against a given reducer and initial state. This helper function verifies that the reducer
+ * correctly updates the loading and error state properties in response to each thunk action type.
+ *
+ * @param params - The parameters for the test cases.
+ * @param params.thunk - The thunk action creator object containing `pending`, `fulfilled`, and `rejected` action types.
+ * @param params.initialState - The initial state of the reducer before any actions are dispatched.
+ * @param params.errorMessage - The expected error message to be set in the state when the thunk is rejected with an error.
+ *
+ * @example
+ * testThunkCases({
+ *   thunk: myAsyncThunk,
+ *   initialState: { loading: false, error: null },
+ *   errorMessage: "Some error occurred"
+ * });
+ */
+function testThunkCases({
+  thunk,
+  initialState,
+  errorMessage,
+}: ThunkCasesProps) {
+  it(`should handle ${thunk.pending.type}`, () => {
+    const state = reducer(initialState, { type: thunk.pending.type });
+    expect(state.loading).toBe(true);
+    expect(state.error).toBeNull();
+  });
+
+  it(`should handle ${thunk.fulfilled.type}`, () => {
+    const stateBefore = { ...initialState, loading: true };
+    const state = reducer(stateBefore, { type: thunk.fulfilled.type });
+    expect(state.loading).toBe(false);
+  });
+
+  it(`should handle ${thunk.rejected.type} with message`, () => {
+    const stateBefore = { ...initialState, loading: true };
+    const error: AppErrorProps = {
+      type: AppErrorType.AUTH,
+      message: errorMessage,
+    };
+    const state = reducer(stateBefore, {
+      type: thunk.rejected.type,
+      payload: error,
+    });
+    expect(state.loading).toBe(false);
+    expect(state.error).toBe(errorMessage);
+  });
+
+  it(`should handle ${thunk.rejected.type} without message`, () => {
+    const stateBefore = { ...initialState, loading: true };
+    const state = reducer(stateBefore, {
+      type: thunk.rejected.type,
+      payload: undefined,
+    });
+    expect(state.loading).toBe(false);
+    expect(state.error).toBe("Неизвестная ошибка");
+  });
+}
 
 describe("authSlice", () => {
   const initialState = {
@@ -16,149 +96,55 @@ describe("authSlice", () => {
   };
 
   it("should return the initial state", () => {
-    // Arrange & Act
     const state = reducer(undefined, { type: "" });
-    // Assert
     expect(state).toEqual(initialState);
   });
 
   it("should handle requireAuthRedirect", () => {
-    // Arrange
     const stateBefore = { ...initialState };
-    // Act
     const state = reducer(stateBefore, requireAuthRedirect());
-    // Assert
     expect(state.shouldRedirectToLogin).toBe(true);
   });
 
   it("should handle resetRedirect", () => {
-    // Arrange
     const stateBefore = { ...initialState, shouldRedirectToLogin: true };
-    // Act
     const state = reducer(stateBefore, resetRedirect());
-    // Assert
     expect(state.shouldRedirectToLogin).toBe(false);
   });
 
   it("should handle setError", () => {
-    // Arrange
     const stateBefore = { ...initialState };
-    // Act
     const state = reducer(stateBefore, setError("Ошибка"));
-    // Assert
     expect(state.error).toBe("Ошибка");
   });
 
   it("should handle clearError", () => {
-    // Arrange
     const stateBefore = { ...initialState, error: "Ошибка" };
-    // Act
     const state = reducer(stateBefore, clearError());
-    // Assert
     expect(state.error).toBeNull();
   });
 
   describe("loginThunk", () => {
-    it("should handle loginThunk.pending", () => {
-      // Arrange
-      const stateBefore = { ...initialState };
-      const action = { type: loginThunk.pending.type };
-      // Act
-      const state = reducer(stateBefore, action);
-      // Assert
-      expect(state.loading).toBe(true);
-      expect(state.error).toBeNull();
+    testThunkCases({
+      thunk: loginThunk,
+      initialState,
+      errorMessage: "Ошибка входа",
     });
+  });
 
-    it("should handle loginThunk.fulfilled", () => {
-      // Arrange
-      const stateBefore = { ...initialState, loading: true };
-      const action = { type: loginThunk.fulfilled.type };
-      // Act
-      const state = reducer(stateBefore, action);
-      // Assert
-      expect(state.loading).toBe(false);
-    });
-
-    it("should handle loginThunk.rejected with message", () => {
-      // Arrange
-      const stateBefore = { ...initialState, loading: true };
-      const error: AppErrorProps = { type: AppErrorType.AUTH, message: "Ошибка входа" };
-      const action = {
-        type: loginThunk.rejected.type,
-        payload: error,
-      };
-      // Act
-      const state = reducer(stateBefore, action);
-      // Assert
-      expect(state.loading).toBe(false);
-      expect(state.error).toBe("Ошибка входа");
-    });
-
-    it("should handle loginThunk.rejected without message", () => {
-      // Arrange
-      const stateBefore = { ...initialState, loading: true };
-      const action = {
-        type: loginThunk.rejected.type,
-        payload: undefined,
-      };
-      // Act
-      const state = reducer(stateBefore, action);
-      // Assert
-      expect(state.loading).toBe(false);
-      expect(state.error).toBe("Неизвестная ошибка");
+  describe("logoutThunk", () => {
+    testThunkCases({
+      thunk: logoutThunk,
+      initialState,
+      errorMessage: "Ошибка выхода",
     });
   });
 
   describe("signUpThunk", () => {
-    it("should handle signUpThunk.pending", () => {
-      // Arrange
-      const stateBefore = { ...initialState };
-      const action = { type: signUpThunk.pending.type };
-      // Act
-      const state = reducer(stateBefore, action);
-      // Assert
-      expect(state.loading).toBe(true);
-      expect(state.error).toBeNull();
-    });
-
-    it("should handle signUpThunk.fulfilled", () => {
-      // Arrange
-      const stateBefore = { ...initialState, loading: true };
-      const action = { type: signUpThunk.fulfilled.type };
-      // Act
-      const state = reducer(stateBefore, action);
-      // Assert
-      expect(state.loading).toBe(false);
-    });
-
-    it("should handle signUpThunk.rejected with message", () => {
-      // Arrange
-      const stateBefore = { ...initialState, loading: true };
-      const error: AppErrorProps = { type: AppErrorType.AUTH, message: "Ошибка регистрации" };
-      const action = {
-        type: signUpThunk.rejected.type,
-        payload: error,
-      };
-      // Act
-      const state = reducer(stateBefore, action);
-      // Assert
-      expect(state.loading).toBe(false);
-      expect(state.error).toBe("Ошибка регистрации");
-    });
-
-    it("should handle signUpThunk.rejected without message", () => {
-      // Arrange
-      const stateBefore = { ...initialState, loading: true };
-      const action = {
-        type: signUpThunk.rejected.type,
-        payload: undefined,
-      };
-      // Act
-      const state = reducer(stateBefore, action);
-      // Assert
-      expect(state.loading).toBe(false);
-      expect(state.error).toBe("Неизвестная ошибка");
+    testThunkCases({
+      thunk: signUpThunk,
+      initialState,
+      errorMessage: "Ошибка регистрации",
     });
   });
 });
