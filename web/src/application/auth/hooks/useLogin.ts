@@ -1,11 +1,12 @@
 import { useRouter, useSearchParams } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { loginThunk } from "../thunks/loginThunk";
-import { RootState, AppDispatch } from "@/infrastructure/redux/store";
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { useAppDispatch } from "@/infrastructure/redux/hooks";
+import { getCurrentUserThunk } from "@/application/user/thunks/getCurrentUserThunk";
 
 interface LoginFormProps {
   email: string;
@@ -15,20 +16,25 @@ interface LoginFormProps {
 export const useLogin = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useDispatch<AppDispatch>();
-  const loading = useSelector((state: RootState) => state.auth.loading);
-
+  const dispatch = useAppDispatch();
   const from = searchParams.get("from") || ROUTES.dashboard;
+  const [loading, setLoading] = useState(false);
 
   const login = async ({ email, password }: LoginFormProps) => {
-    const thunk = loginThunk({ email, password });
+    setLoading(true);
     try {
-      await dispatch(thunk).unwrap();
+      await dispatch(loginThunk({ email, password })).unwrap();
+      const user = await dispatch(getCurrentUserThunk()).unwrap();
+      console.log("User after login:", user);
+
+      console.log();
       toast.success(successTexts.loginSuccess);
       router.replace(from);
     } catch (error) {
       //TODO: add log to sentry
       console.log(errorTexts.somethingWentWrong, error);
+    } finally {
+      setLoading(false);
     }
   };
 
