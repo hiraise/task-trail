@@ -1,12 +1,11 @@
 import { toast } from "sonner";
-import { useDispatch } from "react-redux";
 
-import { AppDispatch } from "@/infrastructure/redux/store";
-import { resendVerificationThunk } from "../thunks/resendVerificationThunk";
 import { AppError } from "@/shared/errors/types";
+import { useAppDispatch } from "@/infrastructure/redux/hooks";
+import { resendVerificationThunk } from "../thunks/authThunks";
 
 export const useResendEmail = (email: string) => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   const resendEmail = async (): Promise<void> => {
     const thunk = resendVerificationThunk(email);

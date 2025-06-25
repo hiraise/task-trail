@@ -2,11 +2,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { loginThunk } from "../thunks/loginThunk";
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { useAppDispatch } from "@/infrastructure/redux/hooks";
 import { getCurrentUserThunk } from "@/application/user/thunks/getCurrentUserThunk";
+import { loginThunk } from "../thunks/authThunks";
+import { clientLogger } from "@/infrastructure/config/clientLogger";
 
 interface LoginFormProps {
   email: string;
@@ -24,15 +25,12 @@ export const useLogin = () => {
     setLoading(true);
     try {
       await dispatch(loginThunk({ email, password })).unwrap();
-      const user = await dispatch(getCurrentUserThunk()).unwrap();
-      console.log("User after login:", user);
-
-      console.log();
+      await dispatch(getCurrentUserThunk()).unwrap();
       toast.success(successTexts.loginSuccess);
       router.replace(from);
     } catch (error) {
-      //TODO: add log to sentry
-      console.log(errorTexts.somethingWentWrong, error);
+      clientLogger.error("Login error:", { login: error });
+      toast.error(errorTexts.somethingWentWrong);
     } finally {
       setLoading(false);
     }
