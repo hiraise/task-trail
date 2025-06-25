@@ -116,3 +116,60 @@ describe("AuthService signUp", () => {
     );
   });
 });
+
+describe("AuthService resendVerification", () => {
+  let mockAxiosClient: MockAdapter;
+  let email: string;
+
+  beforeEach(() => {
+    mockAxiosClient = new MockAdapter(axiosClient);
+    email = "example@microsoft.com";
+  });
+
+  afterEach(() => {
+    mockAxiosClient.reset();
+  });
+
+  it("should call the resend verification endpoint and return the response 200 OK", async () => {
+    mockAxiosClient.onPost(API_ROUTES.RESEND_VERIFICATION).reply(200, null);
+    const resendVerification = authService.resendVerification(email);
+    expect(await resendVerification).toBeUndefined();
+    expect(mockAxiosClient.history.post.length).toBe(1);
+  });
+
+  it("should call the resend verification endpoint with wrong email and return 400 error", async () => {
+    mockAxiosClient.onPost(API_ROUTES.RESEND_VERIFICATION).reply(400, null);
+    const resendVerification = authService.resendVerification(email);
+    await expect(resendVerification).rejects.toThrow(
+      new AppError(AppErrorType.AUTH, errorTexts.somethingWentWrong)
+    );
+  });
+});
+
+describe("AuthService verifyEmail", () => {
+  let mockAxiosClient: MockAdapter;
+  let token: string;
+
+  beforeEach(() => {
+    mockAxiosClient = new MockAdapter(axiosClient);
+    token = "valid-token";
+  });
+  afterEach(() => {
+    mockAxiosClient.reset();
+  });
+
+  it("should call the verify email endpoint and return the response 200 OK", async () => {
+    mockAxiosClient.onPost(API_ROUTES.VERIFY).reply(200, null);
+    const verifyEmail = authService.verifyEmail(token);
+    expect(await verifyEmail).toBeUndefined();
+    expect(mockAxiosClient.history.post.length).toBe(1);
+  });
+
+  it("should call the verify email endpoint with wrong token and return 400 error", async () => {
+    mockAxiosClient.onPost(API_ROUTES.VERIFY).reply(400, null);
+    const verifyEmail = authService.verifyEmail(token);
+    await expect(verifyEmail).rejects.toThrow(
+      new AppError(AppErrorType.AUTH, errorTexts.somethingWentWrong)
+    );
+  });
+});
