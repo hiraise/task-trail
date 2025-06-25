@@ -70,6 +70,37 @@ describe("AuthService login", () => {
   });
 });
 
+describe("AuthService logout", () => {
+  let mockAxiosClient: MockAdapter;
+
+  beforeEach(() => {
+    mockAxiosClient = new MockAdapter(axiosClient);
+  });
+
+  afterEach(() => {
+    mockAxiosClient.reset();
+  });
+
+  it("should call the logout endpoint and return the response 200 OK", async () => {
+    mockAxiosClient.onPost(API_ROUTES.LOGOUT).reply(200, null);
+    const logout = authService.logout();
+    expect(await logout).toBeUndefined();
+    expect(mockAxiosClient.history.post.length).toBe(1);
+    expect(mockAxiosClient.history.post[0].url).toBe(API_ROUTES.LOGOUT);
+    expect(mockAxiosClient.history.post[0].method).toBe("post");
+  });
+
+  it("should call the logout endpoint and return 401 error", async () => {
+    mockAxiosClient.onPost(API_ROUTES.LOGOUT).reply(401, null);
+    const logout = authService.logout();
+    expect(mockAxiosClient.history.post.length).toBe(1);
+    expect(mockAxiosClient.history.post[0].url).toBe(API_ROUTES.LOGOUT);
+    expect(mockAxiosClient.history.post[0].method).toBe("post");
+    await expect(logout).rejects.toThrow(AppError);
+    await expect(logout).rejects.toThrow(errorTexts.authenticationRequired);
+  });
+});
+
 describe("AuthService signUp", () => {
   let mockAxiosClient: MockAdapter;
 
@@ -160,14 +191,14 @@ describe("AuthService verifyEmail", () => {
 
   it("should call the verify email endpoint and return the response 200 OK", async () => {
     mockAxiosClient.onPost(API_ROUTES.VERIFY).reply(200, null);
-    const verifyEmail = authService.verifyEmail(token);
+    const verifyEmail = authService.confirmEmail(token);
     expect(await verifyEmail).toBeUndefined();
     expect(mockAxiosClient.history.post.length).toBe(1);
   });
 
   it("should call the verify email endpoint with wrong token and return 400 error", async () => {
     mockAxiosClient.onPost(API_ROUTES.VERIFY).reply(400, null);
-    const verifyEmail = authService.verifyEmail(token);
+    const verifyEmail = authService.confirmEmail(token);
     await expect(verifyEmail).rejects.toThrow(
       new AppError(AppErrorType.AUTH, errorTexts.somethingWentWrong)
     );

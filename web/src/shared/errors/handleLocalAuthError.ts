@@ -20,6 +20,18 @@ export const localErrorHandlers: Record<
         return null;
     }
   },
+  logout: (error) => {
+    const isAxiosError = error instanceof AxiosError;
+    switch (isAxiosError && error?.response?.status) {
+      case 401:
+        return new AppError(
+          AppErrorType.AUTH,
+          errorTexts.authenticationRequired
+        );
+      default:
+        return null;
+    }
+  },
   signUp: (error) => {
     const isAxiosError = error instanceof AxiosError;
     switch (isAxiosError && error?.response?.status) {
