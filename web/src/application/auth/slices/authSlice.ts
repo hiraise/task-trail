@@ -1,6 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface AuthState {
+import { loginThunk, logoutThunk, signUpThunk } from "../thunks/authThunks";
+import { handleAsyncThunkCases } from "@/shared/utils/handleAsyncThunkCases";
+
+export interface AuthState {
   loading: boolean;
   error: string | null;
   shouldRedirectToLogin: boolean;
@@ -11,10 +14,6 @@ const initialState: AuthState = {
   error: null,
   shouldRedirectToLogin: false,
 };
-
-import { loginThunk } from "../thunks/loginThunk";
-import { signUpThunk } from "../thunks/signUpThunk";
-import { AppErrorProps } from "@/shared/errors/types";
 
 const authSlice = createSlice({
   name: "auth",
@@ -34,38 +33,9 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Login
-    builder
-      .addCase(loginThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginThunk.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(
-        loginThunk.rejected,
-        (state, action: PayloadAction<AppErrorProps | undefined>) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Неизвестная ошибка";
-        }
-      );
-    // Sign Up
-    builder
-      .addCase(signUpThunk.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(signUpThunk.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(
-        signUpThunk.rejected,
-        (state, action: PayloadAction<AppErrorProps | undefined>) => {
-          state.loading = false;
-          state.error = action.payload?.message || "Неизвестная ошибка";
-        }
-      );
+    handleAsyncThunkCases(builder, loginThunk);
+    handleAsyncThunkCases(builder, logoutThunk);
+    handleAsyncThunkCases(builder, signUpThunk);
   },
 });
 
