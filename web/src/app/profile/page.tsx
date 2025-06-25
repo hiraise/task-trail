@@ -13,9 +13,12 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { getDisplayName } from "@/shared/utils/getDisplayName";
 import { profileTexts } from "@/shared/locales/profile";
+import Spinner from "@/presentation/widgets/common/Spinner";
+import { useLogout } from "@/application/auth/hooks/useLogout";
 
 export default function ProfilePage() {
   const user = useAppSelector((state) => state.user.data);
+  const { logout, loading } = useLogout();
 
   return (
     <MainContainer>
@@ -52,9 +55,9 @@ export default function ProfilePage() {
         <SubmitButton
           $variant="secondary"
           className="logout-btn"
-          onClick={() => alert("Logout clicked")}
+          onClick={logout}
         >
-          {profileTexts.logoutFromAccount}
+          {loading ? <Spinner size={16} /> : profileTexts.logoutFromAccount}
         </SubmitButton>
       </div>
       <BottomNavBar />
