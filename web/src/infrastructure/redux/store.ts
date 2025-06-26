@@ -5,6 +5,7 @@ import userReducer from "@/application/user/slices/userSlice";
 import { errorHandlingMiddleware } from "./middleware";
 
 export const store = configureStore({
+  devTools: process.env.NODE_ENV === "development",
   reducer: {
     auth: authReducer,
     user: userReducer,
