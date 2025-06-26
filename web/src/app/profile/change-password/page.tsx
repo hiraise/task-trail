@@ -5,7 +5,7 @@ import { BackButton } from "@/presentation/ui/BackButton";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import { Spacer } from "@/presentation/widgets/primitives/Spacer";
-import { ChangePasswordForm } from "@/presentation/widgets/profile/ChangePasswordForm.tsx/ChangePasswordForm";
+import { ChangePasswordForm } from "@/presentation/widgets/profile/ChangePasswordForm/ChangePasswordForm";
 
 export default function ChangePasswordPage() {
   return (
