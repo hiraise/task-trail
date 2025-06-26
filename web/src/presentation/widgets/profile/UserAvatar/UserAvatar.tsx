@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import styles from "./UserAvatar.module.css";
-import AvatarIcon from "../../../../../public/icons/profile-large.svg?url";
 import { useSelectImage } from "@/shared/hooks/useSelectImage";
 import { ICONS } from "@/infrastructure/config/icons";
 import { Icon } from "@/presentation/ui/Icon";
@@ -18,7 +17,7 @@ function AvatarImage({ avatarUrl }: { avatarUrl?: string }) {
       src={avatarUrl}
       alt="User Avatar"
       fill
-      onError={() => AvatarIcon}
+      onError={() => ICONS.profileLarge}
     />
   ) : (
     <Icon as={ICONS.profileLarge} size="40px" />
