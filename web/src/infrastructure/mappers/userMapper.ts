@@ -2,23 +2,25 @@ import { User } from "@/domain/user/types";
 
 interface ApiUser {
   id: string | number;
+  username?: string;
   email: string;
-  full_name?: string;
-  name?: string;
+  avatarUrl?: string;
 }
 
 export function mapUserFromApi(data: ApiUser): User {
   return {
     id: String(data.id),
+    username: String(data.username ?? ""),
     email: data.email,
-    name: data.full_name ?? data.name ?? "",
+    avatarUrl: String(data.avatarUrl ?? ""),
   };
 }
 
 export function mapUserToApi(user: User): ApiUser {
   return {
     id: user.id,
+    username: user.username,
     email: user.email,
-    full_name: user.name,
+    avatarUrl: user.avatarUrl,
   };
 }
