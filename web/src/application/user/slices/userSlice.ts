@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { User } from "@/domain/user/types";
 import { getCurrentUserThunk } from "../thunks/getCurrentUserThunk";
@@ -22,6 +22,10 @@ const userSlice = createSlice({
     clearState() {
       return initialState;
     },
+    updateAvatar(state, action: PayloadAction<string>) {
+      if (!state.data) return;
+      state.data.avatarUrl = action.payload;
+    },
   },
   extraReducers: (builder) => {
     // Get Current User
@@ -40,5 +44,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearState } = userSlice.actions;
+export const { clearState, updateAvatar } = userSlice.actions;
 export default userSlice.reducer;
