@@ -1,24 +1,49 @@
 "use client";
 
+import { useState } from "react";
+import { toast } from "sonner";
+
 import "./profile.css";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { Spacer } from "@/presentation/widgets/primitives/Spacer";
-import { ICONS } from "@/infrastructure/config/icons";
-import { Icon } from "@/presentation/ui/Icon";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { MenuButton } from "@/presentation/ui/MenuButton";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { getDisplayName } from "@/shared/utils/getDisplayName";
 import { profileTexts } from "@/shared/locales/profile";
 import Spinner from "@/presentation/widgets/common/Spinner";
 import { useLogout } from "@/application/auth/hooks/useLogout";
+import { UserAvatar } from "@/presentation/widgets/profile/UserAvatar/UserAvatar";
+import { ImageCropper } from "../../presentation/widgets/profile/ImageCropper/ImageCropper";
+import { userService } from "@/infrastructure/api/userService";
+import { updateAvatar } from "@/application/user/slices/userSlice";
 
 export default function ProfilePage() {
+  const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user.data);
   const { logout, loading } = useLogout();
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleImageSelected = (file: File) => setSelectedFile(file);
+
+  const handleCropComplete = async (formData: FormData) => {
+    setSelectedFile(null);
+    try {
+      const avatarUrl = await userService.uploadAvatar(formData);
+      if (avatarUrl) {
+        dispatch(updateAvatar(avatarUrl));
+        toast.success("Avatar updated successfully!");
+      } else {
+        toast.error("Server did not return avatar url");
+      }
+    } catch {
+      toast.error("Failed to update avatar");
+    }
+  };
 
   return (
     <MainContainer>
@@ -26,15 +51,17 @@ export default function ProfilePage() {
       <h1 className="title">{profileTexts.title}</h1>
       <Spacer size="24px" />
       <div className="user-info-container">
-        <div className="icon-wrapper">
-          <Icon as={ICONS.profileLarge} size="40px" className="main-icon" />
-          <Icon
-            as={ICONS.camera}
-            size="29px"
-            className="badge-icon"
-            color="var(--background)"
+        <UserAvatar
+          avatarUrl={user?.avatarUrl}
+          onImageSelected={handleImageSelected}
+        />
+        {selectedFile && (
+          <ImageCropper
+            file={selectedFile}
+            onCropComplete={handleCropComplete}
+            onClose={() => setSelectedFile(null)}
           />
-        </div>
+        )}
         <div className="text-info-container">
           <p className="user-name">{getDisplayName(user)}</p>
           <p className="user-email">{user?.email}</p>

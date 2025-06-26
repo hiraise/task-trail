@@ -11,31 +11,6 @@
   gap: 12px;
 }
 
-.icon-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(240, 240, 240, 1);
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-}
-
-.main-icon {
-  display: block;
-}
-
-.badge-icon {
-  background: rgba(127, 127, 127, 1);
-  border: 1px solid var(--background);
-  border-radius: 50%;
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  padding: 6px;
-}
-
 .title {
   font-size: 34px;
   font-weight: 500;
