@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   basePath: process.env.NEXT_PUBLIC_ROOT_PATH,
+  images: { domains: ["localhost", "dev.hiraise.net", "hiraise.net"] },
   trailingSlash: true,
   reactStrictMode: true,
 };
