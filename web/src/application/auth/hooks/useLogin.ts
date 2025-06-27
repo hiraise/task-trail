@@ -5,9 +5,9 @@ import { toast } from "sonner";
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { useAppDispatch } from "@/infrastructure/redux/hooks";
-import { getCurrentUserThunk } from "@/application/user/thunks/getCurrentUserThunk";
 import { loginThunk } from "../thunks/authThunks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
+import { getCurrentUserThunk } from "@/application/user/thunks/userThunks";
 
 interface LoginFormProps {
   email: string;

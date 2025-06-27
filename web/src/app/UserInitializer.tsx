@@ -5,8 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { protectedRoutes, ROUTES } from "@/infrastructure/config/routes";
-import { getCurrentUserThunk } from "@/application/user/thunks/getCurrentUserThunk";
 import { checkAuthStatusThunk } from "@/application/auth/thunks/authThunks";
+import { getCurrentUserThunk } from "@/application/user/thunks/userThunks";
 
 export default function UserInitializer() {
   const user = useAppSelector((state) => state.user.data);
