@@ -17,6 +17,7 @@ function AvatarImage({ avatarUrl }: { avatarUrl?: string }) {
       src={avatarUrl}
       alt="User Avatar"
       fill
+      sizes="80px"
       onError={() => ICONS.profileLarge}
     />
   ) : (
