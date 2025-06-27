@@ -25,8 +25,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <StoreProvider>
-          <UserInitializer />
           <Toaster position="bottom-right" richColors />
+          <UserInitializer />
           <AuthRedirectWatcher />
           <ClientOnly>{children}</ClientOnly>
         </StoreProvider>
