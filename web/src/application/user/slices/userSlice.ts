@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { User } from "@/domain/user/types";
-import { getCurrentUserThunk } from "../thunks/getCurrentUserThunk";
+import { getCurrentUserThunk, updateUserThunk } from "../thunks/userThunks";
 
 type UserState = {
   data: User | null;
@@ -40,6 +40,19 @@ const userSlice = createSlice({
     builder.addCase(getCurrentUserThunk.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload?.message || "Failed to get current user";
+    });
+    // Update User
+    builder.addCase(updateUserThunk.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(updateUserThunk.fulfilled, (state, action) => {
+      state.loading = false;
+      state.data = action.payload;
+    });
+    builder.addCase(updateUserThunk.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload?.message || "Failed to update user";
     });
   },
 });
