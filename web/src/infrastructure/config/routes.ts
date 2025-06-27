@@ -20,4 +20,5 @@ export const protectedRoutes = [
   ROUTES.boards,
   ROUTES.tasks,
   ROUTES.archive,
+  ROUTES.profile,
 ];
