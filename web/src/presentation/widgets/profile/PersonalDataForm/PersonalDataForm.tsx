@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import styles from "./PersonalDataForm.module.css";
@@ -5,6 +6,7 @@ import { Input, InputLabel } from "../../auth/LoginForm/LoginForm.styled";
 import { Stack } from "../../primitives/Stack";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { userNameValidator } from "@/shared/utils/validate";
+import LoadingScreen from "../../common/LoadingScreen";
 
 const formTexts = {
   userNameLabel: "Username",
@@ -32,14 +34,21 @@ export function PersonalDataForm({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    reset,
   } = useForm<FormValues>({
     defaultValues: { username: initialUsername, email: initialEmail },
     mode: "onChange",
   });
 
+  useEffect(() => {
+    reset({ username: initialUsername });
+  }, [initialUsername, reset]);
+
   const submitHandler = (data: FormValues) => {
     return onSubmit({ username: data.username });
   };
+
+  if (isSubmitting) return <LoadingScreen />;
 
   return (
     <form
@@ -67,6 +76,8 @@ export function PersonalDataForm({
         </InputLabel>
         <Input id="email" type="email" value={initialEmail} disabled />
       </Stack>
+      {/* Hidden submit button to allow form submission via Enter key */}
+      <button type="submit" style={{ display: "none" }} aria-hidden />
     </form>
   );
 }
