@@ -4,6 +4,7 @@ import { createLogoutThunk } from "./createLogoutThunk";
 import { createSignUpThunk } from "./createSignUpThunk";
 import { createResendVerificationThunk } from "./createResendVerificationThunk";
 import { createConfirmEmailThunk } from "./createConfirmEmailThunk";
+import { createCheckAuthStatusThunk } from "./createCheckAuthStatusThunk";
 
 export const loginThunk = createLoginThunk(authService.login);
 export const logoutThunk = createLogoutThunk(authService.logout);
@@ -13,4 +14,7 @@ export const resendVerificationThunk = createResendVerificationThunk(
 );
 export const confirmEmailThunk = createConfirmEmailThunk(
   authService.confirmEmail
+);
+export const checkAuthStatusThunk = createCheckAuthStatusThunk(
+  authService.checkAuthStatus
 );

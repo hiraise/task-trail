@@ -11,13 +11,15 @@ import {
   ResendVerification,
   SignUp,
   ConfirmEmail,
+  CheckAuthStatus,
 } from "@/domain/auth/types";
+import { AppError, AppErrorType } from "@/shared/errors/types";
 
 const login: Login = async (payload: AuthPayload): Promise<void> => {
   try {
     await axiosClient.post(API_ROUTES.LOGIN, payload);
   } catch (error) {
-    clientLogger.error("Login error", { error: error });
+    clientLogger.error("Login error", { error });
     throw mapHttpError(error, Domain.LOGIN);
   }
 };
@@ -26,7 +28,7 @@ const logout: Logout = async (): Promise<void> => {
   try {
     await axiosClient.post(API_ROUTES.LOGOUT);
   } catch (error) {
-    clientLogger.error("Logout error", { error: error });
+    clientLogger.error("Logout error", { error });
     throw mapHttpError(error, Domain.LOGOUT);
   }
 };
@@ -35,7 +37,7 @@ const signUp: SignUp = async (payload: AuthPayload): Promise<void> => {
   try {
     await axiosClient.post(API_ROUTES.SIGNUP, payload);
   } catch (error) {
-    clientLogger.error("SignUp error", { error: error });
+    clientLogger.error("SignUp error", { error });
     throw mapHttpError(error, Domain.SIGNUP);
   }
 };
@@ -46,7 +48,7 @@ const resendVerification: ResendVerification = async (
   try {
     await axiosClient.post(API_ROUTES.RESEND_VERIFICATION, { email });
   } catch (error) {
-    clientLogger.error("ResendVerification error", { error: error });
+    clientLogger.error("ResendVerification error", { error });
     throw mapHttpError(error, Domain.RESEND_VERIFICATION);
   }
 };
@@ -55,8 +57,17 @@ const confirmEmail: ConfirmEmail = async (token: string): Promise<void> => {
   try {
     await axiosClient.post(API_ROUTES.VERIFY, { token });
   } catch (error) {
-    clientLogger.error("Verify Email error", { error: error });
+    clientLogger.error("Verify Email error", { error });
     throw mapHttpError(error, Domain.CONFIRM_EMAIL);
+  }
+};
+
+const checkAuthStatus: CheckAuthStatus = async (): Promise<void> => {
+  try {
+    await axiosClient.get(API_ROUTES.AUTH_CHECK);
+  } catch (error) {
+    clientLogger.error("Check Auth Status error", { error });
+    throw new AppError(AppErrorType.UNAUTHORIZED, "User is not authenticated");
   }
 };
 
@@ -66,4 +77,5 @@ export const authService: AuthService = {
   signUp: signUp,
   resendVerification: resendVerification,
   confirmEmail: confirmEmail,
+  checkAuthStatus: checkAuthStatus,
 };

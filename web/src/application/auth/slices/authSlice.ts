@@ -1,6 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { loginThunk, logoutThunk, signUpThunk } from "../thunks/authThunks";
+import {
+  checkAuthStatusThunk,
+  loginThunk,
+  logoutThunk,
+  signUpThunk,
+} from "../thunks/authThunks";
 import { handleAsyncThunkCases } from "@/shared/utils/handleAsyncThunkCases";
 
 export interface AuthState {
@@ -36,6 +41,7 @@ const authSlice = createSlice({
     handleAsyncThunkCases(builder, loginThunk);
     handleAsyncThunkCases(builder, logoutThunk);
     handleAsyncThunkCases(builder, signUpThunk);
+    handleAsyncThunkCases(builder, checkAuthStatusThunk);
   },
 });
 
