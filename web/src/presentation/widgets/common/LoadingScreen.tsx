@@ -1,19 +1,10 @@
-import styled from "styled-components";
-
-import Spinner from "./Spinner";
-
-const Container = styled.div`
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #ffffff;
-`;
+import { Spinner } from "@/presentation/ui/Spinner";
+import styles from "./LoadingScreen.module.css";
 
 export default function LoadingScreen() {
   return (
-    <Container>
+    <div className={styles.container}>
       <Spinner />
-    </Container>
+    </div>
   );
 }

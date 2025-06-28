@@ -4,7 +4,7 @@ import Cropper, { Area, Point } from "react-easy-crop";
 import styles from "./ImageCropper.module.css";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { ICONS } from "@/infrastructure/config/icons";
-import Spinner from "@/presentation/widgets/common/Spinner";
+import { Spinner } from "@/presentation/ui/Spinner";
 
 type AvatarCropperProps = {
   file: File;

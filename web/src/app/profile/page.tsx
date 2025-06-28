@@ -14,12 +14,12 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { getDisplayName } from "@/shared/utils/getDisplayName";
 import { profileTexts } from "@/shared/locales/profile";
-import Spinner from "@/presentation/widgets/common/Spinner";
 import { useLogout } from "@/application/auth/hooks/useLogout";
 import { UserAvatar } from "@/presentation/widgets/profile/UserAvatar/UserAvatar";
 import { ImageCropper } from "../../presentation/widgets/profile/ImageCropper/ImageCropper";
 import { userService } from "@/infrastructure/api/userService";
 import { updateAvatar } from "@/application/user/slices/userSlice";
+import { Spinner } from "@/presentation/ui/Spinner";
 
 export default function ProfilePage() {
   const dispatch = useAppDispatch();

@@ -10,7 +10,7 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { TextButton } from "@/presentation/ui/TextButton";
 import { useLogin } from "@/application/auth/hooks/useLogin";
 import PrivacyText from "../../common/PrivacyText";
-import Spinner from "../../common/Spinner";
+import { Spinner } from "@/presentation/ui/Spinner";
 
 export const LoginFormMobile = () => {
   const [email, setEmail] = useState("");
