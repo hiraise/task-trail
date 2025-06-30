@@ -9,42 +9,37 @@ import {
 import { handleAsyncThunkCases } from "@/shared/utils/handleAsyncThunkCases";
 
 export interface AuthState {
-  loading: boolean;
+  loading: boolean; // TODO: replace with authInitializing
   error: string | null;
-  shouldRedirectToLogin: boolean;
+  isAuthenticated: boolean;
+  authInitializing: boolean;
 }
 
 const initialState: AuthState = {
   loading: false,
   error: null,
-  shouldRedirectToLogin: false,
+  isAuthenticated: false,
+  authInitializing: true,
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    requireAuthRedirect: (state) => {
-      state.shouldRedirectToLogin = true;
+    setAuthenticated: (state, action: PayloadAction<boolean>) => {
+      state.isAuthenticated = action.payload;
     },
-    resetRedirect: (state) => {
-      state.shouldRedirectToLogin = false;
-    },
-    setError: (state, action: PayloadAction<string>) => {
-      state.error = action.payload;
-    },
-    clearError: (state) => {
-      state.error = null;
+    setAuthInitializing: (state, action: PayloadAction<boolean>) => {
+      state.authInitializing = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    handleAsyncThunkCases(builder, loginThunk);
-    handleAsyncThunkCases(builder, logoutThunk);
-    handleAsyncThunkCases(builder, signUpThunk);
-    handleAsyncThunkCases(builder, checkAuthStatusThunk);
-  },
+  // extraReducers: (builder) => {
+  //   handleAsyncThunkCases(builder, loginThunk);
+  //   handleAsyncThunkCases(builder, logoutThunk);
+  //   handleAsyncThunkCases(builder, signUpThunk);
+  //   handleAsyncThunkCases(builder, checkAuthStatusThunk);
+  // },
 });
 
-export const { requireAuthRedirect, resetRedirect, setError, clearError } =
-  authSlice.actions;
+export const { setAuthenticated, setAuthInitializing } = authSlice.actions;
 export default authSlice.reducer;

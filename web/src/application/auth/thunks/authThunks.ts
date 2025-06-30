@@ -5,8 +5,12 @@ import { createSignUpThunk } from "./createSignUpThunk";
 import { createResendVerificationThunk } from "./createResendVerificationThunk";
 import { createConfirmEmailThunk } from "./createConfirmEmailThunk";
 import { createCheckAuthStatusThunk } from "./createCheckAuthStatusThunk";
+import { userService } from "@/infrastructure/api/userService";
 
-export const loginThunk = createLoginThunk(authService.login);
+export const loginThunk = createLoginThunk(
+  authService.login,
+  userService.getCurrentUser
+);
 export const logoutThunk = createLogoutThunk(authService.logout);
 export const signUpThunk = createSignUpThunk(authService.signUp);
 export const resendVerificationThunk = createResendVerificationThunk(

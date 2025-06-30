@@ -7,6 +7,7 @@ const TYPE_PREFIX = "auth/login";
 
 describe("login thunk", () => {
   let mockLogin: jest.Mock;
+  let mockGetCurrentUser: jest.Mock;
   let thunk: ReturnType<ReturnType<typeof createLoginThunk>>;
   let dispatch: jest.Mock;
   let getState: jest.Mock;
@@ -14,7 +15,8 @@ describe("login thunk", () => {
 
   beforeEach(() => {
     mockLogin = jest.fn();
-    const loginThunk = createLoginThunk(mockLogin);
+    mockGetCurrentUser = jest.fn();
+    const loginThunk = createLoginThunk(mockLogin, mockGetCurrentUser);
     thunk = loginThunk(authPayload);
     dispatch = jest.fn();
     getState = jest.fn();

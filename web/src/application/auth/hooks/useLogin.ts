@@ -1,13 +1,12 @@
-import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { useAppDispatch } from "@/infrastructure/redux/hooks";
 import { loginThunk } from "../thunks/authThunks";
-import { clientLogger } from "@/infrastructure/config/clientLogger";
-import { getCurrentUserThunk } from "@/application/user/thunks/userThunks";
 
 interface LoginFormProps {
   email: string;
@@ -17,15 +16,15 @@ interface LoginFormProps {
 export const useLogin = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const dispatch = useAppDispatch();
-  const from = searchParams.get("from") || ROUTES.dashboard;
   const [loading, setLoading] = useState(false);
+  const from = searchParams.get("from") || ROUTES.dashboard;
+  const dispatch = useAppDispatch();
 
   const login = async ({ email, password }: LoginFormProps) => {
     setLoading(true);
     try {
-      await dispatch(loginThunk({ email, password })).unwrap();
-      await dispatch(getCurrentUserThunk()).unwrap();
+      const thunk = loginThunk({ email, password });
+      await dispatch(thunk).unwrap();
       toast.success(successTexts.loginSuccess);
       router.replace(from);
     } catch (error) {
