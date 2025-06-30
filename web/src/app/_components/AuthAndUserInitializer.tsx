@@ -1,30 +1,33 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { isProtectedRoute } from "@/shared/utils/isProtectedRoute";
-import { useAuthGuard } from "@/shared/useAuthGuard";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
+import { ROUTES } from "@/infrastructure/config/routes";
+import { initSessionThunk } from "@/application/auth/thunks/initSessionThunk";
 
 export function AuthAndUserInitializer() {
   const pathName = usePathname();
-  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
-  const authInitializing = useAppSelector(
-    (state) => state.auth.authInitializing
-  );
-  const { checkAuth, redirectToLogin } = useAuthGuard();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+
+  const isProtected = isProtectedRoute(pathName);
+  const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
+  const authInitializing = useAppSelector((s) => s.auth.authInitializing);
 
   useEffect(() => {
-    if (!isProtectedRoute(pathName) || isAuthenticated) return;
-    checkAuth();
-  }, [checkAuth, isAuthenticated, pathName]);
+    if (isProtected && !isAuthenticated) dispatch(initSessionThunk());
+  }, [isProtected, isAuthenticated, dispatch]);
 
   useEffect(() => {
-    if (!authInitializing && !isAuthenticated && isProtectedRoute(pathName)) {
-      redirectToLogin(pathName);
+    if (isProtected && !authInitializing && !isAuthenticated) {
+      toast.error("You need to log in to access this page.");
+      router.replace(`${ROUTES.login}?from=${encodeURIComponent(pathName)}`);
     }
-  }, [authInitializing, isAuthenticated, pathName, redirectToLogin]);
+  }, [isAuthenticated, pathName, isProtected, authInitializing, router]);
 
   return null;
 }
