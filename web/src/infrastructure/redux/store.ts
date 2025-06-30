@@ -2,6 +2,8 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import authReducer from "@/application/auth/slices/authSlice";
 import userReducer from "@/application/user/slices/userSlice";
+import errorSlice from "@/application/errrors/slices/errorSlice";
+import { authApi } from "../adapters/authApi";
 import { errorHandlingMiddleware } from "./middleware";
 
 export const store = configureStore({
@@ -9,9 +11,13 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     user: userReducer,
+    globalError: errorSlice,
+    [authApi.reducerPath]: authApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(errorHandlingMiddleware),
+    getDefaultMiddleware()
+      .concat(authApi.middleware)
+      .concat(errorHandlingMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
