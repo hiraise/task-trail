@@ -26,10 +26,13 @@ type FormValues = {
 };
 
 interface Props {
-  onSubmit: (data: Pick<FormValues, "newPassword">) => void | Promise<void>;
+  onSubmit: (
+    data: Pick<FormValues, "oldPassword" | "newPassword">
+  ) => void | Promise<void>;
+  isLoading?: boolean;
 }
 
-export function ChangePasswordForm({ onSubmit }: Props) {
+export function ChangePasswordForm({ onSubmit, isLoading }: Props) {
   const {
     register,
     handleSubmit,
@@ -43,7 +46,10 @@ export function ChangePasswordForm({ onSubmit }: Props) {
   const oldPassword = watch("oldPassword");
 
   const submitHandler = (data: FormValues) => {
-    return onSubmit({ newPassword: data.newPassword });
+    return onSubmit({
+      oldPassword: data.oldPassword,
+      newPassword: data.newPassword,
+    });
   };
 
   return (
@@ -116,7 +122,9 @@ export function ChangePasswordForm({ onSubmit }: Props) {
           disabled={isSubmitting}
           className={styles["change-password-btn"]}
         >
-          {formTexts.changePassword}
+          {isSubmitting || isLoading
+            ? "Загрузка... "
+            : formTexts.changePassword}
         </SubmitButton>
       </div>
     </form>
