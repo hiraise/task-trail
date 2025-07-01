@@ -14,7 +14,7 @@ interface SignUpFormProps {
 export const useSignUp = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const loading = useAppSelector((state) => state.auth.loading);
+  const loading = useAppSelector((state) => state.auth.authInitializing);
 
   const signUp = async ({ email, password }: SignUpFormProps) => {
     const thunk = signUpThunk({ email, password });
