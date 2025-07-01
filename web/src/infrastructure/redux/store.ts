@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 
 import authReducer from "@/application/auth/slices/authSlice";
 import userReducer from "@/application/user/slices/userSlice";
-import errorSlice from "@/application/errrors/slices/errorSlice";
+import errorSlice from "@/application/errors/slices/errorSlice";
 import { authApi } from "../adapters/authApi";
 import { errorHandlingMiddleware } from "./middleware";
 

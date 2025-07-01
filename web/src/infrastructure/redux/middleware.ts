@@ -3,7 +3,7 @@ import { isRejectedWithValue } from "@reduxjs/toolkit";
 
 import { AppError, AppErrorType } from "@/shared/errors/types";
 import { GLOBAL_ERRORS } from "@/shared/errors/globalErrors";
-import { addError } from "@/application/errrors/slices/errorSlice";
+import { addError } from "@/application/errors/slices/errorSlice";
 
 export const errorHandlingMiddleware =
   (storeAPI: any) => (next: any) => (action: any) => {

@@ -1,11 +1,7 @@
 import { Action, Dispatch, MiddlewareAPI } from "@reduxjs/toolkit";
 
 import { errorHandlingMiddleware } from "./middleware";
-import { AppErrorType } from "@/shared/errors/types";
-import {
-  requireAuthRedirect,
-  setError,
-} from "@/application/auth/slices/authSlice";
+import { AppError, AppErrorType } from "@/shared/errors/types";
 
 jest.mock("@reduxjs/toolkit", () => ({
   ...jest.requireActual("@reduxjs/toolkit"),
@@ -13,7 +9,10 @@ jest.mock("@reduxjs/toolkit", () => ({
 }));
 
 import { isRejectedWithValue as _isRejectedWithValue } from "@reduxjs/toolkit";
-const isRejectedWithValue = _isRejectedWithValue as jest.MockedFunction<typeof _isRejectedWithValue>;
+import { addError } from "@/application/errors/slices/errorSlice";
+const isRejectedWithValue = _isRejectedWithValue as jest.MockedFunction<
+  typeof _isRejectedWithValue
+>;
 
 describe("errorHandlingMiddleware", () => {
   let storeAPI: Partial<MiddlewareAPI<Dispatch<Action>>>;
@@ -32,52 +31,55 @@ describe("errorHandlingMiddleware", () => {
     jest.clearAllMocks();
   });
 
-  it("should dispatch requireAuthRedirect on UNAUTHORIZED error", () => {
-    // Arrange
+  test("should dispatch addError on UNAUTHORIZED error", () => {
     isRejectedWithValue.mockReturnValue(true);
-    const action = {
-      payload: {
-        type: AppErrorType.UNAUTHORIZED,
-        message: "Unauthorized",
-      },
-    };
-
-    // Act
+    const error = new AppError(AppErrorType.UNAUTHORIZED, "Unauthorized");
+    const action = { payload: error };
     errorHandlingMiddleware(storeAPI)(next)(action);
-
-    // Assert
-    expect(storeAPI.dispatch).toHaveBeenCalledWith(requireAuthRedirect());
+    expect(storeAPI.dispatch).toHaveBeenCalledWith(addError(error));
     expect(next).toHaveBeenCalledWith(action);
   });
 
-  it("should dispatch setError on other error", () => {
-    // Arrange
+  test("should dispatch addError on other error", () => {
     isRejectedWithValue.mockReturnValue(true);
-    const action = {
-      payload: {
-        type: AppErrorType.UNKNOWN,
-        message: "fail",
-      },
-    };
-
-    // Act
+    const error = new AppError(AppErrorType.UNKNOWN, "fail");
+    const action = { payload: error };
     errorHandlingMiddleware(storeAPI)(next)(action);
-
-    // Assert
-    expect(storeAPI.dispatch).toHaveBeenCalledWith(setError("fail"));
+    expect(storeAPI.dispatch).toHaveBeenCalledWith(addError(error));
     expect(next).toHaveBeenCalledWith(action);
   });
 
-  it("should pass through non-rejected actions", () => {
-    // Arrange
+  test("should pass through non-rejected actions", () => {
     isRejectedWithValue.mockReturnValue(false);
     const action = { type: "SOME_ACTION" };
-
-    // Act
     errorHandlingMiddleware(storeAPI)(next)(action);
-
-    // Assert
     expect(storeAPI.dispatch).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(action);
+  });
+
+  test("should not dispatch addError if error type is not in GLOBAL_ERRORS", () => {
+    isRejectedWithValue.mockReturnValue(true);
+    const error = new AppError("SOME_OTHER_TYPE" as AppErrorType, "Not global");
+    const action = { payload: error };
+    errorHandlingMiddleware(storeAPI)(next)(action);
+    expect(storeAPI.dispatch).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(action);
+  });
+
+  test("should not dispatch addError if error is not an AppError", () => {
+    isRejectedWithValue.mockReturnValue(true);
+    const action = { payload: { foo: "bar" } };
+    errorHandlingMiddleware(storeAPI)(next)(action);
+    expect(storeAPI.dispatch).not.toHaveBeenCalled();
+    expect(next).toHaveBeenCalledWith(action);
+  });
+
+  test("should dispatch addError for NETWORK error", () => {
+    isRejectedWithValue.mockReturnValue(true);
+    const error = new AppError(AppErrorType.NETWORK, "Network error");
+    const action = { payload: error };
+    errorHandlingMiddleware(storeAPI)(next)(action);
+    expect(storeAPI.dispatch).toHaveBeenCalledWith(addError(error));
     expect(next).toHaveBeenCalledWith(action);
   });
 });

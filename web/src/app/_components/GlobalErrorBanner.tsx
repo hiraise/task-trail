@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
-import { clearError } from "@/application/errrors/slices/errorSlice";
+import { clearError } from "@/application/errors/slices/errorSlice";
 
 export function GlobalErrorBanner() {
   const error = useAppSelector((state) => state.globalError.error);
