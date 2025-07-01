@@ -1,5 +1,6 @@
 const API_VERSION = "/v1";
 const AUTH = `${API_VERSION}/auth`;
+const PASSWORD = `${AUTH}/password`;
 const USERS = `${API_VERSION}/users`;
 const USERS_ME = `${USERS}/me`;
 
@@ -11,6 +12,7 @@ export const API_ROUTES = {
   AUTH_CHECK: `${AUTH}/check`,
   VERIFY: `${AUTH}/verify`,
   RESEND_VERIFICATION: `${AUTH}/resend-verification`,
+  CHANGE_PASSWORD: `${PASSWORD}/change`,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   CURRENT_USER: USERS_ME,
 };

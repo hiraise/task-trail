@@ -12,6 +12,7 @@ import {
   SignUp,
   ConfirmEmail,
   CheckAuthStatus,
+  ChangePassword,
 } from "@/domain/auth/types";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
@@ -71,6 +72,15 @@ const checkAuthStatus: CheckAuthStatus = async (): Promise<void> => {
   }
 };
 
+const changePassword: ChangePassword = async (payload) => {
+  try {
+    await axiosClient.post(API_ROUTES.CHANGE_PASSWORD, payload);
+  } catch (error) {
+    clientLogger.error("ChangePassword error", { error });
+    throw new AppError(AppErrorType.AUTH, "Change password error");
+  }
+};
+
 export const authService: AuthService = {
   login: login,
   logout: logout,
@@ -78,4 +88,5 @@ export const authService: AuthService = {
   resendVerification: resendVerification,
   confirmEmail: confirmEmail,
   checkAuthStatus: checkAuthStatus,
+  changePassword: changePassword,
 };
