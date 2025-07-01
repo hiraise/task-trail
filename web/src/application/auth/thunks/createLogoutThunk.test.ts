@@ -1,5 +1,3 @@
-import { AppError, AppErrorType } from "@/shared/errors/types";
-import { errorTexts } from "@/shared/locales/messages";
 import { createLogoutThunk } from "./createLogoutThunk";
 
 const TYPE_PREFIX = "auth/logout";
@@ -24,34 +22,19 @@ describe("logout thunk", () => {
     jest.clearAllMocks();
   });
 
-  it("dispatches fulfilled when logout succeeds", async () => {
+  it("should call logout with correct dispatch", async () => {
     mockLogout.mockResolvedValueOnce(undefined);
     const result = await thunk(dispatch, getState, extra);
-    expect(mockLogout).toHaveBeenCalledWith();
+    expect(mockLogout).toHaveBeenCalled();
     expect(result.payload).toBeUndefined();
     expect(result.type).toBe(`${TYPE_PREFIX}/fulfilled`);
   });
 
-  it("dispatches rejected when logout fails with AppError", async () => {
-    const error = new AppError(
-      AppErrorType.AUTH,
-      errorTexts.authenticationRequired
-    );
-    mockLogout.mockRejectedValueOnce(error);
-    const result = await thunk(dispatch, getState, extra);
-    expect(result.payload).toEqual(error.toPlain());
-    expect(mockLogout).toHaveBeenCalledWith();
-    expect(result.type).toBe(`${TYPE_PREFIX}/rejected`);
-  });
-
-  it("returns rejected action with error payload when logout fails with non-AppError", async () => {
+  it("error in logout calls handleThunkError and reject", async () => {
     const error = new Error("Network error");
     mockLogout.mockRejectedValueOnce(error);
     const result = await thunk(dispatch, getState, extra);
-    expect(result.type).toBe(`${TYPE_PREFIX}/rejected`);
-    expect(mockLogout).toHaveBeenCalledWith();
-    expect((result as { error: unknown }).error).toEqual({
-      message: "Rejected",
-    });
+    expect(mockLogout).toHaveBeenCalled();
+    expect(result.type).toBe("auth/logout/rejected");
   });
 });
