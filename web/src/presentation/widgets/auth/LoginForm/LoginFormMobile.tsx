@@ -10,6 +10,7 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { TextButton } from "@/presentation/ui/TextButton";
 import { useLogin } from "@/application/auth/hooks/useLogin";
 import PrivacyText from "../../common/PrivacyText";
+import { Spinner } from "@/presentation/ui/Spinner";
 
 export const LoginFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -35,7 +36,7 @@ export const LoginFormMobile = () => {
         <TextButton>{loginTexts.forgotPassword}</TextButton>
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading}>
-          {loading ? loginTexts.loggingIn : sharedTexts.login}
+          {loading ? <Spinner size={16} /> : sharedTexts.login}
         </SubmitButton>
       </Form>
       <Spacer size="8px" />

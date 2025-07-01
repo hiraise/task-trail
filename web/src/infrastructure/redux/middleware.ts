@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { isRejectedWithValue } from "@reduxjs/toolkit";
 
 import { AppError, AppErrorType } from "@/shared/errors/types";
 import { GLOBAL_ERRORS } from "@/shared/errors/globalErrors";
-import {
-  requireAuthRedirect,
-  setError,
-} from "@/application/auth/slices/authSlice";
+import { addError } from "@/application/errors/slices/errorSlice";
 
 export const errorHandlingMiddleware =
   (storeAPI: any) => (next: any) => (action: any) => {
@@ -22,17 +18,13 @@ export const errorHandlingMiddleware =
       // TODO: move error message to locale
       switch (error.type) {
         case AppErrorType.UNAUTHORIZED:
-          storeAPI.dispatch(requireAuthRedirect());
+          storeAPI.dispatch(addError(error));
           break;
         case AppErrorType.NETWORK:
-          storeAPI.dispatch(
-            setError("Network error. Please check your connection.")
-          );
+          storeAPI.dispatch(addError(error));
           break;
         case AppErrorType.UNKNOWN:
-          storeAPI.dispatch(
-            setError(error.message || "An unknown error occurred.")
-          );
+          storeAPI.dispatch(addError(error));
           break;
       }
     }

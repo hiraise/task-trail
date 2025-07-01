@@ -1,12 +1,10 @@
-import type { Metadata } from "next";
+import { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Toaster } from "sonner";
 
 import "./globals.css";
-import { StoreProvider } from "./StoreProvider";
-import { AuthRedirectWatcher } from "@/presentation/ui/AuthRedirectWatcher";
 import { metadataTexts } from "@/shared/locales/metadata";
-import { ClientOnly } from "./ClientOnly";
+import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
+import ClientRootLayout from "./_components/ClientRootLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,11 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <StoreProvider>
-          <Toaster position="bottom-right" richColors />
-          <AuthRedirectWatcher />
-          <ClientOnly>{children}</ClientOnly>
-        </StoreProvider>
+        <div id="loading-screen">
+          <LoadingScreen />
+        </div>
+        <ClientRootLayout>{children}</ClientRootLayout>
       </body>
     </html>
   );

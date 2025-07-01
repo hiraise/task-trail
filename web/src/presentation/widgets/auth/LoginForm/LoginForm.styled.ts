@@ -49,6 +49,7 @@ export const Input = styled.input`
 export const InputLabel = styled.label`
   font-size: 12px;
   font-weight: 400;
+  vertical-align: middle;
 `;
 
 export const InputContainer = styled.div`

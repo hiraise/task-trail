@@ -1,3 +1,5 @@
+const PROFILE_BASE = "/profile";
+
 export const ROUTES = {
   login: "/",
   signUp: "/signup",
@@ -7,6 +9,9 @@ export const ROUTES = {
   tasks: "/tasks",
   archive: "/archive",
   confirm: "/confirm",
+  profile: PROFILE_BASE,
+  profileEditPersonalData: `${PROFILE_BASE}/edit-personal-data`,
+  profileChangePassword: `${PROFILE_BASE}/change-password`,
 };
 
 export const protectedRoutes = [
@@ -15,4 +20,5 @@ export const protectedRoutes = [
   ROUTES.boards,
   ROUTES.tasks,
   ROUTES.archive,
+  ROUTES.profile,
 ];

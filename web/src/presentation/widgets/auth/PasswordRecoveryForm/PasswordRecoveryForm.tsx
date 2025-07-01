@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { useForm } from "react-hook-form";
 import styled from "styled-components";
 
 import { Spacer } from "../../primitives/Spacer";
@@ -11,50 +11,43 @@ import { Stack } from "../../primitives/Stack";
 import { Input, InputLabel } from "../LoginForm/LoginForm.styled";
 import { usePasswordRecovery } from "@/application/auth/hooks/usePasswordRecovery";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
-import { PASSWORD_RECOVERY_FIELDS } from "@/shared/constants/formFields";
-import { useFormErrors } from "@/shared/hooks/useFormErrors";
-import { validateEmail, validators } from "@/shared/utils/validate";
+import { getEmailValidator } from "@/shared/utils/validate";
 
 const FormContainer = styled.form`
   display: flex;
   flex-direction: column;
 `;
 
+type FormValues = {
+  email: string;
+};
+
 export default function PasswordRecoveryForm() {
-  const [email, setEmail] = useState("");
   const { recover, loading } = usePasswordRecovery();
+
   const {
-    errors,
-    setFieldError,
-    resetErrors,
-    validateAllFields,
-    clearFieldError,
-  } = useFormErrors(PASSWORD_RECOVERY_FIELDS.all, validators);
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError,
+    clearErrors,
+  } = useForm<FormValues>({ mode: "onChange" });
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    resetErrors();
-
-    const values = { email };
-    if (!validateAllFields(values)) return;
-
-    await recover(email);
-    resetErrors();
-  };
-
-  const onChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    const error = validateEmail(e.target.value);
-    if (error) {
-      setFieldError(PASSWORD_RECOVERY_FIELDS.email, error);
-    } else {
-      clearFieldError(PASSWORD_RECOVERY_FIELDS.email);
+  const onSubmit = async (data: FormValues) => {
+    clearErrors();
+    try {
+      await recover(data.email);
+    } catch {
+      setError("email", {
+        type: "server",
+        message: "Ошибка сервера. Попробуйте ещё раз.",
+      });
     }
   };
 
   return (
     <MobileContainer>
-      <FormContainer noValidate onSubmit={handleSubmit}>
+      <FormContainer noValidate onSubmit={handleSubmit(onSubmit)}>
         <Stack gap="4px">
           <InputLabel htmlFor="email">{sharedTexts.emailLabel}</InputLabel>
           <Input
@@ -62,18 +55,14 @@ export default function PasswordRecoveryForm() {
             type="email"
             autoComplete="email"
             placeholder={loginTexts.emailPlaceholder}
-            value={email}
-            onChange={onChangeEmail}
-            required
+            {...register("email", getEmailValidator())}
           />
-          {errors[PASSWORD_RECOVERY_FIELDS.email] && (
-            <FormFieldError>
-              {errors[PASSWORD_RECOVERY_FIELDS.email]}
-            </FormFieldError>
+          {errors.email && (
+            <FormFieldError>{errors.email.message}</FormFieldError>
           )}
         </Stack>
         <Spacer size="20px" />
-        <SubmitButton type="submit" disabled={loading}>
+        <SubmitButton type="submit" disabled={loading || isSubmitting}>
           {loading ? sharedTexts.sending : sharedTexts.send}
         </SubmitButton>
       </FormContainer>

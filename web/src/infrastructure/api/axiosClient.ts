@@ -45,7 +45,11 @@ function shouldRefresh(
   error: AxiosError,
   config?: AxiosRequestConfig
 ): boolean {
-  if (config?._skipAuthRefresh || config?.url?.includes(API_ROUTES.LOGIN))
+  if (
+    config?._skipAuthRefresh ||
+    config?.url?.includes(API_ROUTES.LOGIN) ||
+    config?.url?.includes(API_ROUTES.LOGOUT)
+  )
     return false;
   return error.response?.status === 401 && !config?._retry;
 }

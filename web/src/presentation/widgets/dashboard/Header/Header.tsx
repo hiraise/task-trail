@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { toast } from "sonner";
 
 import { ASSETS } from "@/infrastructure/config/assets";
+import { ROUTES } from "@/infrastructure/config/routes";
 import { IconButton } from "@/presentation/ui/IconButton";
 import {
   HeaderButtonsContainer,
@@ -15,6 +17,7 @@ import {
 export function DashboardHeader() {
   const [visible, setVisible] = useState(true);
   const lastScrollY = useRef(0);
+  const router = useRouter();
 
   useEffect(() => {
     let ticking = false;
@@ -61,7 +64,7 @@ export function DashboardHeader() {
         />
         <IconButton
           icon={ASSETS.icons.profile}
-          onClick={() => toast.success("Profile")}
+          onClick={() => router.push(ROUTES.profile)}
           aria-label="Profile"
         />
       </HeaderButtonsContainer>

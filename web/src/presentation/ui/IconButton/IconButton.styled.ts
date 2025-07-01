@@ -17,7 +17,7 @@ const variantStyles = {
     color: var(--background);
     ${hoverable(css`
       &:hover {
-        color: #1849e8;
+        color: var(--icon-grey);
         cursor: pointer;
       }
     `)}

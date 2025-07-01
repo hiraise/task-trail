@@ -1,25 +1,25 @@
 ![MIT License](https://img.shields.io/github/license/hiraise/tt-frontend)
 
-# Project Overview
+---
 
-This project is a web application built using **Next.js**. It follows a modular architecture inspired by Clean Architecture principles, ensuring scalability, maintainability, and clear separation of concerns.
+🚀 **Live Demo:** [https://dev.hiraise.net/tasktrail/](https://dev.hiraise.net/tasktrail/)
 
-## Key Features
+---
 
-- **Authentication**: Includes login and signup functionality with Redux Toolkit for state management.
-- **Responsive Design**: Components are optimized for both desktop and mobile devices.
-- **Localization**: Supports localization for text and images.
-- **Reusable Components**: Includes a library of reusable UI components and widgets.
-- **Error Handling**: Centralized error handling for global and local errors.
+# TaskTrail
 
-## Project Goals
+TaskTrail is a modern, open-source, self-hosted task tracking web application built with **Next.js** and TypeScript. The project follows a modular, Clean Architecture-inspired structure for scalability, maintainability, and clear separation of concerns.
 
-This project is an open-source, self-hosted task tracking web application focused on:
+## Features
 
-- **Clean modular frontend architecture**
-- **Mobile-first UI**
-- **Scalable and extensible features**
-- **Integration with a Go backend (in progress)**
+- **Authentication**: Login and signup with Redux Toolkit state management
+- **Responsive Design**: Mobile-first, adaptive UI
+- **Localization**: Multi-language support for text and images
+- **Reusable Components**: Library of UI components and widgets
+- **Centralized Error Handling**: Global and local error management
+- **Extensible Architecture**: Easily add new features and integrations
+- **Go Backend Integration**: In progress (currently using mock API for some features)
+- **Testing**: Vitest and Testing Library (coverage expanding)
 
 ## Tech Stack
 
@@ -27,148 +27,90 @@ This project is an open-source, self-hosted task tracking web application focuse
 - **TypeScript**
 - **Redux Toolkit**
 - **styled-components**
-- **Vitest** + **Testing Library** (planned)
+- **Vitest** + **Testing Library**
 
-## Folder Structure
-
-The project is organized as follows:
+## Project Structure
 
 ```
 src/
-├── app/                     # Application entry points and pages
-│   ├── (auth)/              # Authentication pages (login, signup)
-│   ├── dashboard/           # Dashboard layout and pages
-├── application/             # Application-specific use-cases and logic
-│   ├── auth/                # Authentication logic (hooks, slices, thunks)
-├── domain/                  # Core business logic and domain entities
-├── infrastructure/          # Infrastructure and external dependencies
-│   ├── api/                 # API clients and endpoints
-│   ├── redux/               # Redux store and middleware
-├── presentation/            # UI components and widgets
-│   ├── ui/                  # Reusable UI components
-│   ├── widgets/             # Complex widgets (e.g., forms)
-├── shared/                  # Shared utilities and modules
-│   ├── errors/              # Error handling utilities
-│   ├── hooks/               # Custom React hooks
-│   ├── locales/             # Localization files
+├── app/             # Application entry points and pages
+│   ├── (auth)/      # Authentication pages (login, signup)
+│   ├── dashboard/   # Dashboard layout and pages
+├── application/     # Application-specific use-cases and logic
+├── domain/          # Core business logic and domain entities
+├── infrastructure/  # API clients, config, redux store
+├── presentation/    # UI components and widgets
+├── shared/          # Utilities, hooks, localization, errors
 ```
 
-## Prerequisites
+## Getting Started
 
-Before running the project, ensure you have the following installed:
+### Prerequisites
 
 - **Node.js** (v18 or higher)
 - **npm** (v9 or higher) or **yarn**
 
-## Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/SergeyRusinovich/tt-frontend.git
-   cd tt-frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-## Running the Project
-
-1. Start the development server:
-
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-2. Open your browser and navigate to:
-   [http://localhost:3000](http://localhost:3000)
-
-## Building for Production
-
-To build the project for production:
+### Installation
 
 ```bash
-npm run build
-# or
-yarn build
+git clone https://github.com/SergeyRusinovich/tt-frontend.git
+cd tt-frontend
+npm install # or yarn install
 ```
 
-The production-ready files will be available in the `out/` directory.
-
-## Testing
-
-To run tests (if applicable):
+### Running Locally
 
 ```bash
-npm test
-# or
-yarn test
+npm run dev # or yarn dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Building for Production
+
+```bash
+npm run build # or yarn build
+```
+
+Production files will be in the `out/` directory.
+
+### Testing
+
+```bash
+npm test # or yarn test
 ```
 
 ## Contributing
 
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix:
-   ```bash
-   git checkout -b feature-name
-   ```
-3. Commit your changes and push the branch:
-   ```bash
-   git commit -m "Description of changes"
-   git push origin feature-name
-   ```
-4. Open a pull request.
+Contributions are welcome! To contribute:
 
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+1. Fork the repository
+2. Create a new branch: `git checkout -b feature-name`
+3. Commit your changes: `git commit -m "Description of changes"`
+4. Push to your fork: `git push origin feature-name`
+5. Open a pull request
 
 ## Roadmap
 
 - [x] Login system with mock API
-- [x] Protect routes with auth guard
-- [ ] Implement task board UI
-- [ ] Integrate real backend (Go)
-- [ ] Add project management features
+- [x] Route protection with auth guard
+- [ ] Task board UI
+- [ ] Real backend (Go) integration
+- [ ] Project management features
 
-# Project Architecture
+## License
 
-This project follows a modular architecture inspired by Clean Architecture principles. Below is an overview of the architectural layers and their purpose:
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Architectural Layers
+## Architecture Overview
 
-1. **App Layer (`app/`)**:
+TaskTrail uses a modular architecture inspired by Clean Architecture principles:
 
-   - Contains the entry points and routing for the application.
-   - Each page is modularized into its own folder.
+- **App Layer (`app/`)**: Entry points and routing
+- **Application Layer (`application/`)**: Use-cases, state, and side effects
+- **Domain Layer (`domain/`)**: Core business logic, domain entities, framework-agnostic
+- **Infrastructure Layer (`infrastructure/`)**: API clients, config, redux store
+- **Presentation Layer (`presentation/`)**: UI components and widgets
+- **Shared Layer (`shared/`)**: Utilities, hooks, localization, errors
 
-2. **Application Layer (`application/`)**:
-
-   - Contains use-cases and application-specific logic.
-   - Manages state and side effects (e.g., API calls).
-
-3. **Domain Layer (`domain/`)**:
-
-   - Contains core business logic and domain entities.
-   - Independent of frameworks and external dependencies.
-
-4. **Infrastructure Layer (`infrastructure/`)**:
-
-   - Handles external dependencies such as API calls and configuration.
-   - Provides the Redux store setup.
-
-5. **Presentation Layer (`presentation/`)**:
-
-   - Contains UI components and widgets.
-   - Divided into reusable components (`ui/`) and complex widgets (`widgets/`).
-
-6. **Shared Layer (`shared/`)**:
-   - Contains utilities, hooks, and localization files that can be reused across the application.
-
-This architecture ensures a clear separation of concerns, making the project scalable, maintainable, and easy to understand.
+This structure ensures scalability, maintainability, and a clear separation of concerns.

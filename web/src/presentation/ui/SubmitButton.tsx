@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components";
 
-type ButtonVariant = "primary" | "text";
+type ButtonVariant = "primary" | "secondary" | "text";
 
 const variantStyles = {
   primary: css`
@@ -11,6 +11,9 @@ const variantStyles = {
       background: var(--grey);
       color: var(--foreground);
     }
+  `,
+  secondary: css`
+    background: rgba(243, 243, 243, 1);
   `,
   text: css`
     background: transparent;
@@ -42,7 +45,7 @@ const BaseButton = styled.button<{ $variant?: ButtonVariant }>`
   &:active:disabled {
     transform: none;
   }
-  
+
   ${({ $variant = "primary" }) => variantStyles[$variant]}
 `;
 
