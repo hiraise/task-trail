@@ -7,6 +7,7 @@ import { ROUTES } from "@/infrastructure/config/routes";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { useAppDispatch } from "@/infrastructure/redux/hooks";
 import { loginThunk } from "../thunks/authThunks";
+import { AppErrorProps } from "@/shared/errors/types";
 
 interface LoginFormProps {
   email: string;
@@ -28,8 +29,9 @@ export const useLogin = () => {
       toast.success(successTexts.loginSuccess);
       router.replace(from);
     } catch (error) {
-      clientLogger.error("Login error:", { login: error });
-      toast.error(errorTexts.somethingWentWrong);
+      const { message } = error as AppErrorProps;
+      clientLogger.error("Login error:", { error });
+      toast.error(message || errorTexts.somethingWentWrong);
     } finally {
       setLoading(false);
     }
