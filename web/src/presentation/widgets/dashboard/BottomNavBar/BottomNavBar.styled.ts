@@ -1,4 +1,7 @@
-import styled from "styled-components";
+import Link from "next/link";
+import styled, { css } from "styled-components";
+
+import { hoverable } from "@/shared/utils/media";
 
 const NavBar = styled.nav`
   position: fixed;
@@ -15,7 +18,7 @@ const NavBar = styled.nav`
   z-index: 999;
 `;
 
-const NavItem = styled.div`
+const NavItem = styled(Link)<{ $active?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -23,6 +26,18 @@ const NavItem = styled.div`
   justify-content: center;
   width: 70px;
   height: 38px;
+  color: ${({ $active }) =>
+    $active ? "var(--foreground)" : "var(--icon-grey)"};
+
+  ${hoverable(css`
+    &:hover {
+      color: var(--foreground);
+      cursor: pointer;
+    }
+    &:hover span {
+      color: var(--foreground);
+    }
+  `)};
 `;
 
 const Label = styled.span`
