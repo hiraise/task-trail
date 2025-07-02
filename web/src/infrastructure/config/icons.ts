@@ -10,6 +10,8 @@ import RightArrowIcon from "../../../public/icons/Right_arrow.svg";
 import LeftArrowIcon from "../../../public/icons/Left_arrow.svg";
 import CheckIcon from "../../../public/icons/check.svg";
 import CloseIcon from "../../../public/icons/close.svg";
+import SortIcon from "../../../public/icons/mi_sort.svg";
+import AddButtonIcon from "../../../public/icons/iconoir_plus.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -24,4 +26,6 @@ export const ICONS = {
   leftArrow: LeftArrowIcon,
   check: CheckIcon,
   close: CloseIcon,
+  sort: SortIcon,
+  addButton: AddButtonIcon,
 };
