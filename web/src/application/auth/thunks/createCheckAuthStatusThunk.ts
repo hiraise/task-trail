@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-import { CheckAuthStatus } from "../../../domain/auth/types";
+import { CheckAuthStatus } from "../../../domain/auth/auth.contracts";
 import { AppError, AppErrorProps, AppErrorType } from "@/shared/errors/types";
 
 export const createCheckAuthStatusThunk = (checkAuthStatus: CheckAuthStatus) =>

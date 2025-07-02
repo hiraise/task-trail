@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 
-import { User } from "@/domain/user/types";
+import { User } from "@/domain/user/user.entity";
 import { useAppDispatch } from "@/infrastructure/redux/hooks";
 import { updateUserThunk } from "../thunks/userThunks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";

@@ -1,12 +1,4 @@
-export interface AuthPayload {
-  email: string;
-  password: string;
-}
-
-export type ChangePasswordPayload = {
-  newPassword: string;
-  oldPassword: string;
-};
+import { AuthPayload, ChangePasswordPayload } from "./auth.payload";
 
 export type Login = (payload: AuthPayload) => Promise<void>;
 export type Logout = () => Promise<void>;

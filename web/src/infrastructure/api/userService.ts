@@ -7,9 +7,9 @@ import {
   GetCurrentUser,
   UpdateUser,
   UploadAvatar,
-  User,
   UserService,
-} from "@/domain/user/types";
+} from "@/domain/user/user.contracts";
+import { User } from "@/domain/user/user.entity";
 import { mapAvatarFromApi } from "../mappers/avatarMapper";
 
 const getCurrentUser: GetCurrentUser = async () => {

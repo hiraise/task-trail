@@ -1,4 +1,4 @@
-import { User } from "@/domain/user/types";
+import { User } from "@/domain/user/user.entity";
 import { sharedTexts } from "../locales/sharedTexts";
 
 export function getDisplayName(user?: User | null): string {

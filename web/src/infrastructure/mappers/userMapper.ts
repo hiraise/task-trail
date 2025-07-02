@@ -1,4 +1,4 @@
-import { User } from "@/domain/user/types";
+import { User } from "@/domain/user/user.entity";
 
 interface ApiUser {
   id: string | number;

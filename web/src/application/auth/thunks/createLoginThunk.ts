@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-import { AuthPayload, Login } from "../../../domain/auth/types";
+import { Login } from "../../../domain/auth/auth.contracts";
+import { AuthPayload } from "@/domain/auth/auth.payload";
 import { AppErrorProps } from "@/shared/errors/types";
 import {
   clearUserState,
@@ -8,7 +9,7 @@ import {
 } from "@/application/user/slices/userSlice";
 import { setAuthenticated, setAuthInitializing } from "../slices/authSlice";
 import { handleThunkError } from "@/shared/utils/handleThunkError";
-import { GetCurrentUser } from "@/domain/user/types";
+import { GetCurrentUser } from "@/domain/user/user.contracts";
 
 export const createLoginThunk = (
   login: Login,

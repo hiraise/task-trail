@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import { AppError, AppErrorProps, AppErrorType } from "@/shared/errors/types";
-import { ConfirmEmail } from "@/domain/auth/types";
+import { ConfirmEmail } from "@/domain/auth/auth.contracts";
 
 export const createConfirmEmailThunk = (confirmEmail: ConfirmEmail) =>
   createAsyncThunk<void, string, { rejectValue: AppErrorProps }>(

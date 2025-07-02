@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { User } from "@/domain/user/types";
+import { User } from "@/domain/user/user.entity";
 import { getCurrentUserThunk, updateUserThunk } from "../thunks/userThunks";
 
 type UserState = {

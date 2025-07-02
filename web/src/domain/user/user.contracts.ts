@@ -1,9 +1,4 @@
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  avatarUrl?: string;
-}
+import { User } from "./user.entity";
 
 export type GetCurrentUser = () => Promise<User | null>;
 export type UploadAvatar = (data: FormData) => Promise<string | null>;
