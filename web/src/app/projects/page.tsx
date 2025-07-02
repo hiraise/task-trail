@@ -15,28 +15,37 @@ import {
 
 const projectTexts = {
   title: "Мои проекты",
+  noProjects: "Нет проектов",
+  createFirstProject: "Создайте свой первый проект!",
 };
 
 export default function ProjectsPage() {
-  const mockData = mockProjects;
   return (
     <MainContainer>
       <DashboardHeader />
       <div className="title-container">
         <h1>{projectTexts.title}</h1>
-        <IconButton
-          icon={ICONS.sort}
-          onClick={() => toast.success("Sorting")}
-        />
+        <IconButton icon={ICONS.sort} onClick={() => toast.info("Sorting")} />
       </div>
+
+      {mockProjects.length === 0 && (
+        <div className="empty-state">
+          <h2>{projectTexts.noProjects}</h2>
+          <p>{projectTexts.createFirstProject}</p>
+        </div>
+      )}
+
       <div className="cards-container">
         {/* TODO: replace with real data */}
-        {Array.from({ length: mockProjects.length }).map((_, index) => (
-          <ProjectCard key={index} project={mockData[index] || {}} />
+        {mockProjects.map((project, index) => (
+          <ProjectCard key={index} project={project} />
         ))}
       </div>
       <div className="floating-button">
-        <IconButton icon={ICONS.addButton} />
+        <IconButton
+          icon={ICONS.addButton}
+          onClick={() => toast.info("Create new project")}
+        />
       </div>
       <BottomNavBar />
     </MainContainer>
