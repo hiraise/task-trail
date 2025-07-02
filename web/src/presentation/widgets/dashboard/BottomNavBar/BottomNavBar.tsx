@@ -15,7 +15,7 @@ export function BottomNavBar() {
         const isCurrent = normalize(pathName) === normalize(item.href);
         return (
           <NavItem key={item.label} href={item.href} $active={isCurrent}>
-            <Icon as={item.icon} size="24px" inheritColor />
+            <Icon as={item.icon} size="24px" />
             <Label>{item.label}</Label>
           </NavItem>
         );

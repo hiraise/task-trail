@@ -26,16 +26,23 @@ const NavItem = styled(Link)<{ $active?: boolean }>`
   justify-content: center;
   width: 70px;
   height: 38px;
-  color: ${({ $active }) =>
-    $active ? "var(--foreground)" : "var(--icon-grey)"};
 
+  ${({ $active }) =>
+    $active &&
+    css`
+      svg,
+      span {
+        color: var(--foreground);
+      }
+    `}
   ${hoverable(css`
     &:hover {
-      color: var(--foreground);
       cursor: pointer;
-    }
-    &:hover span {
-      color: var(--foreground);
+
+      svg,
+      span {
+        color: var(--foreground);
+      }
     }
   `)};
 `;
