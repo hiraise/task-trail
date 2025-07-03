@@ -51,7 +51,7 @@ function EmailConfirmPage() {
       <Spacer size="12px" />
       <ImageContainer>
         <Image
-          src={ASSETS.icons.image}
+          src={ASSETS.placeholder.image}
           alt={emailConfirmTexts.imageAltText}
           width={63}
           height={43}
