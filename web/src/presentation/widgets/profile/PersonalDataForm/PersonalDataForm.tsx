@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import styles from "./PersonalDataForm.module.css";
-import { Input, InputLabel } from "../../auth/LoginForm/LoginForm.styled";
 import { Stack } from "../../primitives/Stack";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { userNameValidator } from "@/shared/utils/validate";
 import LoadingScreen from "../../common/LoadingScreen";
+import { Input, InputLabel } from "@/presentation/ui/Input";
 
 const formTexts = {
   userNameLabel: "Username",

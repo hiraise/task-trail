@@ -2,13 +2,8 @@ import { useState } from "react";
 
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import {
-  DesktopWrapper,
-  DesktopCard,
-  Title,
-  Form,
-  Input,
-} from "./LoginForm.styled";
+import { DesktopWrapper, DesktopCard, Title, Form } from "./LoginForm.styled";
+import { Input } from "@/presentation/ui/Input";
 
 export const LoginFormDesktop = () => {
   const [email, setEmail] = useState("");
