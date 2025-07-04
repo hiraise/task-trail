@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import "./styles.css";
 import { ICONS } from "@/infrastructure/config/icons";
+import { useModal } from "@/shared/hooks/useModal";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
@@ -20,6 +21,12 @@ const projectTexts = {
 };
 
 export default function ProjectsPage() {
+  const modal = useModal();
+
+  const handleOpenCreateProject = () => {
+    modal.showCreateProject();
+  };
+
   return (
     <MainContainer>
       <DashboardHeader />
@@ -27,14 +34,12 @@ export default function ProjectsPage() {
         <h1>{projectTexts.title}</h1>
         <IconButton icon={ICONS.sort} onClick={() => toast.info("Sorting")} />
       </div>
-
       {mockProjects.length === 0 && (
         <div className="empty-state">
           <h2>{projectTexts.noProjects}</h2>
           <p>{projectTexts.createFirstProject}</p>
         </div>
       )}
-
       <div className="cards-container">
         {/* TODO: replace with real data */}
         {mockProjects.map((project, index) => (
@@ -42,10 +47,7 @@ export default function ProjectsPage() {
         ))}
       </div>
       <div className="floating-button">
-        <IconButton
-          icon={ICONS.addButton}
-          onClick={() => toast.info("Create new project")}
-        />
+        <IconButton icon={ICONS.addButton} onClick={handleOpenCreateProject} />
       </div>
       <BottomNavBar />
     </MainContainer>
