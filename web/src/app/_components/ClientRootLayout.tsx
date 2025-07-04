@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { store } from "@/infrastructure/redux/store";
 import { GlobalErrorBanner } from "./GlobalErrorBanner";
 import { AuthAndUserInitializer } from "./AuthAndUserInitializer";
+import { SheetManager } from "@/app/_components/SheetManager";
 
 export default function ClientRootLayout({
   children,
@@ -30,6 +31,7 @@ export default function ClientRootLayout({
       <Toaster position="bottom-right" richColors />
       <GlobalErrorBanner />
       <AuthAndUserInitializer />
+      <SheetManager />
       {children}
     </Provider>
   );
