@@ -99,3 +99,15 @@ export const getConfirmPasswordValidator = (newPassword: string) => ({
   required: "Повторите новый пароль",
   validate: (value: string) => value === newPassword || "Пароли не совпадают",
 });
+
+export const projectNameValidator = {
+  required: "Название проекта обязательно",
+  minLength: {
+    value: 6,
+    message: "Название проекта должно быть не короче 6 символов",
+  },
+  maxLength: {
+    value: 255,
+    message: "Название проекта не должно превышать 255 символа",
+  },
+};
