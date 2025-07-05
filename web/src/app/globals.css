@@ -13,6 +13,9 @@
   /* Design element colors */
   --handle-grey: rgb(203, 203, 203);
   --overlay-bg: rgba(0, 0, 0, 0.6);
+  --email-bg: rgba(247, 247, 247, 1);
+  --avatar-bg: rgba(211, 211, 211, 1);
+  --checkbox: rgba(128, 128, 128, 1);
 }
 
 html,

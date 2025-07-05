@@ -38,3 +38,8 @@
   z-index: 9999;
   inset: 0;
 }
+
+.fullScreen {
+  height: 100vh;
+  max-height: 100vh;
+}

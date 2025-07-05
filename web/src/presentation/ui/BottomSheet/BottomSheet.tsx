@@ -10,9 +10,12 @@ interface BottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  fullScreen?: boolean; // Optional prop to make it full screen
 }
 
-export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
+export function BottomSheet(props: BottomSheetProps) {
+  const { isOpen, onClose, children, fullScreen } = props;
+
   const contentRef = useRef<HTMLDivElement>(null);
   useScrollLock(isOpen);
 
@@ -38,7 +41,7 @@ export function BottomSheet({ isOpen, onClose, children }: BottomSheetProps) {
       <div className={styles.wrapper}>
         <m.div
           ref={contentRef}
-          className={styles.content}
+          className={`${styles.content} ${fullScreen ? styles.fullScreen : ""}`}
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           exit={{ y: "100%" }}

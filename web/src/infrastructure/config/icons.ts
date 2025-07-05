@@ -13,6 +13,7 @@ import CloseIcon from "../../../public/icons/close.svg";
 import SortIcon from "../../../public/icons/mi_sort.svg";
 import AddButtonIcon from "../../../public/icons/iconoir_plus_circle.svg";
 import PlusIcon from "../../../public/icons/iconoir_plus.svg";
+import CheckMarkIcon from "../../../public/icons/checkMark.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -30,4 +31,5 @@ export const ICONS = {
   sort: SortIcon,
   addButton: AddButtonIcon,
   plus: PlusIcon,
+  checkMark: CheckMarkIcon,
 };
