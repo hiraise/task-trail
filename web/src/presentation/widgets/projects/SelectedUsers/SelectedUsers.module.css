@@ -1,22 +1,21 @@
 .container {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 12px;
+  align-items: flex-start;
+  align-content: flex-start;
 }
 
-.infoMessage {
-  font-size: 12px;
-  font-weight: 400;
-  vertical-align: middle;
-  color: var(--foreground);
-  opacity: 0.6;
-}
-
-.selectedUsers {
+.expanded {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  max-height: 250px;
+  flex: 1;
   overflow-y: auto;
+  margin-top: 16px;
+  align-items: flex-start;
+  align-content: flex-start;
 }

@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 
 import styles from "./AddParticipantForm.module.css";
 import { Input } from "@/presentation/ui/Input";
@@ -23,9 +24,26 @@ export function AddParticipantForm() {
   const {
     register,
     handleSubmit,
-    // watch,
+    watch,
     formState: { errors, isSubmitting, isValid },
   } = useForm<FormValues>({ mode: "onChange" });
+
+  // Watch the query input to show/hide the dropdown
+  const queryValue = watch("query");
+  const shouldShowDropdown = queryValue && queryValue.trim().length > 0;
+
+  // Manage selected users state
+  const [selectedUsers, setSelectedUsers] = useState<UserData[]>(
+    Array.from({ length: 10 }, (_, i) => ({
+      email: `ilkat@gmail.com${i}`,
+    }))
+  );
+
+  const handleDeleteUser = (user: UserData) => {
+    setSelectedUsers((prevUsers) =>
+      prevUsers.filter((u) => u.email !== user.email)
+    );
+  };
 
   const submitHandler = async (data: FormValues) => {
     await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
@@ -50,12 +68,28 @@ export function AddParticipantForm() {
           <FormFieldError>{errors.query.message}</FormFieldError>
         )}
       </div>
-      <div className={styles.content}>
-        <UsersList />
-        <SelectedUsers />
-      </div>
+      {/* Show info message when no dropdown is shown */}
+      {!shouldShowDropdown && (
+        <span className={styles.infoMessage}>
+          {participantsTexts.infoMessage}
+        </span>
+      )}
 
-      <div className={styles.spacer}></div>
+      {/* Middle section that contains both dropdown and selected users */}
+      <div className={styles.middle}>
+        {shouldShowDropdown && (
+          <div className={styles.dropDown}>
+            <UsersList />
+          </div>
+        )}
+        {selectedUsers.length > 0 && (
+          <SelectedUsers
+            users={selectedUsers}
+            onDeleteUser={handleDeleteUser}
+            isExpanded={!shouldShowDropdown}
+          />
+        )}
+      </div>
 
       <div className={styles.btnContainer}>
         <SubmitButton
