@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
 
 export interface ProjectParticipant {
   id?: string;
@@ -24,66 +17,51 @@ interface ProjectCreationContextType {
   reset: () => void;
 }
 
-const ProjectCreationContext = createContext<ProjectCreationContextType | null>(
-  null
-);
+const ProjectCreationContext = createContext<ProjectCreationContextType | null>(null);
 
 export function ProjectCreationProvider({ children }: { children: ReactNode }) {
-  const [selectedParticipants, setSelectedParticipants] = useState<
-    ProjectParticipant[]
-  >([]);
+  const [selectedParticipants, setSelectedParticipants] = useState<ProjectParticipant[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const addParticipant = useCallback((participant: ProjectParticipant) => {
+  const addParticipant = (participant: ProjectParticipant) => {
     setSelectedParticipants((prev) => {
       if (prev.some((p) => p.email === participant.email)) {
-        return prev; // Already exists
+        return prev;
       }
       return [...prev, participant];
     });
-  }, []);
+  };
 
-  const removeParticipant = useCallback((email: string) => {
+  const removeParticipant = (email: string) => {
     setSelectedParticipants((prev) => prev.filter((p) => p.email !== email));
-  }, []);
+  };
 
-  const toggleParticipant = useCallback((participant: ProjectParticipant) => {
+  const toggleParticipant = (participant: ProjectParticipant) => {
     setSelectedParticipants((prev) => {
       const exists = prev.some((p) => p.email === participant.email);
-      if (exists) {
-        return prev.filter((p) => p.email !== participant.email);
-      }
-      return [...prev, participant];
+      return exists
+        ? prev.filter((p) => p.email !== participant.email)
+        : [...prev, participant];
     });
-  }, []);
+  };
 
-  const reset = useCallback(() => {
+  const reset = () => {
     setSelectedParticipants([]);
     setSearchQuery("");
-  }, []);
-
-  const contextValue = useMemo(
-    () => ({
-      selectedParticipants,
-      searchQuery,
-      addParticipant,
-      removeParticipant,
-      toggleParticipant,
-      setSearchQuery,
-      reset,
-    }),
-    [
-      selectedParticipants,
-      searchQuery,
-      addParticipant,
-      removeParticipant,
-      toggleParticipant,
-      reset,
-    ]
-  );
+  };
 
   return (
-    <ProjectCreationContext.Provider value={contextValue}>
+    <ProjectCreationContext.Provider
+      value={{
+        selectedParticipants,
+        searchQuery,
+        addParticipant,
+        removeParticipant,
+        toggleParticipant,
+        setSearchQuery,
+        reset,
+      }}
+    >
       {children}
     </ProjectCreationContext.Provider>
   );
