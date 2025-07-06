@@ -1,6 +1,6 @@
 import CreateProjectModal from "../../presentation/widgets/modals/CreateProjectModal";
 import InviteUserModal from "../../presentation/widgets/modals/InviteUserModal";
-import { ProjectCreationProvider } from "../../presentation/widgets/projects/context/ProjectCreationContext";
+import { ProjectCreationProvider } from "../../application/projects/context/ProjectCreationContext";
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import {
   closeAllSheets,

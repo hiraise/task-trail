@@ -5,8 +5,8 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { participantsTexts } from "./addParticipants";
-import { useParticipantForm } from "../hooks/useParticipantForm";
-import { ProjectParticipant } from "../types";
+import { useParticipantForm } from "../../../../application/projects/hooks/useParticipantForm";
+import { ProjectParticipant } from "../../../../application/projects/types";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 

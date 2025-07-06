@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 
 import styles from "./CreateProjectForm.module.css";
 import { Spacer } from "../../primitives/Spacer";
-import { CreateProjectFormData } from "../types";
+import { CreateProjectFormData } from "../../../../application/projects/types";
 import { FormValues } from "./CreateProjectForm.types";
 import { projectNameValidator } from "@/shared/utils/validate";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
@@ -10,7 +10,7 @@ import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { Input, Textarea } from "@/presentation/ui/Input";
 import { AddParticipant } from "./AddParticipant";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
-import { useCreateProjectForm } from "../hooks/useCreateProjectForm";
+import { useCreateProjectForm } from "../../../../application/projects/hooks/useCreateProjectForm";
 
 const projectFormTexts = {
   newProject: "Новый проект",
