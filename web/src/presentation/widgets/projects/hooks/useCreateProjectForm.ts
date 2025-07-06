@@ -13,49 +13,21 @@ interface UseCreateProjectFormProps {
 }
 
 interface UseCreateProjectFormReturn {
-  // Project state
   selectedParticipants: ProjectParticipant[];
-  searchQuery: string;
-
-  // Actions
-  handleRemoveParticipant: (email: string) => void;
-  handleAddParticipant: (participant: ProjectParticipant) => void;
-  handleToggleParticipant: (participant: ProjectParticipant) => void;
+  removeParticipant: (email: string) => void;
   handleOpenInviteUser: () => void;
-  setSearchQuery: (query: string) => void;
   submitProject: (formData: {
     name: string;
     description: string;
   }) => Promise<void>;
-  reset: () => void;
 }
 
 export function useCreateProjectForm({
   onSubmit,
 }: UseCreateProjectFormProps): UseCreateProjectFormReturn {
-  const context = useProjectCreation();
-  const {
-    selectedParticipants,
-    searchQuery,
-    removeParticipant,
-    addParticipant,
-    toggleParticipant,
-    setSearchQuery,
-    reset,
-  } = context;
+  const { selectedParticipants, removeParticipant, reset } =
+    useProjectCreation();
   const modal = useModal();
-
-  const handleRemoveParticipant = (email: string) => {
-    removeParticipant(email);
-  };
-
-  const handleAddParticipant = (participant: ProjectParticipant) => {
-    addParticipant(participant);
-  };
-
-  const handleToggleParticipant = (participant: ProjectParticipant) => {
-    toggleParticipant(participant);
-  };
 
   const handleOpenInviteUser = () => {
     modal.showInviteUser();
@@ -65,9 +37,11 @@ export function useCreateProjectForm({
     name: string;
     description: string;
   }) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
+    // TODO: Remove simulation in production
+    if (process.env.NODE_ENV === "development") {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
 
-    // Combine form data with participants from context
     const finalData = {
       ...formData,
       participants: selectedParticipants.map((p) => p.email),
@@ -77,24 +51,17 @@ export function useCreateProjectForm({
 
     try {
       await onSubmit(finalData);
-      reset(); // Reset context state after successful submission
+      reset();
     } catch (error) {
       console.error("Failed to create project:", error);
+      throw error; // Re-throw for form to handle
     }
   };
 
   return {
-    // Project state
     selectedParticipants,
-    searchQuery,
-
-    // Actions
-    handleRemoveParticipant,
-    handleAddParticipant,
-    handleToggleParticipant,
+    removeParticipant,
     handleOpenInviteUser,
-    setSearchQuery,
     submitProject,
-    reset,
   };
 }

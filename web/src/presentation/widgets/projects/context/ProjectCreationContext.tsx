@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useMemo,
+  useCallback,
+} from "react";
 
 export interface ProjectParticipant {
   id?: string;
@@ -27,20 +34,20 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
   >([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const addParticipant = (participant: ProjectParticipant) => {
+  const addParticipant = useCallback((participant: ProjectParticipant) => {
     setSelectedParticipants((prev) => {
       if (prev.some((p) => p.email === participant.email)) {
         return prev; // Already exists
       }
       return [...prev, participant];
     });
-  };
+  }, []);
 
-  const removeParticipant = (email: string) => {
+  const removeParticipant = useCallback((email: string) => {
     setSelectedParticipants((prev) => prev.filter((p) => p.email !== email));
-  };
+  }, []);
 
-  const toggleParticipant = (participant: ProjectParticipant) => {
+  const toggleParticipant = useCallback((participant: ProjectParticipant) => {
     setSelectedParticipants((prev) => {
       const exists = prev.some((p) => p.email === participant.email);
       if (exists) {
@@ -48,25 +55,35 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
       }
       return [...prev, participant];
     });
-  };
+  }, []);
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setSelectedParticipants([]);
     setSearchQuery("");
-  };
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      selectedParticipants,
+      searchQuery,
+      addParticipant,
+      removeParticipant,
+      toggleParticipant,
+      setSearchQuery,
+      reset,
+    }),
+    [
+      selectedParticipants,
+      searchQuery,
+      addParticipant,
+      removeParticipant,
+      toggleParticipant,
+      reset,
+    ]
+  );
 
   return (
-    <ProjectCreationContext.Provider
-      value={{
-        selectedParticipants,
-        searchQuery,
-        addParticipant,
-        removeParticipant,
-        toggleParticipant,
-        setSearchQuery,
-        reset,
-      }}
-    >
+    <ProjectCreationContext.Provider value={contextValue}>
       {children}
     </ProjectCreationContext.Provider>
   );

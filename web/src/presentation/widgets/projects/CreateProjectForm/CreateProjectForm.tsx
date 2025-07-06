@@ -28,7 +28,7 @@ interface Props {
 export function CreateProjectForm({ onSubmit, isLoading }: Props) {
   const {
     selectedParticipants,
-    handleRemoveParticipant,
+    removeParticipant,
     handleOpenInviteUser,
     submitProject,
   } = useCreateProjectForm({ onSubmit });
@@ -89,7 +89,7 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
         {selectedParticipants.length > 0 && (
           <SelectedUsers
             users={selectedParticipants}
-            onDeleteUser={(user) => handleRemoveParticipant(user.email)}
+            onDeleteUser={(user) => removeParticipant(user.email)}
           />
         )}
       </div>
