@@ -36,8 +36,10 @@ export function useParticipantForm(): UseParticipantFormReturn {
 
   const submitParticipant = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailRegex.test(email)) {
-      const newParticipant: ProjectParticipant = { email };
+    const trimmedEmail = email.trim().toLowerCase();
+
+    if (emailRegex.test(trimmedEmail)) {
+      const newParticipant: ProjectParticipant = { email: trimmedEmail };
       addParticipant(newParticipant);
       setSearchQuery(""); // Clear search after adding
     }
