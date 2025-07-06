@@ -6,16 +6,16 @@ import { useProjectCreation } from "@/presentation/widgets/projects/context/Proj
 
 export default function CreateProjectModal(props: BaseModalProps) {
   const { isOpen, onClose, onBack } = props;
-  const { actions } = useProjectCreation();
+  const { reset } = useProjectCreation();
 
   const handleSubmit = (data: CreateProjectFormData) => {
     alert("Project created: " + JSON.stringify(data));
-    actions.reset();
+    reset();
     onClose();
   };
 
   const handleClose = () => {
-    actions.reset();
+    reset();
     onClose();
   };
 

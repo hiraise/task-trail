@@ -15,23 +15,19 @@ export function UserItem({
   isSelected = false,
   onSelect,
 }: UserItemProps) {
-  const handleToggle = () => {
+  const handleCheckboxChange = () => {
     if (onSelect) onSelect(user);
   };
 
   return (
-    <div
-      className={styles.container}
-      onClick={handleToggle}
-      style={{ cursor: onSelect ? "pointer" : "default" }}
-    >
+    <div className={styles.container}>
       <div className={styles.userInfo}>
         <div className={styles.avatarContainer}>
           <Icon as={ICONS.profile} size="18px" />
         </div>
         <p className={styles.email}>{user.email}</p>
       </div>
-      <CheckBox checked={isSelected} onChange={() => handleToggle()} />
+      <CheckBox checked={isSelected} onChange={handleCheckboxChange} />
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { useForm } from "react-hook-form";
+
 import styles from "./CreateProjectForm.module.css";
 import { Spacer } from "../../primitives/Spacer";
 import { CreateProjectFormData, FormValues } from "./CreateProjectForm.types";
@@ -8,8 +10,6 @@ import { Input, Textarea } from "@/presentation/ui/Input";
 import { AddParticipant } from "./AddParticipant";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { useCreateProjectForm } from "../hooks/useCreateProjectForm";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
 
 const projectFormTexts = {
   newProject: "Новый проект",
@@ -27,61 +27,24 @@ interface Props {
 
 export function CreateProjectForm({ onSubmit, isLoading }: Props) {
   const {
-    projectName,
-    projectDescription,
     selectedParticipants,
     handleRemoveParticipant,
     handleOpenInviteUser,
-    setProjectName,
-    setProjectDescription,
     submitProject,
   } = useCreateProjectForm({ onSubmit });
 
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm<FormValues>({
     mode: "onChange",
     defaultValues: {
-      name: projectName,
-      description: projectDescription,
-      participants: selectedParticipants.map((p) => p.email),
+      name: "",
+      description: "",
+      participants: [],
     },
   });
-
-  // Watch form values and sync with context
-  const watchedName = watch("name");
-  const watchedDescription = watch("description");
-
-  // Sync form values with context state
-  useEffect(() => {
-    setValue("name", projectName);
-    setValue("description", projectDescription);
-    setValue(
-      "participants",
-      selectedParticipants.map((p) => p.email)
-    );
-  }, [projectName, projectDescription, selectedParticipants, setValue]);
-
-  // Update context when form values change
-  useEffect(() => {
-    if (watchedName !== projectName) {
-      setProjectName(watchedName || "");
-    }
-    if (watchedDescription !== projectDescription) {
-      setProjectDescription(watchedDescription || "");
-    }
-  }, [
-    watchedName,
-    watchedDescription,
-    setProjectName,
-    setProjectDescription,
-    projectName,
-    projectDescription,
-  ]);
 
   const submitHandler = async (data: FormValues) => {
     await submitProject(data);

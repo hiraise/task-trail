@@ -16,27 +16,30 @@ interface UseParticipantFormReturn {
 }
 
 export function useParticipantForm(): UseParticipantFormReturn {
-  const { state, actions } = useProjectCreation();
-  const { searchQuery, selectedParticipants } = state;
+  const context = useProjectCreation();
+  const {
+    searchQuery,
+    selectedParticipants,
+    removeParticipant,
+    toggleParticipant,
+    addParticipant,
+    setSearchQuery,
+  } = context;
 
   const handleDeleteUser = (user: ProjectParticipant) => {
-    actions.removeParticipant(user.email);
+    removeParticipant(user.email);
   };
 
   const handleUserSelect = (user: ProjectParticipant) => {
-    actions.toggleParticipant(user);
-  };
-
-  const setSearchQuery = (query: string) => {
-    actions.setSearchQuery(query);
+    toggleParticipant(user);
   };
 
   const submitParticipant = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (emailRegex.test(email)) {
       const newParticipant: ProjectParticipant = { email };
-      actions.addParticipant(newParticipant);
-      actions.setSearchQuery(""); // Clear search after adding
+      addParticipant(newParticipant);
+      setSearchQuery(""); // Clear search after adding
     }
   };
 

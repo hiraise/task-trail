@@ -3,58 +3,81 @@ import {
   useProjectCreation,
   ProjectParticipant,
 } from "../context/ProjectCreationContext";
-import { CreateProjectFormData } from "../CreateProjectForm/CreateProjectForm.types";
 
 interface UseCreateProjectFormProps {
-  onSubmit: (data: CreateProjectFormData) => void | Promise<void>;
+  onSubmit: (data: {
+    name: string;
+    description: string;
+    participants: string[];
+  }) => void | Promise<void>;
 }
 
 interface UseCreateProjectFormReturn {
   // Project state
-  projectName: string;
-  projectDescription: string;
   selectedParticipants: ProjectParticipant[];
+  searchQuery: string;
 
   // Actions
   handleRemoveParticipant: (email: string) => void;
+  handleAddParticipant: (participant: ProjectParticipant) => void;
+  handleToggleParticipant: (participant: ProjectParticipant) => void;
   handleOpenInviteUser: () => void;
-  setProjectName: (name: string) => void;
-  setProjectDescription: (description: string) => void;
-  submitProject: (data: CreateProjectFormData) => Promise<void>;
+  setSearchQuery: (query: string) => void;
+  submitProject: (formData: {
+    name: string;
+    description: string;
+  }) => Promise<void>;
+  reset: () => void;
 }
 
 export function useCreateProjectForm({
   onSubmit,
 }: UseCreateProjectFormProps): UseCreateProjectFormReturn {
-  const { state, actions } = useProjectCreation();
-  const { projectName, projectDescription, selectedParticipants } = state;
+  const context = useProjectCreation();
+  const {
+    selectedParticipants,
+    searchQuery,
+    removeParticipant,
+    addParticipant,
+    toggleParticipant,
+    setSearchQuery,
+    reset,
+  } = context;
   const modal = useModal();
 
   const handleRemoveParticipant = (email: string) => {
-    actions.removeParticipant(email);
+    removeParticipant(email);
+  };
+
+  const handleAddParticipant = (participant: ProjectParticipant) => {
+    addParticipant(participant);
+  };
+
+  const handleToggleParticipant = (participant: ProjectParticipant) => {
+    toggleParticipant(participant);
   };
 
   const handleOpenInviteUser = () => {
     modal.showInviteUser();
   };
 
-  const setProjectName = (name: string) => {
-    actions.setProjectName(name);
-  };
-
-  const setProjectDescription = (description: string) => {
-    actions.setProjectDescription(description);
-  };
-
-  const submitProject = async (data: CreateProjectFormData) => {
+  const submitProject = async (formData: {
+    name: string;
+    description: string;
+  }) => {
     await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
-    console.log("Form submitted with data:", data);
 
-    const finalData = actions.getFormData();
+    // Combine form data with participants from context
+    const finalData = {
+      ...formData,
+      participants: selectedParticipants.map((p) => p.email),
+    };
+
+    console.log("Form submitted with data:", finalData);
 
     try {
       await onSubmit(finalData);
-      actions.reset(); // Reset state after successful submission
+      reset(); // Reset context state after successful submission
     } catch (error) {
       console.error("Failed to create project:", error);
     }
@@ -62,15 +85,16 @@ export function useCreateProjectForm({
 
   return {
     // Project state
-    projectName,
-    projectDescription,
     selectedParticipants,
+    searchQuery,
 
     // Actions
     handleRemoveParticipant,
+    handleAddParticipant,
+    handleToggleParticipant,
     handleOpenInviteUser,
-    setProjectName,
-    setProjectDescription,
+    setSearchQuery,
     submitProject,
+    reset,
   };
 }
