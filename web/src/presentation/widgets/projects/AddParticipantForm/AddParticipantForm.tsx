@@ -1,6 +1,3 @@
-import { useForm } from "react-hook-form";
-import { useState } from "react";
-
 import styles from "./AddParticipantForm.module.css";
 import { Input } from "@/presentation/ui/Input";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
@@ -8,13 +5,12 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { participantsTexts } from "./addParticipants";
+import { useParticipantForm } from "../hooks/useParticipantForm";
+import { ProjectParticipant } from "../context/ProjectCreationContext";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
-export type UserData = {
-  id?: string;
-  username?: string;
-  email: string;
-  avatarUrl?: string;
-};
+export type UserData = ProjectParticipant;
 
 interface FormValues {
   query: string;
@@ -22,32 +18,44 @@ interface FormValues {
 
 export function AddParticipantForm() {
   const {
+    selectedParticipants,
+    searchQuery,
+    handleUserSelect,
+    handleDeleteUser,
+    setSearchQuery,
+    submitParticipant,
+  } = useParticipantForm();
+
+  const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting, isValid },
-  } = useForm<FormValues>({ mode: "onChange" });
+  } = useForm<FormValues>({
+    mode: "onChange",
+    defaultValues: { query: searchQuery },
+  });
 
-  // Watch the query input to show/hide the dropdown
   const queryValue = watch("query");
-  const shouldShowDropdown = queryValue && queryValue.trim().length > 0;
-
-  // Manage selected users state
-  const [selectedUsers, setSelectedUsers] = useState<UserData[]>(
-    Array.from({ length: 10 }, (_, i) => ({
-      email: `ilkat@gmail.com${i}`,
-    }))
+  const shouldShowDropdown = Boolean(
+    queryValue && queryValue.trim().length > 0
   );
 
-  const handleDeleteUser = (user: UserData) => {
-    setSelectedUsers((prevUsers) =>
-      prevUsers.filter((u) => u.email !== user.email)
-    );
-  };
+  // Sync form query with context
+  useEffect(() => {
+    setValue("query", searchQuery);
+  }, [searchQuery, setValue]);
+
+  useEffect(() => {
+    if (queryValue !== searchQuery) {
+      setSearchQuery(queryValue || "");
+    }
+  }, [queryValue, setSearchQuery, searchQuery]);
 
   const submitHandler = async (data: FormValues) => {
     await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
-    alert(`Participant added: ${data.query}`);
+    submitParticipant(data.query);
   };
 
   return (
@@ -79,12 +87,16 @@ export function AddParticipantForm() {
       <div className={styles.middle}>
         {shouldShowDropdown && (
           <div className={styles.dropDown}>
-            <UsersList />
+            <UsersList
+              onUserSelect={handleUserSelect}
+              selectedUsers={selectedParticipants}
+              searchQuery={queryValue}
+            />
           </div>
         )}
-        {selectedUsers.length > 0 && (
+        {selectedParticipants.length > 0 && (
           <SelectedUsers
-            users={selectedUsers}
+            users={selectedParticipants}
             onDeleteUser={handleDeleteUser}
             isExpanded={!shouldShowDropdown}
           />

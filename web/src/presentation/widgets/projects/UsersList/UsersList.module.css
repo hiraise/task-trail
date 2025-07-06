@@ -6,3 +6,10 @@
   background-color: var(--grey);
   overflow-y: auto;
 }
+
+.emptyState {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}

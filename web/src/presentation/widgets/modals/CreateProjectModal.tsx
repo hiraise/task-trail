@@ -1,18 +1,26 @@
 import { BaseModal } from "./BaseModal";
-import { CreateProjectModalProps } from "./modal.types";
-import { CreateProjectForm } from "../projects/CreateProjectForm";
-import { CreateProjectFormData } from "../projects/CreateProjectForm/CreateProjectForm.types";
+import { BaseModalProps } from "./modal.types";
+import { CreateProjectForm } from "@/presentation/widgets/projects/CreateProjectForm";
+import { CreateProjectFormData } from "@/presentation/widgets/projects/CreateProjectForm/CreateProjectForm.types";
+import { useProjectCreation } from "@/presentation/widgets/projects/context/ProjectCreationContext";
 
-export default function CreateProjectModal(props: CreateProjectModalProps) {
+export default function CreateProjectModal(props: BaseModalProps) {
   const { isOpen, onClose, onBack } = props;
+  const { actions } = useProjectCreation();
 
   const handleSubmit = (data: CreateProjectFormData) => {
     alert("Project created: " + JSON.stringify(data));
+    actions.reset();
+    onClose();
+  };
+
+  const handleClose = () => {
+    actions.reset();
     onClose();
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} onBack={onBack}>
+    <BaseModal isOpen={isOpen} onClose={handleClose} onBack={onBack}>
       <CreateProjectForm onSubmit={handleSubmit} />
     </BaseModal>
   );

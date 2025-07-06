@@ -15,7 +15,7 @@ export function SelectedUsers({
 }: SelectedUsersProps) {
   return (
     <div className={isExpanded ? styles.expanded : styles.container}>
-      {users.map((user) => (
+      {users.toReversed().map((user) => (
         <SelectedUserEmail
           key={user.email} // Use email as unique key
           email={user.email}

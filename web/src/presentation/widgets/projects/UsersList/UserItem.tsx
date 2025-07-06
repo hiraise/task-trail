@@ -6,18 +6,32 @@ import { CheckBox } from "@/presentation/ui/CheckBox";
 
 interface UserItemProps {
   user: UserData;
+  isSelected?: boolean;
+  onSelect?: (user: UserData) => void;
 }
 
-export function UserItem({ user }: UserItemProps) {
+export function UserItem({
+  user,
+  isSelected = false,
+  onSelect,
+}: UserItemProps) {
+  const handleToggle = () => {
+    if (onSelect) onSelect(user);
+  };
+
   return (
-    <div className={styles.container}>
+    <div
+      className={styles.container}
+      onClick={handleToggle}
+      style={{ cursor: onSelect ? "pointer" : "default" }}
+    >
       <div className={styles.userInfo}>
         <div className={styles.avatarContainer}>
           <Icon as={ICONS.profile} size="18px" />
         </div>
         <p className={styles.email}>{user.email}</p>
       </div>
-      <CheckBox onChange={() => console.log("User checked" + user.email)} />
+      <CheckBox checked={isSelected} onChange={() => handleToggle()} />
     </div>
   );
 }

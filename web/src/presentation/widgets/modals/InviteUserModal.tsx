@@ -1,13 +1,17 @@
-import { InviteUserModalProps } from "./modal.types";
 import { BaseModal } from "./BaseModal";
-import { AddParticipantForm } from "../projects/AddParticipantForm/AddParticipantForm";
+import { BaseModalProps } from "./modal.types";
+import { AddParticipantForm } from "@/presentation/widgets/projects/AddParticipantForm/AddParticipantForm";
 
-export default function InviteUserModal({ ...props }: InviteUserModalProps) {
-  const { ...baseProps } = props;
-
-  //TODO: Move text to a separate file
+export default function InviteUserModal(props: BaseModalProps) {
+  const { isOpen, onClose, onBack } = props;
   return (
-    <BaseModal fullScreen={true} {...baseProps} title="Добавить участников">
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      onBack={onBack}
+      fullScreen={true}
+      title="Добавить участников"
+    >
       <AddParticipantForm />
     </BaseModal>
   );

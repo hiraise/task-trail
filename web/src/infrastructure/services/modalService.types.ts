@@ -1,7 +1,4 @@
-import {
-  CreateProjectModalProps,
-  InviteUserModalProps,
-} from "@/presentation/widgets/modals/modal.types";
+import { BaseModalProps } from "@/presentation/widgets/modals/modal.types";
 
 export interface ModalService {
   showCreateProject: CreateProject;
@@ -10,5 +7,5 @@ export interface ModalService {
   closeAll: () => void;
 }
 
-export type CreateProject = (props?: Partial<CreateProjectModalProps>) => void;
-export type InviteUser = (props?: Partial<InviteUserModalProps>) => void;
+export type CreateProject = (props?: Partial<BaseModalProps>) => void;
+export type InviteUser = (props?: Partial<BaseModalProps>) => void;

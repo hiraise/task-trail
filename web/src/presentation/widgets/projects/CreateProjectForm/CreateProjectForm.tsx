@@ -1,14 +1,15 @@
-import { useForm } from "react-hook-form";
-
 import styles from "./CreateProjectForm.module.css";
 import { Spacer } from "../../primitives/Spacer";
-import { useModal } from "@/shared/hooks/useModal";
 import { CreateProjectFormData, FormValues } from "./CreateProjectForm.types";
 import { projectNameValidator } from "@/shared/utils/validate";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { Input, Textarea } from "@/presentation/ui/Input";
 import { AddParticipant } from "./AddParticipant";
+import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
+import { useCreateProjectForm } from "../hooks/useCreateProjectForm";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 const projectFormTexts = {
   newProject: "Новый проект",
@@ -26,30 +27,64 @@ interface Props {
 
 export function CreateProjectForm({ onSubmit, isLoading }: Props) {
   const {
+    projectName,
+    projectDescription,
+    selectedParticipants,
+    handleRemoveParticipant,
+    handleOpenInviteUser,
+    setProjectName,
+    setProjectDescription,
+    submitProject,
+  } = useCreateProjectForm({ onSubmit });
+
+  const {
     register,
     handleSubmit,
-    // watch,
+    watch,
+    setValue,
     formState: { errors, isSubmitting, isValid },
-  } = useForm<FormValues>({ mode: "onChange" });
+  } = useForm<FormValues>({
+    mode: "onChange",
+    defaultValues: {
+      name: projectName,
+      description: projectDescription,
+      participants: selectedParticipants.map((p) => p.email),
+    },
+  });
 
-  const modal = useModal();
+  // Watch form values and sync with context
+  const watchedName = watch("name");
+  const watchedDescription = watch("description");
 
-  // const projectName = watch("name");
-  // const projectDescription = watch("description");
-  // const participants = watch("participants");
+  // Sync form values with context state
+  useEffect(() => {
+    setValue("name", projectName);
+    setValue("description", projectDescription);
+    setValue(
+      "participants",
+      selectedParticipants.map((p) => p.email)
+    );
+  }, [projectName, projectDescription, selectedParticipants, setValue]);
+
+  // Update context when form values change
+  useEffect(() => {
+    if (watchedName !== projectName) {
+      setProjectName(watchedName || "");
+    }
+    if (watchedDescription !== projectDescription) {
+      setProjectDescription(watchedDescription || "");
+    }
+  }, [
+    watchedName,
+    watchedDescription,
+    setProjectName,
+    setProjectDescription,
+    projectName,
+    projectDescription,
+  ]);
 
   const submitHandler = async (data: FormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
-    console.log("Form submitted with data:", data);
-    return onSubmit({
-      name: data.name,
-      description: data.description,
-      participants: data.participants,
-    });
-  };
-
-  const handleOpenInviteUser = () => {
-    modal.showInviteUser();
+    await submitProject(data);
   };
 
   return (
@@ -86,6 +121,14 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
           <FormFieldError>{errors.description.message}</FormFieldError>
         )}
         <AddParticipant onClick={handleOpenInviteUser} />
+
+        {/* Display selected participants */}
+        {selectedParticipants.length > 0 && (
+          <SelectedUsers
+            users={selectedParticipants}
+            onDeleteUser={(user) => handleRemoveParticipant(user.email)}
+          />
+        )}
       </div>
       <Spacer size="24px" />
       <SubmitButton type="submit" disabled={!isValid || isSubmitting}>
