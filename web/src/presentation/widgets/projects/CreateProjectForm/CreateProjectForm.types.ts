@@ -1,7 +1,4 @@
-export interface CreateProjectFormData {
-  name: string;
-  description: string;
-  participants: string[];
-}
+import { CreateProjectFormData } from "../types";
 
+export type { CreateProjectFormData };
 export type FormValues = CreateProjectFormData;

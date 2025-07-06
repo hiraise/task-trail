@@ -2,7 +2,8 @@ import { useForm } from "react-hook-form";
 
 import styles from "./CreateProjectForm.module.css";
 import { Spacer } from "../../primitives/Spacer";
-import { CreateProjectFormData, FormValues } from "./CreateProjectForm.types";
+import { CreateProjectFormData } from "../types";
+import { FormValues } from "./CreateProjectForm.types";
 import { projectNameValidator } from "@/shared/utils/validate";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";

@@ -1,14 +1,9 @@
-import {
-  useProjectCreation,
-  ProjectParticipant,
-} from "../context/ProjectCreationContext";
+import { useProjectCreation } from "../context/ProjectCreationContext";
+import { ProjectParticipant } from "../types";
 
 interface UseParticipantFormReturn {
-  // Participants
   selectedParticipants: ProjectParticipant[];
   searchQuery: string;
-
-  // Actions
   handleUserSelect: (user: ProjectParticipant) => void;
   handleDeleteUser: (user: ProjectParticipant) => void;
   setSearchQuery: (query: string) => void;
@@ -46,11 +41,8 @@ export function useParticipantForm(): UseParticipantFormReturn {
   };
 
   return {
-    // Participants
     selectedParticipants,
     searchQuery,
-
-    // Actions
     handleUserSelect,
     handleDeleteUser,
     setSearchQuery,

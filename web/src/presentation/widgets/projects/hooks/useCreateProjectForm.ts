@@ -1,8 +1,6 @@
 import { useModal } from "@/shared/hooks/useModal";
-import {
-  useProjectCreation,
-  ProjectParticipant,
-} from "../context/ProjectCreationContext";
+import { useProjectCreation } from "../context/ProjectCreationContext";
+import { ProjectParticipant } from "../types";
 
 interface UseCreateProjectFormProps {
   onSubmit: (data: {

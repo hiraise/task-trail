@@ -6,7 +6,7 @@ import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { participantsTexts } from "./addParticipants";
 import { useParticipantForm } from "../hooks/useParticipantForm";
-import { ProjectParticipant } from "../context/ProjectCreationContext";
+import { ProjectParticipant } from "../types";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 

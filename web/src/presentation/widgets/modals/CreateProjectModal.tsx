@@ -1,7 +1,7 @@
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./modal.types";
 import { CreateProjectForm } from "@/presentation/widgets/projects/CreateProjectForm";
-import { CreateProjectFormData } from "@/presentation/widgets/projects/CreateProjectForm/CreateProjectForm.types";
+import { CreateProjectFormData } from "@/presentation/widgets/projects/types";
 import { useProjectCreation } from "@/presentation/widgets/projects/context/ProjectCreationContext";
 
 export default function CreateProjectModal(props: BaseModalProps) {

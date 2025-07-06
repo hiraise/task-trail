@@ -1,11 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-
-export interface ProjectParticipant {
-  id?: string;
-  username?: string;
-  email: string;
-  avatarUrl?: string;
-}
+import { ProjectParticipant } from "../types";
 
 interface ProjectCreationContextType {
   selectedParticipants: ProjectParticipant[];
@@ -17,10 +11,14 @@ interface ProjectCreationContextType {
   reset: () => void;
 }
 
-const ProjectCreationContext = createContext<ProjectCreationContextType | null>(null);
+const ProjectCreationContext = createContext<ProjectCreationContextType | null>(
+  null
+);
 
 export function ProjectCreationProvider({ children }: { children: ReactNode }) {
-  const [selectedParticipants, setSelectedParticipants] = useState<ProjectParticipant[]>([]);
+  const [selectedParticipants, setSelectedParticipants] = useState<
+    ProjectParticipant[]
+  >([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const addParticipant = (participant: ProjectParticipant) => {
