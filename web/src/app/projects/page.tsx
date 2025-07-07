@@ -4,7 +4,6 @@ import { toast } from "sonner";
 
 import "./styles.css";
 import { ICONS } from "@/infrastructure/config/icons";
-import { useModal } from "@/shared/hooks/useModal";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
@@ -13,6 +12,7 @@ import {
   mockProjects,
   ProjectCard,
 } from "@/presentation/widgets/projects/ProjectCard";
+import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 
 const projectTexts = {
   title: "Мои проекты",
@@ -21,11 +21,7 @@ const projectTexts = {
 };
 
 export default function ProjectsPage() {
-  const modal = useModal();
-
-  const handleOpenCreateProject = () => {
-    modal.showCreateProject();
-  };
+  const { showCreateProject } = useModalSheet();
 
   return (
     <MainContainer>
@@ -47,7 +43,7 @@ export default function ProjectsPage() {
         ))}
       </div>
       <div className="floating-button">
-        <IconButton icon={ICONS.addButton} onClick={handleOpenCreateProject} />
+        <IconButton icon={ICONS.addButton} onClick={showCreateProject} />
       </div>
       <BottomNavBar />
     </MainContainer>

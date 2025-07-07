@@ -1,16 +1,12 @@
 import CreateProjectModal from "../../presentation/widgets/modals/CreateProjectModal";
 import InviteUserModal from "../../presentation/widgets/modals/InviteUserModal";
 import { ProjectCreationProvider } from "../../application/projects/context/ProjectCreationContext";
-import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
-import {
-  closeAllSheets,
-  backSheet,
-} from "@/application/modals/bottomSheetSlice";
 import { MODAL_TYPES } from "@/infrastructure/config/modalTypes";
+import { useBottomSheet } from "./BottomSheetContext";
+import { ReactNode } from "react";
 
 export function SheetManager() {
-  const stack = useAppSelector((state) => state.bottomSheet.stack);
-  const dispatch = useAppDispatch();
+  const { stack, closeAllSheets, backSheet } = useBottomSheet();
 
   if (stack.length === 0) return null;
 
@@ -19,41 +15,46 @@ export function SheetManager() {
 
   const handleBack = () => {
     if (hasMultipleSheets) {
-      dispatch(backSheet());
+      backSheet();
     } else {
-      dispatch(closeAllSheets());
+      closeAllSheets();
     }
   };
 
-  const handleClose = () => {
-    dispatch(closeAllSheets());
-  };
+  const handleClose = () => closeAllSheets();
 
-  const renderModal = () => {
+  const renderModal = (): ReactNode => {
+    const commonProps = {
+      isOpen: true,
+      onClose: handleClose,
+      onBack: hasMultipleSheets ? handleBack : undefined,
+    };
+
     switch (currentSheet.type) {
       case MODAL_TYPES.CREATE_PROJECT:
-        return (
-          <CreateProjectModal
-            isOpen={true}
-            onClose={handleClose}
-            onBack={hasMultipleSheets ? handleBack : undefined}
-          />
-        );
+        return <CreateProjectModal {...commonProps} />;
 
       case MODAL_TYPES.INVITE_USER:
-        return (
-          <InviteUserModal
-            isOpen={true}
-            onClose={handleClose}
-            onBack={handleBack}
-          />
-        );
+        return <InviteUserModal {...commonProps} />;
 
       default:
+        console.warn(`Unknown modal type: ${currentSheet.type}`);
         return null;
     }
   };
 
-  // All current modals are project creation related, so always wrap with context
-  return <ProjectCreationProvider>{renderModal()}</ProjectCreationProvider>;
+  const getModalWithProvider = (modal: ReactNode): ReactNode => {
+    const projectRelatedModals = [
+      MODAL_TYPES.CREATE_PROJECT,
+      MODAL_TYPES.INVITE_USER,
+    ];
+
+    if (projectRelatedModals.includes(currentSheet.type)) {
+      return <ProjectCreationProvider>{modal}</ProjectCreationProvider>;
+    }
+
+    return modal;
+  };
+
+  return getModalWithProvider(renderModal());
 }

@@ -5,7 +5,6 @@ import authReducer from "@/application/auth/slices/authSlice";
 import userReducer from "@/application/user/slices/userSlice";
 import errorSlice from "@/application/errors/slices/errorSlice";
 import { authApi } from "../adapters/authApi";
-import bottomSheetSlice from "@/application/modals/bottomSheetSlice";
 
 export const store = configureStore({
   devTools: process.env.NODE_ENV === "development",
@@ -13,7 +12,6 @@ export const store = configureStore({
     auth: authReducer,
     user: userReducer,
     globalError: errorSlice,
-    bottomSheet: bottomSheetSlice,
     [authApi.reducerPath]: authApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

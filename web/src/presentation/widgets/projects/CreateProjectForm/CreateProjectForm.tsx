@@ -11,6 +11,7 @@ import { Input, Textarea } from "@/presentation/ui/Input";
 import { AddParticipant } from "./AddParticipant";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { useCreateProjectForm } from "../../../../application/projects/hooks/useCreateProjectForm";
+import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 
 const projectFormTexts = {
   newProject: "Новый проект",
@@ -27,12 +28,10 @@ interface Props {
 }
 
 export function CreateProjectForm({ onSubmit, isLoading }: Props) {
-  const {
-    selectedParticipants,
-    removeParticipant,
-    handleOpenInviteUser,
-    submitProject,
-  } = useCreateProjectForm({ onSubmit });
+  const { selectedParticipants, removeParticipant, submitProject } =
+    useCreateProjectForm({ onSubmit });
+
+  const { showInviteUser } = useModalSheet();
 
   const {
     register,
@@ -84,7 +83,7 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
         {errors.description && (
           <FormFieldError>{errors.description.message}</FormFieldError>
         )}
-        <AddParticipant onClick={handleOpenInviteUser} />
+        <AddParticipant onClick={showInviteUser} />
 
         {/* Display selected participants */}
         {selectedParticipants.length > 0 && (

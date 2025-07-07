@@ -49,7 +49,7 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ProjectCreationContext.Provider
+    <ProjectCreationContext
       value={{
         selectedParticipants,
         searchQuery,
@@ -61,7 +61,7 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </ProjectCreationContext.Provider>
+    </ProjectCreationContext>
   );
 }
 

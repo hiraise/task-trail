@@ -8,6 +8,7 @@ import { store } from "@/infrastructure/redux/store";
 import { GlobalErrorBanner } from "./GlobalErrorBanner";
 import { AuthAndUserInitializer } from "./AuthAndUserInitializer";
 import { SheetManager } from "@/app/_components/SheetManager";
+import { BottomSheetProvider } from "./BottomSheetContext";
 
 export default function ClientRootLayout({
   children,
@@ -31,8 +32,10 @@ export default function ClientRootLayout({
       <Toaster position="bottom-right" richColors />
       <GlobalErrorBanner />
       <AuthAndUserInitializer />
-      <SheetManager />
-      {children}
+      <BottomSheetProvider>
+        <SheetManager />
+        {children}
+      </BottomSheetProvider>
     </Provider>
   );
 }

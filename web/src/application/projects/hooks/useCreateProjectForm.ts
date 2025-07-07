@@ -1,4 +1,3 @@
-import { useModal } from "@/shared/hooks/useModal";
 import { useProjectCreation } from "../context/ProjectCreationContext";
 import { ProjectParticipant } from "../types";
 
@@ -13,7 +12,6 @@ interface UseCreateProjectFormProps {
 interface UseCreateProjectFormReturn {
   selectedParticipants: ProjectParticipant[];
   removeParticipant: (email: string) => void;
-  handleOpenInviteUser: () => void;
   submitProject: (formData: {
     name: string;
     description: string;
@@ -25,11 +23,6 @@ export function useCreateProjectForm({
 }: UseCreateProjectFormProps): UseCreateProjectFormReturn {
   const { selectedParticipants, removeParticipant, reset } =
     useProjectCreation();
-  const modal = useModal();
-
-  const handleOpenInviteUser = () => {
-    modal.showInviteUser();
-  };
 
   const submitProject = async (formData: {
     name: string;
@@ -59,7 +52,6 @@ export function useCreateProjectForm({
   return {
     selectedParticipants,
     removeParticipant,
-    handleOpenInviteUser,
     submitProject,
   };
 }
