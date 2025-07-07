@@ -18,8 +18,16 @@ export function useModalSheet() {
     });
   };
 
+  const showSortOptions = (props?: unknown) => {
+    openSheet({
+      type: MODAL_TYPES.SORT_PROJECTS,
+      props,
+    });
+  };
+
   return {
     showCreateProject,
     showInviteUser,
+    showSortOptions,
   };
 }

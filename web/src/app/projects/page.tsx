@@ -1,7 +1,5 @@
 "use client";
 
-import { toast } from "sonner";
-
 import "./styles.css";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
@@ -21,14 +19,14 @@ const projectTexts = {
 };
 
 export default function ProjectsPage() {
-  const { showCreateProject } = useModalSheet();
+  const { showCreateProject, showSortOptions } = useModalSheet();
 
   return (
     <MainContainer>
       <DashboardHeader />
       <div className="title-container">
         <h1>{projectTexts.title}</h1>
-        <IconButton icon={ICONS.sort} onClick={() => toast.info("Sorting")} />
+        <IconButton icon={ICONS.sort} onClick={showSortOptions} />
       </div>
       {mockProjects.length === 0 && (
         <div className="empty-state">
