@@ -16,12 +16,7 @@ export default function ClientRootLayout({
 }>) {
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-    const loadingScreen = document.getElementById("loading-screen");
-    // Hide the loading screen once the client-side code is ready
-    if (loadingScreen) loadingScreen.style.display = "none";
-  }, []);
+  useEffect(() => setIsClient(true), []);
 
   // If not client-side, return null to avoid rendering on the server
   if (!isClient) return null;

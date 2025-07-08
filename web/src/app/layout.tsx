@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 
 import "./globals.css";
 import { metadataTexts } from "@/shared/locales/metadata";
-import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
 import ClientRootLayout from "./_components/ClientRootLayout";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -28,9 +27,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div id="loading-screen">
-          <LoadingScreen />
-        </div>
         <ClientRootLayout>{children}</ClientRootLayout>
       </body>
     </html>
