@@ -1,7 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import "./styles.css";
 import { ICONS } from "@/infrastructure/config/icons";
+import { ROUTES } from "@/infrastructure/config/routes";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
@@ -20,6 +23,11 @@ const projectTexts = {
 
 export default function ProjectsPage() {
   const { showCreateProject, showSortOptions } = useModalSheet();
+  const router = useRouter();
+
+  const handleOpenProject = (projectId: string) => {
+    router.push(ROUTES.project(projectId));
+  };
 
   return (
     <MainContainer>
@@ -37,7 +45,11 @@ export default function ProjectsPage() {
       <div className="cards-container">
         {/* TODO: replace with real data */}
         {mockProjects.map((project, index) => (
-          <ProjectCard key={index} project={project} />
+          <ProjectCard
+            key={index}
+            project={project}
+            onClick={() => handleOpenProject(project.id)}
+          />
         ))}
       </div>
       <div className="floating-button">
