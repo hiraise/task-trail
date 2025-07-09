@@ -1,0 +1,15 @@
+.container {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(240, 240, 240, 1);
+  outline: 3px solid var(--background);
+  position: relative;
+}
+
+.avatar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
