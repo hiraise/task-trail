@@ -14,6 +14,7 @@ import SortIcon from "../../../public/icons/mi_sort.svg";
 import AddButtonIcon from "../../../public/icons/iconoir_plus_circle.svg";
 import PlusIcon from "../../../public/icons/iconoir_plus.svg";
 import CheckMarkIcon from "../../../public/icons/checkMark.svg";
+import MenuIcon from "../../../public/icons/menu_icon.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -32,4 +33,5 @@ export const ICONS = {
   addButton: AddButtonIcon,
   plus: PlusIcon,
   checkMark: CheckMarkIcon,
+  menu: MenuIcon,
 };

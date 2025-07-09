@@ -8,7 +8,7 @@ function addBasePath(path: string) {
 
 export const ASSETS = {
   placeholder: {
-    image: addBasePath("/icons/image.png"),
+    image: addBasePath("/images/image.png"),
   },
   logo: {
     mobileSimple: addBasePath("/images/logo.png"),
