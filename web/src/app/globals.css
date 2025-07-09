@@ -16,6 +16,8 @@
   --email-bg: rgba(247, 247, 247, 1);
   --avatar-bg: rgba(211, 211, 211, 1);
   --checkbox: rgba(128, 128, 128, 1);
+  --dropdown-border: rgba(227, 227, 227, 1);
+  --dropdown-shaddow: rgba(8, 8, 8, 0.15);
 }
 
 :root:has(.no-doc-scroll) {

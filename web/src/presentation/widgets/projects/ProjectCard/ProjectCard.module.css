@@ -5,6 +5,16 @@
   padding: 12px;
   background: #f0f0f0;
   border-radius: 8px;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      cursor: pointer;
+    }
+  }
 }
 
 .cardInfoWrapper {

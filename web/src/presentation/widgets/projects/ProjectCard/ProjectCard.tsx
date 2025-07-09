@@ -4,9 +4,14 @@ import { Icon } from "@/presentation/ui/Icon";
 import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
 import { Project } from "@/domain/project/project.entity";
 
-export function ProjectCard({ project }: { project: Project }) {
+interface ProjectCardProps {
+  project: Project;
+  onClick?: () => void;
+}
+
+export function ProjectCard({ project, onClick }: ProjectCardProps) {
   return (
-    <div className={styles.cardContainer}>
+    <div className={styles.cardContainer} onClick={onClick}>
       <div className={styles.cardInfoWrapper}>
         <Icon as={ICONS.project} size="24px" />
         <span>{pluralizeTasks(project.totalTasks)}</span>
