@@ -1,10 +1,11 @@
 const PROFILE_BASE = "/profile";
+const PROJECTS = "/projects";
 
 export const ROUTES = {
   login: "/",
   signUp: "/signup",
   dashboard: "/dashboard",
-  projects: "/projects",
+  projects: PROJECTS,
   boards: "/boards",
   tasks: "/tasks",
   archive: "/archive",
@@ -12,6 +13,9 @@ export const ROUTES = {
   profile: PROFILE_BASE,
   profileEditPersonalData: `${PROFILE_BASE}/edit-personal-data`,
   profileChangePassword: `${PROFILE_BASE}/change-password`,
+  project: (id: string) => `${PROJECTS}/${id}`,
+  projectMembers: (id: string) => `${PROJECTS}/${id}/members`,
+  projectTasks: (id: string) => `${PROJECTS}/${id}/tasks`,
 };
 
 export const protectedRoutes = [
