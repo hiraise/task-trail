@@ -1,5 +1,5 @@
+import { BaseUserData } from "@/presentation/widgets/projects/AddParticipantForm/AddParticipantForm";
 import { useProjectCreation } from "../context/ProjectCreationContext";
-import { ProjectParticipant } from "../types";
 
 interface UseCreateProjectFormProps {
   onSubmit: (data: {
@@ -10,7 +10,7 @@ interface UseCreateProjectFormProps {
 }
 
 interface UseCreateProjectFormReturn {
-  selectedParticipants: ProjectParticipant[];
+  members: BaseUserData[];
   removeParticipant: (email: string) => void;
   submitProject: (formData: {
     name: string;
@@ -21,8 +21,7 @@ interface UseCreateProjectFormReturn {
 export function useCreateProjectForm({
   onSubmit,
 }: UseCreateProjectFormProps): UseCreateProjectFormReturn {
-  const { selectedParticipants, removeParticipant, reset } =
-    useProjectCreation();
+  const { members, removeParticipant, reset } = useProjectCreation();
 
   const submitProject = async (formData: {
     name: string;
@@ -35,7 +34,7 @@ export function useCreateProjectForm({
 
     const finalData = {
       ...formData,
-      participants: selectedParticipants.map((p) => p.email),
+      participants: members.map((p) => p.email),
     };
 
     console.log("Form submitted with data:", finalData);
@@ -50,7 +49,7 @@ export function useCreateProjectForm({
   };
 
   return {
-    selectedParticipants,
+    members,
     removeParticipant,
     submitProject,
   };

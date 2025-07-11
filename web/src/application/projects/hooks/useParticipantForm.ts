@@ -1,13 +1,13 @@
+import { BaseUserData } from "@/presentation/widgets/projects/AddParticipantForm/AddParticipantForm";
 import { useProjectCreation } from "../context/ProjectCreationContext";
-import { ProjectParticipant } from "../types";
 
 interface UseParticipantFormReturn {
-  selectedParticipants: ProjectParticipant[];
+  selectedParticipants: BaseUserData[];
   searchQuery: string;
-  handleUserSelect: (user: ProjectParticipant) => void;
-  handleDeleteUser: (user: ProjectParticipant) => void;
+  handleUserSelect: (user: BaseUserData) => void;
+  handleDeleteUser: (user: BaseUserData) => void;
   setSearchQuery: (query: string) => void;
-  submitParticipant: (email: string) => void;
+  inviteMembers: () => void;
 }
 
 export function useParticipantForm(): UseParticipantFormReturn {
@@ -15,29 +15,18 @@ export function useParticipantForm(): UseParticipantFormReturn {
   const {
     searchQuery,
     selectedParticipants,
+    inviteMembers,
     removeParticipant,
     toggleParticipant,
-    addParticipant,
     setSearchQuery,
   } = context;
 
-  const handleDeleteUser = (user: ProjectParticipant) => {
+  const handleDeleteUser = (user: BaseUserData) => {
     removeParticipant(user.email);
   };
 
-  const handleUserSelect = (user: ProjectParticipant) => {
+  const handleUserSelect = (user: BaseUserData) => {
     toggleParticipant(user);
-  };
-
-  const submitParticipant = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const trimmedEmail = email.trim().toLowerCase();
-
-    if (emailRegex.test(trimmedEmail)) {
-      const newParticipant: ProjectParticipant = { email: trimmedEmail };
-      addParticipant(newParticipant);
-      setSearchQuery(""); // Clear search after adding
-    }
   };
 
   return {
@@ -46,6 +35,6 @@ export function useParticipantForm(): UseParticipantFormReturn {
     handleUserSelect,
     handleDeleteUser,
     setSearchQuery,
-    submitParticipant,
+    inviteMembers,
   };
 }
