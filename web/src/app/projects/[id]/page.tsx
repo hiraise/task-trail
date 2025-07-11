@@ -12,15 +12,15 @@ import { ProjectMenuButton } from "@/presentation/widgets/projects/ProjectMenuBu
 import { ROUTES } from "@/infrastructure/config/routes";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
+import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
 import {
-  DropdownMenu,
-  menuItems,
-} from "@/presentation/widgets/projects/DropdownMenu";
+  MenuItem,
+  useProjectMenuItems,
+} from "@/application/projects/hooks/useProjectMenuItems";
+import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
+import { useAppSelector } from "@/infrastructure/redux/hooks";
 
 const projectTexts = {
-  title: "Разработка мобильного приложения",
-  description:
-    "Планирование, дизайн и разработка нового приложения для iOS и Android",
   owner: "Салунин Максим",
   date: "10.04.2025",
   membersTitle: "Участники проекта",
@@ -45,6 +45,13 @@ const tasks = [
 export default function ProjectPage() {
   const params = useParams();
   const id = params.id as string;
+  // const { menuItems } = useProjectMenuItems(id);
+  const menuItems: MenuItem[] = [];
+
+  const projects = useAppSelector((state) => state.projects);
+  const project = projects.find((p) => p.id === params.id);
+
+  if (!project) return <h1>Такого проекта не существует</h1>;
 
   return (
     <MainContainer>
@@ -55,7 +62,7 @@ export default function ProjectPage() {
       <div className="content">
         <div className="title-wrapper">
           <div className="title">
-            <h1>{projectTexts.title}</h1>
+            <h1>{project.name}</h1>
             <DropdownMenu
               trigger={
                 <IconButton
@@ -67,7 +74,7 @@ export default function ProjectPage() {
               items={menuItems}
             ></DropdownMenu>
           </div>
-          <p className="description">{projectTexts.description}</p>
+          <p className="description">{project.description}</p>
           <p className="owner">
             {projectTexts.owner} | {projectTexts.date}
           </p>
@@ -96,6 +103,7 @@ export default function ProjectPage() {
           </div>
         </div>
       </div>
+      <FloatingButton onClick={() => console.log("Add task")} />
     </MainContainer>
   );
 }
