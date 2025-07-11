@@ -1,3 +1,7 @@
+export const VALIDATION_PATTERNS = {
+  email: /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/,
+};
+
 /**
  * Returns an email validator object for form validation.
  *
@@ -12,7 +16,7 @@
 export const getEmailValidator = () => ({
   required: "Email обязателен",
   validate: (email: string) => {
-    if (!/^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+    if (!VALIDATION_PATTERNS.email.test(email)) {
       return "Некорректный email";
     }
     return true;

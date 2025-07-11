@@ -1,11 +1,19 @@
-import { UserItem } from "./UserItem";
-import { users as mockUsers } from "./UsersList.mock";
+import { clsx } from "clsx";
+
 import styles from "./UsersList.module.css";
-import { UserData } from "../AddParticipantForm/AddParticipantForm";
+import { UserItemCheckBox } from "./UserItemCheckbox";
+import { users as mockUsers } from "./UsersList.mock";
+import {
+  BaseUserData,
+  UserData,
+} from "../AddParticipantForm/AddParticipantForm";
+import { VALIDATION_PATTERNS } from "@/shared/utils/validate";
+import { UserItem } from "./UserItem";
+import { projectsTexts } from "@/shared/locales/projects";
 
 interface UsersListProps {
-  onUserSelect?: (user: UserData) => void;
-  selectedUsers?: UserData[];
+  onUserSelect: (data: BaseUserData) => void;
+  selectedUsers?: BaseUserData[];
   searchQuery?: string;
   availableUsers?: UserData[]; // Optional prop to override mock users
 }
@@ -29,13 +37,16 @@ export function UsersList({
     : usersToDisplay;
 
   if (filteredUsers.length === 0) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.emptyState}>
-          {searchQuery
-            ? "No users found matching your search."
-            : "No users available."}
-        </div>
+    return VALIDATION_PATTERNS.email.test(searchQuery) ? (
+      <div
+        className={clsx(styles.container, styles.selectUser)}
+        onClick={() => onUserSelect({ email: searchQuery })}
+      >
+        <UserItem email={searchQuery} />
+      </div>
+    ) : (
+      <div className={clsx(styles.container, styles.emptyState)}>
+        {searchQuery && projectsTexts.userNotFound}
       </div>
     );
   }
@@ -48,8 +59,8 @@ export function UsersList({
         );
 
         return (
-          <UserItem
-            key={user.id || user.email}
+          <UserItemCheckBox
+            key={user.email}
             user={user}
             isSelected={isSelected}
             onSelect={onUserSelect}

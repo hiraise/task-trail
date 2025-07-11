@@ -12,15 +12,7 @@ import { AddParticipant } from "./AddParticipant";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { useCreateProjectForm } from "../../../../application/projects/hooks/useCreateProjectForm";
 import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
-
-const projectFormTexts = {
-  newProject: "Новый проект",
-  projectNamePlaceholder: "Название проекта",
-  projectDescriptionPlaceholder: "Описание проекта",
-  inviteParticipants: "Пригласить участника ",
-  createProject: "Создать проект",
-  creatingProject: "Создание проекта...",
-};
+import { projectsTexts } from "@/shared/locales/projects";
 
 interface Props {
   onSubmit: (data: CreateProjectFormData) => void | Promise<void>;
@@ -28,8 +20,9 @@ interface Props {
 }
 
 export function CreateProjectForm({ onSubmit, isLoading }: Props) {
-  const { selectedParticipants, removeParticipant, submitProject } =
-    useCreateProjectForm({ onSubmit });
+  const { members, removeParticipant, submitProject } = useCreateProjectForm({
+    onSubmit,
+  });
 
   const { showInviteUser } = useModalSheet();
 
@@ -55,7 +48,7 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
       onSubmit={handleSubmit(submitHandler)}
       className={styles.formContainer}
     >
-      <p className={styles.title}>{projectFormTexts.newProject}</p>
+      <p className={styles.title}>{projectsTexts.newProject}</p>
       <Spacer size="16px" />
       <div className={styles.inputContainer}>
         <Input
@@ -64,7 +57,7 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
           {...register("name", projectNameValidator)}
           aria-invalid={!!errors.name}
           aria-describedby="projectName-error"
-          placeholder={projectFormTexts.projectNamePlaceholder}
+          placeholder={projectsTexts.projectNamePlaceholder}
           disabled={isSubmitting}
           autoComplete="off"
         />
@@ -75,7 +68,7 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
           {...register("description")}
           aria-invalid={!!errors.description}
           aria-describedby="projectDescription-error"
-          placeholder={projectFormTexts.projectDescriptionPlaceholder}
+          placeholder={projectsTexts.projectDescriptionPlaceholder}
           disabled={isSubmitting}
           autoComplete="off"
           className={styles.textarea}
@@ -86,9 +79,9 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
         <AddParticipant onClick={showInviteUser} />
 
         {/* Display selected participants */}
-        {selectedParticipants.length > 0 && (
+        {members.length > 0 && (
           <SelectedUsers
-            users={selectedParticipants}
+            users={members}
             onDeleteUser={(user) => removeParticipant(user.email)}
           />
         )}
@@ -96,8 +89,8 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
       <Spacer size="24px" />
       <SubmitButton type="submit" disabled={!isValid || isSubmitting}>
         {isSubmitting || isLoading
-          ? projectFormTexts.creatingProject
-          : projectFormTexts.createProject}
+          ? projectsTexts.creatingProject
+          : projectsTexts.createProject}
       </SubmitButton>
     </form>
   );

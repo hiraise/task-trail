@@ -1,16 +1,23 @@
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+
 import styles from "./AddParticipantForm.module.css";
 import { Input } from "@/presentation/ui/Input";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
-import { participantsTexts } from "./addParticipants";
 import { useParticipantForm } from "../../../../application/projects/hooks/useParticipantForm";
-import { ProjectParticipant } from "../../../../application/projects/types";
-import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useBottomSheet } from "@/app/_components/BottomSheetContext";
+import { projectsTexts } from "@/shared/locales/projects";
 
-export type UserData = ProjectParticipant;
+export interface BaseUserData {
+  email: string;
+}
+export interface UserData extends BaseUserData {
+  username?: string;
+  avatarUrl?: string;
+}
 
 interface FormValues {
   query: string;
@@ -23,15 +30,17 @@ export function AddParticipantForm() {
     handleUserSelect,
     handleDeleteUser,
     setSearchQuery,
-    submitParticipant,
+    inviteMembers,
   } = useParticipantForm();
+
+  const { backSheet } = useBottomSheet();
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors },
   } = useForm<FormValues>({
     mode: "onChange",
     defaultValues: { query: searchQuery },
@@ -53,9 +62,11 @@ export function AddParticipantForm() {
     }
   }, [queryValue, setSearchQuery, searchQuery]);
 
-  const submitHandler = async (data: FormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
-    submitParticipant(data.query);
+  const submitHandler = () => {
+    console.log("Submitting form with query:", queryValue);
+    console.log("Selected participants:", selectedParticipants);
+    inviteMembers();
+    backSheet();
   };
 
   return (
@@ -68,8 +79,7 @@ export function AddParticipantForm() {
           {...register("query")}
           aria-invalid={!!errors.query}
           aria-describedby="query-error"
-          placeholder={participantsTexts.placeHolder}
-          disabled={isSubmitting}
+          placeholder={projectsTexts.inviteMembersPlaceHolder}
           autoComplete="off"
         />
         {errors.query && (
@@ -79,7 +89,7 @@ export function AddParticipantForm() {
       {/* Show info message when no dropdown is shown */}
       {!shouldShowDropdown && (
         <span className={styles.infoMessage}>
-          {participantsTexts.infoMessage}
+          {projectsTexts.inviteMemberInfo}
         </span>
       )}
 
@@ -104,14 +114,8 @@ export function AddParticipantForm() {
       </div>
 
       <div className={styles.btnContainer}>
-        <SubmitButton
-          type="submit"
-          disabled={!isValid || isSubmitting}
-          className={styles.button}
-        >
-          {isSubmitting
-            ? participantsTexts.submitting
-            : participantsTexts.submit}
+        <SubmitButton type="submit" className={styles.button}>
+          {projectsTexts.inviteToProject}
         </SubmitButton>
       </div>
     </form>
