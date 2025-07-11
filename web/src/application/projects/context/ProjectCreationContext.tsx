@@ -1,12 +1,15 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { ProjectParticipant } from "../types";
+
+import { BaseUserData } from "@/presentation/widgets/projects/AddParticipantForm/AddParticipantForm";
 
 interface ProjectCreationContextType {
-  selectedParticipants: ProjectParticipant[];
+  members: BaseUserData[];
+  selectedParticipants: BaseUserData[];
   searchQuery: string;
-  addParticipant: (participant: ProjectParticipant) => void;
+  inviteMembers: () => void;
+  addParticipant: (participant: BaseUserData) => void;
   removeParticipant: (email: string) => void;
-  toggleParticipant: (participant: ProjectParticipant) => void;
+  toggleParticipant: (participant: BaseUserData) => void;
   setSearchQuery: (query: string) => void;
   reset: () => void;
 }
@@ -17,11 +20,15 @@ const ProjectCreationContext = createContext<ProjectCreationContextType | null>(
 
 export function ProjectCreationProvider({ children }: { children: ReactNode }) {
   const [selectedParticipants, setSelectedParticipants] = useState<
-    ProjectParticipant[]
+    BaseUserData[]
   >([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [members, setMembers] = useState<BaseUserData[]>([]);
 
-  const addParticipant = (participant: ProjectParticipant) => {
+  // Function to add members to the project
+  const inviteMembers = () => setMembers(selectedParticipants);
+
+  const addParticipant = (participant: BaseUserData) => {
     setSelectedParticipants((prev) => {
       if (prev.some((p) => p.email === participant.email)) {
         return prev;
@@ -32,9 +39,10 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
 
   const removeParticipant = (email: string) => {
     setSelectedParticipants((prev) => prev.filter((p) => p.email !== email));
+    setMembers((prev) => prev.filter((p) => p.email !== email));
   };
 
-  const toggleParticipant = (participant: ProjectParticipant) => {
+  const toggleParticipant = (participant: BaseUserData) => {
     setSelectedParticipants((prev) => {
       const exists = prev.some((p) => p.email === participant.email);
       return exists
@@ -51,8 +59,10 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
   return (
     <ProjectCreationContext
       value={{
+        members,
         selectedParticipants,
         searchQuery,
+        inviteMembers,
         addParticipant,
         removeParticipant,
         toggleParticipant,
