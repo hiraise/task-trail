@@ -63,8 +63,6 @@ export function AddParticipantForm() {
   }, [queryValue, setSearchQuery, searchQuery]);
 
   const submitHandler = () => {
-    console.log("Submitting form with query:", queryValue);
-    console.log("Selected participants:", selectedParticipants);
     inviteMembers();
     backSheet();
   };
