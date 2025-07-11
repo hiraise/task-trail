@@ -3,6 +3,7 @@ const AUTH = `${API_VERSION}/auth`;
 const PASSWORD = `${AUTH}/password`;
 const USERS = `${API_VERSION}/users`;
 const USERS_ME = `${USERS}/me`;
+const PROJECTS = `${API_VERSION}/projects`;
 
 export const API_ROUTES = {
   LOGIN: `${AUTH}/login`,
@@ -15,4 +16,5 @@ export const API_ROUTES = {
   CHANGE_PASSWORD: `${PASSWORD}/change`,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   CURRENT_USER: USERS_ME,
+  PROJECTS: `${PROJECTS}`,
 };
