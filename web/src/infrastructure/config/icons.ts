@@ -15,6 +15,8 @@ import AddButtonIcon from "../../../public/icons/iconoir_plus_circle.svg";
 import PlusIcon from "../../../public/icons/iconoir_plus.svg";
 import CheckMarkIcon from "../../../public/icons/checkMark.svg";
 import MenuIcon from "../../../public/icons/menu_icon.svg";
+import AddUserIcon from "../../../public/icons/user-add.svg";
+import DeleteIcon from "../../../public/icons/trash.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -34,4 +36,6 @@ export const ICONS = {
   plus: PlusIcon,
   checkMark: CheckMarkIcon,
   menu: MenuIcon,
+  addUser: AddUserIcon,
+  delete: DeleteIcon,
 };
