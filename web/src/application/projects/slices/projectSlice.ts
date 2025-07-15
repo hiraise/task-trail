@@ -20,6 +20,11 @@ const projectSlice = createSlice({
     setProject(state, action) {
       state.project = action.payload;
     },
+    clearProject(state) {
+      state.project = null;
+      state.members = [];
+      state.tasks = [];
+    },
     setMembers(state, action) {
       state.members = action.payload;
     },
@@ -29,5 +34,6 @@ const projectSlice = createSlice({
   },
 });
 
-export const { setProject, setMembers, setTasks } = projectSlice.actions;
+export const { setProject, clearProject, setMembers, setTasks } =
+  projectSlice.actions;
 export default projectSlice.reducer;

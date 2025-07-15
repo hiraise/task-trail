@@ -17,4 +17,5 @@ export const API_ROUTES = {
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   CURRENT_USER: USERS_ME,
   PROJECTS: `${PROJECTS}`,
+  PROJECT_BY_ID: (id: string) => `${PROJECTS}/${id}`,
 };

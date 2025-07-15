@@ -4,15 +4,21 @@ import { toast } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
-import { getProjectsThunk, newProjectThunk } from "../thunks/projectsThunks";
+import {
+  getProjectByIdThunk,
+  getProjectsThunk,
+  newProjectThunk,
+} from "../thunks/projectsThunks";
 import { ProjectPayload } from "@/domain/project/project.payload";
 import { Project } from "@/domain/project/project.entity";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { clearProject } from "../slices/projectSlice";
 
 type UseProjectsResult = {
   createProject: (payload: ProjectPayload) => Promise<Project | undefined>;
   getProjects: () => Promise<void>;
-  getProjectById: (id: string) => Promise<Project | undefined>;
+  getProjectById: (id: string) => Promise<void>;
+  clearCurrentProject: () => void;
   isLoading: boolean;
   projects: Project[];
 };
@@ -52,14 +58,10 @@ export const useProjects = (): UseProjectsResult => {
 
   const getProjectById = useCallback(
     async (id: string) => {
-      const project = projects.find((p) => p.id === id);
-      if (project) return project;
       setIsLoading(true);
       try {
-        await dispatch(getProjectsThunk()).unwrap();
-        const foundProject = projects.find((p) => p.id === id);
-        if (!foundProject) return undefined;
-        return foundProject;
+        await dispatch(getProjectByIdThunk(id)).unwrap();
+        toast.success("Project loaded successfully");
       } catch (error) {
         clientLogger.error("useProjects getProjectById error:", { error });
         toast.error("Failed to load project. Please try again.");
@@ -67,8 +69,19 @@ export const useProjects = (): UseProjectsResult => {
         setIsLoading(false);
       }
     },
-    [dispatch, projects]
+    [dispatch]
   );
 
-  return { createProject, getProjects, getProjectById, isLoading, projects };
+  const clearCurrentProject = useCallback(() => {
+    dispatch(clearProject());
+  }, [dispatch]);
+
+  return {
+    createProject,
+    getProjects,
+    getProjectById,
+    clearCurrentProject,
+    isLoading,
+    projects,
+  };
 };

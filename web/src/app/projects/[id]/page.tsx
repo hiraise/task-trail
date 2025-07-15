@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 
 import "./styles.css";
@@ -16,7 +17,7 @@ import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
 import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 import { useProjects } from "@/application/projects/hooks/useProjects";
-import { useEffect } from "react";
+import { useAppSelector } from "@/infrastructure/redux/hooks";
 
 const projectTexts = {
   owner: "Салунин Максим",
@@ -45,15 +46,16 @@ export default function ProjectPage() {
   const id = params.id as string;
   const { menuItems } = useProjectMenuItems(id);
 
-  const { getProjectById, projects } = useProjects();
-  const project = projects.find((p) => p.id === id);
+  const { getProjectById, clearCurrentProject } = useProjects();
+  const project = useAppSelector((state) => state.project.project);
 
   useEffect(() => {
     async function fetchProject() {
       await getProjectById(id);
     }
-    if (!project) fetchProject();
-  }, [id, getProjectById, project]);
+    fetchProject();
+    return () => clearCurrentProject();
+  }, [id, getProjectById, clearCurrentProject]);
 
   if (!project) return <h1>Такого проекта не существует</h1>;
 

@@ -43,7 +43,20 @@ const newProject: NewProject = async (payload) => {
   }
 };
 
+const getProjectById = async (id: string) => {
+  try {
+    const response = await axiosClient.get<ApiProject>(
+      API_ROUTES.PROJECT_BY_ID(id)
+    );
+    return mapProjectFromApi(response.data);
+  } catch (error) {
+    clientLogger.error("Get project by ID error", { error });
+    throw new AppError(AppErrorType.SERVER, "Failed to get project by ID");
+  }
+};
+
 export const projectService: ProjectService = {
   getProjects: getProjects,
   newProject: newProject,
+  getProjectById: getProjectById,
 };
