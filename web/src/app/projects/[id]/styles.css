@@ -22,12 +22,12 @@
   flex-direction: row;
   align-items: start;
   justify-content: space-between;
-}
 
-h1 {
-  font-size: 26px;
-  font-weight: 600;
-  line-height: 100%;
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 100%;
+  }
 }
 
 .description {

@@ -61,7 +61,6 @@ export const useProjects = (): UseProjectsResult => {
       setIsLoading(true);
       try {
         await dispatch(getProjectByIdThunk(id)).unwrap();
-        toast.success("Project loaded successfully");
       } catch (error) {
         clientLogger.error("useProjects getProjectById error:", { error });
         toast.error("Failed to load project. Please try again.");
