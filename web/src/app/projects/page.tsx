@@ -35,9 +35,8 @@ export default function ProjectsPage() {
     const fetchProjects = async () => {
       await getProjects();
     };
-
-    fetchProjects();
-  }, [getProjects]);
+    if (!projects || projects.length === 0) fetchProjects();
+  }, [getProjects, projects]);
 
   if (isLoading) return <LoadingScreen />;
 

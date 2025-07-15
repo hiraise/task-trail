@@ -1,5 +1,4 @@
 import { useAppSelector } from "@/infrastructure/redux/hooks";
-import { useCallback } from "react";
 
 export type Permission = "owner" | "admin" | "member";
 
@@ -10,30 +9,27 @@ export const useProjectPermissions = (projectId: string) => {
   );
 
   const getUserRole = (): Permission | null => {
-    // if (!user || !project) return null;
+    if (!user || !project) return null;
     if (!user) return null;
     //TODO: Add role validation logic
-    return "owner"; // Default to member for now, replace with actual logic
+    return "owner";
   };
 
   const userRole = getUserRole();
 
-  const hasPermission = useCallback(
-    (requiredPermission: Permission): boolean => {
-      if (!userRole) return false;
+  const hasPermission = (requiredPermission: Permission): boolean => {
+    if (!userRole) return false;
 
-      const permissionLevels = {
-        member: 1,
-        admin: 2,
-        owner: 3,
-      };
+    const permissionLevels = {
+      member: 1,
+      admin: 2,
+      owner: 3,
+    };
 
-      const userLevel = permissionLevels[userRole];
-      const requiredLevel = permissionLevels[requiredPermission];
-      return userLevel >= requiredLevel;
-    },
-    [userRole]
-  );
+    const userLevel = permissionLevels[userRole];
+    const requiredLevel = permissionLevels[requiredPermission];
+    return userLevel >= requiredLevel;
+  };
 
-  return { hasPermission, userRole };
+  return { hasPermission };
 };

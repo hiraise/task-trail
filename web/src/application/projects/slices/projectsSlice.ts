@@ -1,11 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { mockProjects } from "./projects.mocks";
 import { Project } from "@/domain/project/project.entity";
 
 type ProjectsState = Project[];
 
-const initialState: ProjectsState = mockProjects;
+const initialState: ProjectsState = [];
 
 const projectsSlice = createSlice({
   name: "projects",
@@ -13,7 +12,6 @@ const projectsSlice = createSlice({
   reducers: {
     setProjects(state, action: PayloadAction<Project[]>) {
       return action.payload;
-      // return [...action.payload, ...state];
     },
   },
 });

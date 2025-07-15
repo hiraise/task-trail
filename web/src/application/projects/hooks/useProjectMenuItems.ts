@@ -1,4 +1,3 @@
-import { toast } from "sonner";
 import { Permission, useProjectPermissions } from "./useProjectPermissions";
 
 export interface MenuItem {
@@ -8,8 +7,7 @@ export interface MenuItem {
 }
 
 export const useProjectMenuItems = (projectId: string) => {
-  const { hasPermission, userRole } = useProjectPermissions(projectId);
-  toast.info(`Current user with role: ${userRole}`);
+  const { hasPermission } = useProjectPermissions(projectId);
 
   const menuItems: MenuItem[] = [
     {

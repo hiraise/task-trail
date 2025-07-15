@@ -9,12 +9,3 @@ export function mapProjectFromApi(data: ApiProject): Project {
     totalTasks: data.totalTasks || 0,
   };
 }
-
-export function mapProjectToApi(project: Project): ApiProject {
-  return {
-    id: project.id,
-    name: project.name,
-    description: project.description,
-    totalTasks: project.totalTasks,
-  };
-}

@@ -17,7 +17,7 @@
   gap: 8px;
 }
 
-.title {
+.project-title {
   display: flex;
   flex-direction: row;
   align-items: start;

@@ -12,6 +12,7 @@ import { ROUTES } from "@/infrastructure/config/routes";
 type UseProjectsResult = {
   createProject: (payload: ProjectPayload) => Promise<Project | undefined>;
   getProjects: () => Promise<void>;
+  getProjectById: (id: string) => Promise<Project | undefined>;
   isLoading: boolean;
   projects: Project[];
 };
@@ -26,7 +27,6 @@ export const useProjects = (): UseProjectsResult => {
     setIsLoading(true);
     try {
       await dispatch(getProjectsThunk()).unwrap();
-      toast.success("Projects loaded successfully");
     } catch (error) {
       clientLogger.error("useProjects error:", { error });
       toast.error("Failed to load projects. Please try again.");
@@ -50,5 +50,25 @@ export const useProjects = (): UseProjectsResult => {
     }
   };
 
-  return { createProject, getProjects, isLoading, projects };
+  const getProjectById = useCallback(
+    async (id: string) => {
+      const project = projects.find((p) => p.id === id);
+      if (project) return project;
+      setIsLoading(true);
+      try {
+        await dispatch(getProjectsThunk()).unwrap();
+        const foundProject = projects.find((p) => p.id === id);
+        if (!foundProject) return undefined;
+        return foundProject;
+      } catch (error) {
+        clientLogger.error("useProjects getProjectById error:", { error });
+        toast.error("Failed to load project. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch, projects]
+  );
+
+  return { createProject, getProjects, getProjectById, isLoading, projects };
 };

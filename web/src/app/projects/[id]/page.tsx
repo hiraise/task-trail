@@ -13,12 +13,10 @@ import { ROUTES } from "@/infrastructure/config/routes";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
-import {
-  MenuItem,
-  useProjectMenuItems,
-} from "@/application/projects/hooks/useProjectMenuItems";
+import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { useProjects } from "@/application/projects/hooks/useProjects";
+import { useEffect } from "react";
 
 const projectTexts = {
   owner: "Салунин Максим",
@@ -45,11 +43,17 @@ const tasks = [
 export default function ProjectPage() {
   const params = useParams();
   const id = params.id as string;
-  // const { menuItems } = useProjectMenuItems(id);
-  const menuItems: MenuItem[] = [];
+  const { menuItems } = useProjectMenuItems(id);
 
-  const projects = useAppSelector((state) => state.projects);
-  const project = projects.find((p) => p.id === params.id);
+  const { getProjectById, projects } = useProjects();
+  const project = projects.find((p) => p.id === id);
+
+  useEffect(() => {
+    async function fetchProject() {
+      await getProjectById(id);
+    }
+    if (!project) fetchProject();
+  }, [id, getProjectById, project]);
 
   if (!project) return <h1>Такого проекта не существует</h1>;
 
@@ -61,16 +65,10 @@ export default function ProjectPage() {
       </div>
       <div className="content">
         <div className="title-wrapper">
-          <div className="title">
+          <div className="project-title">
             <h1>{project.name}</h1>
             <DropdownMenu
-              trigger={
-                <IconButton
-                  icon={ICONS.menu}
-                  size="24px"
-                  onClick={() => console.log("menu button")}
-                />
-              }
+              trigger={<IconButton icon={ICONS.menu} size="24px" />}
               items={menuItems}
             ></DropdownMenu>
           </div>

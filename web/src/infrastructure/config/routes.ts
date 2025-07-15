@@ -20,7 +20,7 @@ export const ROUTES = {
 
 export const protectedRoutes = [
   ROUTES.dashboard,
-  // ROUTES.projects,
+  ROUTES.projects,
   ROUTES.boards,
   ROUTES.tasks,
   ROUTES.archive,
