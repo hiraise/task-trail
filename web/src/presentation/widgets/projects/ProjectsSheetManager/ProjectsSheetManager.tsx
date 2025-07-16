@@ -29,6 +29,9 @@ export function ProjectsSheetManager() {
     case MODAL_TYPES.SORT_PROJECTS:
       return renderWithProvider(<SortProjectsModal {...props} />);
 
+    case MODAL_TYPES.SORT_TASKS:
+      return renderWithProvider(<SortProjectsModal {...props} />);
+
     default:
       return null;
   }

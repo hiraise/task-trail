@@ -25,9 +25,17 @@ export function useModalSheet() {
     });
   };
 
+  const showSortTaksOptions = (props?: unknown) => {
+    openSheet({
+      type: MODAL_TYPES.SORT_TASKS,
+      props,
+    });
+  };
+
   return {
     showCreateProject,
     showInviteUser,
     showSortOptions,
+    showSortTaksOptions,
   };
 }

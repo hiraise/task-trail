@@ -2,4 +2,5 @@ export const MODAL_TYPES = {
   CREATE_PROJECT: "createProject",
   INVITE_USER: "inviteUser",
   SORT_PROJECTS: "sortProjects",
+  SORT_TASKS: "sortTasks",
 };
