@@ -2,7 +2,7 @@ package auth
 
 import (
 	"context"
-	"task-trail/internal/entity"
+	"task-trail/internal/usecase/dto"
 )
 
 func (u *UseCase) SendPasswordResetEmail(ctx context.Context, email string) error {
@@ -15,13 +15,13 @@ func (u *UseCase) SendPasswordResetEmail(ctx context.Context, email string) erro
 			return u.errHandler.BadRequest(nil, "user is not verified", "userID", user.ID)
 		}
 		// create email token
-		tokenID, err := u.createEmailToken(ctx, user.ID, entity.PurposeVerification)
+		tokenID, err := u.createEmailToken(ctx, user.ID, dto.PurposeVerification)
 		if err != nil {
 			return err
 		}
 		// send email
 		if err := u.notificationRepo.SendResetPasswordEmail(ctx, email, tokenID); err != nil {
-			return u.errHandler.InternalTrouble(err, "reset password email sending failed", "userID", user.ID)
+			return u.errHandler.InternalTrouble(err, "failed to send reset password email", "userID", user.ID)
 		}
 		return nil
 	}

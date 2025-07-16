@@ -1,9 +1,10 @@
-package auth
+package auth_test
 
 import (
 	"context"
 	"fmt"
 	"task-trail/internal/customerrors"
+	"task-trail/internal/usecase/auth"
 	"task-trail/test/mocks"
 
 	"go.uber.org/mock/gomock"
@@ -24,7 +25,7 @@ type testDeps struct {
 	uuid             mocks.MockGenerator
 }
 
-func mockUseCase(ctrl *gomock.Controller) (*UseCase, *testDeps) {
+func MockUseCase(ctrl *gomock.Controller) (*auth.UseCase, *testDeps) {
 	rtRepo := mocks.NewMockRefreshTokenRepository(ctrl)
 	etRepo := mocks.NewMockEmailTokenRepository(ctrl)
 	userRepo := mocks.NewMockUserRepository(ctrl)
@@ -35,7 +36,7 @@ func mockUseCase(ctrl *gomock.Controller) (*UseCase, *testDeps) {
 	errHandler := customerrors.NewErrHander()
 	uuid := mocks.NewMockGenerator(ctrl)
 
-	uc := New(errHandler, txManager, userRepo, rtRepo, etRepo, notificationRepo, passwordSvc, tokenSvc, uuid)
+	uc := auth.New(errHandler, txManager, userRepo, rtRepo, etRepo, notificationRepo, passwordSvc, tokenSvc, uuid)
 	deps := &testDeps{
 		rtRepo:           *rtRepo,
 		etRepo:           *etRepo,

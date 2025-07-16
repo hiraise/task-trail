@@ -23,6 +23,11 @@ func NewRecovery(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
 					"function": fn.Name(),
 					"line":     line,
 				}
+				var userID *int = nil
+				v, err := m.GetUserID(c)
+				if err == nil {
+					userID = &v
+				}
 				l.Error(
 					"panic recovered",
 					"error", r,
@@ -30,7 +35,7 @@ func NewRecovery(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
 					"method", c.Request.Method,
 					"client_ip", c.ClientIP(),
 					"source", path,
-					"userID", m.GetUserID(c),
+					"userID", userID,
 					"reqID", m.GetRequestID(c),
 				)
 				c.AbortWithStatus(500)

@@ -29,6 +29,8 @@ func NewFromErrBase(err *customerrors.Err) *ErrAPI {
 		return New(http.StatusBadRequest, err.Msg, prepareValidationErrMetadata(err))
 	case customerrors.ConflictErr:
 		return New(http.StatusConflict, "entity already exists", err.ResponseData)
+	case customerrors.NotFoundErr:
+		return New(http.StatusNotFound, "entity not found", err.ResponseData)
 	case customerrors.Ok:
 		return New(http.StatusOK, "", err.ResponseData)
 	default:

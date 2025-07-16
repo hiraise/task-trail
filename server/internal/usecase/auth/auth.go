@@ -5,11 +5,11 @@ import (
 	"errors"
 
 	"task-trail/internal/customerrors"
-	"task-trail/internal/entity"
 	"task-trail/internal/pkg/password"
 	"task-trail/internal/pkg/token"
 	"task-trail/internal/pkg/uuid"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/dto"
 	"time"
 )
 
@@ -59,7 +59,7 @@ func (u *UseCase) verifyRT(ctx context.Context, rt string) (int, string, error) 
 		if errors.Is(err, repo.ErrNotFound) {
 			return 0, "", u.errHandler.Unauthorized(err, "refresh token not found", "tokenID", tokenID, "userID", userID)
 		}
-		return 0, "", u.errHandler.InternalTrouble(err, "refresh token loading failed", "tokenID", tokenID, "userID", userID)
+		return 0, "", u.errHandler.InternalTrouble(err, "failed to get refresh token", "tokenID", tokenID, "userID", userID)
 	}
 	if dbToken.ExpiredAt.Unix() <= time.Now().Unix() {
 		return 0, "", u.errHandler.Unauthorized(nil, "refresh token is expired", "tokenID", tokenID, "userID", userID)
@@ -67,7 +67,7 @@ func (u *UseCase) verifyRT(ctx context.Context, rt string) (int, string, error) 
 	if dbToken.RevokedAt != nil {
 		revoked_tokens, err := u.rtRepo.RevokeAllUsersTokens(ctx, userID)
 		if err != nil {
-			return 0, "", u.errHandler.InternalTrouble(err, "revoke all users refresh tokens failed", "tokenID", tokenID, "userID", userID)
+			return 0, "", u.errHandler.InternalTrouble(err, "failed to revoke all users refresh tokens", "tokenID", tokenID, "userID", userID)
 		}
 		return 0, "", u.errHandler.Unauthorized(
 			nil,
@@ -85,25 +85,25 @@ func (u *UseCase) revokeRT(ctx context.Context, tokenID string, userID int) erro
 		if errors.Is(err, repo.ErrNotFound) {
 			return u.errHandler.Unauthorized(err, "refresh token not found", "tokenID", tokenID, "userID", userID)
 		}
-		return u.errHandler.InternalTrouble(err, "revoke refresh token failed", "tokenID", tokenID, "userID", userID)
+		return u.errHandler.InternalTrouble(err, "failed to revoke refresh token", "tokenID", tokenID, "userID", userID)
 	}
 	return nil
 }
 
-func (u *UseCase) generateAuthTokens(userID int) (*token.Token, *token.Token, error) {
+func (u *UseCase) generateAuthTokens(userID int) (*dto.AccessTokenRes, *dto.RefreshTokenRes, error) {
 	at, err := u.tokenSvc.GenAccessToken(userID)
 	if err != nil {
-		return nil, nil, u.errHandler.InternalTrouble(err, "generation access token failed", "userID", userID)
+		return nil, nil, u.errHandler.InternalTrouble(err, "failed to generate access token", "userID", userID)
 	}
 	rt, err := u.tokenSvc.GenRefreshToken(userID)
 	if err != nil {
-		return nil, nil, u.errHandler.InternalTrouble(err, "generation refresh token failed", "userID", userID)
+		return nil, nil, u.errHandler.InternalTrouble(err, "failed to generate refresh token", "userID", userID)
 	}
 	return at, rt, nil
 }
 
-func (u *UseCase) createEmailToken(ctx context.Context, userID int, purpose entity.EmailTokenPurpose) (string, error) {
-	et := entity.EmailToken{
+func (u *UseCase) createEmailToken(ctx context.Context, userID int, purpose dto.EmailTokenPurpose) (string, error) {
+	et := &dto.EmailTokenCreate{
 		ID:        u.uuid.Generate(),
 		ExpiredAt: time.Now().Add(time.Minute * 10),
 		UserID:    userID,
@@ -116,7 +116,7 @@ func (u *UseCase) createEmailToken(ctx context.Context, userID int, purpose enti
 		if errors.Is(err, repo.ErrNotFound) {
 			return "", u.errHandler.InternalTrouble(err, "user not found", "userID", userID)
 		}
-		return "", u.errHandler.InternalTrouble(err, "email token creation failed", "userID", userID)
+		return "", u.errHandler.InternalTrouble(err, "failed to create email token", "userID", userID)
 	}
 	return et.ID, nil
 }
@@ -126,12 +126,12 @@ func (u *UseCase) useEmailToken(ctx context.Context, tokenID string) error {
 		if errors.Is(err, repo.ErrNotFound) {
 			return u.errHandler.BadRequest(err, "email token not found", "token", tokenID)
 		}
-		return u.errHandler.InternalTrouble(err, "email token update failed", "token", tokenID)
+		return u.errHandler.InternalTrouble(err, "failed to update email token", "token", tokenID)
 	}
 	return nil
 }
 
-func (u *UseCase) getEmailToken(ctx context.Context, tokenID string) (*entity.EmailToken, error) {
+func (u *UseCase) getEmailToken(ctx context.Context, tokenID string) (*dto.EmailToken, error) {
 	token, err := u.etRepo.GetByID(ctx, tokenID)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
@@ -149,17 +149,17 @@ func (u *UseCase) getEmailToken(ctx context.Context, tokenID string) (*entity.Em
 
 }
 
-func (u *UseCase) updateUser(ctx context.Context, user *entity.User) error {
-	if err := u.userRepo.Update(ctx, user); err != nil {
+func (u *UseCase) updateUser(ctx context.Context, dto *dto.UserUpdate) error {
+	if err := u.userRepo.Update(ctx, dto); err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
-			return u.errHandler.BadRequest(err, "user not found", "userID", user.ID)
+			return u.errHandler.BadRequest(err, "user not found", "userID", dto.ID)
 		}
-		return u.errHandler.InternalTrouble(err, "user update failed", "userID", user.ID)
+		return u.errHandler.InternalTrouble(err, "failed to update user", "userID", dto.ID)
 	}
 	return nil
 }
 
-func (u *UseCase) getUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (u *UseCase) getUserByEmail(ctx context.Context, email string) (*dto.User, error) {
 	user, err := u.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {

@@ -1,19 +1,20 @@
 package request
 
-type User struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=8,max=50"`
+import (
+	"task-trail/internal/usecase/dto"
+
+	"github.com/gin-gonic/gin"
+)
+
+// updateReq represents the request payload for updating a user's information.
+type updateReq struct {
+	Username string `json:"username" binding:"max=100"`
 }
 
-type VerifyRequest struct {
-	Token string `json:"token" binding:"required,uuid"`
-}
-
-type EmailRequest struct {
-	Email string `json:"email" binding:"required,email"`
-}
-
-type ResetPasswordRequest struct {
-	Token    string `json:"token" binding:"required,uuid"`
-	Password string `json:"password" binding:"required,min=8,max=50"`
+func BindUserUpdateDTO(c *gin.Context, userID int) (*dto.UserUpdate, error) {
+	body, err := validate[updateReq](c)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.UserUpdate{ID: userID, Username: body.Username}, nil
 }

@@ -39,7 +39,14 @@ jobs:
       SMTP_SENDER: "TaskTrail <root@example.com>"
       FRONTEND_URL: "http://localhost:3000"
       FRONTEND_VERIFY_URL: "http://localhost:3000/verfiy"
+      FRONTEND_PROJECT_URL: "http://localhost:3000/project/"
       FRONTEND_RESET_PASSWORD_URL: "http://localhost:3000/reset"
+      S3_ENABLED: true
+      S3_ACCESS_KEY: "root"
+      S3_SECRET_KEY: "password"
+      S3_UPLOAD_URL: "http://localhost:9000"
+      S3_PUBLIC_URL: "http://localhost:9000"
+      S3_BUCKET: "data"
 
     runs-on: ubuntu-latest
     container: golang:1.24

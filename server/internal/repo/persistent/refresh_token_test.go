@@ -4,8 +4,8 @@ package persistent
 
 import (
 	"context"
-	"task-trail/internal/entity"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/dto"
 	"testing"
 	"time"
 
@@ -16,9 +16,9 @@ const testTokenID = "6ff51bb9-e02a-4155-9f76-bfff8c68e3ac"
 const testTokenID1 = "d7e2ec56-b4cb-44eb-879b-8b6b1b2b2fb8"
 const testTokenID2 = "eb660031-8825-43ca-af3a-b7191bd12e15"
 
-var testToken entity.RefreshToken = entity.RefreshToken{ID: testTokenID, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
-var testToken1 entity.RefreshToken = entity.RefreshToken{ID: testTokenID1, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
-var testToken2 entity.RefreshToken = entity.RefreshToken{ID: testTokenID2, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
+var testToken dto.RefreshTokenCreate = dto.RefreshTokenCreate{ID: testTokenID, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
+var testToken1 dto.RefreshTokenCreate = dto.RefreshTokenCreate{ID: testTokenID1, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
+var testToken2 dto.RefreshTokenCreate = dto.RefreshTokenCreate{ID: testTokenID2, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10)}
 
 func verifyTokensCount(t *testing.T, ctx context.Context, connection pgConn, c int) {
 	var count int

@@ -5,7 +5,7 @@ package persistent
 import (
 	"context"
 	"fmt"
-	"task-trail/internal/entity"
+	"task-trail/internal/usecase/dto"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
@@ -16,12 +16,12 @@ func TestTxSuccess(t *testing.T) {
 	cleanDB(t)
 	txManager.DoWithTx(t.Context(), func(ctx context.Context) error {
 		// add new user in tx
-		id, err := userRepo.Create(ctx, &entity.User{Email: "test@mail.ru", PasswordHash: "123"})
+		id, err := userRepo.Create(ctx, &dto.UserCreate{Email: testEmail, PasswordHash: "123"})
 		require.NoError(t, err)
 		require.Equal(t, 1, id)
 		// check if new user was added
 		verifyUsersCount(t, t.Context(), (*extractTx(ctx)), 1)
-		id, err = userRepo.Create(ctx, &entity.User{Email: "test1@mail.ru", PasswordHash: "123"})
+		id, err = userRepo.Create(ctx, &dto.UserCreate{Email: testEmail1, PasswordHash: "123"})
 		require.NoError(t, err)
 		require.Equal(t, 2, id)
 		verifyUsersCount(t, t.Context(), (*extractTx(ctx)), 2)
@@ -34,15 +34,16 @@ func TestTxSuccess(t *testing.T) {
 
 func TestTxSuccessRollback(t *testing.T) {
 	cleanDB(t)
+	d := dto.UserCreate{Email: testEmail, PasswordHash: "123"}
 	txManager.DoWithTx(t.Context(), func(ctx context.Context) error {
 		// add new user in tx
-		id, err := userRepo.Create(ctx, &entity.User{Email: "test@mail.ru", PasswordHash: "123"})
+		id, err := userRepo.Create(ctx, &d)
 		require.NoError(t, err)
 		require.Equal(t, 1, id)
 		// check if new user was added
 		verifyUsersCount(t, t.Context(), (*extractTx(ctx)), 1)
 		// return error from tx function
-		id, err = userRepo.Create(ctx, &entity.User{Email: "test@mail.ru", PasswordHash: "123"})
+		id, err = userRepo.Create(ctx, &d)
 		return err
 	},
 	)

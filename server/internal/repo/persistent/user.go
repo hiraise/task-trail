@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"task-trail/internal/entity"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/dto"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -18,14 +19,23 @@ func NewUserRepo(db *pgxpool.Pool) *PgUserRepository {
 	return &PgUserRepository{PgRepostitory{pg: db}}
 }
 
-func (r *PgUserRepository) Create(ctx context.Context, user *entity.User) (int, error) {
-	query := `
-		INSERT INTO users 
+func (r *PgUserRepository) Create(ctx context.Context, dto *dto.UserCreate) (int, error) {
+	substring := `
 		(email, password_hash) 
-		VALUES ($1, $2)
-		RETURNING id;`
+		VALUES ($1, $2)`
+	args := []any{dto.Email, dto.PasswordHash}
+	if dto.IsVerified {
+		substring = `
+			(email, password_hash, verified_at) 
+			VALUES ($1, $2, $3)`
+		args = append(args, time.Now())
+	}
 	var id int
-	err := r.getDb(ctx).QueryRow(ctx, query, user.Email, user.PasswordHash).Scan(&id)
+	err := r.getDb(ctx).QueryRow(
+		ctx,
+		fmt.Sprintf(`INSERT INTO users %s RETURNING id;`, substring),
+		args...,
+	).Scan(&id)
 	if err != nil {
 		return 0, r.handleError(err)
 	}
@@ -44,37 +54,46 @@ func (r *PgUserRepository) EmailIsTaken(ctx context.Context, email string) (bool
 	return false, nil
 }
 
-func (r *PgUserRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
-	query := `SELECT id, email, password_hash, verified_at FROM users WHERE email = $1`
-	var user entity.User
-	if err := r.getDb(ctx).
-		QueryRow(ctx, query, email).
-		Scan(&user.ID, &user.Email, &user.PasswordHash, &user.VerifiedAt); err != nil {
-		return nil, r.handleError(err)
-	}
-	return &user, nil
+func (r *PgUserRepository) GetByEmail(ctx context.Context, email string) (*dto.User, error) {
+	return r.getOne(ctx, "email", email)
 }
 
-func (r *PgUserRepository) GetByID(ctx context.Context, ID int) (*entity.User, error) {
-	query := `SELECT id, email, password_hash, verified_at FROM users WHERE id = $1`
-	var user entity.User
+func (r *PgUserRepository) GetByID(ctx context.Context, ID int) (*dto.User, error) {
+	return r.getOne(ctx, "id", ID)
+}
+
+func (r *PgUserRepository) getOne(ctx context.Context, fieldName string, value any) (*dto.User, error) {
+	var user dto.User
+	query := fmt.Sprintf(`
+		SELECT id, email, password_hash, verified_at, username, avatar_id 
+		FROM users 
+		WHERE %s = $1
+		`,
+		fieldName,
+	)
 	if err := r.getDb(ctx).
-		QueryRow(ctx, query, ID).
-		Scan(&user.ID, &user.Email, &user.PasswordHash, &user.VerifiedAt); err != nil {
+		QueryRow(ctx, query, value).
+		Scan(&user.ID, &user.Email, &user.PasswordHash, &user.VerifiedAt, &user.Username, &user.AvatarID); err != nil {
 		return nil, r.handleError(err)
 	}
 	return &user, nil
 }
-func (r *PgUserRepository) Update(ctx context.Context, user *entity.User) error {
+func (r *PgUserRepository) Update(ctx context.Context, dto *dto.UserUpdate) error {
 	kwargs := make(map[string]any)
-	if user.Email != "" {
-		kwargs["email"] = user.Email
+	if dto.Email != "" {
+		kwargs["email"] = dto.Email
 	}
-	if user.PasswordHash != "" {
-		kwargs["password_hash"] = user.PasswordHash
+	if dto.PasswordHash != "" {
+		kwargs["password_hash"] = dto.PasswordHash
 	}
-	if user.VerifiedAt != nil {
-		kwargs["verified_at"] = user.VerifiedAt
+	if !dto.VerifiedAt.IsZero() {
+		kwargs["verified_at"] = dto.VerifiedAt
+	}
+	if dto.AvatarID != "" {
+		kwargs["avatar_id"] = dto.AvatarID
+	}
+	if dto.Username != "" {
+		kwargs["username"] = dto.Username
 	}
 	if len(kwargs) == 0 {
 		return nil
@@ -88,7 +107,7 @@ func (r *PgUserRepository) Update(ctx context.Context, user *entity.User) error 
 		values = append(values, v)
 		i++
 	}
-	values = append(values, user.ID)
+	values = append(values, dto.ID)
 	query := fmt.Sprintf("UPDATE users SET %s WHERE id = $%d;", strings.Join(rows, ", "), i)
 
 	tag, err := r.getDb(ctx).Exec(ctx, query, values...)
@@ -99,4 +118,32 @@ func (r *PgUserRepository) Update(ctx context.Context, user *entity.User) error 
 		return repo.ErrNotFound
 	}
 	return nil
+}
+
+func (r *PgUserRepository) GetIdsByEmails(ctx context.Context, emails []string) ([]*dto.UserEmailAndID, error) {
+	var items []string
+	values := make([]any, 0, len(emails)+1)
+	for i, email := range emails {
+		values = append(values, email)
+		items = append(items, fmt.Sprintf("$%d", i+1))
+	}
+	query := fmt.Sprintf("SELECT id, email FROM users WHERE email IN (%s);", strings.Join(items, ","))
+	rows, err := r.getDb(ctx).Query(ctx, query, values...)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	defer rows.Close()
+
+	var retVal []*dto.UserEmailAndID
+	for rows.Next() {
+		var item dto.UserEmailAndID
+		if err := rows.Scan(&item.ID, &item.Email); err != nil {
+			return nil, r.handleError(err)
+		}
+		retVal = append(retVal, &item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, r.handleError(err)
+	}
+	return retVal, nil
 }

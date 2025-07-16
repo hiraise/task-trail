@@ -5,8 +5,8 @@ package persistent
 import (
 	"context"
 	"fmt"
-	"task-trail/internal/entity"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/dto"
 	"testing"
 	"time"
 
@@ -19,10 +19,7 @@ func verifyUsersCount(t *testing.T, ctx context.Context, connection pgConn, c in
 	require.Equal(t, c, count)
 }
 
-const testEmail = "test@mail.ru"
-const testEmail1 = "test1@mail.ru"
-
-var basicUser entity.User = entity.User{Email: testEmail, PasswordHash: "123"}
+var basicUser dto.UserCreate = dto.UserCreate{Email: testEmail, PasswordHash: "123"}
 
 func TestUserCreate(t *testing.T) {
 	cleanDB(t)
@@ -117,12 +114,12 @@ func TestUserUpdateByID(t *testing.T) {
 	id, err := userRepo.Create(ctx, &basicUser)
 	require.NoError(t, err)
 	require.Equal(t, 1, id)
-	id, err = userRepo.Create(ctx, &entity.User{Email: "kek@kek.ru", PasswordHash: "123"})
+	id, err = userRepo.Create(ctx, &dto.UserCreate{Email: "kek@kek.ru", PasswordHash: "123"})
 	require.NoError(t, err)
 	require.Equal(t, 2, id)
 
 	t.Run("only password", func(t *testing.T) {
-		data := entity.User{
+		data := dto.UserUpdate{
 			ID:           1,
 			PasswordHash: "aboba",
 		}
@@ -135,22 +132,23 @@ func TestUserUpdateByID(t *testing.T) {
 	})
 	t.Run("only verified at", func(t *testing.T) {
 		tt := time.Now()
-		data := entity.User{
+		data := dto.UserUpdate{
 			ID:         1,
-			VerifiedAt: &tt,
+			VerifiedAt: tt,
 		}
 		err = userRepo.Update(ctx, &data)
 		require.NoError(t, err)
 		user, err := userRepo.GetByID(ctx, 1)
 		require.NoError(t, err)
-		fmt.Println(user.VerifiedAt.Equal(*data.VerifiedAt))
+		fmt.Println(user.VerifiedAt.Equal(data.VerifiedAt))
 		require.Equal(t, user.PasswordHash, "aboba")
 		require.Equal(t, data.VerifiedAt.Unix(), user.VerifiedAt.Unix())
 	})
 	t.Run("only email", func(t *testing.T) {
-		data := entity.User{
+		email := testEmail1
+		data := dto.UserUpdate{
 			ID:    1,
-			Email: testEmail1,
+			Email: email,
 		}
 		err = userRepo.Update(ctx, &data)
 		require.NoError(t, err)
@@ -161,11 +159,11 @@ func TestUserUpdateByID(t *testing.T) {
 	})
 	t.Run("all fields", func(t *testing.T) {
 		tt := time.Now()
-		data := entity.User{
+		data := dto.UserUpdate{
 			ID:           1,
 			Email:        testEmail,
 			PasswordHash: "123",
-			VerifiedAt:   &tt,
+			VerifiedAt:   tt,
 		}
 		err = userRepo.Update(ctx, &data)
 		require.NoError(t, err)
@@ -176,7 +174,7 @@ func TestUserUpdateByID(t *testing.T) {
 		require.Equal(t, data.VerifiedAt.Unix(), user.VerifiedAt.Unix())
 	})
 	t.Run("no fields", func(t *testing.T) {
-		data := entity.User{
+		data := dto.UserUpdate{
 			ID: 1,
 		}
 		err = userRepo.Update(ctx, &data)
@@ -188,7 +186,7 @@ func TestUserUpdateByID(t *testing.T) {
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		data := entity.User{
+		data := dto.UserUpdate{
 			ID:    3,
 			Email: testEmail,
 		}
@@ -196,7 +194,7 @@ func TestUserUpdateByID(t *testing.T) {
 		require.ErrorIs(t, err, repo.ErrNotFound)
 	})
 	t.Run("database internal error", func(t *testing.T) {
-		data := entity.User{
+		data := dto.UserUpdate{
 			ID:    2,
 			Email: testEmail,
 		}
@@ -204,7 +202,7 @@ func TestUserUpdateByID(t *testing.T) {
 		require.ErrorIs(t, err, repo.ErrInternal)
 	})
 	t.Run("email already used", func(t *testing.T) {
-		data := entity.User{
+		data := dto.UserUpdate{
 			ID:    2,
 			Email: testEmail,
 		}

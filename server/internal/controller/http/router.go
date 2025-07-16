@@ -7,6 +7,7 @@ import (
 
 	v1 "task-trail/internal/controller/http/v1"
 	"task-trail/internal/pkg/contextmanager"
+	"task-trail/internal/pkg/storage"
 	"task-trail/internal/usecase"
 
 	docs "task-trail/docs"
@@ -35,13 +36,26 @@ func NewRouter(
 	errHandler customerrors.ErrorHandler,
 	contextmanager contextmanager.Gin,
 	userUC usecase.User,
+	projectUC usecase.Project,
 	authUC usecase.Authentication,
+	storage storage.Service,
 	authMW gin.HandlerFunc,
 	cfg *config.Config,
 ) {
-	v1.NewRouter(app, cfg, userUC, authUC, contextmanager, errHandler, authMW)
+	v1.NewRouter(
+		app,
+		cfg,
+		userUC,
+		projectUC,
+		authUC,
+		contextmanager,
+		errHandler,
+		storage,
+		authMW,
+	)
 
 	app.GET("/", func(c *gin.Context) {
+		// TODO: add api info
 		c.JSON(http.StatusOK, gin.H{"message": "kek", "status": http.StatusOK})
 	})
 	if cfg.Docs.Enabled {

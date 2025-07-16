@@ -72,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.User"
+                            "$ref": "#/definitions/request.credentials"
                         }
                     }
                 ],
@@ -131,6 +131,42 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/auth/password/change": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/auth"
+                ],
+                "summary": "change user password",
+                "parameters": [
+                    {
+                        "description": "old and new password",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.changePasswordReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/auth/password/forgot": {
             "post": {
                 "consumes": [
@@ -150,7 +186,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.EmailRequest"
+                            "$ref": "#/definitions/request.emailReq"
                         }
                     }
                 ],
@@ -186,7 +222,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.ResetPasswordRequest"
+                            "$ref": "#/definitions/request.resetPasswordReq"
                         }
                     }
                 ],
@@ -254,7 +290,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.User"
+                            "$ref": "#/definitions/request.credentials"
                         }
                     }
                 ],
@@ -302,7 +338,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.EmailRequest"
+                            "$ref": "#/definitions/request.emailReq"
                         }
                     }
                 ],
@@ -338,7 +374,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.VerifyRequest"
+                            "$ref": "#/definitions/request.verifyReq"
                         }
                     }
                 ],
@@ -354,6 +390,384 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "token or user not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/projects": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List of projects where current user is a member or owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/project"
+                ],
+                "summary": "get list of projects",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.projectRes"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "user not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/project"
+                ],
+                "summary": "create new project",
+                "parameters": [
+                    {
+                        "description": "project data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.projectCreateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.projectCreateRes"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "user not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/projects/candidates": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Candidates are participatns in other projects owned by the current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/project"
+                ],
+                "summary": "get list of candidates to add to the project",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "project id",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.projectRes"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "project not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/projects/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Project by id, where current user is a member",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/project"
+                ],
+                "summary": "get project by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "project id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.projectRes"
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "project not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/projects/{id}/members": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "validate list of candidates, create accounts if they do not exist yet, and add them to the project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/project"
+                ],
+                "summary": "add new members to project",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "project id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "emails",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.projectAddMembersReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "user not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "...",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/users"
+                ],
+                "summary": "return current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.currentRes"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "...",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/users"
+                ],
+                "summary": "update current user",
+                "parameters": [
+                    {
+                        "description": "user data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.updateReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.currentRes"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "user not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/users/me/avatar": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "...",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/users"
+                ],
+                "summary": "upload new avatar",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "new file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.avatarRes"
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
@@ -397,35 +811,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "request.EmailRequest": {
+        "request.changePasswordReq": {
             "type": "object",
             "required": [
-                "email"
+                "newPassword",
+                "oldPassword"
             ],
             "properties": {
-                "email": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.ResetPasswordRequest": {
-            "type": "object",
-            "required": [
-                "password",
-                "token"
-            ],
-            "properties": {
-                "password": {
+                "newPassword": {
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 8
                 },
-                "token": {
-                    "type": "string"
+                "oldPassword": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 8
                 }
             }
         },
-        "request.User": {
+        "request.credentials": {
             "type": "object",
             "required": [
                 "email",
@@ -442,7 +847,73 @@ const docTemplate = `{
                 }
             }
         },
-        "request.VerifyRequest": {
+        "request.emailReq": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.projectAddMembersReq": {
+            "type": "object",
+            "required": [
+                "emails"
+            ],
+            "properties": {
+                "emails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "request.projectCreateReq": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 254
+                }
+            }
+        },
+        "request.resetPasswordReq": {
+            "type": "object",
+            "required": [
+                "password",
+                "token"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 8
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.updateReq": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "maxLength": 100
+                }
+            }
+        },
+        "request.verifyReq": {
             "type": "object",
             "required": [
                 "token"
@@ -462,6 +933,59 @@ const docTemplate = `{
                 },
                 "msg": {
                     "type": "string"
+                }
+            }
+        },
+        "response.avatarRes": {
+            "type": "object",
+            "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.currentRes": {
+            "type": "object",
+            "properties": {
+                "avatarUrl": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.projectCreateRes": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.projectRes": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tasksCount": {
+                    "type": "integer"
                 }
             }
         }

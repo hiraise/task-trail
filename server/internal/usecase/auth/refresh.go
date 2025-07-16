@@ -3,23 +3,22 @@ package auth
 import (
 	"context"
 	"errors"
-	"task-trail/internal/entity"
-	"task-trail/internal/pkg/token"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/dto"
 )
 
-func (u *UseCase) Refresh(ctx context.Context, oldRT string) (*token.Token, *token.Token, error) {
+func (u *UseCase) Refresh(ctx context.Context, oldRT string) (*dto.RefreshRes, error) {
 	userID, tokenID, err := u.verifyRT(ctx, oldRT)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	var at, rt *token.Token
+	retVal := &dto.RefreshRes{}
 	f := func(ctx context.Context) error {
-		at, rt, err = u.generateAuthTokens(userID)
+		retVal.AT, retVal.RT, err = u.generateAuthTokens(userID)
 		if err != nil {
 			return err
 		}
-		if err := u.rtRepo.Create(ctx, &entity.RefreshToken{ID: rt.Jti, ExpiredAt: rt.Exp, UserID: userID}); err != nil {
+		if err := u.rtRepo.Create(ctx, &dto.RefreshTokenCreate{ID: retVal.RT.ID, ExpiredAt: retVal.RT.Exp, UserID: userID}); err != nil {
 			if errors.Is(err, repo.ErrConflict) {
 				return u.errHandler.Conflict(err, "refresh token already exists")
 			}
@@ -29,8 +28,8 @@ func (u *UseCase) Refresh(ctx context.Context, oldRT string) (*token.Token, *tok
 	}
 
 	if err := u.txManager.DoWithTx(ctx, f); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return at, rt, nil
+	return retVal, nil
 }

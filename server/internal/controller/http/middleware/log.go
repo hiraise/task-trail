@@ -10,14 +10,20 @@ import (
 
 // log each http event
 func NewLog(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
+
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
+		var userID *int = nil
+		v, err := m.GetUserID(c)
+		if err == nil {
+			userID = &v
+		}
 		latency := time.Since(start)
 		status := c.Writer.Status()
 		args := []any{
 			"status", status,
-			"userID", m.GetUserID(c),
+			"userID", userID,
 			"reqID", m.GetRequestID(c),
 			"client_ip", c.ClientIP(),
 			"method", c.Request.Method,

@@ -2,8 +2,8 @@ package persistent
 
 import (
 	"context"
-	"task-trail/internal/entity"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/dto"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,14 +17,14 @@ func NewEmailTokenRepo(db *pgxpool.Pool) *PgEmailTokenRepository {
 	return &PgEmailTokenRepository{PgRepostitory{pg: db}}
 }
 
-func (r *PgEmailTokenRepository) GetByID(ctx context.Context, tokenID string) (*entity.EmailToken, error) {
+func (r *PgEmailTokenRepository) GetByID(ctx context.Context, tokenID string) (*dto.EmailToken, error) {
 	query := `
 		SELECT id, user_id, purpose, created_at, expired_at, used_at   
 		FROM email_tokens
 		WHERE id = $1
 		FOR UPDATE
 	`
-	var t entity.EmailToken
+	var t dto.EmailToken
 	if err := r.getDb(ctx).
 		QueryRow(ctx, query, tokenID).
 		Scan(&t.ID, &t.UserID, &t.Purpose, &t.CreatedAt, &t.ExpiredAt, &t.UsedAt); err != nil {
@@ -32,7 +32,7 @@ func (r *PgEmailTokenRepository) GetByID(ctx context.Context, tokenID string) (*
 	}
 	return &t, nil
 }
-func (r *PgEmailTokenRepository) Create(ctx context.Context, token entity.EmailToken) error {
+func (r *PgEmailTokenRepository) Create(ctx context.Context, token *dto.EmailTokenCreate) error {
 	query := `
 		INSERT INTO email_tokens
 		(id, user_id, expired_at, purpose)

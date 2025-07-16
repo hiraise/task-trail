@@ -11,7 +11,7 @@ package mocks
 
 import (
 	reflect "reflect"
-	token "task-trail/internal/pkg/token"
+	dto "task-trail/internal/usecase/dto"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -41,10 +41,10 @@ func (m *MockTokenService) EXPECT() *MockTokenServiceMockRecorder {
 }
 
 // GenAccessToken mocks base method.
-func (m *MockTokenService) GenAccessToken(userID int) (*token.Token, error) {
+func (m *MockTokenService) GenAccessToken(userID int) (*dto.AccessTokenRes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenAccessToken", userID)
-	ret0, _ := ret[0].(*token.Token)
+	ret0, _ := ret[0].(*dto.AccessTokenRes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -56,10 +56,10 @@ func (mr *MockTokenServiceMockRecorder) GenAccessToken(userID any) *gomock.Call 
 }
 
 // GenRefreshToken mocks base method.
-func (m *MockTokenService) GenRefreshToken(userID int) (*token.Token, error) {
+func (m *MockTokenService) GenRefreshToken(userID int) (*dto.RefreshTokenRes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenRefreshToken", userID)
-	ret0, _ := ret[0].(*token.Token)
+	ret0, _ := ret[0].(*dto.RefreshTokenRes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -71,24 +71,24 @@ func (mr *MockTokenServiceMockRecorder) GenRefreshToken(userID any) *gomock.Call
 }
 
 // VerifyAccessToken mocks base method.
-func (m *MockTokenService) VerifyAccessToken(arg0 string) (int, error) {
+func (m *MockTokenService) VerifyAccessToken(token string) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyAccessToken", arg0)
+	ret := m.ctrl.Call(m, "VerifyAccessToken", token)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // VerifyAccessToken indicates an expected call of VerifyAccessToken.
-func (mr *MockTokenServiceMockRecorder) VerifyAccessToken(arg0 any) *gomock.Call {
+func (mr *MockTokenServiceMockRecorder) VerifyAccessToken(token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyAccessToken", reflect.TypeOf((*MockTokenService)(nil).VerifyAccessToken), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyAccessToken", reflect.TypeOf((*MockTokenService)(nil).VerifyAccessToken), token)
 }
 
 // VerifyRefreshToken mocks base method.
-func (m *MockTokenService) VerifyRefreshToken(arg0 string) (int, string, error) {
+func (m *MockTokenService) VerifyRefreshToken(token string) (int, string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyRefreshToken", arg0)
+	ret := m.ctrl.Call(m, "VerifyRefreshToken", token)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
@@ -96,7 +96,7 @@ func (m *MockTokenService) VerifyRefreshToken(arg0 string) (int, string, error) 
 }
 
 // VerifyRefreshToken indicates an expected call of VerifyRefreshToken.
-func (mr *MockTokenServiceMockRecorder) VerifyRefreshToken(arg0 any) *gomock.Call {
+func (mr *MockTokenServiceMockRecorder) VerifyRefreshToken(token any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyRefreshToken", reflect.TypeOf((*MockTokenService)(nil).VerifyRefreshToken), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyRefreshToken", reflect.TypeOf((*MockTokenService)(nil).VerifyRefreshToken), token)
 }

@@ -4,8 +4,8 @@ package persistent
 
 import (
 	"context"
-	"task-trail/internal/entity"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/dto"
 	"testing"
 	"time"
 
@@ -20,11 +20,11 @@ func beforeEachEmailTest(t *testing.T) {
 }
 
 func createEmailVerificationToken(ctx context.Context, userID int, tokenID string) error {
-	e := entity.EmailToken{
+	e := &dto.EmailTokenCreate{
 		ID:        tokenID,
 		ExpiredAt: time.Now().Add(time.Minute * 10),
 		UserID:    userID,
-		Purpose:   entity.PurposeVerification,
+		Purpose:   dto.PurposeVerification,
 	}
 	return emailTokenRepo.Create(ctx, e)
 }
@@ -61,7 +61,7 @@ func TestEmailTokenGetByID(t *testing.T) {
 		token, err := emailTokenRepo.GetByID(ctx, testTokenID)
 		require.NoError(t, err)
 		require.Equal(t, testTokenID, token.ID)
-		require.Equal(t, entity.PurposeVerification, token.Purpose)
+		require.Equal(t, dto.PurposeVerification, token.Purpose)
 	})
 	t.Run("token not found", func(t *testing.T) {
 		token, err := emailTokenRepo.GetByID(ctx, testTokenID1)
@@ -106,12 +106,12 @@ func TestTokenDeleteUsedAndOldTokens(t *testing.T) {
 	_, err := userRepo.Create(t.Context(), &basicUser)
 	require.NoError(t, err)
 
-	var testToken1 entity.EmailToken = entity.EmailToken{ID: testTokenID1, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10), Purpose: entity.PurposeVerification}
-	var testToken2 entity.EmailToken = entity.EmailToken{ID: testTokenID2, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10), Purpose: entity.PurposeVerification}
+	var testToken1 dto.EmailTokenCreate = dto.EmailTokenCreate{ID: testTokenID1, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10), Purpose: dto.PurposeVerification}
+	var testToken2 dto.EmailTokenCreate = dto.EmailTokenCreate{ID: testTokenID2, UserID: 1, ExpiredAt: time.Now().Add(time.Minute * 10), Purpose: dto.PurposeVerification}
 	t.Run("successfully delete used and old tokens", func(t *testing.T) {
-		err := emailTokenRepo.Create(t.Context(), testToken1)
+		err := emailTokenRepo.Create(t.Context(), &testToken1)
 		require.NoError(t, err)
-		err = emailTokenRepo.Create(t.Context(), testToken2)
+		err = emailTokenRepo.Create(t.Context(), &testToken2)
 		require.NoError(t, err)
 		// make token1 is older
 		_, err = pg.Pool.Exec(

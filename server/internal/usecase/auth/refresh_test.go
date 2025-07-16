@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"reflect"
 	"task-trail/internal/customerrors"
-	"task-trail/internal/entity"
-	"task-trail/internal/pkg/token"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/auth"
+	"task-trail/internal/usecase/dto"
 	"testing"
 	"time"
 
@@ -22,7 +22,7 @@ func TestUseCaseRefresh(t *testing.T) {
 		ctx   context.Context
 		oldRT string
 	}
-	oldRT := entity.RefreshToken{
+	oldRT := dto.RefreshToken{
 		ID:        "123",
 		UserID:    1,
 		ExpiredAt: time.Now().Add(100 * time.Minute),
@@ -33,22 +33,24 @@ func TestUseCaseRefresh(t *testing.T) {
 		ctx:   ctx,
 		oldRT: "123",
 	}
-	newAT := &token.Token{
+	newAT := &dto.AccessTokenRes{
 		Token: "123",
-		Jti:   "123",
 		Exp:   time.Now(),
 	}
-	newRT := &token.Token{
+	newRT := &dto.RefreshTokenRes{
 		Token: "123",
-		Jti:   "123",
+		ID:    "123",
 		Exp:   time.Now(),
+	}
+	w := &dto.RefreshRes{
+		AT: newAT,
+		RT: newRT,
 	}
 	tests := []struct {
 		name        string
-		uc          func(ctrl *gomock.Controller) *UseCase
+		uc          func(ctrl *gomock.Controller) *auth.UseCase
 		args        args
-		want        *token.Token
-		want1       *token.Token
+		want        *dto.RefreshRes
 		wantErr     bool
 		wantErrType customerrors.ErrType
 		wantErrMsg  string
@@ -56,8 +58,8 @@ func TestUseCaseRefresh(t *testing.T) {
 		{
 			name: "Test success refresh",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(&oldRT, nil)
 				mockTx(ctx, deps.txManager)
@@ -68,14 +70,13 @@ func TestUseCaseRefresh(t *testing.T) {
 				return uc
 			},
 			wantErr: false,
-			want:    newAT,
-			want1:   newRT,
+			want:    w,
 		},
 		{
 			name: "invalid refresh token",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(0, "", fmt.Errorf("invalid token"))
 				return uc
 			},
@@ -86,8 +87,8 @@ func TestUseCaseRefresh(t *testing.T) {
 		{
 			name: "refresh token not found",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(nil, repo.ErrNotFound)
 				return uc
@@ -97,29 +98,29 @@ func TestUseCaseRefresh(t *testing.T) {
 			wantErrMsg:  "refresh token not found",
 		},
 		{
-			name: "refresh token loading failed",
+			name: "failed to get refresh token",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "refresh token loading failed",
+			wantErrMsg:  "failed to get refresh token",
 		},
 		{
 			name: "refresh token is expired",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().
 					GetByID(
 						ctx, gomock.Any(), gomock.Any()).
-					Return(&entity.RefreshToken{ID: oldRT.ID, UserID: oldRT.UserID, ExpiredAt: time.Now()}, nil)
+					Return(&dto.RefreshToken{ID: oldRT.ID, UserID: oldRT.UserID, ExpiredAt: time.Now()}, nil)
 				return uc
 			},
 			wantErr:     true,
@@ -129,14 +130,14 @@ func TestUseCaseRefresh(t *testing.T) {
 		{
 			name: "refresh token is revoked, all user tokens was revoked",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().
 					GetByID(
 						ctx, gomock.Any(), gomock.Any()).
-					Return(&entity.RefreshToken{ID: oldRT.ID, UserID: oldRT.UserID, ExpiredAt: oldRT.ExpiredAt, RevokedAt: &oldRT.ExpiredAt}, nil)
+					Return(&dto.RefreshToken{ID: oldRT.ID, UserID: oldRT.UserID, ExpiredAt: oldRT.ExpiredAt, RevokedAt: &oldRT.ExpiredAt}, nil)
 				deps.rtRepo.EXPECT().RevokeAllUsersTokens(ctx, gomock.Any()).Return(1, nil)
 				return uc
 			},
@@ -145,28 +146,28 @@ func TestUseCaseRefresh(t *testing.T) {
 			wantErrMsg:  "refresh token is revoked, all user tokens was revoked",
 		},
 		{
-			name: "revoke all users refresh tokens failed",
+			name: "failed to revoke all users refresh tokens",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().
 					GetByID(
 						ctx, gomock.Any(), gomock.Any()).
-					Return(&entity.RefreshToken{ID: oldRT.ID, UserID: oldRT.UserID, ExpiredAt: oldRT.ExpiredAt, RevokedAt: &oldRT.ExpiredAt}, nil)
+					Return(&dto.RefreshToken{ID: oldRT.ID, UserID: oldRT.UserID, ExpiredAt: oldRT.ExpiredAt, RevokedAt: &oldRT.ExpiredAt}, nil)
 				deps.rtRepo.EXPECT().RevokeAllUsersTokens(ctx, gomock.Any()).Return(0, repo.ErrInternal)
 				return uc
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "revoke all users refresh tokens failed",
+			wantErrMsg:  "failed to revoke all users refresh tokens",
 		},
 		{
-			name: "generation access token failed",
+			name: "failed to generate access token",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(&oldRT, nil)
 				mockTx(ctx, deps.txManager)
@@ -175,29 +176,29 @@ func TestUseCaseRefresh(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "generation access token failed",
+			wantErrMsg:  "failed to generate access token",
 		},
 		{
-			name: "generation refresh token failed",
+			name: "failed to generate refresh token",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(&oldRT, nil)
 				mockTx(ctx, deps.txManager)
 				deps.tokenSvc.EXPECT().GenAccessToken(gomock.Any()).Return(newAT, nil)
-				deps.tokenSvc.EXPECT().GenRefreshToken(gomock.Any()).Return(nil, fmt.Errorf("rt generation failed"))
+				deps.tokenSvc.EXPECT().GenRefreshToken(gomock.Any()).Return(nil, fmt.Errorf("failed to generate refresh token"))
 				return uc
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "generation refresh token failed",
+			wantErrMsg:  "failed to generate refresh token",
 		},
 		{
 			name: "refresh token already exists",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(&oldRT, nil)
 				mockTx(ctx, deps.txManager)
@@ -213,8 +214,8 @@ func TestUseCaseRefresh(t *testing.T) {
 		{
 			name: "failed to create new refresh token",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(&oldRT, nil)
 				mockTx(ctx, deps.txManager)
@@ -230,8 +231,8 @@ func TestUseCaseRefresh(t *testing.T) {
 		{
 			name: "refresh token not found",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(&oldRT, nil)
 				mockTx(ctx, deps.txManager)
@@ -246,10 +247,10 @@ func TestUseCaseRefresh(t *testing.T) {
 			wantErrMsg:  "refresh token not found",
 		},
 		{
-			name: "revoke refresh token failed",
+			name: "failed to revoke refresh token",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				deps.tokenSvc.EXPECT().VerifyRefreshToken(gomock.Any()).Return(oldRT.UserID, oldRT.ID, nil)
 				deps.rtRepo.EXPECT().GetByID(ctx, gomock.Any(), gomock.Any()).Return(&oldRT, nil)
 				mockTx(ctx, deps.txManager)
@@ -261,13 +262,13 @@ func TestUseCaseRefresh(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "revoke refresh token failed",
+			wantErrMsg:  "failed to revoke refresh token",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := tt.uc(ctrl)
-			got, got1, err := u.Refresh(tt.args.ctx, tt.args.oldRT)
+			got, err := u.Refresh(tt.args.ctx, tt.args.oldRT)
 			if tt.wantErr {
 				var e *customerrors.Err
 				if err == nil {
@@ -290,10 +291,7 @@ func TestUseCaseRefresh(t *testing.T) {
 				}
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("at got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("rt got = %v, want %v", got1, tt.want1)
+				t.Errorf("got = %v, want %v", got, tt.want)
 			}
 		})
 	}

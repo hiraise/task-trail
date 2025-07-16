@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"task-trail/internal/customerrors"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/auth"
+	"task-trail/internal/usecase/dto"
 	"testing"
 
 	"go.uber.org/mock/gomock"
@@ -17,19 +19,21 @@ func TestUseCaseRegister(t *testing.T) {
 	defer ctrl.Finish()
 
 	type args struct {
-		ctx      context.Context
-		email    string
-		password string
+		ctx  context.Context
+		data *dto.Credentials
 	}
 
+	data := &dto.Credentials{
+		Email:    testEmail,
+		Password: testPwd,
+	}
 	ctx := context.Background()
 	a := args{ctx: ctx,
-		email:    testEmail,
-		password: testPwd}
+		data: data}
 
 	tests := []struct {
 		name        string
-		uc          func(ctrl *gomock.Controller) *UseCase
+		uc          func(ctrl *gomock.Controller) *auth.UseCase
 		args        args
 		wantErr     bool
 		wantErrType customerrors.ErrType
@@ -38,8 +42,8 @@ func TestUseCaseRegister(t *testing.T) {
 		{
 			name: "success",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				mockTx(ctx, deps.txManager)
 				mockHashPwd(deps.passwordSvc, false)
 				deps.uuid.EXPECT().Generate().Return(gomock.Any().String())
@@ -51,10 +55,10 @@ func TestUseCaseRegister(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "verification email sending failed",
+			name: "failed to send verification email",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				mockTx(ctx, deps.txManager)
 				mockHashPwd(deps.passwordSvc, false)
 				deps.uuid.EXPECT().Generate().Return(gomock.Any().String())
@@ -65,13 +69,13 @@ func TestUseCaseRegister(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "verification email sending failed",
+			wantErrMsg:  "failed to send verification email",
 		},
 		{
 			name: "uuid generation conflict, email token already exists",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				mockTx(ctx, deps.txManager)
 				mockHashPwd(deps.passwordSvc, false)
 				deps.uuid.EXPECT().Generate().Return(gomock.Any().String())
@@ -86,8 +90,8 @@ func TestUseCaseRegister(t *testing.T) {
 		{
 			name: "user not found",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				mockTx(ctx, deps.txManager)
 				mockHashPwd(deps.passwordSvc, false)
 				deps.uuid.EXPECT().Generate().Return(gomock.Any().String())
@@ -100,10 +104,10 @@ func TestUseCaseRegister(t *testing.T) {
 			wantErrMsg:  "user not found",
 		},
 		{
-			name: "email token creation failed",
+			name: "failed to create email token",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				mockTx(ctx, deps.txManager)
 				mockHashPwd(deps.passwordSvc, false)
 				deps.uuid.EXPECT().Generate().Return(gomock.Any().String())
@@ -113,14 +117,14 @@ func TestUseCaseRegister(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "email token creation failed",
+			wantErrMsg:  "failed to create email token",
 		},
 
 		{
 			name: "email already taken",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				mockTx(ctx, deps.txManager)
 				mockHashPwd(deps.passwordSvc, false)
 				deps.userRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(0, repo.ErrConflict)
@@ -131,26 +135,26 @@ func TestUseCaseRegister(t *testing.T) {
 			wantErrMsg:  "email already taken",
 		},
 		{
-			name: "password hashing failed",
+			name: "failed to hash password",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				mockTx(ctx, deps.txManager)
 				mockHashPwd(deps.passwordSvc, true)
 				return uc
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "password hashing failed",
+			wantErrMsg:  "failed to hash password",
 		},
 		{
 			name: "failed to create new user",
 			args: a,
-			uc: func(ctrl *gomock.Controller) *UseCase {
-				uc, deps := mockUseCase(ctrl)
+			uc: func(ctrl *gomock.Controller) *auth.UseCase {
+				uc, deps := MockUseCase(ctrl)
 				// transaction mock
 				mockTx(ctx, deps.txManager)
-				// password hashing failed
+				// failed to hash password
 				mockHashPwd(deps.passwordSvc, false)
 				deps.userRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(0, repo.ErrInternal)
 				return uc
@@ -163,7 +167,7 @@ func TestUseCaseRegister(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := tt.uc(ctrl)
-			err := u.Register(tt.args.ctx, tt.args.email, tt.args.password)
+			err := u.Register(tt.args.ctx, tt.args.data)
 			if tt.wantErr {
 				var e *customerrors.Err
 				if err == nil {

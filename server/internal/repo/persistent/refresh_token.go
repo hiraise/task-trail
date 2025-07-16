@@ -2,8 +2,8 @@ package persistent
 
 import (
 	"context"
-	"task-trail/internal/entity"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase/dto"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,9 +17,9 @@ func NewRefreshTokenRepo(db *pgxpool.Pool) *PgRefreshTokenRepository {
 	return &PgRefreshTokenRepository{PgRepostitory{pg: db}}
 }
 
-func (r *PgRefreshTokenRepository) Create(ctx context.Context, token *entity.RefreshToken) error {
+func (r *PgRefreshTokenRepository) Create(ctx context.Context, data *dto.RefreshTokenCreate) error {
 	query := `INSERT INTO refresh_tokens (id, user_id, expired_at) VALUES ($1, $2, $3)`
-	_, err := r.getDb(ctx).Exec(ctx, query, token.ID, token.UserID, token.ExpiredAt)
+	_, err := r.getDb(ctx).Exec(ctx, query, data.ID, data.UserID, data.ExpiredAt)
 	if err != nil {
 		return r.handleError(err)
 	}
@@ -30,12 +30,12 @@ func (r *PgRefreshTokenRepository) GetByID(
 	ctx context.Context,
 	tokenID string,
 	userID int,
-) (*entity.RefreshToken, error) {
+) (*dto.RefreshToken, error) {
 	query := `
 		SELECT id, user_id, expired_at, created_at, revoked_at
 		FROM refresh_tokens 
 		WHERE id = $1 and user_id = $2`
-	var token entity.RefreshToken
+	var token dto.RefreshToken
 	if err := r.getDb(ctx).
 		QueryRow(ctx, query, tokenID, userID).
 		Scan(
