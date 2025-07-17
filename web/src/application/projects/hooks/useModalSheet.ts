@@ -11,6 +11,13 @@ export function useModalSheet() {
     });
   };
 
+  const showCreateTask = (props?: unknown) => {
+    openSheet({
+      type: MODAL_TYPES.CREATE_TASK,
+      props,
+    });
+  };
+
   const showInviteUser = (props?: unknown) => {
     openSheet({
       type: MODAL_TYPES.INVITE_USER,
@@ -37,5 +44,6 @@ export function useModalSheet() {
     showInviteUser,
     showSortOptions,
     showSortTaksOptions,
+    showCreateTask,
   };
 }
