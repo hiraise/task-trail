@@ -17,6 +17,7 @@ import CheckMarkIcon from "../../../public/icons/checkMark.svg";
 import MenuIcon from "../../../public/icons/menu_icon.svg";
 import AddUserIcon from "../../../public/icons/user-add.svg";
 import DeleteIcon from "../../../public/icons/trash.svg";
+import DownArrow from "../../../public/icons/ArrowDown.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -29,6 +30,7 @@ export const ICONS = {
   camera: CameraIcon,
   rightArrow: RightArrowIcon,
   leftArrow: LeftArrowIcon,
+  downArrow: DownArrow,
   check: CheckIcon,
   close: CloseIcon,
   sort: SortIcon,
