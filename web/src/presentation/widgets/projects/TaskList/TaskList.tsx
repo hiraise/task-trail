@@ -20,7 +20,7 @@ export function TaskList({ availableTasks }: TaskListProps) {
       {tasks.map((task) => {
         return (
           <div
-            key={task.title}
+            key={task.id}
             className={styles.userWrapper}
             onClick={() => handleOnClick(task.id)}
           >

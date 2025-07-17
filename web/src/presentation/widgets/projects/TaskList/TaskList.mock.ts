@@ -9,28 +9,30 @@ export interface Task {
 export const tasks: Task[] = [
   {
     id: 1,
-    title: "Design login page",
+    title: "Подготовить презентацию",
     description: "Create wireframes and UI for the login page.",
     assignee: "Alice",
     status: "todo",
   },
   {
     id: 2,
-    title: "Implement authentication",
+    title:
+      "Вдохновляющая и длинная задача в две строки длиною: найти новый подход",
     description: "Set up JWT-based authentication.",
     assignee: "Bob",
     status: "in-progress",
   },
   {
     id: 3,
-    title: "Set up database schema",
+    title:
+      "Вдохновляющая и длинная задача в две строки длиною: найти новый подход",
     description: "Design tables for users and tasks.",
     assignee: "Charlie",
     status: "done",
   },
   {
     id: 4,
-    title: "Write unit tests",
+    title: "Обновить дизайн",
     description: "Add tests for user service.",
     assignee: "Dana",
     status: "todo",
