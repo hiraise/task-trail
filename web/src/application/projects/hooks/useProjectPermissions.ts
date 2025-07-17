@@ -2,11 +2,9 @@ import { useAppSelector } from "@/infrastructure/redux/hooks";
 
 export type Permission = "owner" | "admin" | "member";
 
-export const useProjectPermissions = (projectId: string) => {
+export const useProjectPermissions = () => {
   const user = useAppSelector((s) => s.user.data);
-  const project = useAppSelector((s) =>
-    s.projects.find((p) => p.id === projectId)
-  );
+  const project = useAppSelector((s) => s.project.project);
 
   const getUserRole = (): Permission | null => {
     if (!user || !project) return null;
