@@ -1,0 +1,41 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  padding-top: 90px;
+  padding-bottom: 20px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 100%;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.textarea {
+  resize: vertical;
+  max-height: 250px;
+}
+
+label.label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 100%;
+}

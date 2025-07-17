@@ -16,6 +16,7 @@ export const ROUTES = {
   project: (id: string) => `${PROJECTS}/${id}`,
   projectMembers: (id: string) => `${PROJECTS}/${id}/members`,
   projectTasks: (id: string) => `${PROJECTS}/${id}/tasks`,
+  editProject: (id: string) => `${PROJECTS}/${id}/edit-project`,
 };
 
 export const protectedRoutes = [
