@@ -10,7 +10,7 @@ interface TaskItemProps {
 export function TaskItem({ title }: TaskItemProps) {
   return (
     <div className={styles.taskWrapper}>
-      <Icon as={ICONS.task} size="20px" />
+      <Icon as={ICONS.task} size="20px" className={styles.icon} />
       <p className={styles.title}>{title}</p>
     </div>
   );

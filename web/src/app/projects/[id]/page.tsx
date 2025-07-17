@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useParams } from "next/navigation";
 
 import "./styles.css";
@@ -16,9 +15,9 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
 import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { useProjects } from "@/application/projects/hooks/useProjects";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
+import { mockTasks } from "@/presentation/widgets/projects/TaskList";
 
 const projectTexts = {
   owner: "Салунин Максим",
@@ -27,37 +26,13 @@ const projectTexts = {
   tasksTitle: "Задачи проекта",
 };
 
-const tasks = [
-  { id: 1, title: "Подготовить презентацию" },
-  {
-    id: 2,
-    title:
-      "Вдохновляющая и длинная задача в две строки длиною: найти новый подход",
-  },
-  {
-    id: 3,
-    title:
-      "Вдохновляющая и длинная задача в две строки длиною: найти новый подход",
-  },
-  { id: 4, title: "Обновить дизайн" },
-];
-
 export default function ProjectPage() {
   const params = useParams();
   const id = params.id as string;
   const { menuItems } = useProjectMenuItems(id);
   const { showCreateTask } = useModalSheet();
 
-  const { getProjectById, clearCurrentProject } = useProjects();
   const project = useAppSelector((state) => state.project.project);
-
-  useEffect(() => {
-    async function fetchProject() {
-      await getProjectById(id);
-    }
-    fetchProject();
-    return () => clearCurrentProject();
-  }, [id, getProjectById, clearCurrentProject]);
 
   if (!project) return <h1>Такого проекта не существует</h1>;
 
@@ -99,7 +74,7 @@ export default function ProjectPage() {
             text={projectTexts.tasksTitle}
           />
           <div className="task-list">
-            {tasks.map((task) => (
+            {mockTasks.slice(0, 4).map((task) => (
               <ProjectTask key={task.id} title={task.title} />
             ))}
           </div>

@@ -7,6 +7,10 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
+svg.icon {
+  flex-shrink: 0;
+}
+
 p.title {
   font-size: 14px;
   font-weight: 400;

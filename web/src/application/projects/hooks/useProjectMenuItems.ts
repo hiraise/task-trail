@@ -1,4 +1,7 @@
+import { useRouter } from "next/navigation";
+
 import { Permission, useProjectPermissions } from "./useProjectPermissions";
+import { ROUTES } from "@/infrastructure/config/routes";
 
 export interface MenuItem {
   label: string;
@@ -7,12 +10,13 @@ export interface MenuItem {
 }
 
 export const useProjectMenuItems = (projectId: string) => {
-  const { hasPermission } = useProjectPermissions(projectId);
+  const { hasPermission } = useProjectPermissions();
+  const router = useRouter();
 
   const menuItems: MenuItem[] = [
     {
       label: "Редактировать проект",
-      onClick: () => console.log("Edit project"),
+      onClick: () => router.push(ROUTES.editProject(projectId)),
       permission: "admin",
     },
     {
