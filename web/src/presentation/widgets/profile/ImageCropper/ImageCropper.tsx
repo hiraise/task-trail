@@ -102,11 +102,21 @@ export const ImageCropper: React.FC<AvatarCropperProps> = ({
         />
       </div>
       <div className={styles["crop-actions"]}>
-        <IconButton icon={ICONS.close} variant="ghost" onClick={onClose} />
+        <IconButton
+          icon={ICONS.close}
+          variant="ghost"
+          onClick={onClose}
+          size="40px"
+        />
         {loading ? (
           <Spinner size={16} />
         ) : (
-          <IconButton icon={ICONS.check} variant="ghost" onClick={handleSave} />
+          <IconButton
+            icon={ICONS.check}
+            variant="ghost"
+            onClick={handleSave}
+            size="40px"
+          />
         )}
       </div>
     </div>

@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 
 import styles from "./ChangePasswordForm.module.css";
-import { Input, InputLabel } from "../../auth/LoginForm/LoginForm.styled";
 import { Stack } from "../../primitives/Stack";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
@@ -10,6 +9,8 @@ import {
   getNewPasswordValidator,
   oldPasswordValidator,
 } from "@/shared/utils/validate";
+import { ChangePasswordData, FormValues } from "./ChangePassword.types";
+import { Input, InputLabel } from "@/presentation/ui/Input";
 
 const formTexts = {
   oldPasswordLabel: "Введите старый пароль",
@@ -19,16 +20,8 @@ const formTexts = {
   passwordPlaceholder: "********",
 };
 
-type FormValues = {
-  oldPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-};
-
 interface Props {
-  onSubmit: (
-    data: Pick<FormValues, "oldPassword" | "newPassword">
-  ) => void | Promise<void>;
+  onSubmit: (data: ChangePasswordData) => void | Promise<void>;
   isLoading?: boolean;
 }
 
@@ -37,10 +30,8 @@ export function ChangePasswordForm({ onSubmit, isLoading }: Props) {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    mode: "onBlur",
-  });
+    formState: { errors, isSubmitting, isValid },
+  } = useForm<FormValues>({ mode: "onBlur" });
 
   const newPassword = watch("newPassword");
   const oldPassword = watch("oldPassword");
@@ -119,7 +110,7 @@ export function ChangePasswordForm({ onSubmit, isLoading }: Props) {
       <div className={styles["btn-container"]}>
         <SubmitButton
           type="submit"
-          disabled={isSubmitting}
+          disabled={!isValid || isSubmitting}
           className={styles["change-password-btn"]}
         >
           {isSubmitting || isLoading

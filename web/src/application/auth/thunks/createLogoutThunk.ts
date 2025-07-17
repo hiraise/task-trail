@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-import { Logout } from "@/domain/auth/types";
+import { Logout } from "@/domain/auth/auth.contracts";
 import { AppErrorProps } from "@/shared/errors/types";
 import { setAuthenticated, setAuthInitializing } from "../slices/authSlice";
 import { handleThunkError } from "@/shared/utils/handleThunkError";

@@ -1,0 +1,22 @@
+.checkBox {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--checkbox);
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkIcon {
+  display: flex;
+  color: var(--background);
+}
+
+.checkBox.checked {
+  background-color: var(--checkbox);
+  border: 1px solid var(--checkbox);
+}

@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 import { authService } from "@/infrastructure/api/authService";
-import { ChangePasswordPayload } from "@/domain/auth/types";
+import { ChangePasswordPayload } from "@/domain/auth/auth.payload";
 
 export const authApi = createApi({
   reducerPath: "authApi",

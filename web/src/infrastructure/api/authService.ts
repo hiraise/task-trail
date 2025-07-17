@@ -4,7 +4,6 @@ import { clientLogger } from "../config/clientLogger";
 import axiosClient from "./axiosClient";
 import { Domain, mapHttpError } from "@/shared/errors/mapHttpError";
 import {
-  AuthPayload,
   AuthService,
   Login,
   Logout,
@@ -13,7 +12,8 @@ import {
   ConfirmEmail,
   CheckAuthStatus,
   ChangePassword,
-} from "@/domain/auth/types";
+} from "@/domain/auth/auth.contracts";
+import { AuthPayload } from "@/domain/auth/auth.payload";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 const login: Login = async (payload: AuthPayload): Promise<void> => {

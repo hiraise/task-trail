@@ -8,10 +8,10 @@ import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import PrivacyText from "../../common/PrivacyText";
 import { Stack } from "../../primitives/Stack";
-import { Input, InputLabel } from "../LoginForm/LoginForm.styled";
 import { usePasswordRecovery } from "@/application/auth/hooks/usePasswordRecovery";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { getEmailValidator } from "@/shared/utils/validate";
+import { Input, InputLabel } from "@/presentation/ui/Input";
 
 const FormContainer = styled.form`
   display: flex;

@@ -1,0 +1,12 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.userWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}

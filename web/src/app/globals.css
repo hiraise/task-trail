@@ -1,20 +1,32 @@
 :root {
-  --background: #ffffff;
-  --foreground: #000000;
-  --grey: #ebebeb;
+  --background: rgb(255, 255, 255);
+  --foreground: rgb(0, 0, 0);
+  --grey: rgb(235, 235, 235);
   --grey-70: rgba(0, 0, 0, 0.7);
-  --dark-grey: rgba(57, 57, 57, 1);
-  --btn-primary: #393939;
+  --dark-grey: rgb(57, 57, 57);
+  --btn-primary: rgb(57, 57, 57);
   --txt-grey: rgba(60, 60, 67, 0.6);
-  --icon-grey: rgba(138, 138, 142, 1);
+  --icon-grey: rgb(138, 138, 142);
 
   --bottom-nav-height: 62px;
+
+  /* Design element colors */
+  --handle-grey: rgb(203, 203, 203);
+  --overlay-bg: rgba(0, 0, 0, 0.6);
+  --email-bg: rgba(247, 247, 247, 1);
+  --avatar-bg: rgba(211, 211, 211, 1);
+  --checkbox: rgba(128, 128, 128, 1);
+  --dropdown-border: rgba(227, 227, 227, 1);
+  --dropdown-shaddow: rgba(8, 8, 8, 0.15);
+}
+
+:root:has(.no-doc-scroll) {
+  overflow: hidden;
 }
 
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
 }
 
 body {

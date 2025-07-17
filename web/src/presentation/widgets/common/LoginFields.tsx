@@ -2,8 +2,8 @@ import styled from "styled-components";
 
 import { Stack } from "../primitives/Stack";
 import { loginTexts } from "@/shared/locales/login";
-import { Input, InputLabel } from "../auth/LoginForm/LoginForm.styled";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
+import { Input, InputLabel } from "@/presentation/ui/Input";
 
 const InputContainer = styled.div`
   display: flex;

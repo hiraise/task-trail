@@ -1,0 +1,50 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+}
+
+.infoMessage {
+  font-size: 12px;
+  font-weight: 400;
+  vertical-align: middle;
+  color: var(--foreground);
+  opacity: 0.6;
+}
+
+.dropDown {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.middle {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.btnContainer {
+  margin-top: auto;
+  margin-bottom: 24px;
+  padding-top: 20px;
+  flex-shrink: 0;
+}
+
+.button {
+  width: 100%;
+}

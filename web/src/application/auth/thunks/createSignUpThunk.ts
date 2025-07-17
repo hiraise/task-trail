@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-import { AuthPayload, SignUp } from "../../../domain/auth/types";
+import { SignUp } from "../../../domain/auth/auth.contracts";
+import { AuthPayload } from "@/domain/auth/auth.payload";
 import { AppError, AppErrorProps, AppErrorType } from "@/shared/errors/types";
 
 export const createSignUpThunk = (signUp: SignUp) =>

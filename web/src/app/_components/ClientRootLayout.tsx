@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 import { store } from "@/infrastructure/redux/store";
 import { GlobalErrorBanner } from "./GlobalErrorBanner";
 import { AuthAndUserInitializer } from "./AuthAndUserInitializer";
+import { BottomSheetProvider } from "./BottomSheetContext";
 
 export default function ClientRootLayout({
   children,
@@ -15,12 +16,7 @@ export default function ClientRootLayout({
 }>) {
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-    const loadingScreen = document.getElementById("loading-screen");
-    // Hide the loading screen once the client-side code is ready
-    if (loadingScreen) loadingScreen.style.display = "none";
-  }, []);
+  useEffect(() => setIsClient(true), []);
 
   // If not client-side, return null to avoid rendering on the server
   if (!isClient) return null;
@@ -30,7 +26,7 @@ export default function ClientRootLayout({
       <Toaster position="bottom-right" richColors />
       <GlobalErrorBanner />
       <AuthAndUserInitializer />
-      {children}
+      <BottomSheetProvider>{children}</BottomSheetProvider>
     </Provider>
   );
 }

@@ -15,4 +15,10 @@ export const metadataTexts = {
     title: "Доска задач — Task Trail",
     description: "Ваши задачи и проекты в Task Trail",
   },
+
+  projects: {
+    title: "Проекты — Task Trail",
+    description:
+      "Управляйте проектами и задачами онлайн — удобно, быстро и эффективно.",
+  },
 };

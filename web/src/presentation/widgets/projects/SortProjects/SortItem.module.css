@@ -1,0 +1,38 @@
+.option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.text {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 100%;
+}
+
+.radio {
+  appearance: none;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  border: 1px solid var(--foreground);
+  cursor: pointer;
+  position: relative;
+}
+
+.radio:checked {
+  border: 1px solid var(--foreground);
+}
+
+.radio:checked::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background-color: var(--foreground);
+}

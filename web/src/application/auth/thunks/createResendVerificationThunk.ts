@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 import { AppError, AppErrorProps, AppErrorType } from "@/shared/errors/types";
-import { ResendVerification } from "@/domain/auth/types";
+import { ResendVerification } from "@/domain/auth/auth.contracts";
 
 export const createResendVerificationThunk = (
   resendVerification: ResendVerification

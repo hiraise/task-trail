@@ -59,11 +59,13 @@ export function DashboardHeader() {
       <HeaderButtonsContainer>
         <IconButton
           icon={ASSETS.icons.search}
+          size="28px"
           onClick={() => toast.success("Search")}
           aria-label="Search"
         />
         <IconButton
           icon={ASSETS.icons.profile}
+          size="28px"
           onClick={() => router.push(ROUTES.profile)}
           aria-label="Profile"
         />

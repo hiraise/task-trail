@@ -1,3 +1,7 @@
+export const VALIDATION_PATTERNS = {
+  email: /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/,
+};
+
 /**
  * Returns an email validator object for form validation.
  *
@@ -12,7 +16,7 @@
 export const getEmailValidator = () => ({
   required: "Email обязателен",
   validate: (email: string) => {
-    if (!/^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+    if (!VALIDATION_PATTERNS.email.test(email)) {
       return "Некорректный email";
     }
     return true;
@@ -99,3 +103,15 @@ export const getConfirmPasswordValidator = (newPassword: string) => ({
   required: "Повторите новый пароль",
   validate: (value: string) => value === newPassword || "Пароли не совпадают",
 });
+
+export const projectNameValidator = {
+  required: "Название проекта обязательно",
+  minLength: {
+    value: 6,
+    message: "Название проекта должно быть не короче 6 символов",
+  },
+  maxLength: {
+    value: 255,
+    message: "Название проекта не должно превышать 255 символа",
+  },
+};

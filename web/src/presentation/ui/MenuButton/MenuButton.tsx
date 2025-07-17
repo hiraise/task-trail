@@ -18,7 +18,7 @@ export function MenuButton({
   return (
     <StyledMenuButton href={href} className="menu-button">
       <StyledText>{text}</StyledText>
-      <Icon as={icon}></Icon>
+      <Icon as={icon} size="16px"></Icon>
     </StyledMenuButton>
   );
 }

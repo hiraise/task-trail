@@ -1,0 +1,25 @@
+.floatingButton {
+  position: fixed;
+  right: 10px;
+  width: 58;
+  height: 58;
+  border-radius: 50%;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .floatingButton:hover {
+      cursor: pointer;
+    }
+  }
+}
+
+.default {
+  bottom: 20px;
+}
+
+.withBottomNav {
+  bottom: calc(var(--bottom-nav-height) + 10px);
+}
