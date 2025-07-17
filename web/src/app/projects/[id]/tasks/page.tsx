@@ -15,11 +15,7 @@ const texts = {
 };
 
 export default function ProjectTasksPage() {
-  const { showSortTaksOptions } = useModalSheet();
-
-  const handleFloatingButtonClick = () => {
-    console.log("Floating button clicked");
-  };
+  const { showSortTaksOptions, showCreateTask } = useModalSheet();
 
   return (
     <MainContainer>
@@ -42,7 +38,7 @@ export default function ProjectTasksPage() {
           <TaskList />
         </div>
       </div>
-      <FloatingButton onClick={handleFloatingButtonClick} />
+      <FloatingButton onClick={showCreateTask} />
     </MainContainer>
   );
 }

@@ -18,6 +18,7 @@ import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenu
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 import { useProjects } from "@/application/projects/hooks/useProjects";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 
 const projectTexts = {
   owner: "Салунин Максим",
@@ -45,6 +46,7 @@ export default function ProjectPage() {
   const params = useParams();
   const id = params.id as string;
   const { menuItems } = useProjectMenuItems(id);
+  const { showCreateTask } = useModalSheet();
 
   const { getProjectById, clearCurrentProject } = useProjects();
   const project = useAppSelector((state) => state.project.project);
@@ -103,7 +105,7 @@ export default function ProjectPage() {
           </div>
         </div>
       </div>
-      <FloatingButton onClick={() => console.log("Add task")} />
+      <FloatingButton onClick={showCreateTask} />
     </MainContainer>
   );
 }
