@@ -23,14 +23,20 @@ type ProjectList struct {
 }
 
 type ProjectAddMembersDB struct {
-	MemberIDs []int
+	MemberID  int
 	ProjectID int
+	RoleID    int
 }
 
 type ProjectAddMembers struct {
 	MemberEmails []string
 	ProjectID    int
 	OwnerID      int
+}
+
+type ProjectRoleCreate struct {
+	Name        string
+	Permissions []string
 }
 
 // response
@@ -41,4 +47,9 @@ type ProjectRes struct {
 	Description string
 	CreatedAt   time.Time
 	TaskCount   int
+}
+
+type ProjectRoleRes struct {
+	ID   int
+	Name string
 }
