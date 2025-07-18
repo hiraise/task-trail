@@ -17,5 +17,7 @@ export const API_ROUTES = {
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   CURRENT_USER: USERS_ME,
   PROJECTS: `${PROJECTS}`,
-  PROJECT_BY_ID: (id: string) => `${PROJECTS}/${id}`,
+  PROJECT_BY_ID: (id: number) => `${PROJECTS}/${id}`,
+  ADD_PROJECT_MEMBERS: (id?: number) =>
+    `${PROJECTS}${id ? `/${id}` : ""}/members`,
 };

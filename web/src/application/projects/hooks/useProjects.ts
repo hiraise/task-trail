@@ -45,7 +45,7 @@ export const useProjects = (): UseProjectsResult => {
     setIsLoading(true);
     try {
       const project = await dispatch(newProjectThunk(payload)).unwrap();
-      if (project) router.push(ROUTES.project(project.id));
+      if (project) router.push(ROUTES.project(project.id.toString()));
       toast.success("Project created successfully");
       return project;
     } catch (error) {

@@ -3,3 +3,7 @@ export type ProjectPayload = {
   description?: string;
   participants?: string[];
 };
+
+export type AddMembersPayload = {
+  emails: string[];
+};

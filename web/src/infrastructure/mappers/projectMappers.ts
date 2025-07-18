@@ -3,7 +3,7 @@ import { ApiProject } from "../api/types";
 
 export function mapProjectFromApi(data: ApiProject): Project {
   return {
-    id: String(data.id),
+    id: data.id,
     name: data.name,
     description: data.description,
     totalTasks: data.totalTasks || 0,

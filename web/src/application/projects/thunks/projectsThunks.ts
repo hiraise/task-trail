@@ -9,4 +9,7 @@ export const getProjectsThunk = createGetProjectsThunk(
 export const getProjectByIdThunk = createGetProjectByIdThunk(
   projectService.getProjectById
 );
-export const newProjectThunk = createNewProjectThunk(projectService.newProject);
+export const newProjectThunk = createNewProjectThunk(
+  projectService.newProject,
+  projectService.addMembers
+);
