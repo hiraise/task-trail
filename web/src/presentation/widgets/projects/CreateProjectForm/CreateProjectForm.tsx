@@ -2,8 +2,6 @@ import { useForm } from "react-hook-form";
 
 import styles from "./CreateProjectForm.module.css";
 import { Spacer } from "../../primitives/Spacer";
-import { CreateProjectFormData } from "../../../../application/projects/types";
-import { FormValues } from "./CreateProjectForm.types";
 import { projectNameValidator } from "@/shared/utils/validate";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
@@ -13,24 +11,21 @@ import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { useCreateProjectForm } from "../../../../application/projects/hooks/useCreateProjectForm";
 import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 import { projectsTexts } from "@/shared/locales/projects";
+import { ProjectPayload } from "@/domain/project/project.payload";
 
-interface Props {
-  onSubmit: (data: CreateProjectFormData) => void | Promise<void>;
-  isLoading?: boolean;
+interface CreateProjectFormProps {
+  onSubmit: () => void;
 }
 
-export function CreateProjectForm({ onSubmit, isLoading }: Props) {
-  const { members, removeParticipant, submitProject } = useCreateProjectForm({
-    onSubmit,
-  });
-
+export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
+  const { members, removeParticipant, submitProject } = useCreateProjectForm();
   const { showInviteUser } = useModalSheet();
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
-  } = useForm<FormValues>({
+  } = useForm<ProjectPayload>({
     mode: "onChange",
     defaultValues: {
       name: "",
@@ -39,8 +34,10 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
     },
   });
 
-  const submitHandler = async (data: FormValues) => {
+  const submitHandler = async (data: ProjectPayload) => {
     await submitProject(data);
+    // Call the onSubmit prop to notify parent component
+    onSubmit();
   };
 
   return (
@@ -88,7 +85,7 @@ export function CreateProjectForm({ onSubmit, isLoading }: Props) {
       </div>
       <Spacer size="24px" />
       <SubmitButton type="submit" disabled={!isValid || isSubmitting}>
-        {isSubmitting || isLoading
+        {isSubmitting
           ? projectsTexts.creatingProject
           : projectsTexts.createProject}
       </SubmitButton>

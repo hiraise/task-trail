@@ -5,12 +5,10 @@ import { BaseUserData } from "@/presentation/widgets/projects/AddParticipantForm
 interface ProjectCreationContextType {
   members: BaseUserData[];
   selectedParticipants: BaseUserData[];
-  searchQuery: string;
   inviteMembers: () => void;
   addParticipant: (participant: BaseUserData) => void;
   removeParticipant: (email: string) => void;
   toggleParticipant: (participant: BaseUserData) => void;
-  setSearchQuery: (query: string) => void;
   reset: () => void;
 }
 
@@ -22,7 +20,6 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
   const [selectedParticipants, setSelectedParticipants] = useState<
     BaseUserData[]
   >([]);
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [members, setMembers] = useState<BaseUserData[]>([]);
 
   // Function to add members to the project
@@ -52,8 +49,8 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
   };
 
   const reset = () => {
+    setMembers([]);
     setSelectedParticipants([]);
-    setSearchQuery("");
   };
 
   return (
@@ -61,12 +58,10 @@ export function ProjectCreationProvider({ children }: { children: ReactNode }) {
       value={{
         members,
         selectedParticipants,
-        searchQuery,
         inviteMembers,
         addParticipant,
         removeParticipant,
         toggleParticipant,
-        setSearchQuery,
         reset,
       }}
     >

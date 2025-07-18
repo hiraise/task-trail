@@ -1,15 +1,15 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import React, { useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 import styles from "./AddParticipantForm.module.css";
 import { Input } from "@/presentation/ui/Input";
-import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { useParticipantForm } from "../../../../application/projects/hooks/useParticipantForm";
 import { useBottomSheet } from "@/app/_components/BottomSheetContext";
 import { projectsTexts } from "@/shared/locales/projects";
+import { useClickOutside } from "@/shared/hooks/useClickOutside";
 
 export interface BaseUserData {
   email: string;
@@ -26,41 +26,24 @@ interface FormValues {
 export function AddParticipantForm() {
   const {
     selectedParticipants,
-    searchQuery,
     handleUserSelect,
     handleDeleteUser,
-    setSearchQuery,
     inviteMembers,
   } = useParticipantForm();
 
   const { backSheet } = useBottomSheet();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Use a ref for the dropdown to handle clicks outside of it
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useClickOutside([inputRef, dropdownRef], () => setShowDropdown(false));
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const { control, handleSubmit, watch } = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: { query: searchQuery },
+    defaultValues: { query: "" },
   });
 
   const queryValue = watch("query");
-  const shouldShowDropdown = Boolean(
-    queryValue && queryValue.trim().length > 0
-  );
-
-  // Sync form query with context
-  useEffect(() => {
-    setValue("query", searchQuery);
-  }, [searchQuery, setValue]);
-
-  useEffect(() => {
-    if (queryValue !== searchQuery) {
-      setSearchQuery(queryValue || "");
-    }
-  }, [queryValue, setSearchQuery, searchQuery]);
 
   const submitHandler = () => {
     inviteMembers();
@@ -70,30 +53,33 @@ export function AddParticipantForm() {
   return (
     <form onSubmit={handleSubmit(submitHandler)} className={styles.container}>
       <div className={styles.form}>
-        <Input
-          id="query"
-          type="text"
-          // TODO: Add validation for query
-          {...register("query")}
-          aria-invalid={!!errors.query}
-          aria-describedby="query-error"
-          placeholder={projectsTexts.inviteMembersPlaceHolder}
-          autoComplete="off"
-        />
-        {errors.query && (
-          <FormFieldError>{errors.query.message}</FormFieldError>
-        )}
+        {/* Input field for user query */}
+        <Controller
+          name={"query"}
+          control={control}
+          render={({ field }) => (
+            <Input
+              {...field}
+              ref={inputRef}
+              id="query"
+              type="text"
+              placeholder={projectsTexts.inviteMembersPlaceHolder}
+              onFocus={() => setShowDropdown(true)}
+              autoComplete="off"
+            />
+          )}
+        ></Controller>
       </div>
       {/* Show info message when no dropdown is shown */}
-      {!shouldShowDropdown && (
+      {!showDropdown && (
         <span className={styles.infoMessage}>
           {projectsTexts.inviteMemberInfo}
         </span>
       )}
 
       {/* Middle section that contains both dropdown and selected users */}
-      <div className={styles.middle}>
-        {shouldShowDropdown && (
+      <div className={styles.middle} ref={dropdownRef}>
+        {showDropdown && (
           <div className={styles.dropDown}>
             <UsersList
               onUserSelect={handleUserSelect}
@@ -106,7 +92,7 @@ export function AddParticipantForm() {
           <SelectedUsers
             users={selectedParticipants}
             onDeleteUser={handleDeleteUser}
-            isExpanded={!shouldShowDropdown}
+            isExpanded={!showDropdown}
           />
         )}
       </div>
