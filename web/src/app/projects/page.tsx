@@ -27,8 +27,8 @@ export default function ProjectsPage() {
   const { showCreateProject, showSortOptions } = useModalSheet();
   const { getProjects, isLoading, projects } = useProjects();
 
-  const handleOpenProject = (projectId: string) => {
-    router.push(ROUTES.project(projectId));
+  const handleOpenProject = (projectId: number) => {
+    router.push(ROUTES.project(projectId.toString()));
   };
 
   useEffect(() => {

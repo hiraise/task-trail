@@ -10,7 +10,7 @@ export default function ProjectLayout({
   children: React.ReactNode;
 }) {
   const params = useParams();
-  const id = params.id as string;
+  const id = Number(params.id);
   const { getProjectById, clearCurrentProject } = useProjects();
 
   useEffect(() => {

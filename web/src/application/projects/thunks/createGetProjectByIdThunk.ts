@@ -9,11 +9,11 @@ import { setProject } from "../slices/projectSlice";
 export const createGetProjectByIdThunk = (getProjectById: GetProjectById) =>
   createAsyncThunk<
     Project,
-    string,
+    number,
     { rejectValue: AppErrorProps; state: RootState }
   >(
     "projects/getProject",
-    async (id: string, { dispatch, getState, rejectWithValue }) => {
+    async (id: number, { dispatch, getState, rejectWithValue }) => {
       try {
         const state = getState();
         const existingProjectInList = state.projects.find(

@@ -17,7 +17,7 @@ import { clearProject } from "../slices/projectSlice";
 type UseProjectsResult = {
   createProject: (payload: ProjectPayload) => Promise<Project | undefined>;
   getProjects: () => Promise<void>;
-  getProjectById: (id: string) => Promise<void>;
+  getProjectById: (id: number) => Promise<void>;
   clearCurrentProject: () => void;
   isLoading: boolean;
   projects: Project[];
@@ -57,7 +57,7 @@ export const useProjects = (): UseProjectsResult => {
   };
 
   const getProjectById = useCallback(
-    async (id: string) => {
+    async (id: number) => {
       setIsLoading(true);
       try {
         await dispatch(getProjectByIdThunk(id)).unwrap();

@@ -24,7 +24,7 @@ const texts = {
 type FormValues = {
   name: string;
   description?: string;
-  projectId?: string;
+  projectId?: number | undefined;
 };
 
 export default function EditProjectPage() {
@@ -39,7 +39,7 @@ export default function EditProjectPage() {
     defaultValues: {
       name: project?.name || "",
       description: project?.description || "",
-      projectId: project?.id || "",
+      projectId: project?.id || undefined,
     },
   });
 

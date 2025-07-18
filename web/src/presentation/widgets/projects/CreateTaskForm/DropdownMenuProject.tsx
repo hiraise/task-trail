@@ -24,11 +24,11 @@ export function DropdownMenuProject({ onSelect }: DropdownMenuProjectProps) {
   );
 
   useEffect(() => {
-    if (currentProject) onSelect(currentProject.id);
+    if (currentProject) onSelect(currentProject.id.toString());
   }, [currentProject, onSelect]);
 
   const handleSelect = (value: string) => {
-    const project = projects.find((p) => p.id === value);
+    const project = projects.find((p) => p.id.toString() === value);
     if (project) setSelectedProject(project);
     onSelect(value);
   };
@@ -36,7 +36,10 @@ export function DropdownMenuProject({ onSelect }: DropdownMenuProjectProps) {
   const displayProjectName = selectedProject?.name || "Выберите проект";
 
   return (
-    <DropdownMenu onSelect={handleSelect} value={selectedProject?.id}>
+    <DropdownMenu
+      onSelect={handleSelect}
+      value={selectedProject?.id.toString()}
+    >
       <DropdownTrigger>
         <div className={styles.trigger}>
           <Icon as={ICONS.project} size="18px" className={styles.icon} />
@@ -50,7 +53,7 @@ export function DropdownMenuProject({ onSelect }: DropdownMenuProjectProps) {
 
       <DropdownContent>
         {projects.map((project) => (
-          <DropdownItem key={project.id} value={project.id}>
+          <DropdownItem key={project.id} value={project.id.toString()}>
             <span>{project.name}</span>
           </DropdownItem>
         ))}
