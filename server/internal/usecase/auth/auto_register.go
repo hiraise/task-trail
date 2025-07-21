@@ -5,13 +5,14 @@ import (
 	"errors"
 	"task-trail/internal/repo"
 	"task-trail/internal/usecase/dto"
+	"task-trail/internal/utils"
 )
 
 func (u *UseCase) AutoRegister(ctx context.Context, email string) error {
 
 	f := func(ctx context.Context) error {
 		// create user
-		user := &dto.UserCreate{Email: email, PasswordHash: " ", IsVerified: true}
+		user := &dto.UserCreate{Email: email, PasswordHash: " ", VerifiedAt: utils.GetCurrentTime()}
 		_, err := u.userRepo.Create(ctx, user)
 		if err != nil {
 			if errors.Is(err, repo.ErrConflict) {

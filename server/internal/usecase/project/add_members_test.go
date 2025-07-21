@@ -12,6 +12,18 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+var testRoles = []*dto.ProjectRoleRes{
+	{ID: 1, Name: project.AdminRoleName},
+	{ID: 2, Name: project.MemberRoleName},
+	{ID: 3, Name: project.OwnerRoleName},
+}
+var testCandidates = []*dto.UserEmailAndID{
+	{ID: 2, Email: "test1@mail.com"},
+	{ID: 3, Email: "test2@mail.com"},
+	{ID: 4, Email: "test3@mail.com"},
+	{ID: 5, Email: "test4@mail.com"},
+}
+
 func TestUseCase_AddMembers(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -52,15 +64,8 @@ func TestUseCase_AddMembers(t *testing.T) {
 				deps.projectRepo.EXPECT().GetOwned(args.ctx, args.data.ProjectID, args.data.OwnerID).Return(testProject, nil)
 				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return([]*dto.UserEmailAndID{}, nil)
 				deps.authUC.EXPECT().AutoRegister(args.ctx, gomock.Any()).Return(nil).Times(4)
-				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(
-					[]*dto.UserEmailAndID{
-						{ID: 2, Email: "test1@mail.com"},
-						{ID: 3, Email: "test2@mail.com"},
-						{ID: 4, Email: "test3@mail.com"},
-						{ID: 5, Email: "test4@mail.com"},
-					},
-					nil,
-				)
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(testCandidates, nil)
+				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return(testRoles, nil)
 				deps.projectRepo.EXPECT().AddMembers(args.ctx, gomock.Any()).Return(nil)
 				deps.notificationRepo.EXPECT().SendInvintationInProject(ctx, gomock.Any()).Return(nil)
 				return uc
@@ -83,15 +88,8 @@ func TestUseCase_AddMembers(t *testing.T) {
 					nil,
 				)
 				deps.authUC.EXPECT().AutoRegister(args.ctx, gomock.Any()).Return(nil).Times(2)
-				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(
-					[]*dto.UserEmailAndID{
-						{ID: 2, Email: "test1@mail.com"},
-						{ID: 3, Email: "test2@mail.com"},
-						{ID: 4, Email: "test3@mail.com"},
-						{ID: 5, Email: "test4@mail.com"},
-					},
-					nil,
-				)
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(testCandidates, nil)
+				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return(testRoles, nil)
 				deps.projectRepo.EXPECT().AddMembers(args.ctx, gomock.Any()).Return(nil)
 				deps.notificationRepo.EXPECT().SendInvintationInProject(ctx, gomock.Any()).Return(nil)
 				return uc
@@ -153,7 +151,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "failed to get project members",
+			wantErrMsg:  "failed to get new members by email",
 		},
 		{
 			name: "failed to register new users",
@@ -198,15 +196,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 				deps.projectRepo.EXPECT().GetOwned(args.ctx, args.data.ProjectID, args.data.OwnerID).Return(testProject, nil)
 				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return([]*dto.UserEmailAndID{}, nil)
 				deps.authUC.EXPECT().AutoRegister(args.ctx, gomock.Any()).Return(nil).Times(4)
-				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(
-					[]*dto.UserEmailAndID{
-						{ID: 2, Email: "test1@mail.com"},
-						{ID: 3, Email: "test2@mail.com"},
-						{ID: 4, Email: "test3@mail.com"},
-					},
-					nil,
-				)
-
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(testCandidates[1:], nil)
 				return uc
 			},
 			wantErr:     true,
@@ -223,15 +213,8 @@ func TestUseCase_AddMembers(t *testing.T) {
 				deps.projectRepo.EXPECT().GetOwned(args.ctx, args.data.ProjectID, args.data.OwnerID).Return(testProject, nil)
 				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return([]*dto.UserEmailAndID{}, nil)
 				deps.authUC.EXPECT().AutoRegister(args.ctx, gomock.Any()).Return(nil).Times(4)
-				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(
-					[]*dto.UserEmailAndID{
-						{ID: 2, Email: "test1@mail.com"},
-						{ID: 3, Email: "test2@mail.com"},
-						{ID: 4, Email: "test3@mail.com"},
-						{ID: 5, Email: "test4@mail.com"},
-					},
-					nil,
-				)
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(testCandidates, nil)
+				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return(testRoles, nil)
 				deps.projectRepo.EXPECT().AddMembers(args.ctx, gomock.Any()).Return(repo.ErrInternal)
 				return uc
 			},
@@ -249,15 +232,8 @@ func TestUseCase_AddMembers(t *testing.T) {
 				deps.projectRepo.EXPECT().GetOwned(args.ctx, args.data.ProjectID, args.data.OwnerID).Return(testProject, nil)
 				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return([]*dto.UserEmailAndID{}, nil)
 				deps.authUC.EXPECT().AutoRegister(args.ctx, gomock.Any()).Return(nil).Times(4)
-				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(
-					[]*dto.UserEmailAndID{
-						{ID: 2, Email: "test1@mail.com"},
-						{ID: 3, Email: "test2@mail.com"},
-						{ID: 4, Email: "test3@mail.com"},
-						{ID: 5, Email: "test4@mail.com"},
-					},
-					nil,
-				)
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(testCandidates, nil)
+				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return(testRoles, nil)
 				deps.projectRepo.EXPECT().AddMembers(args.ctx, gomock.Any()).Return(nil)
 				deps.notificationRepo.EXPECT().SendInvintationInProject(ctx, gomock.Any()).Return(repo.ErrInternal)
 				return uc
@@ -265,6 +241,42 @@ func TestUseCase_AddMembers(t *testing.T) {
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
 			wantErrMsg:  "failed to send project invitation",
+		},
+		{
+			name: "failed to get project roles",
+			args: testArgs,
+			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
+
+				uc, deps := mockUseCase(ctrl)
+				mockTx(args.ctx, deps.txManager)
+				deps.projectRepo.EXPECT().GetOwned(args.ctx, args.data.ProjectID, args.data.OwnerID).Return(testProject, nil)
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return([]*dto.UserEmailAndID{}, nil)
+				deps.authUC.EXPECT().AutoRegister(args.ctx, gomock.Any()).Return(nil).Times(4)
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(testCandidates, nil)
+				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
+				return uc
+			},
+			wantErr:     true,
+			wantErrType: customerrors.InternalErr,
+			wantErrMsg:  "failed to get project roles",
+		},
+		{
+			name: "failed to find role in list",
+			args: testArgs,
+			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
+
+				uc, deps := mockUseCase(ctrl)
+				mockTx(args.ctx, deps.txManager)
+				deps.projectRepo.EXPECT().GetOwned(args.ctx, args.data.ProjectID, args.data.OwnerID).Return(testProject, nil)
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return([]*dto.UserEmailAndID{}, nil)
+				deps.authUC.EXPECT().AutoRegister(args.ctx, gomock.Any()).Return(nil).Times(4)
+				deps.userRepo.EXPECT().GetIdsByEmails(args.ctx, args.data.MemberEmails).Return(testCandidates, nil)
+				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return([]*dto.ProjectRoleRes{}, nil)
+				return uc
+			},
+			wantErr:     true,
+			wantErrType: customerrors.InternalErr,
+			wantErrMsg:  "failed to find role in list",
 		},
 
 		// failed to send invitation

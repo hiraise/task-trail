@@ -30,18 +30,15 @@ func (r *PgProjectRepository) Create(ctx context.Context, data *dto.ProjectCreat
 	if err != nil {
 		return 0, r.handleError(err)
 	}
-	if err := r.AddMembers(ctx, &dto.ProjectAddMembersDB{ProjectID: id, MemberIDs: []int{data.OwnerID}}); err != nil {
-		return 0, err
-	}
 	return id, nil
 }
 
 func (r *PgProjectRepository) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectRes, error) {
 	query := `
 		SELECT P.id, P.name, P.description, P.created_at, COUNT(T.id)
-		FROM public.projects as P 
-		LEFT JOIN public.tasks as T on P.id = T.project_id
-		WHERE P.id IN (SELECT project_id FROM project_users WHERE user_id = $1)
+		FROM projects as P 
+		LEFT JOIN tasks as T on P.id = T.project_id
+		WHERE P.id IN (SELECT DISTINCT project_id FROM project_role_user WHERE user_id = $1)
 		GROUP BY (P.id)
 	`
 	rows, err := r.getDb(ctx).Query(ctx, query, data.MemberID)
@@ -68,17 +65,18 @@ func (r *PgProjectRepository) GetList(ctx context.Context, data *dto.ProjectList
 	return retVal, nil
 }
 
-func (r *PgProjectRepository) AddMembers(ctx context.Context, data *dto.ProjectAddMembersDB) error {
-	values := make([]any, 0, len(data.MemberIDs)+1)
-	values = append(values, data.ProjectID)
+func (r *PgProjectRepository) AddMembers(ctx context.Context, data []*dto.ProjectAddMembersDB) error {
+	var values []any
 	var items []string
-	for i, id := range data.MemberIDs {
-		values = append(values, id)
-		items = append(items, fmt.Sprintf("($%d, $1)", i+2))
+	index := 1
+	for _, item := range data {
+		values = append(values, item.ProjectID, item.MemberID, item.RoleID)
+		items = append(items, fmt.Sprintf("($%d, $%d, $%d)", index, index+1, index+2))
+		index += 3
 	}
 	query := fmt.Sprintf(`
-		INSERT INTO project_users 
-		(user_id, project_id)
+		INSERT INTO project_role_user 
+		(project_id, user_id, role_id)
 		VALUES
 		%s
 		`, strings.Join(items, ",\n"))
@@ -99,7 +97,7 @@ func (r *PgProjectRepository) GetOwned(ctx context.Context, projectID int, owner
 		return nil, r.handleError(err)
 	}
 	query = `
-		SELECT id, email FROM users WHERE id IN (SELECT user_id FROM project_users WHERE project_id = $1);
+		SELECT id, email FROM users WHERE id IN (SELECT DISTINCT user_id FROM project_role_user WHERE project_id = $1);
 		`
 	rows, err := r.getDb(ctx).Query(ctx, query, projectID)
 	if err != nil {
@@ -128,8 +126,8 @@ func (r *PgProjectRepository) GetCandidates(ctx context.Context, ownerID int, pr
 	if projectID != 0 {
 		subquery = `
 			id NOT IN (
-				SELECT user_id
-				FROM project_users
+				SELECT DISTINCT user_id
+				FROM project_role_user
 				WHERE project_id = $2
 			);
 		`
@@ -144,7 +142,7 @@ func (r *PgProjectRepository) GetCandidates(ctx context.Context, ownerID int, pr
 		WHERE 
 			id IN (
 				SELECT DISTINCT user_id 
-				FROM project_users 
+				FROM project_role_user
 				WHERE project_id IN (
 					SELECT id 
 					FROM projects 
@@ -178,7 +176,7 @@ func (r *PgProjectRepository) GetByID(ctx context.Context, projectID int) (*dto.
 	query := `
 		SELECT P.id, P.name, P.description, P.created_at, COUNT(T.ID)
 		FROM projects as P
-		LEFT JOIN public.tasks as T on P.id = T.project_id
+		LEFT JOIN tasks as T on P.id = T.project_id
 		WHERE P.id = $1
 		GROUP BY (P.id)
 	`
@@ -191,7 +189,7 @@ func (r *PgProjectRepository) GetByID(ctx context.Context, projectID int) (*dto.
 }
 
 func (r *PgProjectRepository) IsMember(ctx context.Context, projectID int, memberID int) error {
-	query := `SELECT 1 FROM project_users where project_id = $1 and user_id = $2`
+	query := `SELECT 1 FROM project_role_user where project_id = $1 and user_id = $2`
 	tag, err := r.getDb(ctx).Exec(ctx, query, projectID, memberID)
 	if err != nil {
 		return r.handleError(err)
@@ -200,4 +198,89 @@ func (r *PgProjectRepository) IsMember(ctx context.Context, projectID int, membe
 		return repo.ErrNotFound
 	}
 	return nil
+}
+
+func (r *PgProjectRepository) CreateRoles(
+	ctx context.Context,
+	projectID int,
+	roles []dto.ProjectRoleCreate,
+) ([]*dto.ProjectRoleRes, error) {
+	var subs []string
+	values := []any{projectID}
+
+	for i, role := range roles {
+		values = append(values, role.Name)
+		subs = append(subs, fmt.Sprintf("($1, $%d)", i+2))
+	}
+
+	query := fmt.Sprintf(`
+		INSERT INTO project_roles (project_id, name)
+		VALUES
+		%s
+		RETURNING id, name;
+	`, strings.Join(subs, ",\n"))
+	rows, err := r.getDb(ctx).Query(ctx, query, values...)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	newRoles, err := ScanRows(rows, func(r pgx.Rows) (*dto.ProjectRoleRes, error) {
+		var item dto.ProjectRoleRes
+		if err := rows.Scan(&item.ID, &item.Name); err != nil {
+			return nil, err
+		}
+		return &item, err
+	})
+
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return newRoles, nil
+}
+
+func (r *PgProjectRepository) AppendPermissions(ctx context.Context, roleID int, permissions []string) error {
+	query := `
+		INSERT INTO project_role_permission (role_id, permission_id)
+		SELECT $1, P.id
+		FROM permissions as P
+		WHERE 
+			P.id IN 
+			(
+				SELECT id 
+				FROM permissions
+				WHERE name = ANY ($2)
+			);`
+	tag, err := r.getDb(ctx).Exec(ctx, query, roleID, permissions)
+	if err != nil {
+		return r.handleError(err)
+	}
+	if int(tag.RowsAffected()) != len(permissions) {
+		return repo.Wrap(fmt.Errorf("passed permmissions not found in db"), repo.ErrNotFound)
+	}
+	return nil
+}
+
+func (r *PgProjectRepository) GetProjectRoles(ctx context.Context, projectID int) ([]*dto.ProjectRoleRes, error) {
+	query := `
+		SELECT id, name
+		FROM project_roles
+		WHERE project_id = $1;
+	`
+
+	rows, err := r.getDb(ctx).Query(ctx, query, projectID)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+
+	items, err := ScanRows(rows, func(r pgx.Rows) (*dto.ProjectRoleRes, error) {
+		var item dto.ProjectRoleRes
+		if err := r.Scan(&item.ID, &item.Name); err != nil {
+			return nil, err
+		}
+		return &item, nil
+	})
+
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return items, nil
 }

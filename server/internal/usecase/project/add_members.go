@@ -14,13 +14,13 @@ func (u *UseCase) AddMembers(ctx context.Context, data *dto.ProjectAddMembers) e
 		return err
 	}
 
-	if err := u.verifyNewMembers(project.Members, data.MemberEmails); err != nil {
+	if err := u.validateMembersAreNew(project.Members, data.MemberEmails); err != nil {
 		return err
 	}
 
 	newEmails, err := u.getUnregisteredEmails(ctx, data.MemberEmails)
 	if err != nil {
-		return u.errHandler.InternalTrouble(err, "failed to get project members", "projectID", data.ProjectID)
+		return u.errHandler.InternalTrouble(err, "failed to get new members by email")
 	}
 
 	f := func(ctx context.Context) error {
@@ -34,8 +34,22 @@ func (u *UseCase) AddMembers(ctx context.Context, data *dto.ProjectAddMembers) e
 		if err != nil {
 			return err
 		}
+		roles, err := u.projectRepo.GetProjectRoles(ctx, project.ID)
+		if err != nil {
+			return u.errHandler.InternalTrouble(err, "failed to get project roles", "projectID", project.ID)
+		}
 
-		if err := u.projectRepo.AddMembers(ctx, &dto.ProjectAddMembersDB{ProjectID: data.ProjectID, MemberIDs: memberIDs}); err != nil {
+		role, err := u.findRolesInList(roles, MemberRoleName)
+		if err != nil {
+			return err
+		}
+
+		var items []*dto.ProjectAddMembersDB
+		for _, mID := range memberIDs {
+			items = append(items, &dto.ProjectAddMembersDB{MemberID: mID, RoleID: role.ID, ProjectID: project.ID})
+		}
+
+		if err := u.projectRepo.AddMembers(ctx, items); err != nil {
 			return u.errHandler.InternalTrouble(
 				err,
 				"failed to add new members to the project",
@@ -64,7 +78,7 @@ func (u *UseCase) GetOwned(ctx context.Context, projectID int, ownerID int) (*dt
 	return project, nil
 }
 
-func (u *UseCase) verifyNewMembers(pMembers []*dto.UserEmailAndID, newMembers []string) error {
+func (u *UseCase) validateMembersAreNew(pMembers []*dto.UserEmailAndID, newMembers []string) error {
 	for _, v := range pMembers {
 		if slices.Contains(newMembers, v.Email) {
 			return u.errHandler.BadRequest(nil, "member already in project", "memberEmail", v.Email)

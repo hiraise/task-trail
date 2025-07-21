@@ -94,6 +94,21 @@ func (mr *MockUserRepositoryMockRecorder) Create(ctx, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepository)(nil).Create), ctx, arg1)
 }
 
+// CreateBulk mocks base method.
+func (m *MockUserRepository) CreateBulk(ctx context.Context, data []*dto.UserCreate) ([]*dto.UserEmailAndID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateBulk", ctx, data)
+	ret0, _ := ret[0].([]*dto.UserEmailAndID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateBulk indicates an expected call of CreateBulk.
+func (mr *MockUserRepositoryMockRecorder) CreateBulk(ctx, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBulk", reflect.TypeOf((*MockUserRepository)(nil).CreateBulk), ctx, data)
+}
+
 // EmailIsTaken mocks base method.
 func (m *MockUserRepository) EmailIsTaken(ctx context.Context, email string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -542,7 +557,7 @@ func (m *MockProjectRepository) EXPECT() *MockProjectRepositoryMockRecorder {
 }
 
 // AddMembers mocks base method.
-func (m *MockProjectRepository) AddMembers(ctx context.Context, data *dto.ProjectAddMembersDB) error {
+func (m *MockProjectRepository) AddMembers(ctx context.Context, data []*dto.ProjectAddMembersDB) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddMembers", ctx, data)
 	ret0, _ := ret[0].(error)
@@ -553,6 +568,20 @@ func (m *MockProjectRepository) AddMembers(ctx context.Context, data *dto.Projec
 func (mr *MockProjectRepositoryMockRecorder) AddMembers(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMembers", reflect.TypeOf((*MockProjectRepository)(nil).AddMembers), ctx, data)
+}
+
+// AppendPermissions mocks base method.
+func (m *MockProjectRepository) AppendPermissions(ctx context.Context, roleID int, permissions []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AppendPermissions", ctx, roleID, permissions)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AppendPermissions indicates an expected call of AppendPermissions.
+func (mr *MockProjectRepositoryMockRecorder) AppendPermissions(ctx, roleID, permissions any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppendPermissions", reflect.TypeOf((*MockProjectRepository)(nil).AppendPermissions), ctx, roleID, permissions)
 }
 
 // Create mocks base method.
@@ -568,6 +597,21 @@ func (m *MockProjectRepository) Create(ctx context.Context, data *dto.ProjectCre
 func (mr *MockProjectRepositoryMockRecorder) Create(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockProjectRepository)(nil).Create), ctx, data)
+}
+
+// CreateRoles mocks base method.
+func (m *MockProjectRepository) CreateRoles(ctx context.Context, projectID int, roles []dto.ProjectRoleCreate) ([]*dto.ProjectRoleRes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateRoles", ctx, projectID, roles)
+	ret0, _ := ret[0].([]*dto.ProjectRoleRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateRoles indicates an expected call of CreateRoles.
+func (mr *MockProjectRepositoryMockRecorder) CreateRoles(ctx, projectID, roles any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoles", reflect.TypeOf((*MockProjectRepository)(nil).CreateRoles), ctx, projectID, roles)
 }
 
 // GetByID mocks base method.
@@ -628,6 +672,21 @@ func (m *MockProjectRepository) GetOwned(ctx context.Context, projectID, ownerID
 func (mr *MockProjectRepositoryMockRecorder) GetOwned(ctx, projectID, ownerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOwned", reflect.TypeOf((*MockProjectRepository)(nil).GetOwned), ctx, projectID, ownerID)
+}
+
+// GetProjectRoles mocks base method.
+func (m *MockProjectRepository) GetProjectRoles(ctx context.Context, projectID int) ([]*dto.ProjectRoleRes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProjectRoles", ctx, projectID)
+	ret0, _ := ret[0].([]*dto.ProjectRoleRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProjectRoles indicates an expected call of GetProjectRoles.
+func (mr *MockProjectRepositoryMockRecorder) GetProjectRoles(ctx, projectID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjectRoles", reflect.TypeOf((*MockProjectRepository)(nil).GetProjectRoles), ctx, projectID)
 }
 
 // IsMember mocks base method.

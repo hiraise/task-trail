@@ -8,6 +8,16 @@ import (
 	"task-trail/internal/usecase"
 )
 
+const AdminRoleName = "admin"
+const OwnerRoleName = "owner"
+const MemberRoleName = "member"
+const PROJECT_INVITE_USERS string = "PROJECT_INVITE_USERS"
+const PROJECT_KICK_USERS string = "PROJECT_KICK_USERS"
+const PROJECT_SET_ROLES string = "PROJECT_SET_ROLES"
+const PROJECT_EDIT string = "PROJECT_EDIT"
+const PROJECT_ARCHIVE string = "PROJECT_ARCHIVE"
+const PROJECT_DELETE string = "PROJECT_DELETE"
+
 type UseCase struct {
 	txManager        repo.TxManager
 	authUC           usecase.Authentication

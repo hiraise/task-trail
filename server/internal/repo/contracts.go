@@ -21,6 +21,7 @@ type TxManager interface {
 
 type UserRepository interface {
 	Create(ctx context.Context, dto *dto.UserCreate) (int, error)
+	CreateBulk(ctx context.Context, data []*dto.UserCreate) ([]*dto.UserEmailAndID, error)
 	EmailIsTaken(ctx context.Context, email string) (bool, error)
 	GetByEmail(ctx context.Context, email string) (*dto.User, error)
 	GetByID(ctx context.Context, ID int) (*dto.User, error)
@@ -78,10 +79,14 @@ type ProjectRepository interface {
 	GetCandidates(ctx context.Context, ownerID int, projectID int) ([]*dto.UserSimple, error)
 
 	// AddMembers adds new members to a project.
-	AddMembers(ctx context.Context, data *dto.ProjectAddMembersDB) error
+	AddMembers(ctx context.Context, data []*dto.ProjectAddMembersDB) error
 
 	// IsMember checks if a user is a member of the specified project.
 	// Returns repo.ErrNotFound if the user is not a member, nil if the user is a member,
 	// or another repo error if a query error occurs.
 	IsMember(ctx context.Context, projectID int, memberID int) error
+
+	CreateRoles(ctx context.Context, projectID int, roles []dto.ProjectRoleCreate) ([]*dto.ProjectRoleRes, error)
+	GetProjectRoles(ctx context.Context, projectID int) ([]*dto.ProjectRoleRes, error)
+	AppendPermissions(ctx context.Context, roleID int, permissions []string) error
 }

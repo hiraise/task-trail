@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 // request
 
 type Credentials struct {
@@ -10,7 +12,7 @@ type Credentials struct {
 type UserCreate struct {
 	Email        string
 	PasswordHash string
-	IsVerified   bool
+	VerifiedAt   *time.Time
 }
 
 type PasswordChange struct {

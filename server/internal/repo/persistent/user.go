@@ -6,8 +6,8 @@ import (
 	"strings"
 	"task-trail/internal/repo"
 	"task-trail/internal/usecase/dto"
-	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -20,26 +20,61 @@ func NewUserRepo(db *pgxpool.Pool) *PgUserRepository {
 }
 
 func (r *PgUserRepository) Create(ctx context.Context, dto *dto.UserCreate) (int, error) {
-	substring := `
-		(email, password_hash) 
-		VALUES ($1, $2)`
-	args := []any{dto.Email, dto.PasswordHash}
-	if dto.IsVerified {
-		substring = `
-			(email, password_hash, verified_at) 
-			VALUES ($1, $2, $3)`
-		args = append(args, time.Now())
-	}
+	query := `
+		INSERT INTO users
+		(email, password_hash, verified_at) 
+		VALUES ($1, $2, $3)
+		RETURNING id`
 	var id int
 	err := r.getDb(ctx).QueryRow(
 		ctx,
-		fmt.Sprintf(`INSERT INTO users %s RETURNING id;`, substring),
-		args...,
+		query,
+		dto.Email, dto.PasswordHash, dto.VerifiedAt,
 	).Scan(&id)
 	if err != nil {
 		return 0, r.handleError(err)
 	}
 	return id, err
+}
+
+func (r *PgUserRepository) CreateBulk(ctx context.Context, data []*dto.UserCreate) ([]*dto.UserEmailAndID, error) {
+
+	var substrings []string
+	var values []any
+	index := 1
+	for _, item := range data {
+		values = append(values, item.Email, item.PasswordHash, item.VerifiedAt)
+		substrings = append(substrings, fmt.Sprintf("($%d, $%d, $%d)", index, index+1, index+2))
+		index += 3
+	}
+
+	rows, err := r.getDb(ctx).Query(
+		ctx,
+		fmt.Sprintf(`
+			INSERT INTO users (email, password_hash, verified_at)
+			VALUES
+			%s 
+			RETURNING id, email;`, strings.Join(substrings, ",\n")),
+		values...,
+	)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+
+	items, err := ScanRows(rows, func(row pgx.Rows) (*dto.UserEmailAndID, error) {
+		var item dto.UserEmailAndID
+		if err := row.Scan(
+			&item.ID,
+			&item.Email,
+		); err != nil {
+			return nil, err
+		}
+		return &item, nil
+	})
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return items, nil
 }
 
 func (r *PgUserRepository) EmailIsTaken(ctx context.Context, email string) (bool, error) {

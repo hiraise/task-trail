@@ -43,7 +43,7 @@ func (r *PgRepostitory) handleError(e error) error {
 	return repo.Wrap(repo.ErrInternal, e)
 }
 
-func ScanRows[T any](rows pgx.Rows, f func(r pgx.Rows) (*T, error)) ([]*T, error) {
+func ScanRows[T any](rows pgx.Rows, f func(row pgx.Rows) (*T, error)) ([]*T, error) {
 	defer rows.Close()
 
 	var retVal []*T

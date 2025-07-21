@@ -10,6 +10,7 @@ import (
 	slogger "task-trail/internal/pkg/logger/slog"
 	"task-trail/internal/pkg/postgres"
 	"task-trail/internal/usecase/dto"
+	"task-trail/internal/utils"
 	"testing"
 
 	"github.com/jackc/pgx/v5"
@@ -85,7 +86,10 @@ func cleanDB(t *testing.T) {
 		users, 
 		refresh_tokens, 
 		email_tokens,
-		project_users,
+		project_role_user,
+		permissions,
+		project_roles,
+		project_role_permission,
 		projects,
 		files,
 		tasks
@@ -104,7 +108,7 @@ func getBadContext(t *testing.T) context.Context {
 }
 
 func addUser(ctx context.Context, email string) (int, error) {
-	return userRepo.Create(ctx, &dto.UserCreate{Email: email, PasswordHash: "123", IsVerified: true})
+	return userRepo.Create(ctx, &dto.UserCreate{Email: email, PasswordHash: "123", VerifiedAt: utils.GetCurrentTime()})
 }
 
 func mustAddUser(t *testing.T, email string) int {
