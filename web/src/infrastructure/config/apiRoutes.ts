@@ -20,4 +20,6 @@ export const API_ROUTES = {
   PROJECT_BY_ID: (id: number) => `${PROJECTS}/${id}`,
   ADD_PROJECT_MEMBERS: (id?: number) =>
     `${PROJECTS}${id ? `/${id}` : ""}/members`,
+  GET_CANDIDATES: (id?: number) =>
+    `${PROJECTS}/candidates${id ? `/?${id}` : ""}`,
 };

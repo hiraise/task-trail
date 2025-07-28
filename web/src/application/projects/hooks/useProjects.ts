@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import {
   getProjectByIdThunk,
+  getProjectCandidatesThunk,
   getProjectsThunk,
   newProjectThunk,
 } from "../thunks/projectsThunks";
@@ -13,10 +14,12 @@ import { ProjectPayload } from "@/domain/project/project.payload";
 import { Project } from "@/domain/project/project.entity";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { clearProject } from "../slices/projectSlice";
+import { User } from "@/domain/user/user.entity";
 
 type UseProjectsResult = {
   createProject: (payload: ProjectPayload) => Promise<Project | undefined>;
   getProjects: () => Promise<void>;
+  getCandidates: (projectId?: number) => Promise<User[] | undefined>;
   getProjectById: (id: number) => Promise<void>;
   clearCurrentProject: () => void;
   isLoading: boolean;
@@ -56,6 +59,21 @@ export const useProjects = (): UseProjectsResult => {
     }
   };
 
+  const getCandidates = useCallback(
+    async (projectId?: number) => {
+      setIsLoading(true);
+      try {
+        return await dispatch(getProjectCandidatesThunk(projectId)).unwrap();
+      } catch (error) {
+        clientLogger.error("useProjects getCandidates error:", { error });
+        toast.error("Failed to load project candidates. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch]
+  );
+
   const getProjectById = useCallback(
     async (id: number) => {
       setIsLoading(true);
@@ -78,6 +96,7 @@ export const useProjects = (): UseProjectsResult => {
   return {
     createProject,
     getProjects,
+    getCandidates,
     getProjectById,
     clearCurrentProject,
     isLoading,

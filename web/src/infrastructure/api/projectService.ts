@@ -3,6 +3,7 @@ import {
   GetProjects,
   ProjectService,
   AddMembers,
+  GetProjectCandidates,
 } from "@/domain/project/project.contracts";
 import axiosClient from "./axiosClient";
 import { API_ROUTES } from "../config/apiRoutes";
@@ -10,6 +11,7 @@ import { mapProjectFromApi } from "../mappers/projectMappers";
 import { clientLogger } from "../config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 import { ApiProject, ApiProjectMembers } from "./types";
+import { mapUserFromApi } from "../mappers/userMapper";
 
 //TODO: Handle different error types appropriately
 
@@ -57,7 +59,7 @@ const getProjectById = async (id: number) => {
   }
 };
 
-const addMembers: AddMembers = async (id, emails) => {
+const addMembers: AddMembers = async (emails, id) => {
   try {
     await axiosClient.post<ApiProjectMembers>(
       API_ROUTES.ADD_PROJECT_MEMBERS(id),
@@ -69,9 +71,26 @@ const addMembers: AddMembers = async (id, emails) => {
   }
 };
 
+const getProjectCandidates: GetProjectCandidates = async (id?: number) => {
+  try {
+    const response = await axiosClient.get(API_ROUTES.GET_CANDIDATES(id));
+    if (!Array.isArray(response.data)) {
+      throw new AppError(
+        AppErrorType.SERVER,
+        "Invalid response format: expected array"
+      );
+    }
+    return response.data.map((rawUser) => mapUserFromApi(rawUser));
+  } catch (error) {
+    clientLogger.error("Get project candidates error", { error });
+    throw new AppError(AppErrorType.SERVER, "Failed to get project candidates");
+  }
+};
+
 export const projectService: ProjectService = {
   getProjects: getProjects,
   newProject: newProject,
   getProjectById: getProjectById,
   addMembers: addMembers,
+  getProjectCandidates: getProjectCandidates,
 };

@@ -2,30 +2,37 @@ import { clsx } from "clsx";
 
 import styles from "./UsersList.module.css";
 import { UserItemCheckBox } from "./UserItemCheckbox";
-import { users as mockUsers } from "./UsersList.mock";
-import {
-  BaseUserData,
-  UserData,
-} from "../AddParticipantForm/AddParticipantForm";
+import { BaseUserData } from "../AddParticipantForm/AddParticipantForm";
 import { VALIDATION_PATTERNS } from "@/shared/utils/validate";
 import { UserItem } from "./UserItem";
 import { projectsTexts } from "@/shared/locales/projects";
+import { useEffect, useState } from "react";
+import { useProjects } from "@/application/projects/hooks/useProjects";
+import { User } from "@/domain/user/user.entity";
+import { Spinner } from "@/presentation/ui/Spinner";
 
 interface UsersListProps {
   onUserSelect: (data: BaseUserData) => void;
   selectedUsers?: BaseUserData[];
   searchQuery?: string;
-  availableUsers?: UserData[]; // Optional prop to override mock users
 }
 
 export function UsersList({
   onUserSelect,
   selectedUsers = [],
   searchQuery = "",
-  availableUsers,
 }: UsersListProps) {
-  // Use provided users or fall back to mock users
-  const usersToDisplay = availableUsers || mockUsers;
+  const { isLoading, getCandidates } = useProjects();
+  const [usersToDisplay, setUsersToDisplay] = useState<User[]>([]);
+
+  // Fetch candidates when component mounts or when getCandidates changes
+  useEffect(() => {
+    const fetch = async () => {
+      const candidates = await getCandidates();
+      setUsersToDisplay(candidates ?? []);
+    };
+    fetch();
+  }, [getCandidates]);
 
   // Filter users based on search query
   const filteredUsers = searchQuery
@@ -35,6 +42,22 @@ export function UsersList({
           user.username?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : usersToDisplay;
+
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <Spinner size={30} />
+      </div>
+    );
+  }
+
+  if (filteredUsers.length === 0 && !searchQuery) {
+    return (
+      <div className={clsx(styles.container, styles.emptyState)}>
+        Уппппссс... Похоже, что у вас нет кандидатов для добавления в проект.
+      </div>
+    );
+  }
 
   if (filteredUsers.length === 0) {
     return VALIDATION_PATTERNS.email.test(searchQuery) ? (
