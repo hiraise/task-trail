@@ -14,6 +14,10 @@ type projectCreateReq struct {
 type projectAddMembersReq struct {
 	Emails []string `json:"emails" binding:"required" `
 }
+type projectUpdateReq struct {
+	Name        string `json:"name" binding:"max=254"`
+	Description string `json:"description"`
+}
 
 func BindProjectCreateDTO(c *gin.Context, userID int) (*dto.ProjectCreate, error) {
 	body, err := validate[projectCreateReq](c)
@@ -23,6 +27,13 @@ func BindProjectCreateDTO(c *gin.Context, userID int) (*dto.ProjectCreate, error
 	return &dto.ProjectCreate{Name: body.Name, Description: body.Description, OwnerID: userID}, nil
 }
 
+func BindProjectUpdateDTO(c *gin.Context) (*dto.ProjectUpdate, error) {
+	body, err := validate[projectUpdateReq](c)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.ProjectUpdate{Name: body.Name, Description: body.Description}, nil
+}
 func BindProjectListDTO(c *gin.Context, userID int) (*dto.ProjectList, error) {
 	return &dto.ProjectList{MemberID: userID}, nil
 }

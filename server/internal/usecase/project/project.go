@@ -65,3 +65,27 @@ func (u *UseCase) CheckMembership(ctx context.Context, projectID int, memberID i
 	}
 	return nil
 }
+
+// func (u *UseCase) GetUserRole(ctx context.Context, projectID int, userID int) error {
+
+// }
+
+func (u *UseCase) VerifyAccess(ctx context.Context, projectID int, userID int, permisssion string) error {
+	res, err := u.projectRepo.HasPermission(ctx, projectID, userID, permisssion)
+	if err != nil {
+		return u.errHandler.InternalTrouble(
+			err, "failed to verify user access",
+			"projectID", projectID,
+			"userID", userID,
+			"permission", permisssion,
+		)
+	}
+	if !res {
+		return u.errHandler.Forbidden(
+			nil, "user dont has required permission",
+			"projectID", projectID,
+			"userID", userID,
+			"permission", permisssion)
+	}
+	return nil
+}

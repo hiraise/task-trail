@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"task-trail/internal/repo"
 	"task-trail/internal/usecase/dto"
 
 	"github.com/jackc/pgx/v5"
@@ -133,26 +132,7 @@ func (r *PgUserRepository) Update(ctx context.Context, dto *dto.UserUpdate) erro
 	if len(kwargs) == 0 {
 		return nil
 	}
-
-	rows := make([]string, 0, len(kwargs))
-	values := make([]any, 0, len(kwargs)+1)
-	i := 1
-	for k, v := range kwargs {
-		rows = append(rows, fmt.Sprintf("%s = $%d", k, i))
-		values = append(values, v)
-		i++
-	}
-	values = append(values, dto.ID)
-	query := fmt.Sprintf("UPDATE users SET %s WHERE id = $%d;", strings.Join(rows, ", "), i)
-
-	tag, err := r.getDb(ctx).Exec(ctx, query, values...)
-	if err != nil {
-		return r.handleError(err)
-	}
-	if tag.RowsAffected() == 0 {
-		return repo.ErrNotFound
-	}
-	return nil
+	return r.updateByID(ctx, "users", dto.ID, kwargs)
 }
 
 func (r *PgUserRepository) GetIdsByEmails(ctx context.Context, emails []string) ([]*dto.UserEmailAndID, error) {

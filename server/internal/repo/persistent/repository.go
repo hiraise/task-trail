@@ -3,6 +3,8 @@ package persistent
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"task-trail/internal/repo"
 
 	"github.com/jackc/pgx/v5"
@@ -41,6 +43,29 @@ func (r *PgRepostitory) handleError(e error) error {
 		}
 	}
 	return repo.Wrap(repo.ErrInternal, e)
+}
+
+func (r *PgRepostitory) updateByID(ctx context.Context, table string, id int, data map[string]any) error {
+	rows := make([]string, 0, len(data))
+	values := make([]any, 0, len(data)+1)
+	i := 1
+	for k, v := range data {
+		rows = append(rows, fmt.Sprintf("%s = $%d", k, i))
+		values = append(values, v)
+		i++
+	}
+	values = append(values, id)
+
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = $%d;", table, strings.Join(rows, ", "), i)
+
+	tag, err := r.getDb(ctx).Exec(ctx, query, values...)
+	if err != nil {
+		return r.handleError(err)
+	}
+	if tag.RowsAffected() == 0 {
+		return repo.ErrNotFound
+	}
+	return nil
 }
 
 func ScanRows[T any](rows pgx.Rows, f func(row pgx.Rows) (*T, error)) ([]*T, error) {

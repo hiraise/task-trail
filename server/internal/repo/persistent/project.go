@@ -6,6 +6,7 @@ import (
 	"strings"
 	"task-trail/internal/repo"
 	"task-trail/internal/usecase/dto"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,14 +20,14 @@ func NewProjectRepo(db *pgxpool.Pool) *PgProjectRepository {
 	return &PgProjectRepository{PgRepostitory{pg: db}}
 }
 
-func (r *PgProjectRepository) Create(ctx context.Context, data *dto.ProjectCreate) (int, error) {
+func (r *PgProjectRepository) Create(ctx context.Context, name string, description string) (int, error) {
 	query := `
 		INSERT INTO projects
-		(owner_id, name, description)
-		VALUES ($1, $2, $3)
+		(name, description)
+		VALUES ($1, $2)
 		RETURNING id;`
 	var id int
-	err := r.getDb(ctx).QueryRow(ctx, query, data.OwnerID, data.Name, data.Description).Scan(&id)
+	err := r.getDb(ctx).QueryRow(ctx, query, name, description).Scan(&id)
 	if err != nil {
 		return 0, r.handleError(err)
 	}
@@ -87,26 +88,48 @@ func (r *PgProjectRepository) AddMembers(ctx context.Context, data []*dto.Projec
 	return nil
 }
 
-func (r *PgProjectRepository) GetOwned(ctx context.Context, projectID int, ownerID int) (*dto.Project, error) {
+// func (r *PgProjectRepository) GetOwned(ctx context.Context, projectID int, ownerID int, roleName string) (*dto.Project, error) {
+// 	query := `
+// 		SELECT id, name, description, created_at
+// 		FROM projects AS P
+// 		WHERE P.id = $1
+// 		AND EXISTS (
+// 			SELECT 1
+// 			FROM project_role_user AS PRU
+// 			JOIN project_roles AS PR ON PRU.role_id = PR.id
+// 			WHERE PRU.project_id = P.id
+// 			AND PRU.user_id = $2
+// 			AND PR.name = $3
+// 			AND PR.project_id = P.id
+//   	);`
+// 	var item dto.Project
+// 	err := r.getDb(ctx).
+// 		QueryRow(ctx, query, projectID, ownerID, roleName).
+// 		Scan(&item.ID, &item.Name, &item.Description, &item.CreatedAt)
+// 	if err != nil {
+// 		return nil, r.handleError(err)
+// 	}
+
+// 	return &item, nil
+
+// }
+
+func (r *PgProjectRepository) GetMembers(ctx context.Context, projectID int) ([]*dto.ProjectMember, error) {
 	query := `
-		SELECT id, name, description, owner_id, created_at FROM projects WHERE id = $1 AND owner_id = $2;
-	`
-	var item dto.Project
-	err := r.getDb(ctx).QueryRow(ctx, query, projectID, ownerID).Scan(&item.ID, &item.Name, &item.Description, &item.OwnerID, &item.CreatedAt)
-	if err != nil {
-		return nil, r.handleError(err)
-	}
-	query = `
-		SELECT id, email FROM users WHERE id IN (SELECT DISTINCT user_id FROM project_role_user WHERE project_id = $1);
+		SELECT DISTINCT U.id, U.email, U.username, PR.name
+		FROM project_role_user AS PRU
+		JOIN project_roles AS PR ON PR.id = PRU.role_id
+		JOIN users AS U ON U.id = PRU.user_id
+		WHERE PRU.project_id = $1;
 		`
 	rows, err := r.getDb(ctx).Query(ctx, query, projectID)
 	if err != nil {
 		return nil, r.handleError(err)
 	}
 
-	members, err := ScanRows(rows, func(r pgx.Rows) (*dto.UserEmailAndID, error) {
-		var item dto.UserEmailAndID
-		if err := r.Scan(&item.ID, &item.Email); err != nil {
+	members, err := ScanRows(rows, func(r pgx.Rows) (*dto.ProjectMember, error) {
+		var item dto.ProjectMember
+		if err := r.Scan(&item.ID, &item.Email, &item.Username, &item.Role); err != nil {
 			return nil, err
 		}
 		return &item, nil
@@ -114,42 +137,34 @@ func (r *PgProjectRepository) GetOwned(ctx context.Context, projectID int, owner
 	if err != nil {
 		return nil, r.handleError(err)
 	}
-	item.Members = members
-
-	return &item, nil
-
+	return members, nil
 }
 
-func (r *PgProjectRepository) GetCandidates(ctx context.Context, ownerID int, projectID int) ([]*dto.UserSimple, error) {
-	subquery := `id != $1;`
-	values := []any{ownerID}
+func (r *PgProjectRepository) GetCandidates(ctx context.Context, ownerID int, projectID int, roleName string) ([]*dto.UserSimple, error) {
+	subquery := `U.id != $1;`
+	values := []any{ownerID, roleName}
 	if projectID != 0 {
 		subquery = `
-			id NOT IN (
+			U.id NOT IN (
 				SELECT DISTINCT user_id
 				FROM project_role_user
-				WHERE project_id = $2
+				WHERE project_id = $3
 			);
 		`
 		values = append(values, projectID)
 	}
 	query := fmt.Sprintf(`
-		SELECT 
-			id,
-			email,
-			username 
-		FROM users 
+		SELECT DISTINCT U.id, U.email, U.username 
+		FROM project_role_user AS PRU
+		JOIN users AS U ON U.id = PRU.user_id 
 		WHERE 
-			id IN (
-				SELECT DISTINCT user_id 
-				FROM project_role_user
-				WHERE project_id IN (
-					SELECT id 
-					FROM projects 
-					WHERE owner_id = $1
-				)
+			project_id IN (
+				SELECT PRU.project_id 
+				FROM project_role_user AS PRU 
+				JOIN project_roles as PR ON PR.id = PRU.role_id
+				WHERE PRU.user_id = $1 AND PR.name = $2
 			)
-			AND 
+			AND
 			%s
 	`, subquery)
 
@@ -283,4 +298,78 @@ func (r *PgProjectRepository) GetProjectRoles(ctx context.Context, projectID int
 		return nil, r.handleError(err)
 	}
 	return items, nil
+}
+
+func (r *PgProjectRepository) HasPermission(ctx context.Context, projectID int, memberID int, permission string) (bool, error) {
+	query := `
+		SELECT EXISTS (
+			SELECT 1
+			FROM project_role_user AS pru
+			JOIN project_roles AS pr ON pr.id = pru.role_id
+			JOIN project_role_permission AS prp ON prp.role_id = pr.id
+			JOIN permissions AS p ON p.id = prp.permission_id
+			WHERE pru.project_id = $1
+				AND pru.user_id = $2
+				AND p.name = $3
+		);`
+	var result bool
+	if err := r.getDb(ctx).QueryRow(ctx, query, projectID, memberID, permission).Scan(&result); err != nil {
+		return false, r.handleError(err)
+	}
+	return result, nil
+}
+
+// func (r *PgProjectRepository) GetProjectRights(ctx context.Context, projectID int, memberID int) ([]*dto.ProjectRights, error) {
+// 	query := `
+// 		SELECT p.name, pr.name
+// 		FROM project_role_user AS pru
+// 		JOIN project_roles AS pr ON pr.id = pru.role_id
+// 		JOIN project_role_permission AS prp ON prp.role_id = pr.id
+// 		JOIN permissions AS p ON p.id = prp.permission_id
+// 		WHERE pru.project_id = $1 AND pru.user_id = $2;
+// 	`
+// 	rows, err := r.getDb(ctx).Query(ctx, query, projectID, memberID)
+// 	if err != nil {
+// 		return nil, r.handleError(err)
+// 	}
+
+// 	items, err := ScanRows(rows, func(row pgx.Rows) (*T, error) {})
+
+// }
+
+func (r *PgProjectRepository) Update(ctx context.Context, projectID int, data *dto.ProjectUpdate) error {
+
+	kwargs := make(map[string]any)
+	if data.Name != "" {
+		kwargs["name"] = data.Name
+	}
+
+	if data.Description != "" {
+		kwargs["description"] = data.Description
+	}
+	if len(kwargs) == 0 {
+		return nil
+	}
+	return r.updateByID(ctx, "projects", projectID, kwargs)
+}
+
+func (r *PgProjectRepository) Delete(ctx context.Context, projectID int) error {
+	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"deleted_at": time.Now()}); err != nil {
+		return r.handleError(err)
+	}
+	return nil
+}
+
+func (r *PgProjectRepository) Archive(ctx context.Context, projectID int) error {
+	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"archived_at": time.Now()}); err != nil {
+		return r.handleError(err)
+	}
+	return nil
+}
+
+func (r *PgProjectRepository) Unarchive(ctx context.Context, projectID int) error {
+	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"archived_at": nil}); err != nil {
+		return r.handleError(err)
+	}
+	return nil
 }

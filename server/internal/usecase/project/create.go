@@ -30,7 +30,7 @@ func (u *UseCase) Create(ctx context.Context, data *dto.ProjectCreate) (int, err
 	var id int
 	var err error
 	f := func(ctx context.Context) error {
-		id, err = u.projectRepo.Create(ctx, data)
+		id, err = u.projectRepo.Create(ctx, data.Name, data.Description)
 		if err != nil {
 			if errors.Is(err, repo.ErrNotFound) {
 				return u.errHandler.NotFound(err, "owner not found", "ownerID", data.OwnerID)

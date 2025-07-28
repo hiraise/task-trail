@@ -9,6 +9,7 @@ type ErrorHandler interface {
 	Validation(err error) error
 	BadRequest(err error, msg string, args ...any) error
 	Ok(err error, msg string, args ...any) error
+	Forbidden(err error, msg string, args ...any) error
 }
 
 type ErrHandler struct {
@@ -41,4 +42,7 @@ func (h *ErrHandler) Conflict(err error, msg string, args ...any) error {
 }
 func (h *ErrHandler) Ok(err error, msg string, args ...any) error {
 	return newErr(Ok, err, msg, nil, args...)
+}
+func (h *ErrHandler) Forbidden(err error, msg string, args ...any) error {
+	return newErr(ForbiddenErr, err, msg, nil, args...)
 }

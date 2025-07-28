@@ -64,19 +64,19 @@ type FileRepository interface {
 // ProjectRepository defines methods for managing projects and their members.
 type ProjectRepository interface {
 	// Create attempts to create a new project and returns the project ID on success, or an error if something goes wrong.
-	Create(ctx context.Context, data *dto.ProjectCreate) (int, error)
+	Create(ctx context.Context, name string, description string) (int, error)
 
 	// GetList retrieves a list of projects based on the provided filter criteria.
 	GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectRes, error)
 
 	GetByID(ctx context.Context, projectID int) (*dto.ProjectRes, error)
-	// GetOwned fetches a project by its ID and owner ID.
-	GetOwned(ctx context.Context, projectID int, ownerID int) (*dto.Project, error)
+
+	Update(ctx context.Context, projectID int, data *dto.ProjectUpdate) error
 
 	// GetCandidates returns a list of users who can be added to a porject.
 	// If projectID is 0, returns all candidates for the owner;
 	// otherwise, excludes users already in the specified project.
-	GetCandidates(ctx context.Context, ownerID int, projectID int) ([]*dto.UserSimple, error)
+	GetCandidates(ctx context.Context, ownerID int, projectID int, roleName string) ([]*dto.UserSimple, error)
 
 	// AddMembers adds new members to a project.
 	AddMembers(ctx context.Context, data []*dto.ProjectAddMembersDB) error
@@ -86,7 +86,13 @@ type ProjectRepository interface {
 	// or another repo error if a query error occurs.
 	IsMember(ctx context.Context, projectID int, memberID int) error
 
+	GetMembers(ctx context.Context, projectID int) ([]*dto.ProjectMember, error)
 	CreateRoles(ctx context.Context, projectID int, roles []dto.ProjectRoleCreate) ([]*dto.ProjectRoleRes, error)
 	GetProjectRoles(ctx context.Context, projectID int) ([]*dto.ProjectRoleRes, error)
 	AppendPermissions(ctx context.Context, roleID int, permissions []string) error
+	HasPermission(ctx context.Context, projectID int, memberID int, permission string) (bool, error)
+
+	Delete(ctx context.Context, projectID int) error
+	Archive(ctx context.Context, projectID int) error
+	Unarchive(ctx context.Context, projectID int) error
 }

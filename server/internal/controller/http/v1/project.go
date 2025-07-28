@@ -145,6 +145,31 @@ func (r *projectRoutes) getCandidates(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewUserSimpleResFromDTOBatch(res))
 }
 
+// @Summary 	update project by id
+// @Security BearerAuth
+// @Tags 		/v1/project
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "project id"
+// @Param 		body body request.projectUpdateReq true " "
+// @Success 	200
+// @Failure		401 {object} response.ErrAPI "authentication required"
+// @Failure		403 {object} response.ErrAPI "access denied"
+// @Router 		/v1/projects/{id} [patch]
+func (r *projectRoutes) updateByID(c *gin.Context) {
+	userID := utils.Must(r.contextmanager.GetUserID(c))
+	projectID := utils.Must(strconv.Atoi(c.Param("id")))
+	data, err := request.BindProjectUpdateDTO(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if err := r.u.UpdateByID(c, projectID, userID, data); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
 func NewProjectRouter(
 	router *gin.RouterGroup,
 	u usecase.Project,
@@ -156,6 +181,7 @@ func NewProjectRouter(
 	g := router.Group("/projects")
 	g.POST(":id/members", authMW, r.addMembers)
 	g.GET("candidates", authMW, r.getCandidates)
+	g.PATCH(":id", authMW, r.updateByID)
 	g.GET(":id", authMW, r.getByID)
 	g.POST("", authMW, r.create)
 	g.GET("", authMW, r.getProjects)

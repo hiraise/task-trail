@@ -12,7 +12,7 @@ func (u *UseCase) GetCandidates(ctx context.Context, ownerID int, projectID int)
 			return nil, err
 		}
 	}
-	res, err := u.projectRepo.GetCandidates(ctx, ownerID, projectID)
+	res, err := u.projectRepo.GetCandidates(ctx, ownerID, projectID, OwnerRoleName)
 	if err != nil {
 		return nil, u.errHandler.InternalTrouble(
 			err,

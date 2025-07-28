@@ -6,7 +6,6 @@ type Project struct {
 	ID          int
 	Name        string
 	Description string
-	OwnerID     int
 	CreatedAt   time.Time
 	Members     []*UserEmailAndID
 }
@@ -38,6 +37,10 @@ type ProjectRoleCreate struct {
 	Name        string
 	Permissions []string
 }
+type ProjectUpdate struct {
+	Name        string
+	Description string
+}
 
 // response
 
@@ -52,4 +55,16 @@ type ProjectRes struct {
 type ProjectRoleRes struct {
 	ID   int
 	Name string
+}
+
+type ProjectMember struct {
+	ID       int
+	Email    string
+	Username *string
+	Role     string
+}
+
+type ProjectRights struct {
+	Role        string
+	Permissions []string
 }

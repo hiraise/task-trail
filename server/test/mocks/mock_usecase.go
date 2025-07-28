@@ -42,11 +42,12 @@ func (m *MockAuthentication) EXPECT() *MockAuthenticationMockRecorder {
 }
 
 // AutoRegister mocks base method.
-func (m *MockAuthentication) AutoRegister(ctx context.Context, email string) error {
+func (m *MockAuthentication) AutoRegister(ctx context.Context, email string) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AutoRegister", ctx, email)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // AutoRegister indicates an expected call of AutoRegister.
@@ -387,4 +388,18 @@ func (m *MockProject) GetList(ctx context.Context, data *dto.ProjectList) ([]*dt
 func (mr *MockProjectMockRecorder) GetList(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetList", reflect.TypeOf((*MockProject)(nil).GetList), ctx, data)
+}
+
+// UpdateByID mocks base method.
+func (m *MockProject) UpdateByID(ctx context.Context, projectID, userID int, data *dto.ProjectUpdate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateByID", ctx, projectID, userID, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateByID indicates an expected call of UpdateByID.
+func (mr *MockProjectMockRecorder) UpdateByID(ctx, projectID, userID, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateByID", reflect.TypeOf((*MockProject)(nil).UpdateByID), ctx, projectID, userID, data)
 }

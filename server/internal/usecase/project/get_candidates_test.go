@@ -46,7 +46,7 @@ func TestUseCase_GetCandidates(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().GetCandidates(gomock.Any(), gomock.Any(), gomock.Any()).Return(retVal, nil)
+				deps.projectRepo.EXPECT().GetCandidates(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(retVal, nil)
 				return uc
 			},
 			want:    retVal,
@@ -85,7 +85,7 @@ func TestUseCase_GetCandidates(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().GetCandidates(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
+				deps.projectRepo.EXPECT().GetCandidates(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc
 			},
 			wantErr:     true,

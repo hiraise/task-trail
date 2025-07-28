@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"task-trail/internal/customerrors"
 	"task-trail/internal/repo"
 	"task-trail/internal/usecase/auth"
@@ -33,6 +34,7 @@ func TestUseCaseAutoRegister(t *testing.T) {
 		name        string
 		uc          func(ctrl *gomock.Controller) *auth.UseCase
 		args        args
+		want        int
 		wantErr     bool
 		wantErrType customerrors.ErrType
 		wantErrMsg  string
@@ -47,6 +49,7 @@ func TestUseCaseAutoRegister(t *testing.T) {
 				deps.notificationRepo.EXPECT().SendAutoRegisterEmail(gomock.Any(), gomock.Any()).Return(nil)
 				return uc
 			},
+			want:    1,
 			wantErr: false,
 		},
 		{
@@ -93,7 +96,7 @@ func TestUseCaseAutoRegister(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := tt.uc(ctrl)
-			err := u.AutoRegister(tt.args.ctx, tt.args.email)
+			got, err := u.AutoRegister(tt.args.ctx, tt.args.email)
 			if tt.wantErr {
 				var e *customerrors.Err
 				if err == nil {
@@ -114,6 +117,9 @@ func TestUseCaseAutoRegister(t *testing.T) {
 				if err != nil {
 					t.Errorf("unexpected error: %v", err)
 				}
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("got = %v, want %v", got, tt.want)
 			}
 		})
 	}

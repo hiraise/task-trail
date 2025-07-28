@@ -33,6 +33,8 @@ func NewFromErrBase(err *customerrors.Err) *ErrAPI {
 		return New(http.StatusNotFound, "entity not found", err.ResponseData)
 	case customerrors.Ok:
 		return New(http.StatusOK, "", err.ResponseData)
+	case customerrors.ForbiddenErr:
+		return New(http.StatusForbidden, "access denied", err.ResponseData)
 	default:
 		return New(http.StatusInternalServerError, "internal error", err.ResponseData)
 	}

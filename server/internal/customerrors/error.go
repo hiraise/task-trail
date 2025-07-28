@@ -16,6 +16,7 @@ const (
 	ConflictErr
 	NotFoundErr
 	Ok
+	ForbiddenErr
 )
 
 const sourceCodeOffset = 2

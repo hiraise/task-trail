@@ -44,7 +44,7 @@ func TestUseCase_Create(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				mockTx(args.ctx, deps.txManager)
-				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(1, nil)
+				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(1, nil)
 				deps.projectRepo.EXPECT().CreateRoles(gomock.Any(), gomock.Any(), gomock.Any()).Return(testRoles, nil)
 				deps.projectRepo.EXPECT().AppendPermissions(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 				deps.projectRepo.EXPECT().AddMembers(gomock.Any(), gomock.Any()).Return(nil)
@@ -60,7 +60,7 @@ func TestUseCase_Create(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				mockTx(args.ctx, deps.txManager)
-				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(0, repo.ErrNotFound)
+				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, repo.ErrNotFound)
 				return uc
 			},
 			wantErr:     true,
@@ -74,7 +74,7 @@ func TestUseCase_Create(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				mockTx(args.ctx, deps.txManager)
-				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(0, repo.ErrInternal)
+				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(0, repo.ErrInternal)
 				return uc
 			},
 			wantErr:     true,
@@ -88,7 +88,7 @@ func TestUseCase_Create(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				mockTx(args.ctx, deps.txManager)
-				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(1, nil)
+				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(1, nil)
 				deps.projectRepo.EXPECT().CreateRoles(gomock.Any(), gomock.Any(), gomock.Any()).Return(testRoles, nil)
 				deps.projectRepo.EXPECT().AppendPermissions(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
 				return uc
@@ -104,7 +104,7 @@ func TestUseCase_Create(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				mockTx(args.ctx, deps.txManager)
-				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(1, nil)
+				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(1, nil)
 				deps.projectRepo.EXPECT().CreateRoles(gomock.Any(), gomock.Any(), gomock.Any()).Return([]*dto.ProjectRoleRes{}, nil)
 				return uc
 			},
@@ -119,7 +119,7 @@ func TestUseCase_Create(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				mockTx(args.ctx, deps.txManager)
-				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(1, nil)
+				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(1, nil)
 				deps.projectRepo.EXPECT().CreateRoles(gomock.Any(), gomock.Any(), gomock.Any()).Return(testRoles, nil)
 				deps.projectRepo.EXPECT().AppendPermissions(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
 				deps.projectRepo.EXPECT().AddMembers(gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
@@ -136,7 +136,7 @@ func TestUseCase_Create(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				mockTx(args.ctx, deps.txManager)
-				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(1, nil)
+				deps.projectRepo.EXPECT().Create(gomock.Any(), gomock.Any(), gomock.Any()).Return(1, nil)
 				deps.projectRepo.EXPECT().CreateRoles(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc
 			},
