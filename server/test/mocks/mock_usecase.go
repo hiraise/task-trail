@@ -346,10 +346,10 @@ func (mr *MockProjectMockRecorder) Create(ctx, data any) *gomock.Call {
 }
 
 // GetByID mocks base method.
-func (m *MockProject) GetByID(ctx context.Context, projectID, memberID int) (*dto.ProjectRes, error) {
+func (m *MockProject) GetByID(ctx context.Context, projectID, memberID int) (*dto.ProjectListRes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, projectID, memberID)
-	ret0, _ := ret[0].(*dto.ProjectRes)
+	ret0, _ := ret[0].(*dto.ProjectListRes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -376,10 +376,10 @@ func (mr *MockProjectMockRecorder) GetCandidates(ctx, ownerID, projectID any) *g
 }
 
 // GetList mocks base method.
-func (m *MockProject) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectRes, error) {
+func (m *MockProject) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectListRes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetList", ctx, data)
-	ret0, _ := ret[0].([]*dto.ProjectRes)
+	ret0, _ := ret[0].([]*dto.ProjectListRes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

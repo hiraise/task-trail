@@ -421,7 +421,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/response.projectRes"
+                                "$ref": "#/definitions/response.projectListRes"
                             }
                         }
                     },
@@ -526,7 +526,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/response.projectRes"
+                                "$ref": "#/definitions/response.userSimpleRes"
                             }
                         }
                     },
@@ -1033,7 +1033,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.projectRes": {
+        "response.projectListRes": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -1050,6 +1050,60 @@ const docTemplate = `{
                 },
                 "tasksCount": {
                     "type": "integer"
+                }
+            }
+        },
+        "response.projectRes": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rights": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.rights"
+                    }
+                },
+                "tasksCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.rights": {
+            "type": "object",
+            "properties": {
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.userSimpleRes": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         }

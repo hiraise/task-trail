@@ -7,7 +7,7 @@ import (
 	"task-trail/internal/usecase/dto"
 )
 
-func (u *UseCase) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectRes, error) {
+func (u *UseCase) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectListRes, error) {
 	retVal, err := u.projectRepo.GetList(ctx, data)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {

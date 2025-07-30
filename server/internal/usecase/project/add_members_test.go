@@ -33,7 +33,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			OwnerID:      1,
 			MemberEmails: []string{"test1@mail.com", "test2@mail.com", "test3@mail.com", "test4@mail.com"},
 		}}
-	testProject := &dto.ProjectRes{
+	testProject := &dto.ProjectListRes{
 		ID:          1,
 		Name:        "Test",
 		Description: "Test",

@@ -51,7 +51,7 @@ func (r *projectRoutes) create(c *gin.Context) {
 // @Tags 		/v1/project
 // @Accept 		json
 // @Produce 	json
-// @Success 	200 {array} response.projectRes
+// @Success 	200 {array} response.projectListRes
 // @Failure		404 {object} response.ErrAPI "user not found"
 // @Failure		401 {object} response.ErrAPI "authentication required"
 // @Router 		/v1/projects [get]
@@ -67,7 +67,7 @@ func (r *projectRoutes) getProjects(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewProjectResFromDTOBatch(res))
+	c.JSON(http.StatusOK, response.NewProjectListResFromDTOBatch(res))
 }
 
 // @Summary 	get project by id
@@ -89,7 +89,7 @@ func (r *projectRoutes) getByID(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewProjectResFromDTO(res))
+	c.JSON(http.StatusOK, response.NewProjecResFromDTO(res))
 }
 
 // @Summary 	add new members to project
@@ -126,7 +126,7 @@ func (r *projectRoutes) addMembers(c *gin.Context) {
 // @Accept 		json
 // @Produce 	json
 // @Param 		id query int false "project id"
-// @Success 	200 {array} response.projectRes
+// @Success 	200 {array} response.userSimpleRes
 // @Failure		401 {object} response.ErrAPI "authentication required"
 // @Failure		404 {object} response.ErrAPI "project not found"
 // @Router 		/v1/projects/candidates [get]

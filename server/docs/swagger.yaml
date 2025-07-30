@@ -113,7 +113,7 @@ definitions:
       id:
         type: integer
     type: object
-  response.projectRes:
+  response.projectListRes:
     properties:
       createdAt:
         type: string
@@ -125,6 +125,41 @@ definitions:
         type: string
       tasksCount:
         type: integer
+    type: object
+  response.projectRes:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      rights:
+        items:
+          $ref: '#/definitions/response.rights'
+        type: array
+      tasksCount:
+        type: integer
+    type: object
+  response.rights:
+    properties:
+      permissions:
+        items:
+          type: string
+        type: array
+      role:
+        type: string
+    type: object
+  response.userSimpleRes:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      username:
+        type: string
     type: object
 info:
   contact:
@@ -387,7 +422,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/response.projectRes'
+              $ref: '#/definitions/response.projectListRes'
             type: array
         "401":
           description: authentication required
@@ -554,7 +589,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/response.projectRes'
+              $ref: '#/definitions/response.userSimpleRes'
             type: array
         "401":
           description: authentication required

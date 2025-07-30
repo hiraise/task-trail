@@ -56,7 +56,7 @@ func (r *PgRepostitory) updateByID(ctx context.Context, table string, id int, da
 	}
 	values = append(values, id)
 
-	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = $%d;", table, strings.Join(rows, ", "), i)
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = $%d AND deleted_at IS NULL;", table, strings.Join(rows, ", "), i)
 
 	tag, err := r.getDb(ctx).Exec(ctx, query, values...)
 	if err != nil {

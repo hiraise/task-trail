@@ -643,10 +643,10 @@ func (mr *MockProjectRepositoryMockRecorder) Delete(ctx, projectID any) *gomock.
 }
 
 // GetByID mocks base method.
-func (m *MockProjectRepository) GetByID(ctx context.Context, projectID int) (*dto.ProjectRes, error) {
+func (m *MockProjectRepository) GetByID(ctx context.Context, projectID int) (*dto.ProjectListRes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, projectID)
-	ret0, _ := ret[0].(*dto.ProjectRes)
+	ret0, _ := ret[0].(*dto.ProjectListRes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -673,10 +673,10 @@ func (mr *MockProjectRepositoryMockRecorder) GetCandidates(ctx, ownerID, project
 }
 
 // GetList mocks base method.
-func (m *MockProjectRepository) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectRes, error) {
+func (m *MockProjectRepository) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectListRes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetList", ctx, data)
-	ret0, _ := ret[0].([]*dto.ProjectRes)
+	ret0, _ := ret[0].([]*dto.ProjectListRes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -685,6 +685,21 @@ func (m *MockProjectRepository) GetList(ctx context.Context, data *dto.ProjectLi
 func (mr *MockProjectRepositoryMockRecorder) GetList(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetList", reflect.TypeOf((*MockProjectRepository)(nil).GetList), ctx, data)
+}
+
+// GetMemberRights mocks base method.
+func (m *MockProjectRepository) GetMemberRights(ctx context.Context, projectID, memberID int) ([]*dto.ProjectRights, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMemberRights", ctx, projectID, memberID)
+	ret0, _ := ret[0].([]*dto.ProjectRights)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMemberRights indicates an expected call of GetMemberRights.
+func (mr *MockProjectRepositoryMockRecorder) GetMemberRights(ctx, projectID, memberID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMemberRights", reflect.TypeOf((*MockProjectRepository)(nil).GetMemberRights), ctx, projectID, memberID)
 }
 
 // GetMembers mocks base method.

@@ -27,7 +27,7 @@ func TestUseCase_GetList(t *testing.T) {
 			MemberID:   1,
 			IsArchived: false,
 		}}
-	retVal := []*dto.ProjectRes{
+	retVal := []*dto.ProjectListRes{
 		{ID: 1, Name: "Test", Description: "Test", TaskCount: 0},
 		{ID: 2, Name: "Test", Description: "Test", TaskCount: 10},
 	}
@@ -35,7 +35,7 @@ func TestUseCase_GetList(t *testing.T) {
 		name        string
 		uc          func(ctrl *gomock.Controller, args args) *project.UseCase
 		args        args
-		want        []*dto.ProjectRes
+		want        []*dto.ProjectListRes
 		wantErr     bool
 		wantErrType customerrors.ErrType
 		wantErrMsg  string

@@ -2,8 +2,6 @@ package project
 
 import (
 	"context"
-	"errors"
-	"task-trail/internal/repo"
 	"task-trail/internal/usecase/dto"
 )
 
@@ -13,10 +11,18 @@ func (u *UseCase) GetByID(ctx context.Context, projectID int, memberID int) (*dt
 	}
 	item, err := u.projectRepo.GetByID(ctx, projectID)
 	if err != nil {
-		if errors.Is(err, repo.ErrNotFound) {
-			return nil, u.errHandler.NotFound(err, "project not found", "projectID", projectID, "memberID", memberID)
-		}
 		return nil, u.errHandler.InternalTrouble(err, "failed to get project", "projectID", projectID, "memberID", memberID)
 	}
-	return item, nil
+	rights, err := u.projectRepo.GetMemberRights(ctx, projectID, memberID)
+	if err != nil {
+		return nil, u.errHandler.InternalTrouble(err, "failed to get member rights", "projectID", projectID, "memberID", memberID)
+	}
+	return &dto.ProjectRes{
+		ID:          item.ID,
+		TaskCount:   item.TaskCount,
+		Name:        item.Name,
+		Description: item.Description,
+		CreatedAt:   item.CreatedAt,
+		Rights:      rights,
+	}, nil
 }

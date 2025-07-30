@@ -1,6 +1,8 @@
 package dto
 
-import "time"
+import (
+	"time"
+)
 
 type Project struct {
 	ID          int
@@ -44,7 +46,7 @@ type ProjectUpdate struct {
 
 // response
 
-type ProjectRes struct {
+type ProjectListRes struct {
 	ID          int
 	Name        string
 	Description string
@@ -52,6 +54,14 @@ type ProjectRes struct {
 	TaskCount   int
 }
 
+type ProjectRes struct {
+	ID          int
+	Name        string
+	Description string
+	CreatedAt   time.Time
+	TaskCount   int
+	Rights      []*ProjectRights
+}
 type ProjectRoleRes struct {
 	ID   int
 	Name string

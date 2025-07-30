@@ -67,9 +67,9 @@ type ProjectRepository interface {
 	Create(ctx context.Context, name string, description string) (int, error)
 
 	// GetList retrieves a list of projects based on the provided filter criteria.
-	GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectRes, error)
+	GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectListRes, error)
 
-	GetByID(ctx context.Context, projectID int) (*dto.ProjectRes, error)
+	GetByID(ctx context.Context, projectID int) (*dto.ProjectListRes, error)
 
 	Update(ctx context.Context, projectID int, data *dto.ProjectUpdate) error
 
@@ -89,6 +89,7 @@ type ProjectRepository interface {
 	GetMembers(ctx context.Context, projectID int) ([]*dto.ProjectMember, error)
 	CreateRoles(ctx context.Context, projectID int, roles []dto.ProjectRoleCreate) ([]*dto.ProjectRoleRes, error)
 	GetProjectRoles(ctx context.Context, projectID int) ([]*dto.ProjectRoleRes, error)
+	GetMemberRights(ctx context.Context, projectID int, memberID int) ([]*dto.ProjectRights, error)
 	AppendPermissions(ctx context.Context, roleID int, permissions []string) error
 	HasPermission(ctx context.Context, projectID int, memberID int, permission string) (bool, error)
 
