@@ -68,6 +68,14 @@ func (r *PgRepostitory) updateByID(ctx context.Context, table string, id int, da
 	return nil
 }
 
+func (r *PgRepostitory) ensureInTransaction(ctx context.Context) error {
+	db := r.getDb(ctx)
+	if _, ok := db.(pgx.Tx); ok {
+		return nil
+	}
+	return repo.Wrap(fmt.Errorf("this operation can be execute only in transaction"), repo.ErrInternal)
+}
+
 func ScanRows[T any](rows pgx.Rows, f func(row pgx.Rows) (*T, error)) ([]*T, error) {
 	defer rows.Close()
 
