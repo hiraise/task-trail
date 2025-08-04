@@ -66,53 +66,41 @@ func (r *PgProjectRepository) GetList(ctx context.Context, data *dto.ProjectList
 	return retVal, nil
 }
 
+// AddMembers adds multiple members to projects with roles in a batch.
+// Note: This operation must be performed within a transaction to ensure data consistency.
 func (r *PgProjectRepository) AddMembers(ctx context.Context, data []*dto.ProjectAddMembersDB) error {
+	if err := r.ensureInTransaction(ctx); err != nil {
+		return err
+	}
 	var values []any
 	var items []string
 	index := 1
 	for _, item := range data {
-		values = append(values, item.ProjectID, item.MemberID, item.RoleID)
-		items = append(items, fmt.Sprintf("($%d, $%d, $%d)", index, index+1, index+2))
+		values = append(values, item.ProjectID, item.RoleID, item.MemberID)
+		items = append(items, fmt.Sprintf("($%d::int, $%d::int, $%d::int)", index, index+1, index+2))
 		index += 3
 	}
 	query := fmt.Sprintf(`
-		INSERT INTO project_role_user 
-		(project_id, user_id, role_id)
-		VALUES
-		%s
+		INSERT INTO project_role_user (project_id, role_id, user_id)
+		SELECT v.project_id, v.role_id, v.user_id
+		FROM 
+			( VALUES
+			%s
+			) AS v(project_id, role_id, user_id)
+		JOIN projects 	   p ON p.id = v.project_id AND p.deleted_at IS null
+		JOIN project_roles r ON r.id = v.role_id    AND r.deleted_at IS null
+		JOIN users    	   u ON u.id = v.user_id    AND u.deleted_at IS null
 		`, strings.Join(items, ",\n"))
-	_, err := r.getDb(ctx).Exec(ctx, query, values...)
+	res, err := r.getDb(ctx).Exec(ctx, query, values...)
 	if err != nil {
 		return r.handleError(err)
 	}
+	if int(res.RowsAffected()) != len(data) {
+		return repo.Wrap(fmt.Errorf("project, member or role does not exist"), repo.ErrNotFound)
+
+	}
 	return nil
 }
-
-// func (r *PgProjectRepository) GetOwned(ctx context.Context, projectID int, ownerID int, roleName string) (*dto.Project, error) {
-// 	query := `
-// 		SELECT id, name, description, created_at
-// 		FROM projects AS P
-// 		WHERE P.id = $1
-// 		AND EXISTS (
-// 			SELECT 1
-// 			FROM project_role_user AS PRU
-// 			JOIN project_roles AS PR ON PRU.role_id = PR.id
-// 			WHERE PRU.project_id = P.id
-// 			AND PRU.user_id = $2
-// 			AND PR.name = $3
-// 			AND PR.project_id = P.id
-//   	);`
-// 	var item dto.Project
-// 	err := r.getDb(ctx).
-// 		QueryRow(ctx, query, projectID, ownerID, roleName).
-// 		Scan(&item.ID, &item.Name, &item.Description, &item.CreatedAt)
-// 	if err != nil {
-// 		return nil, r.handleError(err)
-// 	}
-
-// 	return &item, nil
-
-// }
 
 func (r *PgProjectRepository) GetMembers(ctx context.Context, projectID int) ([]*dto.ProjectMember, error) {
 	query := `
