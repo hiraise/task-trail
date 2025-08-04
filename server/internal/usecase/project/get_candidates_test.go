@@ -45,7 +45,7 @@ func TestUseCase_GetCandidates(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
 				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetCandidates(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(retVal, nil)
 				return uc
 			},
@@ -53,30 +53,17 @@ func TestUseCase_GetCandidates(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "user not a member of project",
+			name: "user dont has required permission",
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
 				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrNotFound)
+				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(false, nil)
 				return uc
 			},
 			wantErr:     true,
-			wantErrType: customerrors.NotFoundErr,
-			wantErrMsg:  "project not found",
-		},
-		{
-			name: "failed to verify user membership",
-			args: testArgs,
-			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
-
-				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
-				return uc
-			},
-			wantErr:     true,
-			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "failed to verify user membership",
+			wantErrType: customerrors.ForbiddenErr,
+			wantErrMsg:  "user dont has required permission",
 		},
 		{
 			name: "failed to get candidates",
@@ -84,7 +71,7 @@ func TestUseCase_GetCandidates(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
 				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetCandidates(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc
 			},
