@@ -74,10 +74,10 @@ type ProjectRepository interface {
 
 	Update(ctx context.Context, projectID int, data *dto.ProjectUpdate) error
 
-	// GetCandidates returns a list of users who can be added to a porject.
-	// If projectID is 0, returns all candidates for the owner;
+	// GetCandidates returns a list of users from projects where user has passed permission.
+	// If projectID is 0, returns all candidates;
 	// otherwise, excludes users already in the specified project.
-	GetCandidates(ctx context.Context, ownerID int, projectID int, roleName string) ([]*dto.UserSimple, error)
+	GetCandidates(ctx context.Context, userID int, projectID int, permission string) ([]*dto.UserSimple, error)
 
 	// AddMembers adds new members to a project.
 	AddMembers(ctx context.Context, data []*dto.ProjectAddMembersDB) error

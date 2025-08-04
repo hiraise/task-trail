@@ -141,9 +141,9 @@ func (r *PgProjectRepository) GetMembers(ctx context.Context, projectID int) ([]
 	return members, nil
 }
 
-func (r *PgProjectRepository) GetCandidates(ctx context.Context, ownerID int, projectID int, roleName string) ([]*dto.UserSimple, error) {
+func (r *PgProjectRepository) GetCandidates(ctx context.Context, userID int, projectID int, permission string) ([]*dto.UserSimple, error) {
 	subquery := `u.id != $1;`
-	values := []any{ownerID, roleName}
+	values := []any{userID, permission}
 	if projectID != 0 {
 		subquery = `
 			u.id NOT IN (
@@ -155,17 +155,18 @@ func (r *PgProjectRepository) GetCandidates(ctx context.Context, ownerID int, pr
 		values = append(values, projectID)
 	}
 	query := fmt.Sprintf(`
-		SELECT DISTINCT u.id, u.email, u.username 
-		FROM project_role_user AS pru
-		JOIN users AS u ON u.id = pru.user_id 
-		WHERE 
-			pru.project_id IN (
-				SELECT pru.project_id 
-				FROM project_role_user AS pru 
-				JOIN project_roles AS pr ON pr.id = pru.role_id
-				JOIN projects AS p ON p.id = pru.project_id
-				WHERE pru.user_id = $1 AND pr.name = $2 AND p.deleted_at IS NULL
-			)
+		SELECT DISTINCT u.id, u.email, u.username
+		FROM users AS u
+		JOIN project_role_user AS pru ON u.id = pru.user_id AND u.deleted_at IS NULL
+		JOIN project_roles AS pr ON pr.id = pru.role_id AND pr.deleted_at IS NULL
+		JOIN projects AS p ON p.id = pru.project_id AND p.deleted_at IS NULL
+		WHERE pru.project_id IN (
+			SELECT DISTINCT pru.project_id
+			FROM project_role_user AS pru
+			JOIN project_role_permission AS prp ON prp.role_id = pru.role_id
+			JOIN permissions AS pms ON pms.id = prp.permission_id
+			WHERE pru.user_id = $1 AND pms.name = $2
+		)
 			AND
 			%s
 	`, subquery)
