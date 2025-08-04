@@ -29,6 +29,7 @@ type UserRepository interface {
 	// other fields are optional and only those provided will be updated.
 	Update(ctx context.Context, dto *dto.UserUpdate) error
 	GetIdsByEmails(ctx context.Context, emails []string) ([]*dto.UserEmailAndID, error)
+	Delete(ctx context.Context, userID int) error
 }
 type VerificationRepository interface {
 	Create(ctx context.Context, userID int, code int) error

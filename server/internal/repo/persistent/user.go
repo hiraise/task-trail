@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"task-trail/internal/usecase/dto"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -161,4 +162,11 @@ func (r *PgUserRepository) GetIdsByEmails(ctx context.Context, emails []string) 
 		return nil, r.handleError(err)
 	}
 	return retVal, nil
+}
+
+func (r *PgUserRepository) Delete(ctx context.Context, userID int) error {
+	if err := r.updateByID(ctx, "users", userID, map[string]any{"deleted_at": time.Now()}); err != nil {
+		return r.handleError(err)
+	}
+	return nil
 }
