@@ -26,12 +26,23 @@ func TestUseCase_GetByID(t *testing.T) {
 	ctx := context.Background()
 	testArgs :=
 		args{ctx: ctx, projectID: 1, memberID: 1}
-	retVal := dto.ProjectListRes{ID: 1, Name: "Test", Description: "Test", TaskCount: 0, CreatedAt: time.Now()}
+	dbProject := dto.ProjectListRes{ID: 1, Name: "Test", Description: "Test", TaskCount: 0, CreatedAt: time.Now()}
+	dbRights := []*dto.ProjectRights{{
+		Role: "test", Permissions: []string{"test"},
+	}}
+	want := dto.ProjectRes{
+		ID:          dbProject.ID,
+		Name:        dbProject.Name,
+		Description: dbProject.Description,
+		TaskCount:   dbProject.TaskCount,
+		CreatedAt:   dbProject.CreatedAt,
+		Rights:      dbRights,
+	}
 	tests := []struct {
 		name        string
 		uc          func(ctrl *gomock.Controller, args args) *project.UseCase
 		args        args
-		want        *dto.ProjectListRes
+		want        *dto.ProjectRes
 		wantErr     bool
 		wantErrType customerrors.ErrType
 		wantErrMsg  string
@@ -43,10 +54,11 @@ func TestUseCase_GetByID(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&retVal, nil)
+				deps.projectRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&dbProject, nil)
+				deps.projectRepo.EXPECT().GetMemberRights(gomock.Any(), gomock.Any(), gomock.Any()).Return(dbRights, nil)
 				return uc
 			},
-			want:    &retVal,
+			want:    &want,
 			wantErr: false,
 		},
 		{
@@ -76,20 +88,6 @@ func TestUseCase_GetByID(t *testing.T) {
 			wantErrMsg:  "failed to verify user membership",
 		},
 		{
-			name: "project not found`",
-			args: testArgs,
-			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
-
-				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(nil, repo.ErrNotFound)
-				return uc
-			},
-			wantErr:     true,
-			wantErrType: customerrors.NotFoundErr,
-			wantErrMsg:  "project not found",
-		},
-		{
 			name: "failed to get project",
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
@@ -102,6 +100,21 @@ func TestUseCase_GetByID(t *testing.T) {
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
 			wantErrMsg:  "failed to get project",
+		},
+		{
+			name: "failed to get member rights",
+			args: testArgs,
+			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
+
+				uc, deps := mockUseCase(ctrl)
+				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&dbProject, nil)
+				deps.projectRepo.EXPECT().GetMemberRights(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
+				return uc
+			},
+			wantErr:     true,
+			wantErrType: customerrors.InternalErr,
+			wantErrMsg:  "failed to get member rights",
 		},
 	}
 	for _, tt := range tests {

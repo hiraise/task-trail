@@ -346,10 +346,10 @@ func (mr *MockProjectMockRecorder) Create(ctx, data any) *gomock.Call {
 }
 
 // GetByID mocks base method.
-func (m *MockProject) GetByID(ctx context.Context, projectID, memberID int) (*dto.ProjectListRes, error) {
+func (m *MockProject) GetByID(ctx context.Context, projectID, memberID int) (*dto.ProjectRes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByID", ctx, projectID, memberID)
-	ret0, _ := ret[0].(*dto.ProjectListRes)
+	ret0, _ := ret[0].(*dto.ProjectRes)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

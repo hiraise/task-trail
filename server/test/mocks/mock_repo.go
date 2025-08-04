@@ -109,6 +109,20 @@ func (mr *MockUserRepositoryMockRecorder) CreateBulk(ctx, data any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBulk", reflect.TypeOf((*MockUserRepository)(nil).CreateBulk), ctx, data)
 }
 
+// Delete mocks base method.
+func (m *MockUserRepository) Delete(ctx context.Context, userID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockUserRepositoryMockRecorder) Delete(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserRepository)(nil).Delete), ctx, userID)
+}
+
 // EmailIsTaken mocks base method.
 func (m *MockUserRepository) EmailIsTaken(ctx context.Context, email string) (bool, error) {
 	m.ctrl.T.Helper()

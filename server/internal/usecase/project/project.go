@@ -17,6 +17,7 @@ const PROJECT_SET_ROLES string = "PROJECT_SET_ROLES"
 const PROJECT_EDIT string = "PROJECT_EDIT"
 const PROJECT_ARCHIVE string = "PROJECT_ARCHIVE"
 const PROJECT_DELETE string = "PROJECT_DELETE"
+const PROJECT_GET_CANDIDATES string = "PROJECT_GET_CANDIDATES"
 
 type UseCase struct {
 	txManager        repo.TxManager
