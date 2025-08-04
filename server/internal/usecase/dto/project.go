@@ -71,7 +71,7 @@ type ProjectMember struct {
 	ID       int
 	Email    string
 	Username *string
-	Role     string
+	Roles    []string
 }
 
 type ProjectRights struct {

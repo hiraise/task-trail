@@ -104,29 +104,38 @@ func (r *PgProjectRepository) AddMembers(ctx context.Context, data []*dto.Projec
 
 func (r *PgProjectRepository) GetMembers(ctx context.Context, projectID int) ([]*dto.ProjectMember, error) {
 	query := `
-		SELECT DISTINCT U.id, U.email, U.username, PR.name
-		FROM project_role_user AS PRU
-		JOIN projects AS p ON p.id = pru.project_id
-		JOIN project_roles AS PR ON PR.id = PRU.role_id
-		JOIN users AS U ON U.id = PRU.user_id
-		WHERE PRU.project_id = $1 AND p.deleted_at IS NULL;
+		SELECT DISTINCT u.id, u.email, u.username, pr.name
+		FROM project_role_user AS pru
+		JOIN projects 	   AS p ON p.id = pru.project_id AND p.deleted_at IS NULL
+		JOIN project_roles AS pr ON pr.id = pru.role_id AND pr.deleted_at IS NULL
+		JOIN users 		   AS u ON u.id = pru.user_id AND u.deleted_at IS NULL
+		WHERE pru.project_id = $1;
 		`
 	rows, err := r.getDb(ctx).Query(ctx, query, projectID)
 	if err != nil {
 		return nil, r.handleError(err)
 	}
-
-	members, err := ScanRows(rows, func(r pgx.Rows) (*dto.ProjectMember, error) {
+	items := make(map[int]*dto.ProjectMember)
+	_, err = ScanRows(rows, func(r pgx.Rows) (*any, error) {
 		var item dto.ProjectMember
-		if err := r.Scan(&item.ID, &item.Email, &item.Username, &item.Role); err != nil {
+		var role string
+		if err := r.Scan(&item.ID, &item.Email, &item.Username, &role); err != nil {
 			return nil, err
 		}
-		return &item, nil
+		if existing, found := items[item.ID]; found {
+			existing.Roles = append(existing.Roles, role)
+		} else {
+			item.Roles = []string{role}
+			items[item.ID] = &item
+
+		}
+		return nil, nil
 	})
 	if err != nil {
 		return nil, r.handleError(err)
 	}
-	return members, nil
+
+	return slices.Collect(maps.Values(items)), nil
 }
 
 func (r *PgProjectRepository) GetCandidates(ctx context.Context, userID int, projectID int, permission string) ([]*dto.UserSimple, error) {
