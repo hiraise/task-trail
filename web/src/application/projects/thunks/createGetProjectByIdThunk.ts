@@ -1,5 +1,6 @@
-import { AppErrorProps } from "@/shared/errors/types";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+
+import { AppErrorProps } from "@/shared/errors/types";
 import { handleThunkError } from "@/shared/utils/handleThunkError";
 import { GetProjectById } from "@/domain/project/project.contracts";
 import { RootState } from "@/infrastructure/redux/store";

@@ -1,5 +1,5 @@
 import { Project } from "@/domain/project/project.entity";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type ProjectState = {
   project: Project | null;
@@ -17,7 +17,7 @@ const projectSlice = createSlice({
   name: "project",
   initialState,
   reducers: {
-    setProject(state, action) {
+    setProject(state, action: PayloadAction<Project>) {
       state.project = action.payload;
     },
     clearProject(state) {

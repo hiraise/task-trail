@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import {
+  editProjectThunk,
   getProjectByIdThunk,
   getProjectCandidatesThunk,
   getProjectsThunk,
@@ -15,6 +16,7 @@ import { Project } from "@/domain/project/project.entity";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { clearProject } from "../slices/projectSlice";
 import { User } from "@/domain/user/user.entity";
+import { EditProject } from "@/domain/project/project.contracts";
 
 type UseProjectsResult = {
   createProject: (payload: ProjectPayload) => Promise<Project | undefined>;
@@ -22,6 +24,7 @@ type UseProjectsResult = {
   getCandidates: (projectId?: number) => Promise<User[] | undefined>;
   getProjectById: (id: number) => Promise<void>;
   clearCurrentProject: () => void;
+  editProject: EditProject;
   isLoading: boolean;
   projects: Project[];
 };
@@ -93,12 +96,29 @@ export const useProjects = (): UseProjectsResult => {
     dispatch(clearProject());
   }, [dispatch]);
 
+  const editProject: EditProject = useCallback(
+    async (id, payload) => {
+      setIsLoading(true);
+      try {
+        await dispatch(editProjectThunk({ id, payload })).unwrap();
+        toast.success("Project updated successfully");
+      } catch (error) {
+        clientLogger.error("useProjects editProject error:", { error });
+        toast.error("Failed to edit project. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch]
+  );
+
   return {
     createProject,
     getProjects,
     getCandidates,
     getProjectById,
     clearCurrentProject,
+    editProject,
     isLoading,
     projects,
   };

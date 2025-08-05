@@ -3,6 +3,7 @@ import { projectService } from "@/infrastructure/api/projectService";
 import { createNewProjectThunk } from "./createNewProjectThunk";
 import { createGetProjectByIdThunk } from "./createGetProjectByIdThunk";
 import { createGetProjectCandidatesThunk } from "./createGetProjectCandidatesThunk";
+import { createEditProjectThunk } from "./createEditProjectThunk";
 
 export const getProjectsThunk = createGetProjectsThunk(
   projectService.getProjects
@@ -16,4 +17,7 @@ export const newProjectThunk = createNewProjectThunk(
 );
 export const getProjectCandidatesThunk = createGetProjectCandidatesThunk(
   projectService.getProjectCandidates
+);
+export const editProjectThunk = createEditProjectThunk(
+  projectService.editProject
 );

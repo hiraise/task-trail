@@ -7,3 +7,8 @@ export type ProjectPayload = {
 export type AddMembersPayload = {
   emails: string[];
 };
+
+export type EditProjectPayload = {
+  description?: string;
+  name?: string;
+};

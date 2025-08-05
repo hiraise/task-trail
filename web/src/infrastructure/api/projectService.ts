@@ -4,6 +4,7 @@ import {
   ProjectService,
   AddMembers,
   GetProjectCandidates,
+  EditProject,
 } from "@/domain/project/project.contracts";
 import axiosClient from "./axiosClient";
 import { API_ROUTES } from "../config/apiRoutes";
@@ -87,10 +88,20 @@ const getProjectCandidates: GetProjectCandidates = async (id?: number) => {
   }
 };
 
+const editProject: EditProject = async (id, payload) => {
+  try {
+    return axiosClient.patch(API_ROUTES.PROJECT_BY_ID(id), payload);
+  } catch (error) {
+    clientLogger.error("Edit project error", { error, id, payload });
+    throw new AppError(AppErrorType.SERVER, "Failed to edit project");
+  }
+};
+
 export const projectService: ProjectService = {
   getProjects: getProjects,
   newProject: newProject,
   getProjectById: getProjectById,
   addMembers: addMembers,
   getProjectCandidates: getProjectCandidates,
+  editProject: editProject,
 };

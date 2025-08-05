@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 
@@ -10,6 +11,7 @@ import { Input, InputLabel, Textarea } from "@/presentation/ui/Input";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
+import { useProjects } from "@/application/projects/hooks/useProjects";
 
 const texts = {
   title: "Редактировать проект",
@@ -24,28 +26,39 @@ const texts = {
 type FormValues = {
   name: string;
   description?: string;
-  projectId?: number | undefined;
 };
 
 export default function EditProjectPage() {
   const project = useAppSelector((state) => state.project.project);
 
+  const { editProject } = useProjects();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
+    reset,
   } = useForm<FormValues>({
     mode: "onChange",
     defaultValues: {
-      name: project?.name || "",
-      description: project?.description || "",
-      projectId: project?.id || undefined,
+      name: project?.name,
+      description: project?.description,
     },
   });
 
+  // Reset form values when project changes
+  useEffect(() => {
+    if (project) {
+      reset({ name: project?.name, description: project?.description });
+    }
+  }, [project, reset]);
+
   const submitHandler = async (data: FormValues) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate a network request
-    console.log("Submitted data:", data);
+    if (!project) return;
+    await editProject(project.id, {
+      name: data.name,
+      description: data.description,
+    });
   };
 
   return (
