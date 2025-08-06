@@ -1,4 +1,5 @@
-.PHONY: swag, mock, test, testcov
+include .env
+.PHONY: swag, mock, test, testcov, migrate-down, migrate-up
 
 swag:
 	swag init -g ./internal/controller/http/router.go
@@ -21,3 +22,8 @@ testcov:
 	go test -v -race -covermode atomic -coverprofile=coverage.out ./internal/... --tags=integration
 	go tool cover -html=coverage.out 
 
+migrate-up:
+	migrate -database ${PG_CONNECTION_STRING}\?sslmode=disable -path ./migrations up 
+
+migrate-down:
+	migrate -database ${PG_CONNECTION_STRING}\?sslmode=disable -path ./migrations down 1
