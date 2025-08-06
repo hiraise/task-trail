@@ -193,6 +193,27 @@ func (r *projectRoutes) GetMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, response.ProjectMemberResFromDTOBatch(res))
 }
 
+// @Summary 	delete project by id
+// @Security BearerAuth
+// @Tags 		/v1/project
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "project id"
+// @Success 	200
+// @Failure		401 {object} response.ErrAPI "authentication required"
+// @Failure		403 {object} response.ErrAPI "access denied"
+// @Failure		404 {object} response.ErrAPI "project not found"
+// @Router 		/v1/projects/{id} [patch]
+func (r *projectRoutes) deleteByID(c *gin.Context) {
+	userID := utils.Must(r.contextmanager.GetUserID(c))
+	projectID := utils.Must(strconv.Atoi(c.Param("id")))
+	if err := r.u.Delete(c, projectID, userID); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
+
 func NewProjectRouter(
 	router *gin.RouterGroup,
 	u usecase.Project,
@@ -205,8 +226,10 @@ func NewProjectRouter(
 	g.POST(":id/members", authMW, r.addMembers)
 	g.GET(":id/members", authMW, r.GetMembers)
 	g.GET("candidates", authMW, r.getCandidates)
+	g.DELETE(":id", authMW, r.deleteByID)
 	g.PATCH(":id", authMW, r.updateByID)
 	g.GET(":id", authMW, r.getByID)
+
 	g.POST("", authMW, r.create)
 	g.GET("", authMW, r.getProjects)
 }

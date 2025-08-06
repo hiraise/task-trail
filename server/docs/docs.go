@@ -608,7 +608,7 @@ const docTemplate = `{
                 "tags": [
                     "/v1/project"
                 ],
-                "summary": "update project by id",
+                "summary": "delete project by id",
                 "parameters": [
                     {
                         "type": "integer",
@@ -616,15 +616,6 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": " ",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.projectUpdateReq"
-                        }
                     }
                 ],
                 "responses": {
@@ -639,6 +630,12 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "access denied",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "project not found",
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }

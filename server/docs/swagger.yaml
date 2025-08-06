@@ -524,12 +524,6 @@ paths:
         name: id
         required: true
         type: integer
-      - description: ' '
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/request.projectUpdateReq'
       produces:
       - application/json
       responses:
@@ -543,9 +537,13 @@ paths:
           description: access denied
           schema:
             $ref: '#/definitions/response.ErrAPI'
+        "404":
+          description: project not found
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
       security:
       - BearerAuth: []
-      summary: update project by id
+      summary: delete project by id
       tags:
       - /v1/project
   /v1/projects/{id}/members:
