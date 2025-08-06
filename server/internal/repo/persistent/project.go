@@ -79,6 +79,9 @@ func (r *PgProjectRepository) AddMembers(ctx context.Context, data []*dto.Projec
 	if err := r.ensureInTransaction(ctx); err != nil {
 		return err
 	}
+	if err := ValidateSliceIsNotNil(&data, "data"); err != nil {
+		return err
+	}
 
 	for _, i := range data {
 		if err := ValidateIDsMap(map[string]int{
@@ -86,7 +89,7 @@ func (r *PgProjectRepository) AddMembers(ctx context.Context, data []*dto.Projec
 			"userID":    i.UserID,
 			"roleID":    i.RoleID,
 		}); err != nil {
-			return nil
+			return err
 		}
 	}
 
@@ -294,8 +297,11 @@ func (r *PgProjectRepository) CreateRoles(ctx context.Context, projectID int, ro
 }
 
 func (r *PgProjectRepository) AppendPermissions(ctx context.Context, roleID int, permissions []string) error {
-	if permissions == nil {
-
+	if err := ValidateSliceIsNotNil(&permissions, "permissions"); err != nil {
+		return err
+	}
+	if err := ValidateID(roleID, "roleID"); err != nil {
+		return err
 	}
 	query := `
 		INSERT INTO project_role_permission (role_id, permission_id)
@@ -315,6 +321,9 @@ func (r *PgProjectRepository) AppendPermissions(ctx context.Context, roleID int,
 }
 
 func (r *PgProjectRepository) GetProjectRoles(ctx context.Context, projectID int) ([]*dto.ProjectRoleRes, error) {
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return nil, err
+	}
 	query := `
 		SELECT pr.id, pr.name
 		FROM project_roles AS pr
@@ -342,6 +351,12 @@ func (r *PgProjectRepository) GetProjectRoles(ctx context.Context, projectID int
 }
 
 func (r *PgProjectRepository) HasPermission(ctx context.Context, projectID int, userID int, permission string) (bool, error) {
+	if err := ValidateIDsMap(map[string]int{
+		"projectID": projectID,
+		"userID":    userID,
+	}); err != nil {
+		return false, err
+	}
 	query := `
 		SELECT EXISTS (
 			SELECT 1
@@ -363,6 +378,12 @@ func (r *PgProjectRepository) HasPermission(ctx context.Context, projectID int, 
 }
 
 func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int, userID int) ([]*dto.ProjectRights, error) {
+	if err := ValidateIDsMap(map[string]int{
+		"projectID": projectID,
+		"userID":    userID,
+	}); err != nil {
+		return nil, err
+	}
 	query := `
 		SELECT p.name, pr.name
 		FROM project_role_user AS pru
@@ -422,6 +443,9 @@ func (r *PgProjectRepository) Update(ctx context.Context, projectID int, data *d
 }
 
 func (r *PgProjectRepository) Delete(ctx context.Context, projectID int) error {
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return err
+	}
 	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"deleted_at": time.Now()}); err != nil {
 		return r.handleError(err)
 	}
@@ -429,17 +453,28 @@ func (r *PgProjectRepository) Delete(ctx context.Context, projectID int) error {
 }
 
 func (r *PgProjectRepository) DeleteRoles(ctx context.Context, roleIDs []int) error {
+	if err := r.ensureInTransaction(ctx); err != nil {
+		return err
+	}
+
+	if err := ValidateSliceIsNotNil(&roleIDs, "roleIDs"); err != nil {
+		return err
+	}
 	query := `
 		UPDATE project_roles
 		SET deleted_at = $1
-		WHERE id = ANY ($2);
+		WHERE id = ANY ($2) AND deleted_at IS NULL;
 	`
-	_, err := r.getDb(ctx).Exec(ctx, query, time.Now(), roleIDs)
+	tag, err := r.getDb(ctx).Exec(ctx, query, time.Now(), roleIDs)
 	if err != nil {
 		return r.handleError(err)
 	}
+	if tag.RowsAffected() == 0 {
+		return repo.ErrNotFound
+	}
 	return nil
 }
+
 func (r *PgProjectRepository) Archive(ctx context.Context, projectID int) error {
 	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"archived_at": time.Now()}); err != nil {
 		return r.handleError(err)
