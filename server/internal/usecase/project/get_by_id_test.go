@@ -53,7 +53,7 @@ func TestUseCase_GetByID(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
 				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&dbProject, nil)
 				deps.projectRepo.EXPECT().GetMemberRights(gomock.Any(), gomock.Any(), gomock.Any()).Return(dbRights, nil)
 				return uc
@@ -67,7 +67,7 @@ func TestUseCase_GetByID(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
 				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrNotFound)
+				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrNotFound)
 				return uc
 			},
 			wantErr:     true,
@@ -80,7 +80,7 @@ func TestUseCase_GetByID(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
 				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
+				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
 				return uc
 			},
 			wantErr:     true,
@@ -93,7 +93,7 @@ func TestUseCase_GetByID(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
 				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc
 			},
@@ -107,7 +107,7 @@ func TestUseCase_GetByID(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
 				uc, deps := mockUseCase(ctrl)
-				deps.projectRepo.EXPECT().IsMember(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&dbProject, nil)
 				deps.projectRepo.EXPECT().GetMemberRights(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc

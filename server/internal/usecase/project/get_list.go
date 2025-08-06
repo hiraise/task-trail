@@ -11,9 +11,9 @@ func (u *UseCase) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.Pr
 	retVal, err := u.projectRepo.GetList(ctx, data)
 	if err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
-			return nil, u.errHandler.NotFound(err, "member not found", "memberID", data.MemberID)
+			return nil, u.errHandler.NotFound(err, "member not found", "memberID", data.UserID)
 		}
-		return nil, u.errHandler.InternalTrouble(err, "failed to get projects list", "memberID", data.MemberID)
+		return nil, u.errHandler.InternalTrouble(err, "failed to get projects list", "memberID", data.UserID)
 	}
 	return retVal, nil
 }

@@ -24,7 +24,9 @@ var defaultRoles = map[string]dto.ProjectRoleCreate{
 	},
 }
 
-var defRolesSlice = slices.Collect(maps.Values(defaultRoles))
+var defRolesNamesSlice = slices.Collect(maps.Keys(defaultRoles))
+
+// var defRolesSlice = slices.Collect(maps.Values(defaultRoles))
 
 func (u *UseCase) Create(ctx context.Context, data *dto.ProjectCreate) (int, error) {
 	var id int
@@ -38,7 +40,7 @@ func (u *UseCase) Create(ctx context.Context, data *dto.ProjectCreate) (int, err
 			return u.errHandler.InternalTrouble(err, "failed to create project", "ownerID", data.OwnerID)
 		}
 
-		createdRoles, err := u.projectRepo.CreateRoles(ctx, id, defRolesSlice)
+		createdRoles, err := u.projectRepo.CreateRoles(ctx, id, defRolesNamesSlice)
 		if err != nil {
 			return u.errHandler.InternalTrouble(err, "failed to create default default project roles")
 		}
@@ -62,7 +64,7 @@ func (u *UseCase) Create(ctx context.Context, data *dto.ProjectCreate) (int, err
 		}
 		// set owner
 		if err := u.projectRepo.AddMembers(ctx,
-			[]*dto.ProjectAddMembersDB{{MemberID: data.OwnerID, ProjectID: id, RoleID: role.ID}}); err != nil {
+			[]*dto.ProjectAddMembersDB{{UserID: data.OwnerID, ProjectID: id, RoleID: role.ID}}); err != nil {
 			return u.errHandler.InternalTrouble(
 				err,
 				"failed to add owner to project",

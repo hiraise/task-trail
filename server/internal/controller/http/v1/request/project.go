@@ -35,7 +35,7 @@ func BindProjectUpdateDTO(c *gin.Context) (*dto.ProjectUpdate, error) {
 	return &dto.ProjectUpdate{Name: body.Name, Description: body.Description}, nil
 }
 func BindProjectListDTO(c *gin.Context, userID int) (*dto.ProjectList, error) {
-	return &dto.ProjectList{MemberID: userID}, nil
+	return &dto.ProjectList{UserID: userID}, nil
 }
 
 func BindProjectAddMembersDTO(c *gin.Context, userID int, projectID int) (*dto.ProjectAddMembers, error) {

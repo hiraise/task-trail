@@ -19,12 +19,12 @@ type ProjectCreate struct {
 }
 
 type ProjectList struct {
-	MemberID   int
+	UserID     int
 	IsArchived bool
 }
 
 type ProjectAddMembersDB struct {
-	MemberID  int
+	UserID    int
 	ProjectID int
 	RoleID    int
 }

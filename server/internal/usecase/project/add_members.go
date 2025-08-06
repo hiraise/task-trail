@@ -45,7 +45,7 @@ func (u *UseCase) AddMembers(ctx context.Context, data *dto.ProjectAddMembers) e
 
 		var items []*dto.ProjectAddMembersDB
 		for _, m := range candidates {
-			items = append(items, &dto.ProjectAddMembersDB{MemberID: m.ID, RoleID: role.ID, ProjectID: data.ProjectID})
+			items = append(items, &dto.ProjectAddMembersDB{UserID: m.ID, RoleID: role.ID, ProjectID: data.ProjectID})
 		}
 
 		if err := u.projectRepo.AddMembers(ctx, items); err != nil {

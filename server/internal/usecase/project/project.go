@@ -48,7 +48,7 @@ func New(
 }
 
 func (u *UseCase) CheckMembership(ctx context.Context, projectID int, memberID int) error {
-	if err := u.projectRepo.IsMember(ctx, projectID, memberID); err != nil {
+	if err := u.projectRepo.VerifyMembership(ctx, projectID, memberID); err != nil {
 		if errors.Is(err, repo.ErrNotFound) {
 			return u.errHandler.NotFound(
 				err,

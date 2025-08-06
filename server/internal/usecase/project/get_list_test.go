@@ -24,7 +24,7 @@ func TestUseCase_GetList(t *testing.T) {
 	ctx := context.Background()
 	testArgs :=
 		args{ctx: ctx, data: &dto.ProjectList{
-			MemberID:   1,
+			UserID:     1,
 			IsArchived: false,
 		}}
 	retVal := []*dto.ProjectListRes{
