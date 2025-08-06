@@ -25,6 +25,13 @@ type projectRes struct {
 	Rights      []*rights `json:"rights"`
 }
 
+type projectMemberRes struct {
+	ID       int      `json:"id"`
+	Email    string   `json:"email"`
+	Username *string  `json:"username"`
+	Roles    []string `json:"roles"`
+}
+
 type projectCreateRes struct {
 	ID int `json:"id"`
 }
@@ -67,4 +74,24 @@ func NewProjecResFromDTO(data *dto.ProjectRes) *projectRes {
 		TaskCount:   data.TaskCount,
 		Rights:      r,
 	}
+}
+
+func ProjectMemberResFromDTO(data *dto.ProjectMember) *projectMemberRes {
+	return &projectMemberRes{
+		ID:       data.ID,
+		Email:    data.Email,
+		Username: data.Username,
+		Roles:    data.Roles,
+	}
+}
+
+func ProjectMemberResFromDTOBatch(data []*dto.ProjectMember) []*projectMemberRes {
+	if len(data) == 0 {
+		return []*projectMemberRes{}
+	}
+	var retVal []*projectMemberRes
+	for _, v := range data {
+		retVal = append(retVal, ProjectMemberResFromDTO(v))
+	}
+	return retVal
 }
