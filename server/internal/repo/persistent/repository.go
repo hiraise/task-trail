@@ -92,3 +92,32 @@ func ScanRows[T any](rows pgx.Rows, f func(row pgx.Rows) (*T, error)) ([]*T, err
 	}
 	return retVal, nil
 }
+
+func ValidateIsNotNil[T any](v *T) error {
+	if v == nil {
+		return repo.Wrap(fmt.Errorf("value is nil"), repo.ErrValidation)
+	}
+	return nil
+}
+
+func ValidateSliceIsNotNil[T any](v *[]T, name string) error {
+	if len(*v) == 0 {
+		return repo.Wrap(fmt.Errorf("%s slice is nil or empty", name), repo.ErrValidation)
+	}
+	return nil
+}
+
+func ValidateID(v int, name string) error {
+	if v <= 0 {
+		return repo.Wrap(fmt.Errorf("%s is below or equal 0", name), repo.ErrValidation)
+	}
+	return nil
+}
+func ValidateIDsMap(data map[string]int) error {
+	for k, v := range data {
+		if v <= 0 {
+			return repo.Wrap(fmt.Errorf("%s is below or equal 0", k), repo.ErrValidation)
+		}
+	}
+	return nil
+}

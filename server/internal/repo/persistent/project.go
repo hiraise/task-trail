@@ -37,6 +37,13 @@ func (r *PgProjectRepository) Create(ctx context.Context, name string, descripti
 }
 
 func (r *PgProjectRepository) GetList(ctx context.Context, data *dto.ProjectList) ([]*dto.ProjectListRes, error) {
+	if err := ValidateIsNotNil(data); err != nil {
+		return nil, err
+	}
+	if err := ValidateID(data.UserID, "userID"); err != nil {
+		return nil, err
+	}
+
 	query := `
 		SELECT P.id, P.name, P.description, P.created_at, COUNT(T.id)
 		FROM projects as P 
@@ -44,7 +51,7 @@ func (r *PgProjectRepository) GetList(ctx context.Context, data *dto.ProjectList
 		WHERE P.id IN (SELECT DISTINCT project_id FROM project_role_user WHERE user_id = $1) AND p.deleted_at IS NULL
 		GROUP BY (P.id)
 	`
-	rows, err := r.getDb(ctx).Query(ctx, query, data.MemberID)
+	rows, err := r.getDb(ctx).Query(ctx, query, data.UserID)
 	if err != nil {
 		return nil, r.handleError(err)
 	}
@@ -68,17 +75,26 @@ func (r *PgProjectRepository) GetList(ctx context.Context, data *dto.ProjectList
 	return retVal, nil
 }
 
-// AddMembers adds multiple members to projects with roles in a batch.
-// Note: This operation must be performed within a transaction to ensure data consistency.
 func (r *PgProjectRepository) AddMembers(ctx context.Context, data []*dto.ProjectAddMembersDB) error {
 	if err := r.ensureInTransaction(ctx); err != nil {
 		return err
 	}
+
+	for _, i := range data {
+		if err := ValidateIDsMap(map[string]int{
+			"projectID": i.ProjectID,
+			"userID":    i.UserID,
+			"roleID":    i.RoleID,
+		}); err != nil {
+			return nil
+		}
+	}
+
 	var values []any
 	var items []string
 	index := 1
 	for _, item := range data {
-		values = append(values, item.ProjectID, item.RoleID, item.MemberID)
+		values = append(values, item.ProjectID, item.RoleID, item.UserID)
 		items = append(items, fmt.Sprintf("($%d::int, $%d::int, $%d::int)", index, index+1, index+2))
 		index += 3
 	}
@@ -105,6 +121,9 @@ func (r *PgProjectRepository) AddMembers(ctx context.Context, data []*dto.Projec
 }
 
 func (r *PgProjectRepository) GetMembers(ctx context.Context, projectID int) ([]*dto.ProjectMember, error) {
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return nil, err
+	}
 	query := `
 		SELECT DISTINCT u.id, u.email, u.username, pr.name
 		FROM project_role_user AS pru
@@ -140,10 +159,13 @@ func (r *PgProjectRepository) GetMembers(ctx context.Context, projectID int) ([]
 	return slices.Collect(maps.Values(items)), nil
 }
 
-func (r *PgProjectRepository) GetCandidates(ctx context.Context, userID int, projectID int, permission string) ([]*dto.UserSimple, error) {
+func (r *PgProjectRepository) GetCandidates(ctx context.Context, userID int, permission string, projectID int) ([]*dto.UserSimple, error) {
+	if err := ValidateID(userID, "userID"); err != nil {
+		return nil, err
+	}
 	subquery := `u.id != $1;`
 	values := []any{userID, permission}
-	if projectID != 0 {
+	if projectID > 0 {
 		subquery = `
 			u.id NOT IN (
 				SELECT DISTINCT user_id
@@ -190,6 +212,9 @@ func (r *PgProjectRepository) GetCandidates(ctx context.Context, userID int, pro
 }
 
 func (r *PgProjectRepository) GetByID(ctx context.Context, projectID int) (*dto.ProjectListRes, error) {
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return nil, err
+	}
 	query := `
 		SELECT P.id, P.name, P.description, P.created_at, COUNT(T.ID)
 		FROM projects as P
@@ -205,12 +230,21 @@ func (r *PgProjectRepository) GetByID(ctx context.Context, projectID int) (*dto.
 
 }
 
-func (r *PgProjectRepository) IsMember(ctx context.Context, projectID int, memberID int) error {
+func (r *PgProjectRepository) VerifyMembership(ctx context.Context, projectID int, userID int) error {
+	if err := ValidateIDsMap(map[string]int{
+		"projectID": projectID,
+		"userID":    userID,
+	}); err != nil {
+		return err
+	}
+
 	query := `SELECT 1 
 	FROM project_role_user AS pru
-	JOIN projects AS p ON p.id = pru.project_id
-	WHERE pru.project_id = $1 AND pru.user_id = $2 AND p.deleted_at IS NULL`
-	tag, err := r.getDb(ctx).Exec(ctx, query, projectID, memberID)
+	JOIN projects AS p ON p.id = pru.project_id AND p.deleted_at IS NULL
+	JOIN users AS u ON u.id = pru.user_id AND u.deleted_at IS NULL
+	JOIN project_roles as pr ON pr.id = pru.role_id AND pr.deleted_at IS NULL
+	WHERE pru.project_id = $1 AND pru.user_id = $2 `
+	tag, err := r.getDb(ctx).Exec(ctx, query, projectID, userID)
 	if err != nil {
 		return r.handleError(err)
 	}
@@ -220,16 +254,18 @@ func (r *PgProjectRepository) IsMember(ctx context.Context, projectID int, membe
 	return nil
 }
 
-func (r *PgProjectRepository) CreateRoles(
-	ctx context.Context,
-	projectID int,
-	roles []dto.ProjectRoleCreate,
-) ([]*dto.ProjectRoleRes, error) {
+func (r *PgProjectRepository) CreateRoles(ctx context.Context, projectID int, roles []string) ([]*dto.ProjectRoleRes, error) {
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return nil, err
+	}
+	if err := ValidateSliceIsNotNil(&roles, "roles"); err != nil {
+		return nil, err
+	}
 	var subs []string
 	values := []any{projectID}
 
 	for i, role := range roles {
-		values = append(values, role.Name)
+		values = append(values, role)
 		subs = append(subs, fmt.Sprintf("($1, $%d)", i+2))
 	}
 
@@ -258,17 +294,16 @@ func (r *PgProjectRepository) CreateRoles(
 }
 
 func (r *PgProjectRepository) AppendPermissions(ctx context.Context, roleID int, permissions []string) error {
+	if permissions == nil {
+
+	}
 	query := `
 		INSERT INTO project_role_permission (role_id, permission_id)
-		SELECT $1, P.id
-		FROM permissions as P
-		WHERE 
-			P.id IN 
-			(
-				SELECT id 
-				FROM permissions
-				WHERE name = ANY ($2)
-			);`
+		SELECT R.id, P.id
+		FROM permissions AS P
+		JOIN project_roles AS R ON R.id = $1 AND R.deleted_at IS NULL
+		WHERE P.name = ANY ($2);
+	`
 	tag, err := r.getDb(ctx).Exec(ctx, query, roleID, permissions)
 	if err != nil {
 		return r.handleError(err)
@@ -284,7 +319,7 @@ func (r *PgProjectRepository) GetProjectRoles(ctx context.Context, projectID int
 		SELECT pr.id, pr.name
 		FROM project_roles AS pr
 		JOIN projects AS p ON p.ID = pr.project_id
-		WHERE pr.project_id = $1 AND p.deleted_at IS NULL;
+		WHERE pr.project_id = $1 AND p.deleted_at IS NULL AND pr.deleted_at IS NULL;
 	`
 
 	rows, err := r.getDb(ctx).Query(ctx, query, projectID)
@@ -306,44 +341,45 @@ func (r *PgProjectRepository) GetProjectRoles(ctx context.Context, projectID int
 	return items, nil
 }
 
-func (r *PgProjectRepository) HasPermission(ctx context.Context, projectID int, memberID int, permission string) (bool, error) {
+func (r *PgProjectRepository) HasPermission(ctx context.Context, projectID int, userID int, permission string) (bool, error) {
 	query := `
 		SELECT EXISTS (
 			SELECT 1
 			FROM project_role_user AS pru
-			JOIN project_roles AS pr ON pr.id = pru.role_id
+			JOIN project_roles AS pr ON pr.id = pru.role_id AND pr.deleted_at is NULL
 			JOIN project_role_permission AS prp ON prp.role_id = pr.id
 			JOIN permissions AS p ON p.id = prp.permission_id
-			JOIN projects AS pro ON pro.id = pru.project_id
+			JOIN projects AS pro ON pro.id = pru.project_id AND pro.deleted_at is NULL
+			JOIN users AS u ON u.id = pru.user_id AND u.deleted_at is NULL
 			WHERE pru.project_id = $1
 				AND pru.user_id = $2
 				AND p.name = $3
-				AND pro.deleted_at IS null
 		);`
 	var result bool
-	if err := r.getDb(ctx).QueryRow(ctx, query, projectID, memberID, permission).Scan(&result); err != nil {
+	if err := r.getDb(ctx).QueryRow(ctx, query, projectID, userID, permission).Scan(&result); err != nil {
 		return false, r.handleError(err)
 	}
 	return result, nil
 }
 
-func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int, memberID int) ([]*dto.ProjectRights, error) {
+func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int, userID int) ([]*dto.ProjectRights, error) {
 	query := `
 		SELECT p.name, pr.name
 		FROM project_role_user AS pru
-		JOIN project_roles AS pr ON pr.id = pru.role_id
-		JOIN project_role_permission AS prp ON prp.role_id = pr.id
+		JOIN project_roles AS pr ON pr.id = pru.role_id AND pr.deleted_at IS NULL
+		JOIN project_role_permission AS prp ON prp.role_id = pr.id 
 		JOIN permissions AS p ON p.id = prp.permission_id
-		JOIN projects AS pro ON pro.id = pru.project_id
-		WHERE pru.project_id = $1 AND pru.user_id = $2 AND pro.deleted_at IS null;
+		JOIN projects AS pro ON pro.id = pru.project_id AND pro.deleted_at IS NULL
+		JOIN users AS u ON u.id = pru.user_id AND u.deleted_at IS NULL
+		WHERE pru.project_id = $1 AND pru.user_id = $2; 
 	`
-	rows, err := r.getDb(ctx).Query(ctx, query, projectID, memberID)
+	rows, err := r.getDb(ctx).Query(ctx, query, projectID, userID)
 	if err != nil {
 		return nil, r.handleError(err)
 	}
 
 	items := make(map[string][]string)
-	_, err = ScanRows(rows, func(row pgx.Rows) (*interface{}, error) {
+	_, err = ScanRows(rows, func(row pgx.Rows) (*any, error) {
 		var role, permission string
 		if err := rows.Scan(&permission, &role); err != nil {
 			return nil, err
@@ -363,6 +399,13 @@ func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int
 }
 
 func (r *PgProjectRepository) Update(ctx context.Context, projectID int, data *dto.ProjectUpdate) error {
+
+	if err := ValidateIsNotNil(data); err != nil {
+		return err
+	}
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return err
+	}
 
 	kwargs := make(map[string]any)
 	if data.Name != "" {
@@ -385,6 +428,18 @@ func (r *PgProjectRepository) Delete(ctx context.Context, projectID int) error {
 	return nil
 }
 
+func (r *PgProjectRepository) DeleteRoles(ctx context.Context, roleIDs []int) error {
+	query := `
+		UPDATE project_roles
+		SET deleted_at = $1
+		WHERE id = ANY ($2);
+	`
+	_, err := r.getDb(ctx).Exec(ctx, query, time.Now(), roleIDs)
+	if err != nil {
+		return r.handleError(err)
+	}
+	return nil
+}
 func (r *PgProjectRepository) Archive(ctx context.Context, projectID int) error {
 	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"archived_at": time.Now()}); err != nil {
 		return r.handleError(err)

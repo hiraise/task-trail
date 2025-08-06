@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS unique_project_role_name_not_deleted;
