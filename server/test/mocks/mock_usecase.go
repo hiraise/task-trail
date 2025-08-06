@@ -390,6 +390,21 @@ func (mr *MockProjectMockRecorder) GetList(ctx, data any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetList", reflect.TypeOf((*MockProject)(nil).GetList), ctx, data)
 }
 
+// GetMembers mocks base method.
+func (m *MockProject) GetMembers(ctx context.Context, projectID, userID int) ([]*dto.ProjectMember, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMembers", ctx, projectID, userID)
+	ret0, _ := ret[0].([]*dto.ProjectMember)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMembers indicates an expected call of GetMembers.
+func (mr *MockProjectMockRecorder) GetMembers(ctx, projectID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMembers", reflect.TypeOf((*MockProject)(nil).GetMembers), ctx, projectID, userID)
+}
+
 // UpdateByID mocks base method.
 func (m *MockProject) UpdateByID(ctx context.Context, projectID, userID int, data *dto.ProjectUpdate) error {
 	m.ctrl.T.Helper()

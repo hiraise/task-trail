@@ -598,20 +598,6 @@ func (mr *MockProjectRepositoryMockRecorder) AppendPermissions(ctx, roleID, perm
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppendPermissions", reflect.TypeOf((*MockProjectRepository)(nil).AppendPermissions), ctx, roleID, permissions)
 }
 
-// Archive mocks base method.
-func (m *MockProjectRepository) Archive(ctx context.Context, projectID int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Archive", ctx, projectID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Archive indicates an expected call of Archive.
-func (mr *MockProjectRepositoryMockRecorder) Archive(ctx, projectID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Archive", reflect.TypeOf((*MockProjectRepository)(nil).Archive), ctx, projectID)
-}
-
 // Create mocks base method.
 func (m *MockProjectRepository) Create(ctx context.Context, name, description string) (int, error) {
 	m.ctrl.T.Helper()
@@ -628,7 +614,7 @@ func (mr *MockProjectRepositoryMockRecorder) Create(ctx, name, description any) 
 }
 
 // CreateRoles mocks base method.
-func (m *MockProjectRepository) CreateRoles(ctx context.Context, projectID int, roles []dto.ProjectRoleCreate) ([]*dto.ProjectRoleRes, error) {
+func (m *MockProjectRepository) CreateRoles(ctx context.Context, projectID int, roles []string) ([]*dto.ProjectRoleRes, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateRoles", ctx, projectID, roles)
 	ret0, _ := ret[0].([]*dto.ProjectRoleRes)
@@ -656,6 +642,20 @@ func (mr *MockProjectRepositoryMockRecorder) Delete(ctx, projectID any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockProjectRepository)(nil).Delete), ctx, projectID)
 }
 
+// DeleteRoles mocks base method.
+func (m *MockProjectRepository) DeleteRoles(ctx context.Context, roleIDs []int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRoles", ctx, roleIDs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRoles indicates an expected call of DeleteRoles.
+func (mr *MockProjectRepositoryMockRecorder) DeleteRoles(ctx, roleIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoles", reflect.TypeOf((*MockProjectRepository)(nil).DeleteRoles), ctx, roleIDs)
+}
+
 // GetByID mocks base method.
 func (m *MockProjectRepository) GetByID(ctx context.Context, projectID int) (*dto.ProjectListRes, error) {
 	m.ctrl.T.Helper()
@@ -672,18 +672,18 @@ func (mr *MockProjectRepositoryMockRecorder) GetByID(ctx, projectID any) *gomock
 }
 
 // GetCandidates mocks base method.
-func (m *MockProjectRepository) GetCandidates(ctx context.Context, ownerID, projectID int, roleName string) ([]*dto.UserSimple, error) {
+func (m *MockProjectRepository) GetCandidates(ctx context.Context, userID int, permission string, projectID int) ([]*dto.UserSimple, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCandidates", ctx, ownerID, projectID, roleName)
+	ret := m.ctrl.Call(m, "GetCandidates", ctx, userID, permission, projectID)
 	ret0, _ := ret[0].([]*dto.UserSimple)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCandidates indicates an expected call of GetCandidates.
-func (mr *MockProjectRepositoryMockRecorder) GetCandidates(ctx, ownerID, projectID, roleName any) *gomock.Call {
+func (mr *MockProjectRepositoryMockRecorder) GetCandidates(ctx, userID, permission, projectID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCandidates", reflect.TypeOf((*MockProjectRepository)(nil).GetCandidates), ctx, ownerID, projectID, roleName)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCandidates", reflect.TypeOf((*MockProjectRepository)(nil).GetCandidates), ctx, userID, permission, projectID)
 }
 
 // GetList mocks base method.
@@ -761,34 +761,6 @@ func (mr *MockProjectRepositoryMockRecorder) HasPermission(ctx, projectID, membe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPermission", reflect.TypeOf((*MockProjectRepository)(nil).HasPermission), ctx, projectID, memberID, permission)
 }
 
-// IsMember mocks base method.
-func (m *MockProjectRepository) IsMember(ctx context.Context, projectID, memberID int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsMember", ctx, projectID, memberID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// IsMember indicates an expected call of IsMember.
-func (mr *MockProjectRepositoryMockRecorder) IsMember(ctx, projectID, memberID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsMember", reflect.TypeOf((*MockProjectRepository)(nil).IsMember), ctx, projectID, memberID)
-}
-
-// Unarchive mocks base method.
-func (m *MockProjectRepository) Unarchive(ctx context.Context, projectID int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Unarchive", ctx, projectID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Unarchive indicates an expected call of Unarchive.
-func (mr *MockProjectRepositoryMockRecorder) Unarchive(ctx, projectID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unarchive", reflect.TypeOf((*MockProjectRepository)(nil).Unarchive), ctx, projectID)
-}
-
 // Update mocks base method.
 func (m *MockProjectRepository) Update(ctx context.Context, projectID int, data *dto.ProjectUpdate) error {
 	m.ctrl.T.Helper()
@@ -801,4 +773,18 @@ func (m *MockProjectRepository) Update(ctx context.Context, projectID int, data 
 func (mr *MockProjectRepositoryMockRecorder) Update(ctx, projectID, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockProjectRepository)(nil).Update), ctx, projectID, data)
+}
+
+// VerifyMembership mocks base method.
+func (m *MockProjectRepository) VerifyMembership(ctx context.Context, projectID, memberID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyMembership", ctx, projectID, memberID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyMembership indicates an expected call of VerifyMembership.
+func (mr *MockProjectRepositoryMockRecorder) VerifyMembership(ctx, projectID, memberID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyMembership", reflect.TypeOf((*MockProjectRepository)(nil).VerifyMembership), ctx, projectID, memberID)
 }
