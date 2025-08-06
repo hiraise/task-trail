@@ -126,6 +126,19 @@ definitions:
       tasksCount:
         type: integer
     type: object
+  response.projectMemberRes:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      roles:
+        items:
+          type: string
+        type: array
+      username:
+        type: string
+    type: object
   response.projectRes:
     properties:
       createdAt:
@@ -536,6 +549,41 @@ paths:
       tags:
       - /v1/project
   /v1/projects/{id}/members:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.projectMemberRes'
+            type: array
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "403":
+          description: access denied
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "404":
+          description: project not found
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+      security:
+      - BearerAuth: []
+      summary: get project members
+      tags:
+      - /v1/project
     post:
       consumes:
       - application/json
