@@ -24,7 +24,7 @@ interface FormValues {
 }
 
 interface AddParticipantFormProps {
-  onSubmit?: (selectedParticipants: unknown[]) => void | Promise<void>;
+  onSubmit?: (emails: string[]) => void | Promise<void>;
 }
 
 export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
@@ -60,7 +60,8 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
       backSheet();
       return;
     }
-    await onSubmit(selectedParticipants);
+    const selectedEmails = selectedParticipants.map((user) => user.email);
+    if (selectedEmails.length > 0) await onSubmit(selectedEmails);
     backSheet();
   };
 

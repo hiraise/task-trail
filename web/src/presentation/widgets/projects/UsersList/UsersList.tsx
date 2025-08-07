@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useProjects } from "@/application/projects/hooks/useProjects";
 import { User } from "@/domain/user/user.entity";
 import { Spinner } from "@/presentation/ui/Spinner";
+import { useAppSelector } from "@/infrastructure/redux/hooks";
 
 interface UsersListProps {
   onUserSelect: (data: BaseUserData) => void;
@@ -24,15 +25,16 @@ export function UsersList({
 }: UsersListProps) {
   const { isLoading, getCandidates } = useProjects();
   const [usersToDisplay, setUsersToDisplay] = useState<User[]>([]);
+  const project = useAppSelector((state) => state.project.project);
 
   // Fetch candidates when component mounts or when getCandidates changes
   useEffect(() => {
     const fetch = async () => {
-      const candidates = await getCandidates();
+      const candidates = await getCandidates(project?.id);
       setUsersToDisplay(candidates ?? []);
     };
     fetch();
-  }, [getCandidates]);
+  }, [getCandidates, project?.id]);
 
   // Filter users based on search query
   const filteredUsers = searchQuery

@@ -2,7 +2,7 @@ import { useBottomSheet } from "@/app/_components/BottomSheetContext";
 import { MODAL_TYPES } from "@/infrastructure/config/modalTypes";
 
 interface InviteUserModalProps {
-  onSubmit?: (selectedParticipants: unknown[]) => void | Promise<void>;
+  onSubmit?: (emails: string[]) => void | Promise<void>;
 }
 
 export function useModalSheet() {

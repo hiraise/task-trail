@@ -1,4 +1,10 @@
-import { MembersData } from "./MembersList";
+import { BaseUserData } from "../AddParticipantForm/AddParticipantForm";
+
+export interface MembersData extends BaseUserData {
+  id: number;
+  username?: string;
+  avatarUrl?: string;
+}
 
 export const users: MembersData[] = [
   {
