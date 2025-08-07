@@ -387,11 +387,11 @@ func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int
 	query := `
 		SELECT p.name, pr.name
 		FROM project_role_user AS pru
-		JOIN project_roles AS pr ON pr.id = pru.role_id AND pr.deleted_at IS NULL
-		JOIN project_role_permission AS prp ON prp.role_id = pr.id 
-		JOIN permissions AS p ON p.id = prp.permission_id
-		JOIN projects AS pro ON pro.id = pru.project_id AND pro.deleted_at IS NULL
 		JOIN users AS u ON u.id = pru.user_id AND u.deleted_at IS NULL
+		JOIN projects AS pro ON pro.id = pru.project_id AND pro.deleted_at IS NULL
+		JOIN project_roles AS pr ON pr.id = pru.role_id AND pr.deleted_at IS NULL
+		LEFT JOIN project_role_permission AS prp ON prp.role_id = pr.id 
+		LEFT JOIN permissions AS p ON p.id = prp.permission_id
 		WHERE pru.project_id = $1 AND pru.user_id = $2; 
 	`
 	rows, err := r.getDb(ctx).Query(ctx, query, projectID, userID)
@@ -401,11 +401,16 @@ func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int
 
 	items := make(map[string][]string)
 	_, err = ScanRows(rows, func(row pgx.Rows) (*any, error) {
-		var role, permission string
+		var role string
+		var permission *string
 		if err := rows.Scan(&permission, &role); err != nil {
 			return nil, err
 		}
-		items[role] = append(items[role], permission)
+		if permission == nil {
+			items[role] = []string{}
+		} else {
+			items[role] = append(items[role], *permission)
+		}
 		return nil, nil
 	})
 	if err != nil {
