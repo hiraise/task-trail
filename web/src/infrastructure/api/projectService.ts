@@ -5,6 +5,7 @@ import {
   AddMembers,
   GetProjectCandidates,
   EditProject,
+  GetMembers,
 } from "@/domain/project/project.contracts";
 import axiosClient from "./axiosClient";
 import { API_ROUTES } from "../config/apiRoutes";
@@ -13,6 +14,7 @@ import { clientLogger } from "../config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 import { ApiProject, ApiProjectMembers } from "./types";
 import { mapUserFromApi } from "../mappers/userMapper";
+import { ProjectMember } from "@/domain/project/project.entity";
 
 //TODO: Handle different error types appropriately
 
@@ -62,10 +64,9 @@ const getProjectById = async (id: number) => {
 
 const addMembers: AddMembers = async (emails, id) => {
   try {
-    await axiosClient.post<ApiProjectMembers>(
-      API_ROUTES.ADD_PROJECT_MEMBERS(id),
-      { emails }
-    );
+    await axiosClient.post<ApiProjectMembers>(API_ROUTES.PROJECT_MEMBERS(id), {
+      emails,
+    });
   } catch (error) {
     clientLogger.error("Add members error", { error });
     throw new AppError(AppErrorType.SERVER, "Failed to add members to project");
@@ -97,6 +98,25 @@ const editProject: EditProject = async (id, payload) => {
   }
 };
 
+const getMembers: GetMembers = async (id) => {
+  try {
+    const response = await axiosClient.get<ProjectMember[]>(
+      API_ROUTES.PROJECT_MEMBERS(id)
+    );
+
+    if (!Array.isArray(response.data)) {
+      throw new AppError(
+        AppErrorType.SERVER,
+        "Invalid response format: expected array"
+      );
+    }
+    return response.data;
+  } catch (error) {
+    clientLogger.error("Get project members error", { error, id });
+    throw new AppError(AppErrorType.SERVER, "Failed to get project members");
+  }
+};
+
 export const projectService: ProjectService = {
   getProjects: getProjects,
   newProject: newProject,
@@ -104,4 +124,5 @@ export const projectService: ProjectService = {
   addMembers: addMembers,
   getProjectCandidates: getProjectCandidates,
   editProject: editProject,
+  getMembers: getMembers,
 };

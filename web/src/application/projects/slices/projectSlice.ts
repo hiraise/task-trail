@@ -1,9 +1,9 @@
-import { Project } from "@/domain/project/project.entity";
+import { Project, ProjectMember } from "@/domain/project/project.entity";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type ProjectState = {
   project: Project | null;
-  members: string[];
+  members: ProjectMember[];
   tasks: string[];
 };
 
@@ -25,7 +25,7 @@ const projectSlice = createSlice({
       state.members = [];
       state.tasks = [];
     },
-    setMembers(state, action) {
+    setMembers(state, action: PayloadAction<ProjectMember[]>) {
       state.members = action.payload;
     },
     setTasks(state, action) {

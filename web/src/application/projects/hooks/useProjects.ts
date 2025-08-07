@@ -5,7 +5,9 @@ import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import {
+  addMembersThunk,
   editProjectThunk,
+  getMembersThunk,
   getProjectByIdThunk,
   getProjectCandidatesThunk,
   getProjectsThunk,
@@ -18,6 +20,8 @@ import { clearProject } from "../slices/projectSlice";
 import { User } from "@/domain/user/user.entity";
 import { EditProject } from "@/domain/project/project.contracts";
 
+//TODO: Replace try/catch with status handling in thunks
+
 type UseProjectsResult = {
   createProject: (payload: ProjectPayload) => Promise<Project | undefined>;
   getProjects: () => Promise<void>;
@@ -25,6 +29,8 @@ type UseProjectsResult = {
   getProjectById: (id: number) => Promise<void>;
   clearCurrentProject: () => void;
   editProject: EditProject;
+  getMembers: (id: number) => Promise<void>;
+  addMembers: (id: number, emails: string[]) => Promise<void>;
   isLoading: boolean;
   projects: Project[];
 };
@@ -112,6 +118,34 @@ export const useProjects = (): UseProjectsResult => {
     [dispatch]
   );
 
+  const getMembers = useCallback(
+    async (id: number) => {
+      setIsLoading(true);
+      try {
+        await dispatch(getMembersThunk(id)).unwrap();
+      } catch (error) {
+        clientLogger.error("useProjects getMembers error:", { error });
+        toast.error("Failed to load project members. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [dispatch]
+  );
+
+  const addMembers = async (id: number, emails: string[]) => {
+    setIsLoading(true);
+    try {
+      await dispatch(addMembersThunk({ emails, id })).unwrap();
+      await dispatch(getMembersThunk(id)).unwrap();
+    } catch (error) {
+      clientLogger.error("useProjects addMembers error:", { error });
+      toast.error("Failed to add members. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     createProject,
     getProjects,
@@ -119,6 +153,8 @@ export const useProjects = (): UseProjectsResult => {
     getProjectById,
     clearCurrentProject,
     editProject,
+    getMembers,
+    addMembers,
     isLoading,
     projects,
   };

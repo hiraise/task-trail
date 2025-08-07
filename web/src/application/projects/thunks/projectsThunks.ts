@@ -4,6 +4,8 @@ import { createNewProjectThunk } from "./createNewProjectThunk";
 import { createGetProjectByIdThunk } from "./createGetProjectByIdThunk";
 import { createGetProjectCandidatesThunk } from "./createGetProjectCandidatesThunk";
 import { createEditProjectThunk } from "./createEditProjectThunk";
+import { createGetProjectMembersThunk } from "./createGetProjectMembersThunk";
+import { createAddMembersThunk } from "./createAddMembersThunk";
 
 export const getProjectsThunk = createGetProjectsThunk(
   projectService.getProjects
@@ -21,3 +23,7 @@ export const getProjectCandidatesThunk = createGetProjectCandidatesThunk(
 export const editProjectThunk = createEditProjectThunk(
   projectService.editProject
 );
+export const getMembersThunk = createGetProjectMembersThunk(
+  projectService.getMembers
+);
+export const addMembersThunk = createAddMembersThunk(projectService.addMembers);
