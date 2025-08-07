@@ -5,6 +5,7 @@ import { useProjects } from "./useProjects";
 import { PermissionType, PERMISSONS } from "@/domain/project/project.entity";
 import { hasPermission } from "@/shared/utils/permissions";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { useMemo } from "react";
 
 export interface MenuItem {
   label: string;
@@ -14,7 +15,8 @@ export interface MenuItem {
 
 export const useProjectMenuItems = (projectId: number) => {
   const { deleteProjectById } = useProjects();
-  const permissions = useAppSelector((state) => state.project.project?.permissions || []);
+  const project = useAppSelector((state) => state.project.project);
+  const permissions = useMemo(() => project?.permissions || [], [project]);
   const router = useRouter();
 
   const menuItems: MenuItem[] = [
