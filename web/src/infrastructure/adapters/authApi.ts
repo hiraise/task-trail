@@ -3,6 +3,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { authService } from "@/infrastructure/api/authService";
 import { ChangePasswordPayload } from "@/domain/auth/auth.payload";
 
+//TODO: remove Redux Toolkit Query
+
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({

@@ -14,11 +14,11 @@ export const API_ROUTES = {
   VERIFY: `${AUTH}/verify`,
   RESEND_VERIFICATION: `${AUTH}/resend-verification`,
   CHANGE_PASSWORD: `${PASSWORD}/change`,
+  FORGOT_PASSWORD: `${PASSWORD}/forgot`,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   CURRENT_USER: USERS_ME,
   PROJECTS: `${PROJECTS}`,
   PROJECT_BY_ID: (id: number) => `${PROJECTS}/${id}`,
   PROJECT_MEMBERS: (id?: number) => `${PROJECTS}${id ? `/${id}` : ""}/members`,
-  GET_CANDIDATES: (id?: number) =>
-    `${PROJECTS}/candidates${id ? `/?id=${id}` : ""}`,
+  GET_CANDIDATES: (id?: number) => `${PROJECTS}/candidates${id ? `/?id=${id}` : ""}`,
 };

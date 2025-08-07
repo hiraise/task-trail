@@ -12,6 +12,7 @@ import {
   ConfirmEmail,
   CheckAuthStatus,
   ChangePassword,
+  ForgotPassword,
 } from "@/domain/auth/auth.contracts";
 import { AuthPayload } from "@/domain/auth/auth.payload";
 import { AppError, AppErrorType } from "@/shared/errors/types";
@@ -43,9 +44,7 @@ const signUp: SignUp = async (payload: AuthPayload): Promise<void> => {
   }
 };
 
-const resendVerification: ResendVerification = async (
-  email: string
-): Promise<void> => {
+const resendVerification: ResendVerification = async (email: string): Promise<void> => {
   try {
     await axiosClient.post(API_ROUTES.RESEND_VERIFICATION, { email });
   } catch (error) {
@@ -81,6 +80,15 @@ const changePassword: ChangePassword = async (payload) => {
   }
 };
 
+const forgotPassword: ForgotPassword = async (email) => {
+  try {
+    await axiosClient.post(API_ROUTES.FORGOT_PASSWORD, { email });
+  } catch (error) {
+    clientLogger.error("ForgotPassword error", { error });
+    throw new AppError(AppErrorType.AUTH, "Forgot password error");
+  }
+};
+
 export const authService: AuthService = {
   login: login,
   logout: logout,
@@ -89,4 +97,5 @@ export const authService: AuthService = {
   confirmEmail: confirmEmail,
   checkAuthStatus: checkAuthStatus,
   changePassword: changePassword,
+  forgotPassword: forgotPassword,
 };

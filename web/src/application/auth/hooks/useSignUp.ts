@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 import { ROUTES } from "@/infrastructure/config/routes";
-import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
+import { useAppDispatch } from "@/infrastructure/redux/hooks";
 import { signUpThunk } from "../thunks/authThunks";
 
 interface SignUpFormProps {
@@ -14,10 +15,11 @@ interface SignUpFormProps {
 export const useSignUp = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const loading = useAppSelector((state) => state.auth.authInitializing);
+  const [loading, setLoading] = useState(false);
 
   const signUp = async ({ email, password }: SignUpFormProps) => {
     const thunk = signUpThunk({ email, password });
+    setLoading(true);
     try {
       await dispatch(thunk).unwrap();
       toast.success(successTexts.signUpSuccessCheckEmail);
@@ -25,6 +27,8 @@ export const useSignUp = () => {
     } catch (error) {
       //TODO: add log to sentry
       console.log(errorTexts.somethingWentWrong, error);
+    } finally {
+      setLoading(false);
     }
   };
 

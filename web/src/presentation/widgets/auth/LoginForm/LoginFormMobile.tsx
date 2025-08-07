@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
@@ -11,10 +12,12 @@ import { TextButton } from "@/presentation/ui/TextButton";
 import { useLogin } from "@/application/auth/hooks/useLogin";
 import PrivacyText from "../../common/PrivacyText";
 import { Spinner } from "@/presentation/ui/Spinner";
+import { ROUTES } from "@/infrastructure/config/routes";
 
 export const LoginFormMobile = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const { login, loading } = useLogin();
 
@@ -33,7 +36,9 @@ export const LoginFormMobile = () => {
           setPassword={setPassword}
         ></LoginFields>
         <Spacer size="12px" />
-        <TextButton>{loginTexts.forgotPassword}</TextButton>
+        <TextButton onClick={() => router.push(ROUTES.passwordRecovery)}>
+          {loginTexts.forgotPassword}
+        </TextButton>
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading}>
           {loading ? <Spinner size={16} /> : sharedTexts.login}

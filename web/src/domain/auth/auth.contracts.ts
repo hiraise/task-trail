@@ -7,6 +7,7 @@ export type ResendVerification = (email: string) => Promise<void>;
 export type ConfirmEmail = (token: string) => Promise<void>;
 export type CheckAuthStatus = () => Promise<void>;
 export type ChangePassword = (payload: ChangePasswordPayload) => Promise<void>;
+export type ForgotPassword = (email: string) => Promise<void>;
 
 export type AuthService = {
   login: Login;
@@ -16,4 +17,5 @@ export type AuthService = {
   confirmEmail: ConfirmEmail;
   checkAuthStatus: CheckAuthStatus;
   changePassword: ChangePassword;
+  forgotPassword: ForgotPassword;
 };

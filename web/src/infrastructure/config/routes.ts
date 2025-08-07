@@ -10,6 +10,7 @@ export const ROUTES = {
   tasks: "/tasks",
   archive: "/archive",
   confirm: "/confirm",
+  passwordRecovery: "/password-recovery",
   profile: PROFILE_BASE,
   profileEditPersonalData: `${PROFILE_BASE}/edit-personal-data`,
   profileChangePassword: `${PROFILE_BASE}/change-password`,
