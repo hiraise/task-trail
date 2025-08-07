@@ -1,6 +1,10 @@
 import { useBottomSheet } from "@/app/_components/BottomSheetContext";
 import { MODAL_TYPES } from "@/infrastructure/config/modalTypes";
 
+interface InviteUserModalProps {
+  onSubmit?: (selectedParticipants: unknown[]) => void | Promise<void>;
+}
+
 export function useModalSheet() {
   const { openSheet } = useBottomSheet();
 
@@ -18,7 +22,7 @@ export function useModalSheet() {
     });
   };
 
-  const showInviteUser = (props?: unknown) => {
+  const showInviteUser = (props?: InviteUserModalProps) => {
     openSheet({
       type: MODAL_TYPES.INVITE_USER,
       props,

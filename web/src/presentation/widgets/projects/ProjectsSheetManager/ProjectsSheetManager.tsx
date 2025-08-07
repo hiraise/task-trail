@@ -14,7 +14,8 @@ export function ProjectsSheetManager() {
 
   if (isEmpty) return null;
 
-  const props = getCommonProps();
+  const sheetProps = currentSheet.props || {};
+  const props = { ...getCommonProps(), ...sheetProps };
 
   const renderWithProvider = (component: JSX.Element) => (
     <ProjectCreationProvider>{component}</ProjectCreationProvider>

@@ -23,7 +23,11 @@ interface FormValues {
   query: string;
 }
 
-export function AddParticipantForm() {
+interface AddParticipantFormProps {
+  onSubmit?: (selectedParticipants: unknown[]) => void | Promise<void>;
+}
+
+export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
   const {
     selectedParticipants,
     handleUserSelect,
@@ -38,15 +42,25 @@ export function AddParticipantForm() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   useClickOutside([inputRef, dropdownRef], () => setShowDropdown(false));
 
-  const { control, handleSubmit, watch } = useForm<FormValues>({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<FormValues>({
     mode: "onChange",
     defaultValues: { query: "" },
   });
 
   const queryValue = watch("query");
 
-  const submitHandler = () => {
-    inviteMembers();
+  const submitHandler = async () => {
+    if (!onSubmit) {
+      inviteMembers();
+      backSheet();
+      return;
+    }
+    await onSubmit(selectedParticipants);
     backSheet();
   };
 
@@ -78,28 +92,34 @@ export function AddParticipantForm() {
       )}
 
       {/* Middle section that contains both dropdown and selected users */}
-      <div className={styles.middle} ref={dropdownRef}>
-        {showDropdown && (
-          <div className={styles.dropDown}>
-            <UsersList
-              onUserSelect={handleUserSelect}
-              selectedUsers={selectedParticipants}
-              searchQuery={queryValue}
-            />
-          </div>
-        )}
-        {selectedParticipants.length > 0 && (
-          <SelectedUsers
-            users={selectedParticipants}
-            onDeleteUser={handleDeleteUser}
-            isExpanded={!showDropdown}
+
+      {showDropdown && (
+        <div className={styles.dropDown} ref={dropdownRef}>
+          <UsersList
+            onUserSelect={handleUserSelect}
+            selectedUsers={selectedParticipants}
+            searchQuery={queryValue}
           />
-        )}
-      </div>
+        </div>
+      )}
+      {showDropdown && <div className={styles.middle} />}
+      {selectedParticipants.length > 0 && (
+        <SelectedUsers
+          users={selectedParticipants}
+          onDeleteUser={handleDeleteUser}
+          isExpanded={!showDropdown}
+        />
+      )}
 
       <div className={styles.btnContainer}>
-        <SubmitButton type="submit" className={styles.button}>
-          {projectsTexts.inviteToProject}
+        <SubmitButton
+          type="submit"
+          className={styles.button}
+          disabled={isSubmitting}
+        >
+          {isSubmitting
+            ? projectsTexts.invitingToProject
+            : projectsTexts.inviteToProject}
         </SubmitButton>
       </div>
     </form>

@@ -1,9 +1,17 @@
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./modal.types";
-import { AddParticipantForm } from "@/presentation/widgets/projects/AddParticipantForm/AddParticipantForm";
+import { AddParticipantForm } from "@/presentation/widgets/projects/AddParticipantForm";
 
-export default function InviteUserModal(props: BaseModalProps) {
+interface InviteUserModalProps extends BaseModalProps {
+  onSubmit?: (selectedParticipants: unknown[]) => void | Promise<void>;
+}
+
+export default function InviteUserModal({
+  onSubmit,
+  ...props
+}: InviteUserModalProps) {
   const { isOpen, onClose, onBack } = props;
+
   return (
     <BaseModal
       isOpen={isOpen}
@@ -12,7 +20,7 @@ export default function InviteUserModal(props: BaseModalProps) {
       fullScreen={true}
       title="Добавить участников"
     >
-      <AddParticipantForm />
+      <AddParticipantForm onSubmit={onSubmit} />
     </BaseModal>
   );
 }
