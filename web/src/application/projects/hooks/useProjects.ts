@@ -87,14 +87,11 @@ export const useProjects = (): UseProjectsResult => {
 
   const getProjectById = useCallback(
     async (id: number) => {
-      setIsLoading(true);
       try {
         await dispatch(getProjectByIdThunk(id)).unwrap();
       } catch (error) {
         clientLogger.error("useProjects getProjectById error:", { error });
         toast.error("Failed to load project. Please try again.");
-      } finally {
-        setIsLoading(false);
       }
     },
     [dispatch]

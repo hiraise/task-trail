@@ -18,6 +18,7 @@ import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 import { mockTasks } from "@/presentation/widgets/projects/TaskList";
+import { Spinner } from "@/presentation/ui/Spinner";
 
 const projectTexts = {
   owner: "Салунин Максим",
@@ -33,8 +34,35 @@ export default function ProjectPage() {
   const { showCreateTask } = useModalSheet();
 
   const project = useAppSelector((state) => state.project.project);
+  const isLoading = useAppSelector((state) => state.project.isLoading);
 
-  if (!project) return <h1>Такого проекта не существует</h1>;
+  if (isLoading) {
+    return (
+      <MainContainer>
+        <DashboardHeader />
+        <div className="container">
+          <BackButton />
+        </div>
+        <div className="content">
+          <Spinner />
+        </div>
+      </MainContainer>
+    );
+  }
+
+  if (!project) {
+    return (
+      <MainContainer>
+        <DashboardHeader />
+        <div className="container">
+          <BackButton />
+        </div>
+        <div className="content">
+          <h1>Такого проекта не существует</h1>
+        </div>
+      </MainContainer>
+    );
+  }
 
   return (
     <MainContainer>
