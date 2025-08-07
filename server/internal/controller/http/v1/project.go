@@ -203,7 +203,7 @@ func (r *projectRoutes) GetMembers(c *gin.Context) {
 // @Failure		401 {object} response.ErrAPI "authentication required"
 // @Failure		403 {object} response.ErrAPI "access denied"
 // @Failure		404 {object} response.ErrAPI "project not found"
-// @Router 		/v1/projects/{id} [patch]
+// @Router 		/v1/projects/{id} [delete]
 func (r *projectRoutes) deleteByID(c *gin.Context) {
 	userID := utils.Must(r.contextmanager.GetUserID(c))
 	projectID := utils.Must(strconv.Atoi(c.Param("id")))
