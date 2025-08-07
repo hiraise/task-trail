@@ -29,7 +29,7 @@ const projectTexts = {
 export default function ProjectPage() {
   const params = useParams();
   const id = params.id as string;
-  const { menuItems } = useProjectMenuItems(id);
+  const { menuItems } = useProjectMenuItems(Number(id));
   const { showCreateTask } = useModalSheet();
 
   const project = useAppSelector((state) => state.project.project);
@@ -57,10 +57,7 @@ export default function ProjectPage() {
           </p>
         </div>
         <div className="members">
-          <ProjectMenuButton
-            href={ROUTES.projectMembers(id)}
-            text={projectTexts.membersTitle}
-          />
+          <ProjectMenuButton href={ROUTES.projectMembers(id)} text={projectTexts.membersTitle} />
           <div className="members-list">
             <UserAvatar />
             <UserAvatar />
@@ -69,10 +66,7 @@ export default function ProjectPage() {
           </div>
         </div>
         <div className="tasks">
-          <ProjectMenuButton
-            href={ROUTES.projectTasks(id)}
-            text={projectTexts.tasksTitle}
-          />
+          <ProjectMenuButton href={ROUTES.projectTasks(id)} text={projectTexts.tasksTitle} />
           <div className="task-list">
             {mockTasks.slice(0, 4).map((task) => (
               <ProjectTask key={task.id} title={task.title} />

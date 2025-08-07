@@ -6,13 +6,10 @@ import { createGetProjectCandidatesThunk } from "./createGetProjectCandidatesThu
 import { createEditProjectThunk } from "./createEditProjectThunk";
 import { createGetProjectMembersThunk } from "./createGetProjectMembersThunk";
 import { createAddMembersThunk } from "./createAddMembersThunk";
+import { createDeleteProjectThunk } from "./createDeleteProjectThunk";
 
-export const getProjectsThunk = createGetProjectsThunk(
-  projectService.getProjects
-);
-export const getProjectByIdThunk = createGetProjectByIdThunk(
-  projectService.getProjectById
-);
+export const getProjectsThunk = createGetProjectsThunk(projectService.getProjects);
+export const getProjectByIdThunk = createGetProjectByIdThunk(projectService.getProjectById);
 export const newProjectThunk = createNewProjectThunk(
   projectService.newProject,
   projectService.addMembers
@@ -20,10 +17,7 @@ export const newProjectThunk = createNewProjectThunk(
 export const getProjectCandidatesThunk = createGetProjectCandidatesThunk(
   projectService.getProjectCandidates
 );
-export const editProjectThunk = createEditProjectThunk(
-  projectService.editProject
-);
-export const getMembersThunk = createGetProjectMembersThunk(
-  projectService.getMembers
-);
+export const editProjectThunk = createEditProjectThunk(projectService.editProject);
+export const getMembersThunk = createGetProjectMembersThunk(projectService.getMembers);
 export const addMembersThunk = createAddMembersThunk(projectService.addMembers);
+export const deleteProjectThunk = createDeleteProjectThunk(projectService.deleteProject);

@@ -8,17 +8,16 @@ export type GetProjectById = (id: number) => Promise<Project | null>;
 export type AddMembers = (emails: string[], id?: number) => Promise<void>;
 export type GetMembers = (id: number) => Promise<ProjectMember[]>;
 export type GetProjectCandidates = (id?: number) => Promise<User[]>;
-export type EditProject = (
-  id: number,
-  payload: EditProjectPayload
-) => Promise<void>;
+export type DeleteProject = (id: number) => Promise<void>;
+export type EditProject = (id: number, payload: EditProjectPayload) => Promise<void>;
 
 export type ProjectService = {
   getProjects: GetProjects;
   newProject: NewProject;
   getProjectById: GetProjectById;
   addMembers: AddMembers;
+  getMembers: GetMembers;
   getProjectCandidates: GetProjectCandidates;
   editProject: EditProject;
-  getMembers: GetMembers;
+  deleteProject: DeleteProject;
 };

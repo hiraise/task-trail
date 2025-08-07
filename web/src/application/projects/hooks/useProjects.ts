@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import {
   addMembersThunk,
+  deleteProjectThunk,
   editProjectThunk,
   getMembersThunk,
   getProjectByIdThunk,
@@ -31,6 +32,7 @@ type UseProjectsResult = {
   editProject: EditProject;
   getMembers: (id: number) => Promise<void>;
   addMembers: (id: number, emails: string[]) => Promise<void>;
+  deleteProjectById: (id: number) => Promise<void>;
   isLoading: boolean;
   projects: Project[];
 };
@@ -146,6 +148,20 @@ export const useProjects = (): UseProjectsResult => {
     }
   };
 
+  const deleteProjectById = async (id: number) => {
+    setIsLoading(true);
+    try {
+      await dispatch(deleteProjectThunk(id)).unwrap();
+      router.replace(ROUTES.projects);
+      toast.success("Project deleted successfully");
+    } catch (error) {
+      clientLogger.error("useProjects deleteProjectById error:", { error });
+      toast.error("Failed to delete project. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     createProject,
     getProjects,
@@ -155,6 +171,7 @@ export const useProjects = (): UseProjectsResult => {
     editProject,
     getMembers,
     addMembers,
+    deleteProjectById,
     isLoading,
     projects,
   };

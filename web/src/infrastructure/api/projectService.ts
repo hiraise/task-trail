@@ -23,10 +23,7 @@ const getProjects: GetProjects = async () => {
     const response = await axiosClient.get<ApiProject[]>(API_ROUTES.PROJECTS);
 
     if (!Array.isArray(response.data)) {
-      throw new AppError(
-        AppErrorType.SERVER,
-        "Invalid response format: expected array"
-      );
+      throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
     }
 
     return response.data.map((rawProject) => mapProjectFromApi(rawProject));
@@ -38,10 +35,7 @@ const getProjects: GetProjects = async () => {
 
 const newProject: NewProject = async (payload) => {
   try {
-    const response = await axiosClient.post<ApiProject>(
-      API_ROUTES.PROJECTS,
-      payload
-    );
+    const response = await axiosClient.post<ApiProject>(API_ROUTES.PROJECTS, payload);
     const { id } = response.data;
     return await getProjectById(id);
   } catch (error) {
@@ -52,9 +46,7 @@ const newProject: NewProject = async (payload) => {
 
 const getProjectById = async (id: number) => {
   try {
-    const response = await axiosClient.get<ApiProject>(
-      API_ROUTES.PROJECT_BY_ID(id)
-    );
+    const response = await axiosClient.get<ApiProject>(API_ROUTES.PROJECT_BY_ID(id));
     return mapProjectFromApi(response.data);
   } catch (error) {
     clientLogger.error("Get project by ID error", { error });
@@ -77,10 +69,7 @@ const getProjectCandidates: GetProjectCandidates = async (id?: number) => {
   try {
     const response = await axiosClient.get(API_ROUTES.GET_CANDIDATES(id));
     if (!Array.isArray(response.data)) {
-      throw new AppError(
-        AppErrorType.SERVER,
-        "Invalid response format: expected array"
-      );
+      throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
     }
     return response.data.map((rawUser) => mapUserFromApi(rawUser));
   } catch (error) {
@@ -100,20 +89,24 @@ const editProject: EditProject = async (id, payload) => {
 
 const getMembers: GetMembers = async (id) => {
   try {
-    const response = await axiosClient.get<ProjectMember[]>(
-      API_ROUTES.PROJECT_MEMBERS(id)
-    );
+    const response = await axiosClient.get<ProjectMember[]>(API_ROUTES.PROJECT_MEMBERS(id));
 
     if (!Array.isArray(response.data)) {
-      throw new AppError(
-        AppErrorType.SERVER,
-        "Invalid response format: expected array"
-      );
+      throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
     }
     return response.data;
   } catch (error) {
     clientLogger.error("Get project members error", { error, id });
     throw new AppError(AppErrorType.SERVER, "Failed to get project members");
+  }
+};
+
+const deleteProject = async (id: number) => {
+  try {
+    await axiosClient.delete(API_ROUTES.PROJECT_BY_ID(id));
+  } catch (error) {
+    clientLogger.error("Delete project error", { error, id });
+    throw new AppError(AppErrorType.SERVER, "Failed to delete project");
   }
 };
 
@@ -125,4 +118,5 @@ export const projectService: ProjectService = {
   getProjectCandidates: getProjectCandidates,
   editProject: editProject,
   getMembers: getMembers,
+  deleteProject: deleteProject,
 };

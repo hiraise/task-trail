@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation";
 
 import { Permission, useProjectPermissions } from "./useProjectPermissions";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { useProjects } from "./useProjects";
 
 export interface MenuItem {
   label: string;
@@ -9,14 +10,15 @@ export interface MenuItem {
   permission: Permission;
 }
 
-export const useProjectMenuItems = (projectId: string) => {
+export const useProjectMenuItems = (projectId: number) => {
   const { hasPermission } = useProjectPermissions();
+  const { deleteProjectById } = useProjects();
   const router = useRouter();
 
   const menuItems: MenuItem[] = [
     {
       label: "Редактировать проект",
-      onClick: () => router.push(ROUTES.editProject(projectId)),
+      onClick: () => router.push(ROUTES.editProject(String(projectId))),
       permission: "admin",
     },
     {
@@ -26,7 +28,9 @@ export const useProjectMenuItems = (projectId: string) => {
     },
     {
       label: "Удалить проект",
-      onClick: () => console.log("Delete project"),
+      onClick: async () => {
+        await deleteProjectById(projectId);
+      },
       permission: "owner",
     },
     {
@@ -36,9 +40,7 @@ export const useProjectMenuItems = (projectId: string) => {
     },
   ];
 
-  const visibleMenuItems = menuItems.filter((item) =>
-    hasPermission(item.permission)
-  );
+  const visibleMenuItems = menuItems.filter((item) => hasPermission(item.permission));
 
   return { menuItems: visibleMenuItems };
 };
