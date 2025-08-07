@@ -1,46 +1,49 @@
 import { useRouter } from "next/navigation";
 
-import { Permission, useProjectPermissions } from "./useProjectPermissions";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { useProjects } from "./useProjects";
+import { PermissionType, PERMISSONS } from "@/domain/project/project.entity";
+import { hasPermission } from "@/shared/utils/permissions";
+import { useAppSelector } from "@/infrastructure/redux/hooks";
 
 export interface MenuItem {
   label: string;
   onClick: () => void;
-  permission: Permission;
+  permission?: PermissionType;
 }
 
 export const useProjectMenuItems = (projectId: number) => {
-  const { hasPermission } = useProjectPermissions();
   const { deleteProjectById } = useProjects();
+  const permissions = useAppSelector((state) => state.project.project?.permissions || []);
   const router = useRouter();
 
   const menuItems: MenuItem[] = [
     {
       label: "Редактировать проект",
       onClick: () => router.push(ROUTES.editProject(String(projectId))),
-      permission: "admin",
+      permission: PERMISSONS.PROJECT_EDIT,
     },
     {
       label: "Покинуть проект",
       onClick: () => console.log("Leave project"),
-      permission: "member",
     },
     {
       label: "Удалить проект",
       onClick: async () => {
         await deleteProjectById(projectId);
       },
-      permission: "owner",
+      permission: PERMISSONS.PROJECT_DELETE,
     },
     {
       label: "Переместить в архив",
       onClick: () => console.log("Archive project"),
-      permission: "owner",
+      permission: PERMISSONS.PROJECT_ARCHIVE,
     },
   ];
 
-  const visibleMenuItems = menuItems.filter((item) => hasPermission(item.permission));
+  const visibleMenuItems = menuItems.filter((item) =>
+    item.permission ? hasPermission(permissions, item.permission) : true
+  );
 
   return { menuItems: visibleMenuItems };
 };

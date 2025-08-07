@@ -9,24 +9,21 @@ import {
 } from "@/domain/project/project.contracts";
 import axiosClient from "./axiosClient";
 import { API_ROUTES } from "../config/apiRoutes";
-import { mapProjectFromApi } from "../mappers/projectMappers";
 import { clientLogger } from "../config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
-import { ApiProject, ApiProjectMembers } from "./types";
 import { mapUserFromApi } from "../mappers/userMapper";
-import { ProjectMember } from "@/domain/project/project.entity";
+import { Project, ProjectMember } from "@/domain/project/project.entity";
+import { ApiProject, mapProjectFromApi } from "./projectMapper";
 
 //TODO: Handle different error types appropriately
 
 const getProjects: GetProjects = async () => {
   try {
-    const response = await axiosClient.get<ApiProject[]>(API_ROUTES.PROJECTS);
-
+    const response = await axiosClient.get<Project[]>(API_ROUTES.PROJECTS);
     if (!Array.isArray(response.data)) {
       throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
     }
-
-    return response.data.map((rawProject) => mapProjectFromApi(rawProject));
+    return response.data;
   } catch (error) {
     clientLogger.error("Get projects error", { error });
     throw new AppError(AppErrorType.SERVER, "Failed to get projects");
@@ -35,7 +32,7 @@ const getProjects: GetProjects = async () => {
 
 const newProject: NewProject = async (payload) => {
   try {
-    const response = await axiosClient.post<ApiProject>(API_ROUTES.PROJECTS, payload);
+    const response = await axiosClient.post<Project>(API_ROUTES.PROJECTS, payload);
     const { id } = response.data;
     return await getProjectById(id);
   } catch (error) {
@@ -56,7 +53,7 @@ const getProjectById = async (id: number) => {
 
 const addMembers: AddMembers = async (emails, id) => {
   try {
-    await axiosClient.post<ApiProjectMembers>(API_ROUTES.PROJECT_MEMBERS(id), {
+    await axiosClient.post<string[]>(API_ROUTES.PROJECT_MEMBERS(id), {
       emails,
     });
   } catch (error) {
