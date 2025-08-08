@@ -761,6 +761,20 @@ func (mr *MockProjectRepositoryMockRecorder) HasPermission(ctx, projectID, membe
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPermission", reflect.TypeOf((*MockProjectRepository)(nil).HasPermission), ctx, projectID, memberID, permission)
 }
 
+// RemoveMembership mocks base method.
+func (m *MockProjectRepository) RemoveMembership(ctx context.Context, projectID, userID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveMembership", ctx, projectID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveMembership indicates an expected call of RemoveMembership.
+func (mr *MockProjectRepositoryMockRecorder) RemoveMembership(ctx, projectID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveMembership", reflect.TypeOf((*MockProjectRepository)(nil).RemoveMembership), ctx, projectID, userID)
+}
+
 // Update mocks base method.
 func (m *MockProjectRepository) Update(ctx context.Context, projectID int, data *dto.ProjectUpdate) error {
 	m.ctrl.T.Helper()

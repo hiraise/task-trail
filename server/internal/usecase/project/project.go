@@ -11,6 +11,7 @@ import (
 const AdminRoleName = "admin"
 const OwnerRoleName = "owner"
 const MemberRoleName = "member"
+const PROJECT_OWNER string = "PROJECT_OWNER"
 const PROJECT_INVITE_USERS string = "PROJECT_INVITE_USERS"
 const PROJECT_KICK_USERS string = "PROJECT_KICK_USERS"
 const PROJECT_SET_ROLES string = "PROJECT_SET_ROLES"

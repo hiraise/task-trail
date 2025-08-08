@@ -345,6 +345,20 @@ func (mr *MockProjectMockRecorder) Create(ctx, data any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockProject)(nil).Create), ctx, data)
 }
 
+// Delete mocks base method.
+func (m *MockProject) Delete(ctx context.Context, projectID, memberID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, projectID, memberID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockProjectMockRecorder) Delete(ctx, projectID, memberID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockProject)(nil).Delete), ctx, projectID, memberID)
+}
+
 // GetByID mocks base method.
 func (m *MockProject) GetByID(ctx context.Context, projectID, memberID int) (*dto.ProjectRes, error) {
 	m.ctrl.T.Helper()

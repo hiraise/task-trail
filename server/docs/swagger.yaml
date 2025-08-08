@@ -579,6 +579,38 @@ paths:
       summary: update project by id
       tags:
       - /v1/project
+  /v1/projects/{id}/leave:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "403":
+          description: access denied
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "404":
+          description: project not found
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+      security:
+      - BearerAuth: []
+      summary: leave from project by id
+      tags:
+      - /v1/project
   /v1/projects/{id}/members:
     get:
       consumes:

@@ -493,3 +493,22 @@ func (r *PgProjectRepository) Unarchive(ctx context.Context, projectID int) erro
 	}
 	return nil
 }
+
+func (r *PgProjectRepository) RemoveMembership(ctx context.Context, projectID int, userID int) error {
+	if err := ValidateIDsMap(map[string]int{
+		"projectID": projectID,
+		"userID":    userID,
+	}); err != nil {
+		return err
+	}
+	query := `
+		DELETE
+		FROM project_role_user
+		WHERE project_id = $1 AND user_id = $2; 
+	`
+	_, err := r.getDb(ctx).Exec(ctx, query, projectID, userID)
+	if err != nil {
+		return r.handleError(err)
+	}
+	return nil
+}

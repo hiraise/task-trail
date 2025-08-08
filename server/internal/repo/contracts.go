@@ -151,4 +151,6 @@ type ProjectRepository interface {
 	// It returns an error if called outside of a transaction, if the operation fails,
 	// or if the number of delete roles does not match the input slice length.
 	DeleteRoles(ctx context.Context, roleIDs []int) error
+
+	RemoveMembership(ctx context.Context, projectID int, userID int) error
 }

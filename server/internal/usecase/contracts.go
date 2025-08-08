@@ -49,4 +49,5 @@ type Project interface {
 	UpdateByID(ctx context.Context, projectID int, userID int, data *dto.ProjectUpdate) error
 	GetMembers(ctx context.Context, projectID int, userID int) ([]*dto.ProjectMember, error)
 	Delete(ctx context.Context, projectID int, memberID int) error
+	Leave(ctx context.Context, projectID int, memberID int) error
 }

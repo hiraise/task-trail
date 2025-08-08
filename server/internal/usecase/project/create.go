@@ -16,7 +16,7 @@ var defaultRoles = map[string]dto.ProjectRoleCreate{
 	},
 	OwnerRoleName: {
 		Name:        OwnerRoleName,
-		Permissions: []string{PROJECT_INVITE_USERS, PROJECT_KICK_USERS, PROJECT_SET_ROLES, PROJECT_EDIT, PROJECT_ARCHIVE, PROJECT_DELETE, PROJECT_GET_CANDIDATES},
+		Permissions: []string{PROJECT_OWNER, PROJECT_INVITE_USERS, PROJECT_KICK_USERS, PROJECT_SET_ROLES, PROJECT_EDIT, PROJECT_ARCHIVE, PROJECT_DELETE, PROJECT_GET_CANDIDATES},
 	},
 	MemberRoleName: {
 		Name:        MemberRoleName,
