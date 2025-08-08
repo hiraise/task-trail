@@ -1211,17 +1211,17 @@ const docTemplate = `{
         "response.projectMemberRes": {
             "type": "object",
             "properties": {
+                "Permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "email": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
-                },
-                "roles": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "username": {
                     "type": "string"

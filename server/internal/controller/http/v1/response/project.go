@@ -26,10 +26,10 @@ type projectRes struct {
 }
 
 type projectMemberRes struct {
-	ID       int      `json:"id"`
-	Email    string   `json:"email"`
-	Username *string  `json:"username"`
-	Roles    []string `json:"roles"`
+	ID          int      `json:"id"`
+	Email       string   `json:"email"`
+	Username    *string  `json:"username"`
+	Permissions []string `json:"permissions"`
 }
 
 type projectCreateRes struct {
@@ -78,10 +78,10 @@ func NewProjecResFromDTO(data *dto.ProjectRes) *projectRes {
 
 func ProjectMemberResFromDTO(data *dto.ProjectMember) *projectMemberRes {
 	return &projectMemberRes{
-		ID:       data.ID,
-		Email:    data.Email,
-		Username: data.Username,
-		Roles:    data.Roles,
+		ID:          data.ID,
+		Email:       data.Email,
+		Username:    data.Username,
+		Permissions: data.Permissions,
 	}
 }
 

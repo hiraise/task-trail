@@ -68,10 +68,10 @@ type ProjectRoleRes struct {
 }
 
 type ProjectMember struct {
-	ID       int
-	Email    string
-	Username *string
-	Roles    []string
+	ID          int
+	Email       string
+	Username    *string
+	Permissions []string
 }
 
 type ProjectRights struct {

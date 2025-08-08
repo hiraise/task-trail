@@ -3,8 +3,6 @@ package persistent
 import (
 	"context"
 	"fmt"
-	"maps"
-	"slices"
 	"strings"
 	"task-trail/internal/repo"
 	"task-trail/internal/usecase/dto"
@@ -128,38 +126,39 @@ func (r *PgProjectRepository) GetMembers(ctx context.Context, projectID int) ([]
 		return nil, err
 	}
 	query := `
-		SELECT DISTINCT u.id, u.email, u.username, pr.name
+		SELECT DISTINCT u.id, u.email, u.username, STRING_AGG(DISTINCT pems.name, ',') AS permissions
 		FROM project_role_user AS pru
-		JOIN projects 	   AS p ON p.id = pru.project_id AND p.deleted_at IS NULL
-		JOIN project_roles AS pr ON pr.id = pru.role_id AND pr.deleted_at IS NULL
-		JOIN users 		   AS u ON u.id = pru.user_id AND u.deleted_at IS NULL
-		WHERE pru.project_id = $1;
+		INNER JOIN projects AS p ON p.id = pru.project_id AND p.deleted_at IS NULL
+		INNER JOIN users AS u ON u.id = pru.user_id AND u.deleted_at IS NULL
+		INNER JOIN project_roles AS pr ON pr.id = pru.role_id AND pr.deleted_at IS NULL
+		LEFT JOIN project_role_permission AS prp ON pr.id = prp.role_id
+		LEFT JOIN permissions AS pems ON pems.id = prp.permission_id
+		WHERE pru.project_id = $1
+		GROUP BY u.id, u.email, u.username;
 		`
 	rows, err := r.getDb(ctx).Query(ctx, query, projectID)
 	if err != nil {
 		return nil, r.handleError(err)
 	}
-	items := make(map[int]*dto.ProjectMember)
-	_, err = ScanRows(rows, func(r pgx.Rows) (*any, error) {
+
+	res, err := ScanRows(rows, func(r pgx.Rows) (*dto.ProjectMember, error) {
 		var item dto.ProjectMember
-		var role string
-		if err := r.Scan(&item.ID, &item.Email, &item.Username, &role); err != nil {
+		var permissions *string
+		if err := r.Scan(&item.ID, &item.Email, &item.Username, &permissions); err != nil {
 			return nil, err
 		}
-		if existing, found := items[item.ID]; found {
-			existing.Roles = append(existing.Roles, role)
+		if permissions != nil {
+			item.Permissions = strings.Split(*permissions, ",")
 		} else {
-			item.Roles = []string{role}
-			items[item.ID] = &item
-
+			item.Permissions = []string{}
 		}
-		return nil, nil
+		return &item, nil
 	})
 	if err != nil {
 		return nil, r.handleError(err)
 	}
 
-	return slices.Collect(maps.Values(items)), nil
+	return res, nil
 }
 
 func (r *PgProjectRepository) GetCandidates(ctx context.Context, userID int, permission string, projectID int) ([]*dto.UserSimple, error) {

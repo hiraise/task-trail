@@ -25,8 +25,8 @@ func TestUseCase_GetMembers(t *testing.T) {
 	ctx := context.Background()
 	testArgs := args{ctx: ctx, projectID: 1, userID: 1}
 	retVal := []*dto.ProjectMember{
-		{ID: 1, Email: "Test", Roles: []string{project.OwnerRoleName}},
-		{ID: 2, Email: "Test", Roles: []string{project.MemberRoleName}},
+		{ID: 1, Email: "Test", Permissions: []string{project.OwnerRoleName}},
+		{ID: 2, Email: "Test", Permissions: []string{project.MemberRoleName}},
 	}
 	tests := []struct {
 		name        string

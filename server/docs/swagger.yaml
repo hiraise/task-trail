@@ -128,14 +128,14 @@ definitions:
     type: object
   response.projectMemberRes:
     properties:
+      Permissions:
+        items:
+          type: string
+        type: array
       email:
         type: string
       id:
         type: integer
-      roles:
-        items:
-          type: string
-        type: array
       username:
         type: string
     type: object

@@ -40,7 +40,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 		TaskCount:   0,
 	}
 	testMembers := []*dto.ProjectMember{
-		{ID: 1, Email: "test@mail.com", Roles: []string{project.OwnerRoleName}},
+		{ID: 1, Email: "test@mail.com", Permissions: []string{project.OwnerRoleName}},
 	}
 	tests := []struct {
 		name        string
