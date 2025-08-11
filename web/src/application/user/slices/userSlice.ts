@@ -60,6 +60,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearUserState, updateAvatar, setCurrentUser } =
-  userSlice.actions;
+export const { clearUserState, updateAvatar, setCurrentUser } = userSlice.actions;
 export default userSlice.reducer;

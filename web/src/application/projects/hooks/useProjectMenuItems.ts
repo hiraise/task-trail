@@ -2,7 +2,7 @@ import { useRouter } from "next/navigation";
 
 import { ROUTES } from "@/infrastructure/config/routes";
 import { useProjects } from "./useProjects";
-import { PermissionType, PERMISSONS } from "@/domain/project/project.entity";
+import { PermissionType, PERMISSIONS } from "@/domain/project/project.entity";
 import { hasPermission } from "@/shared/utils/permissions";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { useMemo } from "react";
@@ -23,7 +23,7 @@ export const useProjectMenuItems = (projectId: number) => {
     {
       label: "Редактировать проект",
       onClick: () => router.push(ROUTES.editProject(String(projectId))),
-      permission: PERMISSONS.PROJECT_EDIT,
+      permission: PERMISSIONS.PROJECT_EDIT,
     },
     {
       label: "Покинуть проект",
@@ -34,12 +34,12 @@ export const useProjectMenuItems = (projectId: number) => {
       onClick: async () => {
         await deleteProjectById(projectId);
       },
-      permission: PERMISSONS.PROJECT_DELETE,
+      permission: PERMISSIONS.PROJECT_DELETE,
     },
     {
       label: "Переместить в архив",
       onClick: () => console.log("Archive project"),
-      permission: PERMISSONS.PROJECT_ARCHIVE,
+      permission: PERMISSIONS.PROJECT_ARCHIVE,
     },
   ];
 

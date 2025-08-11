@@ -59,11 +59,7 @@ export default function ProjectMembersPage() {
         <div className="title-wrapper">
           <div className="members-title">
             <h1>{texts.title}</h1>
-            <IconButton
-              icon={ICONS.addUser}
-              size="24px"
-              onClick={handleAddMember}
-            />
+            <IconButton icon={ICONS.addUser} size="24px" onClick={handleAddMember} />
           </div>
         </div>
         {isLoading && <LoadingScreen />}

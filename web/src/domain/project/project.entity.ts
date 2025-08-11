@@ -11,7 +11,7 @@ export interface Project {
 export interface ProjectMember {
   email: string;
   id: number;
-  roles: string[];
+  permissions: PermissionType[];
   username: string;
 }
 
@@ -20,7 +20,7 @@ export interface ProjectPermissions {
   permissions: PermissionType[];
 }
 
-export const PERMISSONS = {
+export const PERMISSIONS = {
   PROJECT_INVITE_USERS: "PROJECT_INVITE_USERS",
   PROJECT_KICK_USERS: "PROJECT_KICK_USERS",
   PROJECT_SET_ROLES: "PROJECT_SET_ROLES",
@@ -28,6 +28,8 @@ export const PERMISSONS = {
   PROJECT_ARCHIVE: "PROJECT_ARCHIVE",
   PROJECT_DELETE: "PROJECT_DELETE",
   PROJECT_GET_CANDIDATES: "PROJECT_GET_CANDIDATES",
+  PROJECT_OWNER: "PROJECT_OWNER",
+  PROJECT_ADMIN: "PROJECT_ADMIN",
 };
 
 export const ROLES = {
@@ -36,5 +38,5 @@ export const ROLES = {
   ADMIN: "admin",
 };
 
-export type PermissionType = (typeof PERMISSONS)[keyof typeof PERMISSONS];
+export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 export type RoleType = (typeof ROLES)[keyof typeof ROLES];
