@@ -36,8 +36,7 @@ export function MembersList({ members }: MembersListProps) {
   const currentUser = members.find((m) => currentUserId && m.id === currentUserId);
   const projectId = Number(useParams().id);
 
-  const { kickMember } = useProjects();
-  const { kick, isLoading } = kickMember;
+  const { kick, isLoading } = useProjects();
   const [kickingUserId, setKickingUserId] = useState<number | null>(null);
 
   const handleOnClick = async (memberId: number) => {

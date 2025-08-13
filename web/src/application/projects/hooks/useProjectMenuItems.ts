@@ -14,7 +14,7 @@ export interface MenuItem {
 }
 
 export const useProjectMenuItems = (projectId: number) => {
-  const { deleteProjectById, leave } = useProjects();
+  const { deleteById, leave } = useProjects();
   const project = useAppSelector((state) => state.project.project);
   const permissions = useMemo(() => project?.permissions || [], [project]);
   const router = useRouter();
@@ -32,9 +32,7 @@ export const useProjectMenuItems = (projectId: number) => {
     },
     {
       label: "Удалить проект",
-      onClick: async () => {
-        await deleteProjectById(projectId);
-      },
+      onClick: async () => await deleteById(projectId),
       isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_DELETE),
     },
     {

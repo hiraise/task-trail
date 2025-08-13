@@ -13,12 +13,12 @@ const projectsSlice = createSlice({
     setProjects(state, action: PayloadAction<Project[]>) {
       return action.payload;
     },
-    deleteProjectById(state, action: PayloadAction<number>) {
+    removeById(state, action: PayloadAction<number>) {
       const projectId = action.payload;
       return state.filter((project) => project.id !== projectId);
     },
   },
 });
 
-export const { setProjects, deleteProjectById } = projectsSlice.actions;
+export const { setProjects, removeById } = projectsSlice.actions;
 export default projectsSlice.reducer;
