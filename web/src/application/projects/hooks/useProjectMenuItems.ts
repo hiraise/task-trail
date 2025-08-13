@@ -2,7 +2,7 @@ import { useRouter } from "next/navigation";
 
 import { ROUTES } from "@/infrastructure/config/routes";
 import { useProjects } from "./useProjects";
-import { PermissionType, PERMISSIONS } from "@/domain/project/project.entity";
+import { PERMISSIONS } from "@/domain/project/project.entity";
 import { hasPermission } from "@/shared/utils/permissions";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { useMemo } from "react";
@@ -10,11 +10,11 @@ import { useMemo } from "react";
 export interface MenuItem {
   label: string;
   onClick: () => void;
-  permission?: PermissionType;
+  isVisible: boolean;
 }
 
 export const useProjectMenuItems = (projectId: number) => {
-  const { deleteProjectById } = useProjects();
+  const { deleteProjectById, leave } = useProjects();
   const project = useAppSelector((state) => state.project.project);
   const permissions = useMemo(() => project?.permissions || [], [project]);
   const router = useRouter();
@@ -23,29 +23,28 @@ export const useProjectMenuItems = (projectId: number) => {
     {
       label: "Редактировать проект",
       onClick: () => router.push(ROUTES.editProject(String(projectId))),
-      permission: PERMISSIONS.PROJECT_EDIT,
+      isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_EDIT),
     },
     {
       label: "Покинуть проект",
-      onClick: () => console.log("Leave project"),
+      onClick: async () => await leave(projectId),
+      isVisible: !hasPermission(permissions, PERMISSIONS.PROJECT_OWNER),
     },
     {
       label: "Удалить проект",
       onClick: async () => {
         await deleteProjectById(projectId);
       },
-      permission: PERMISSIONS.PROJECT_DELETE,
+      isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_DELETE),
     },
     {
       label: "Переместить в архив",
       onClick: () => console.log("Archive project"),
-      permission: PERMISSIONS.PROJECT_ARCHIVE,
+      isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_ARCHIVE),
     },
   ];
 
-  const visibleMenuItems = menuItems.filter((item) =>
-    item.permission ? hasPermission(permissions, item.permission) : true
-  );
+  const visibleMenuItems = menuItems.filter((item) => item.isVisible);
 
   return { menuItems: visibleMenuItems };
 };

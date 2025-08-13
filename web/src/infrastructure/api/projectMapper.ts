@@ -1,9 +1,4 @@
-import { PermissionType, Project, RoleType } from "@/domain/project/project.entity";
-
-export interface ProjectRights {
-  role: RoleType;
-  permissions: PermissionType[];
-}
+import { PermissionType, Project } from "@/domain/project/project.entity";
 
 export interface ApiProject {
   id: number;
@@ -11,7 +6,7 @@ export interface ApiProject {
   description: string;
   createdAt: Date;
   tasksCount: number;
-  rights: ProjectRights[];
+  permissions: PermissionType[];
 }
 
 export const mapProjectFromApi = (apiProject: ApiProject): Project => {
@@ -21,7 +16,6 @@ export const mapProjectFromApi = (apiProject: ApiProject): Project => {
     description: apiProject.description,
     createdAt: apiProject.createdAt.toString(),
     totalTasks: apiProject.tasksCount,
-    roles: apiProject.rights ? apiProject.rights.map((right) => right.role) : [],
-    permissions: apiProject.rights ? apiProject.rights.flatMap((right) => right.permissions) : [],
+    permissions: apiProject.permissions,
   };
 };

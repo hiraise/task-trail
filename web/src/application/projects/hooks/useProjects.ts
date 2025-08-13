@@ -20,7 +20,7 @@ import { ROUTES } from "@/infrastructure/config/routes";
 import { clearProject, kickAction } from "../slices/projectSlice";
 import { User } from "@/domain/user/user.entity";
 import { EditProject } from "@/domain/project/project.contracts";
-import { useKickMemberMutation } from "@/infrastructure/adapters/projectsApi";
+import { useKickMemberMutation, useLeaveMutation } from "@/infrastructure/adapters/projectsApi";
 
 //TODO: Replace try/catch with status handling in thunks
 
@@ -38,6 +38,7 @@ type UseProjectsResult = {
     kick: (projectId: number, memberId: number) => Promise<void>;
     isLoading: boolean;
   };
+  leave: (id: number) => Promise<void>;
   isLoading: boolean;
   projects: Project[];
 };
@@ -177,6 +178,19 @@ export const useProjects = (): UseProjectsResult => {
     }
   };
 
+  const [leave] = useLeaveMutation();
+  const leaveProject = async (id: number) => {
+    try {
+      await leave({ projectId: id }).unwrap();
+      router.replace(ROUTES.projects);
+      //TODO: Remove  from list of projects in state
+      toast.success("You have left the project");
+    } catch (error) {
+      clientLogger.error("useProjects leaveProject error:", { error });
+      toast.error("Failed to leave project. Please try again.");
+    }
+  };
+
   return {
     createProject,
     getProjects,
@@ -188,6 +202,7 @@ export const useProjects = (): UseProjectsResult => {
     addMembers,
     deleteProjectById,
     kickMember: { kick: kickMember, isLoading: isKickingMember },
+    leave: leaveProject,
     isLoading,
     projects,
   };

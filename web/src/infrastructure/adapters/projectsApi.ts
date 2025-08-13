@@ -21,9 +21,23 @@ const projectsApi = createApi({
         { type: "ProjectCandidate", id: projectId },
       ],
     }),
+    leave: builder.mutation<void, { projectId: number }>({
+      queryFn: async ({ projectId }) => {
+        try {
+          await projectService.leave(projectId);
+          return { data: undefined };
+        } catch (error) {
+          return { error };
+        }
+      },
+      invalidatesTags: (result, error, { projectId }) => [
+        { type: "Member", id: projectId },
+        { type: "ProjectCandidate", id: projectId },
+      ],
+    }),
   }),
 });
 
-export const { useKickMemberMutation } = projectsApi;
+export const { useKickMemberMutation, useLeaveMutation } = projectsApi;
 
 export default projectsApi;

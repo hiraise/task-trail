@@ -23,4 +23,5 @@ export const API_ROUTES = {
   GET_CANDIDATES: (id?: number) => `${PROJECTS}/candidates${id ? `/?id=${id}` : ""}`,
   KICK_MEMBER: (projectId: number, memberId: number) =>
     `${PROJECTS}/${projectId}/members/${memberId}`,
+  LEAVE_PROJECT: (id: number) => `${PROJECTS}/${id}/leave`,
 };

@@ -123,6 +123,15 @@ const kickMember = async (projectId: number, memberId: number) => {
   }
 };
 
+const leave = async (id: number) => {
+  try {
+    await axiosClient.delete(API_ROUTES.LEAVE_PROJECT(id));
+  } catch (error) {
+    clientLogger.error("Leave project error", { error, id });
+    throw new AppError(AppErrorType.SERVER, "Failed to leave project");
+  }
+};
+
 export const projectService: ProjectService = {
   getProjects: getProjects,
   newProject: newProject,
@@ -133,4 +142,5 @@ export const projectService: ProjectService = {
   getMembers: getMembers,
   deleteProject: deleteProject,
   kickMember: kickMember,
+  leave: leave,
 };
