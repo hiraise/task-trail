@@ -100,9 +100,9 @@ func TestUseCase_AddMembers(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		// user dont has required permission
+		// user dont have required permission
 		{
-			name: "user dont has required permission",
+			name: "user dont have required permission",
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
@@ -112,7 +112,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.ForbiddenErr,
-			wantErrMsg:  "user dont has required permission",
+			wantErrMsg:  "user dont have required permission",
 		},
 		// failed to get project members
 		{

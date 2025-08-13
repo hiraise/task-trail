@@ -27,16 +27,13 @@ func TestUseCase_GetByID(t *testing.T) {
 	testArgs :=
 		args{ctx: ctx, projectID: 1, memberID: 1}
 	dbProject := dto.ProjectListRes{ID: 1, Name: "Test", Description: "Test", TaskCount: 0, CreatedAt: time.Now()}
-	dbRights := []*dto.ProjectRights{{
-		Role: "test", Permissions: []string{"test"},
-	}}
 	want := dto.ProjectRes{
 		ID:          dbProject.ID,
 		Name:        dbProject.Name,
 		Description: dbProject.Description,
 		TaskCount:   dbProject.TaskCount,
 		CreatedAt:   dbProject.CreatedAt,
-		Rights:      dbRights,
+		Permissions: []string{"11", "p2"},
 	}
 	tests := []struct {
 		name        string
@@ -55,7 +52,7 @@ func TestUseCase_GetByID(t *testing.T) {
 				uc, deps := mockUseCase(ctrl)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&dbProject, nil)
-				deps.projectRepo.EXPECT().GetMemberRights(gomock.Any(), gomock.Any(), gomock.Any()).Return(dbRights, nil)
+				deps.projectRepo.EXPECT().GetMemberRights(gomock.Any(), gomock.Any(), gomock.Any()).Return(want.Permissions, nil)
 				return uc
 			},
 			want:    &want,

@@ -129,11 +129,11 @@ type ProjectRepository interface {
 
 	// GetMemberRights retrieves the roles and associated permissions for a specific member within a given project.
 	//
-	// It returns a slice of ProjectRights DTOs, each containing a role and its permissions.
+	// It returns a slice of user permissions.
 	// The function queries the database to find all roles assigned to the member in the specified project,
 	// along with the permissions granted by those roles. If the project is deleted or an error occurs during
 	// the operation, an error is returned.
-	GetMemberRights(ctx context.Context, projectID int, memberID int) ([]*dto.ProjectRights, error)
+	GetMemberRights(ctx context.Context, projectID int, memberID int) ([]string, error)
 
 	// AppendPermissions adds the specified permissions to a project role.
 	//

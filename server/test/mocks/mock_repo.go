@@ -702,10 +702,10 @@ func (mr *MockProjectRepositoryMockRecorder) GetList(ctx, data any) *gomock.Call
 }
 
 // GetMemberRights mocks base method.
-func (m *MockProjectRepository) GetMemberRights(ctx context.Context, projectID, memberID int) ([]*dto.ProjectRights, error) {
+func (m *MockProjectRepository) GetMemberRights(ctx context.Context, projectID, memberID int) ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMemberRights", ctx, projectID, memberID)
-	ret0, _ := ret[0].([]*dto.ProjectRights)
+	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

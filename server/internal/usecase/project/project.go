@@ -12,6 +12,7 @@ const AdminRoleName = "admin"
 const OwnerRoleName = "owner"
 const MemberRoleName = "member"
 const PROJECT_OWNER string = "PROJECT_OWNER"
+const PROJECT_ADMIN string = "PROJECT_ADMIN"
 const PROJECT_INVITE_USERS string = "PROJECT_INVITE_USERS"
 const PROJECT_KICK_USERS string = "PROJECT_KICK_USERS"
 const PROJECT_SET_ROLES string = "PROJECT_SET_ROLES"
@@ -53,7 +54,7 @@ func (u *UseCase) CheckMembership(ctx context.Context, projectID int, memberID i
 		if errors.Is(err, repo.ErrNotFound) {
 			return u.errHandler.NotFound(
 				err,
-				"project not found",
+				"project or user not found",
 				"memberID", memberID,
 				"projectID", projectID,
 			)
@@ -84,7 +85,7 @@ func (u *UseCase) VerifyAccess(ctx context.Context, projectID int, userID int, p
 	}
 	if !res {
 		return u.errHandler.Forbidden(
-			nil, "user dont has required permission",
+			nil, "user dont have required permission",
 			"projectID", projectID,
 			"userID", userID,
 			"permission", permisssion)

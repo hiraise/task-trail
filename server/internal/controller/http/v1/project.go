@@ -235,6 +235,29 @@ func (r *projectRoutes) leaveByID(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
+// @Summary 	kick user from project
+// @Security BearerAuth
+// @Tags 		/v1/project
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "project id"
+// @Param 		memberId path int true "member id"
+// @Success 	200
+// @Failure		401 {object} response.ErrAPI "authentication required"
+// @Failure		403 {object} response.ErrAPI "access denied"
+// @Failure		404 {object} response.ErrAPI "project not found"
+// @Router 		/v1/projects/{id}/members/{memberId} [delete]
+func (r *projectRoutes) kickByID(c *gin.Context) {
+	userID := utils.Must(r.contextmanager.GetUserID(c))
+	projectID := utils.Must(strconv.Atoi(c.Param("id")))
+	memberID := utils.Must(strconv.Atoi(c.Param("memberId")))
+	if err := r.u.KickMember(c, projectID, userID, memberID); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
+
 func NewProjectRouter(
 	router *gin.RouterGroup,
 	u usecase.Project,
@@ -245,6 +268,7 @@ func NewProjectRouter(
 	r := &projectRoutes{u: u, contextmanager: contextmanager, errHandler: errHandler}
 	g := router.Group("/projects")
 	g.DELETE(":id/leave", authMW, r.leaveByID)
+	g.DELETE(":id/members/:memberId", authMW, r.kickByID)
 	g.POST(":id/members", authMW, r.addMembers)
 	g.GET(":id/members", authMW, r.GetMembers)
 	g.GET("candidates", authMW, r.getCandidates)

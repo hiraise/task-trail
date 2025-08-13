@@ -60,7 +60,7 @@ type ProjectRes struct {
 	Description string
 	CreatedAt   time.Time
 	TaskCount   int
-	Rights      []*ProjectRights
+	Permissions []string
 }
 type ProjectRoleRes struct {
 	ID   int

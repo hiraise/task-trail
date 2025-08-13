@@ -702,7 +702,7 @@ func TestGetMemberRights(t *testing.T) {
 		res, err := projectRepo.GetMemberRights(t.Context(), p.ProjectID, userID)
 		require.NoError(t, err)
 		require.Len(t, res, 2)
-		require.Contains(t, res[0].Permissions, testPermission)
+		require.Contains(t, res, testPermission)
 
 	})
 
@@ -922,5 +922,5 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteRoles(t *testing.T) {
-	
+
 }

@@ -13,9 +13,9 @@ func (u *UseCase) GetByID(ctx context.Context, projectID int, memberID int) (*dt
 	if err != nil {
 		return nil, u.errHandler.InternalTrouble(err, "failed to get project", "projectID", projectID, "memberID", memberID)
 	}
-	rights, err := u.projectRepo.GetMemberRights(ctx, projectID, memberID)
+	permissions, err := u.projectRepo.GetMemberRights(ctx, projectID, memberID)
 	if err != nil {
-		return nil, u.errHandler.InternalTrouble(err, "failed to get member rights", "projectID", projectID, "memberID", memberID)
+		return nil, u.errHandler.InternalTrouble(err, "failed to get member permissions", "projectID", projectID, "memberID", memberID)
 	}
 	return &dto.ProjectRes{
 		ID:          item.ID,
@@ -23,6 +23,6 @@ func (u *UseCase) GetByID(ctx context.Context, projectID int, memberID int) (*dt
 		Name:        item.Name,
 		Description: item.Description,
 		CreatedAt:   item.CreatedAt,
-		Rights:      rights,
+		Permissions: permissions,
 	}, nil
 }

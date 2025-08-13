@@ -128,14 +128,14 @@ definitions:
     type: object
   response.projectMemberRes:
     properties:
-      Permissions:
-        items:
-          type: string
-        type: array
       email:
         type: string
       id:
         type: integer
+      permissions:
+        items:
+          type: string
+        type: array
       username:
         type: string
     type: object
@@ -149,21 +149,12 @@ definitions:
         type: integer
       name:
         type: string
-      rights:
-        items:
-          $ref: '#/definitions/response.rights'
-        type: array
-      tasksCount:
-        type: integer
-    type: object
-  response.rights:
-    properties:
       permissions:
         items:
           type: string
         type: array
-      role:
-        type: string
+      tasksCount:
+        type: integer
     type: object
   response.userSimpleRes:
     properties:
@@ -680,6 +671,43 @@ paths:
       security:
       - BearerAuth: []
       summary: add new members to project
+      tags:
+      - /v1/project
+  /v1/projects/{id}/members/{memberId}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: member id
+        in: path
+        name: memberId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "403":
+          description: access denied
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "404":
+          description: project not found
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+      security:
+      - BearerAuth: []
+      summary: kick user from project
       tags:
       - /v1/project
   /v1/projects/candidates:

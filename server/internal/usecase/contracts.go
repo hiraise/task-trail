@@ -50,4 +50,5 @@ type Project interface {
 	GetMembers(ctx context.Context, projectID int, userID int) ([]*dto.ProjectMember, error)
 	Delete(ctx context.Context, projectID int, memberID int) error
 	Leave(ctx context.Context, projectID int, memberID int) error
+	KickMember(ctx context.Context, projectID int, requesterID int, memberID int) error
 }

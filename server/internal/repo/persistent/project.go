@@ -376,7 +376,7 @@ func (r *PgProjectRepository) HasPermission(ctx context.Context, projectID int, 
 	return result, nil
 }
 
-func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int, userID int) ([]*dto.ProjectRights, error) {
+func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int, userID int) ([]string, error) {
 	if err := ValidateIDsMap(map[string]int{
 		"projectID": projectID,
 		"userID":    userID,
@@ -384,7 +384,7 @@ func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int
 		return nil, err
 	}
 	query := `
-		SELECT p.name, pr.name
+		SELECT DISTINCT p.name
 		FROM project_role_user AS pru
 		JOIN users AS u ON u.id = pru.user_id AND u.deleted_at IS NULL
 		JOIN projects AS pro ON pro.id = pru.project_id AND pro.deleted_at IS NULL
@@ -398,28 +398,23 @@ func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int
 		return nil, r.handleError(err)
 	}
 
-	items := make(map[string][]string)
-	_, err = ScanRows(rows, func(row pgx.Rows) (*any, error) {
-		var role string
-		var permission *string
-		if err := rows.Scan(&permission, &role); err != nil {
+	items := make([]string, 0)
+	_, err = ScanRows(rows, func(row pgx.Rows) (*string, error) {
+		var permission string
+		if err := rows.Scan(&permission); err != nil {
 			return nil, err
 		}
-		if permission == nil {
-			items[role] = []string{}
+		if permission == "" {
+			return nil, nil
 		} else {
-			items[role] = append(items[role], *permission)
+			items = append(items, permission)
 		}
 		return nil, nil
 	})
 	if err != nil {
 		return nil, r.handleError(err)
 	}
-	var retVal []*dto.ProjectRights
-	for k, v := range items {
-		retVal = append(retVal, &dto.ProjectRights{Role: k, Permissions: v})
-	}
-	return retVal, nil
+	return items, nil
 
 }
 

@@ -49,7 +49,7 @@ func TestUseCase_Delete(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "user dont has required permission",
+			name: "user dont have required permission",
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
@@ -60,7 +60,7 @@ func TestUseCase_Delete(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.ForbiddenErr,
-			wantErrMsg:  "user dont has required permission",
+			wantErrMsg:  "user dont have required permission",
 		},
 		{
 			name: "failed to verify user accesst",

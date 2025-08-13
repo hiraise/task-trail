@@ -856,6 +856,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/projects/{id}/members/{memberId}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/project"
+                ],
+                "summary": "kick user from project",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "project id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "member id",
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "403": {
+                        "description": "access denied",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "project not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/users/me": {
             "get": {
                 "security": [
@@ -1211,17 +1269,17 @@ const docTemplate = `{
         "response.projectMemberRes": {
             "type": "object",
             "properties": {
-                "Permissions": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "email": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "username": {
                     "type": "string"
@@ -1243,28 +1301,14 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "rights": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/response.rights"
-                    }
-                },
-                "tasksCount": {
-                    "type": "integer"
-                }
-            }
-        },
-        "response.rights": {
-            "type": "object",
-            "properties": {
                 "permissions": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "role": {
-                    "type": "string"
+                "tasksCount": {
+                    "type": "integer"
                 }
             }
         },
