@@ -4,7 +4,6 @@ export interface Project {
   description?: string;
   createdAt: string;
   totalTasks: number;
-  roles: RoleType[];
   permissions: PermissionType[];
 }
 
@@ -13,11 +12,8 @@ export interface ProjectMember {
   id: number;
   permissions: PermissionType[];
   username: string;
-}
-
-export interface ProjectPermissions {
-  role: RoleType;
-  permissions: PermissionType[];
+  isOwner?: boolean;
+  isAdmin?: boolean;
 }
 
 export const PERMISSIONS = {
@@ -32,11 +28,4 @@ export const PERMISSIONS = {
   PROJECT_ADMIN: "PROJECT_ADMIN",
 };
 
-export const ROLES = {
-  OWNER: "owner",
-  MEMBER: "member",
-  ADMIN: "admin",
-};
-
 export type PermissionType = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
-export type RoleType = (typeof ROLES)[keyof typeof ROLES];

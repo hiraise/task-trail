@@ -12,8 +12,9 @@ import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 import { mapUserFromApi } from "../mappers/userMapper";
-import { Project, ProjectMember } from "@/domain/project/project.entity";
+import { PERMISSIONS, Project, ProjectMember } from "@/domain/project/project.entity";
 import { ApiProject, mapProjectFromApi } from "./projectMapper";
+import { hasPermission } from "@/shared/utils/permissions";
 
 //TODO: Handle different error types appropriately
 
@@ -91,7 +92,13 @@ const getMembers: GetMembers = async (id) => {
     if (!Array.isArray(response.data)) {
       throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
     }
-    return response.data;
+    return response.data.map((member) => {
+      return {
+        ...member,
+        isOwner: hasPermission(member.permissions, PERMISSIONS.PROJECT_OWNER),
+        isAdmin: hasPermission(member.permissions, PERMISSIONS.PROJECT_ADMIN),
+      };
+    });
   } catch (error) {
     clientLogger.error("Get project members error", { error, id });
     throw new AppError(AppErrorType.SERVER, "Failed to get project members");
