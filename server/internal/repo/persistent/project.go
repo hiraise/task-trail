@@ -400,14 +400,14 @@ func (r *PgProjectRepository) GetMemberRights(ctx context.Context, projectID int
 
 	items := make([]string, 0)
 	_, err = ScanRows(rows, func(row pgx.Rows) (*string, error) {
-		var permission string
+		var permission *string
 		if err := rows.Scan(&permission); err != nil {
 			return nil, err
 		}
-		if permission == "" {
+		if permission == nil {
 			return nil, nil
 		} else {
-			items = append(items, permission)
+			items = append(items, *permission)
 		}
 		return nil, nil
 	})
