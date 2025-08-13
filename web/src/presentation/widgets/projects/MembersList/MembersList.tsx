@@ -1,4 +1,5 @@
-import { toast } from "sonner";
+import { useState } from "react";
+import { useParams } from "next/navigation";
 
 import styles from "./MembersList.module.css";
 
@@ -7,6 +8,8 @@ import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { PERMISSIONS, ProjectMember } from "@/domain/project/project.entity";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { Spinner } from "@/presentation/ui/Spinner";
+import { useProjects } from "@/application/projects/hooks/useProjects";
 
 const showDeleteButton = (currentUser: ProjectMember, member: ProjectMember) => {
   if (member.isOwner || member.isAdmin) return false;
@@ -31,9 +34,16 @@ interface MembersListProps {
 export function MembersList({ members }: MembersListProps) {
   const currentUserId = useAppSelector((s) => (s.user.data?.id ? Number(s.user.data.id) : null));
   const currentUser = members.find((m) => currentUserId && m.id === currentUserId);
+  const projectId = Number(useParams().id);
 
-  const handleOnClick = (id: number) => {
-    toast.info(`User with ID ${id} clicked`);
+  const { kickMember } = useProjects();
+  const { kick, isLoading } = kickMember;
+  const [kickingUserId, setKickingUserId] = useState<number | null>(null);
+
+  const handleOnClick = async (memberId: number) => {
+    setKickingUserId(memberId);
+    await kick(projectId, memberId);
+    setKickingUserId(null);
   };
 
   const sortedMembers = getSortedMembers(members);
@@ -42,19 +52,23 @@ export function MembersList({ members }: MembersListProps) {
     <div className={styles.container}>
       {sortedMembers.map((user) => {
         return (
-          <div key={user.email} className={styles.userWrapper}>
+          <div key={user.id} className={styles.userWrapper}>
             <UserItem
               username={user.username}
               email={user.isOwner ? "Владелец проекта" : user.email}
             />
-            {showDeleteButton(currentUser!, user) && (
-              <IconButton
-                icon={ICONS.delete}
-                size="24px"
-                onClick={() => handleOnClick(user.id)}
-                color="rgba(0, 0, 0, 0.5)"
-              />
-            )}
+            {showDeleteButton(currentUser!, user) &&
+              (isLoading && kickingUserId === user.id ? (
+                <Spinner size={25} />
+              ) : (
+                <IconButton
+                  icon={ICONS.delete}
+                  size="24px"
+                  onClick={() => handleOnClick(user.id)}
+                  color="rgba(0, 0, 0, 0.5)"
+                  disabled={isLoading}
+                />
+              ))}
           </div>
         );
       })}

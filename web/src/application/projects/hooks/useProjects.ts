@@ -17,9 +17,10 @@ import {
 import { ProjectPayload } from "@/domain/project/project.payload";
 import { Project } from "@/domain/project/project.entity";
 import { ROUTES } from "@/infrastructure/config/routes";
-import { clearProject } from "../slices/projectSlice";
+import { clearProject, kickAction } from "../slices/projectSlice";
 import { User } from "@/domain/user/user.entity";
 import { EditProject } from "@/domain/project/project.contracts";
+import { useKickMemberMutation } from "@/infrastructure/adapters/projectsApi";
 
 //TODO: Replace try/catch with status handling in thunks
 
@@ -33,6 +34,10 @@ type UseProjectsResult = {
   getMembers: (id: number) => Promise<void>;
   addMembers: (id: number, emails: string[]) => Promise<void>;
   deleteProjectById: (id: number) => Promise<void>;
+  kickMember: {
+    kick: (projectId: number, memberId: number) => Promise<void>;
+    isLoading: boolean;
+  };
   isLoading: boolean;
   projects: Project[];
 };
@@ -159,6 +164,19 @@ export const useProjects = (): UseProjectsResult => {
     }
   };
 
+  // Kick member test functionality with RTK Query mutation
+  const [kick, { isLoading: isKickingMember }] = useKickMemberMutation();
+  const kickMember = async (projectId: number, memberId: number) => {
+    try {
+      await kick({ projectId, memberId }).unwrap();
+      dispatch(kickAction({ memberId }));
+      toast.success("Member kicked successfully");
+    } catch (error) {
+      clientLogger.error("useProjects kickMember error:", { error });
+      toast.error("Failed to kick member. Please try again.");
+    }
+  };
+
   return {
     createProject,
     getProjects,
@@ -169,6 +187,7 @@ export const useProjects = (): UseProjectsResult => {
     getMembers,
     addMembers,
     deleteProjectById,
+    kickMember: { kick: kickMember, isLoading: isKickingMember },
     isLoading,
     projects,
   };

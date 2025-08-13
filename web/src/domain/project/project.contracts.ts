@@ -10,6 +10,7 @@ export type GetMembers = (id: number) => Promise<ProjectMember[]>;
 export type GetProjectCandidates = (id?: number) => Promise<User[]>;
 export type DeleteProject = (id: number) => Promise<void>;
 export type EditProject = (id: number, payload: EditProjectPayload) => Promise<void>;
+export type KickMember = (projectId: number, memberId: number) => Promise<void>;
 
 export type ProjectService = {
   getProjects: GetProjects;
@@ -20,4 +21,5 @@ export type ProjectService = {
   getProjectCandidates: GetProjectCandidates;
   editProject: EditProject;
   deleteProject: DeleteProject;
+  kickMember: KickMember;
 };

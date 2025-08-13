@@ -36,6 +36,9 @@ const projectSlice = createSlice({
     setTasks(state, action) {
       state.tasks = action.payload;
     },
+    kickAction(state, action: PayloadAction<{ memberId: number }>) {
+      state.members = state.members.filter((member) => member.id !== action.payload.memberId);
+    },
   },
   // Get project by ID
   extraReducers: (builder) => {
@@ -50,5 +53,5 @@ const projectSlice = createSlice({
   },
 });
 
-export const { setProject, clearProject, setMembers, setTasks } = projectSlice.actions;
+export const { setProject, clearProject, setMembers, kickAction, setTasks } = projectSlice.actions;
 export default projectSlice.reducer;

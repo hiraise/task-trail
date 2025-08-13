@@ -114,6 +114,15 @@ const deleteProject = async (id: number) => {
   }
 };
 
+const kickMember = async (projectId: number, memberId: number) => {
+  try {
+    await axiosClient.delete(API_ROUTES.KICK_MEMBER(projectId, memberId));
+  } catch (error) {
+    clientLogger.error("Kick member error", { error, projectId, memberId });
+    throw new AppError(AppErrorType.SERVER, "Failed to kick member from project");
+  }
+};
+
 export const projectService: ProjectService = {
   getProjects: getProjects,
   newProject: newProject,
@@ -123,4 +132,5 @@ export const projectService: ProjectService = {
   editProject: editProject,
   getMembers: getMembers,
   deleteProject: deleteProject,
+  kickMember: kickMember,
 };

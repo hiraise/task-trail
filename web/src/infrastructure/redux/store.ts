@@ -7,6 +7,7 @@ import projectsReducer from "@/application/projects/slices/projectsSlice";
 import projectReducer from "@/application/projects/slices/projectSlice";
 import errorSlice from "@/application/errors/slices/errorSlice";
 import { authApi } from "../adapters/authApi";
+import projectsApi from "../adapters/projectsApi";
 
 export const store = configureStore({
   devTools: process.env.NODE_ENV === "development",
@@ -17,10 +18,12 @@ export const store = configureStore({
     projects: projectsReducer,
     globalError: errorSlice,
     [authApi.reducerPath]: authApi.reducer,
+    [projectsApi.reducerPath]: projectsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .concat(authApi.middleware)
+      .concat(projectsApi.middleware)
       .concat(errorHandlingMiddleware),
 });
 
