@@ -8,11 +8,7 @@ import { toast } from "sonner";
 import { ASSETS } from "@/infrastructure/config/assets";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { IconButton } from "@/presentation/ui/IconButton";
-import {
-  HeaderButtonsContainer,
-  HeaderContainer,
-  LogoContainer,
-} from "./Header.styled";
+import styles from "./Header.module.css";
 
 export function DashboardHeader() {
   const [visible, setVisible] = useState(true);
@@ -45,8 +41,8 @@ export function DashboardHeader() {
   }, []);
 
   return (
-    <HeaderContainer $visible={visible}>
-      <LogoContainer>
+    <header className={`${styles.header} ${visible ? styles.visible : styles.hidden}`}>
+      <div className={styles.logoContainer}>
         <Image
           alt="Logo"
           src={ASSETS.logo.mobileSimple}
@@ -55,8 +51,8 @@ export function DashboardHeader() {
           priority
           sizes="164px"
         />
-      </LogoContainer>
-      <HeaderButtonsContainer>
+      </div>
+      <div className={styles.buttonsContainer}>
         <IconButton
           icon={ASSETS.icons.search}
           size="28px"
@@ -69,7 +65,7 @@ export function DashboardHeader() {
           onClick={() => router.push(ROUTES.profile)}
           aria-label="Profile"
         />
-      </HeaderButtonsContainer>
-    </HeaderContainer>
+      </div>
+    </header>
   );
 }

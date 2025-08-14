@@ -2,14 +2,6 @@ import Image from "next/image";
 
 import { ASSETS } from "@/infrastructure/config/assets";
 import { imagesTexts } from "@/shared/locales/images";
-import styled from "styled-components";
-
-const LogoContainer = styled.div`
-  position: relative;
-  width: 100%;
-  height: 25px;
-  margin-top: 25px;
-`;
 
 interface MobileLogoProps {
   src?: string;
@@ -21,15 +13,15 @@ export const MobileLogo = ({
   alt = imagesTexts.mobileLogo,
 }: MobileLogoProps) => {
   return (
-    <LogoContainer>
-      <Image
-        alt={alt}
-        src={src}
-        fill
-        sizes="100vw"
-        style={{ objectFit: "contain" }}
-        priority
-      />
-    </LogoContainer>
+    <div
+      style={{
+        position: "relative",
+        width: "164px",
+        height: "25px",
+        marginTop: "25px",
+      }}
+    >
+      <Image alt={alt} src={src} fill sizes="100vw" style={{ objectFit: "contain" }} priority />
+    </div>
   );
 };

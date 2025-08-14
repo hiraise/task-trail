@@ -44,10 +44,7 @@ function EmailConfirmPage() {
     <MainContainer>
       <MobileLogo />
       <Spacer size="56px" />
-      <SectionTitle
-        title={emailConfirmTexts.title}
-        subtitle={emailConfirmTexts.subtitle(email)}
-      />
+      <SectionTitle title={emailConfirmTexts.title} subtitle={emailConfirmTexts.subtitle(email)} />
       <Spacer size="12px" />
       <ImageContainer>
         <Image
