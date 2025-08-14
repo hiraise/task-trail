@@ -1,4 +1,5 @@
 import { PermissionType, Project } from "@/domain/project/project.entity";
+import { formatDate } from "@/shared/utils/formatters";
 
 export interface ApiProject {
   id: number;
@@ -14,7 +15,7 @@ export const mapProjectFromApi = (apiProject: ApiProject): Project => {
     id: apiProject.id,
     name: apiProject.name,
     description: apiProject.description,
-    createdAt: apiProject.createdAt.toString(),
+    createdAt: formatDate(apiProject.createdAt),
     totalTasks: apiProject.tasksCount,
     permissions: apiProject.permissions,
   };

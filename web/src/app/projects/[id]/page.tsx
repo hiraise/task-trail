@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useMemo } from "react";
 
 import "./styles.css";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
@@ -21,20 +22,25 @@ import { mockTasks } from "@/presentation/widgets/projects/TaskList";
 import { Spinner } from "@/presentation/ui/Spinner";
 
 const projectTexts = {
-  owner: "Салунин Максим",
-  date: "10.04.2025",
   membersTitle: "Участники проекта",
   tasksTitle: "Задачи проекта",
 };
 
 export default function ProjectPage() {
-  const params = useParams();
-  const id = params.id as string;
-  const { menuItems } = useProjectMenuItems(Number(id));
+  const id = useParams().id as string;
+  const projectId = Number(id);
+
+  const { project, owner, isLoading } = useAppSelector((state) => ({
+    project: state.project.project,
+    owner: state.project.members.find((m) => m.isOwner)?.username || "Unknown",
+    isLoading: state.project.isLoading,
+  }));
+
+  const { menuItems } = useProjectMenuItems(projectId);
   const { showCreateTask } = useModalSheet();
 
-  const project = useAppSelector((state) => state.project.project);
-  const isLoading = useAppSelector((state) => state.project.isLoading);
+  // Mock tasks for display
+  const displayTasks = useMemo(() => mockTasks.slice(0, 4), []);
 
   if (isLoading) {
     return (
@@ -77,11 +83,11 @@ export default function ProjectPage() {
             <DropdownMenu
               trigger={<IconButton icon={ICONS.menu} size="24px" />}
               items={menuItems}
-            ></DropdownMenu>
+            />
           </div>
           <p className="description">{project.description}</p>
           <p className="owner">
-            {projectTexts.owner} | {projectTexts.date}
+            {owner} | {project.createdAt}
           </p>
         </div>
         <div className="members">
@@ -96,7 +102,7 @@ export default function ProjectPage() {
         <div className="tasks">
           <ProjectMenuButton href={ROUTES.projectTasks(id)} text={projectTexts.tasksTitle} />
           <div className="task-list">
-            {mockTasks.slice(0, 4).map((task) => (
+            {displayTasks.map((task) => (
               <ProjectTask key={task.id} title={task.title} />
             ))}
           </div>
