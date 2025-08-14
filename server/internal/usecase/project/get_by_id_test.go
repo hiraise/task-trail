@@ -69,7 +69,7 @@ func TestUseCase_GetByID(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.NotFoundErr,
-			wantErrMsg:  "project not found",
+			wantErrMsg:  "project or user not found",
 		},
 		{
 			name: "failed to verify user membership",
@@ -99,7 +99,7 @@ func TestUseCase_GetByID(t *testing.T) {
 			wantErrMsg:  "failed to get project",
 		},
 		{
-			name: "failed to get member rights",
+			name: "failed to get member permissions",
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
@@ -111,7 +111,7 @@ func TestUseCase_GetByID(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "failed to get member rights",
+			wantErrMsg:  "failed to get member permissions",
 		},
 	}
 	for _, tt := range tests {

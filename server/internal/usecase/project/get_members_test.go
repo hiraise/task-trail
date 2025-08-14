@@ -61,7 +61,7 @@ func TestUseCase_GetMembers(t *testing.T) {
 			},
 			wantErr:     true,
 			wantErrType: customerrors.NotFoundErr,
-			wantErrMsg:  "project not found",
+			wantErrMsg:  "project or user not found",
 		},
 		{
 			name: "failed to verify user membership",
