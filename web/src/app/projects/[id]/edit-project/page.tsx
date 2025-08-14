@@ -31,7 +31,7 @@ type FormValues = {
 export default function EditProjectPage() {
   const project = useAppSelector((state) => state.project.project);
 
-  const { editProject } = useProjects();
+  const { edit } = useProjects();
 
   const {
     register,
@@ -55,7 +55,7 @@ export default function EditProjectPage() {
 
   const submitHandler = async (data: FormValues) => {
     if (!project) return;
-    await editProject(project.id, {
+    await edit(project.id, {
       name: data.name,
       description: data.description,
     });
@@ -80,9 +80,7 @@ export default function EditProjectPage() {
               placeholder={texts.namePlaceholder}
               {...register("name", { required: "Это поле обязательно" })}
             />
-            {errors.name && (
-              <FormFieldError>{errors.name.message}</FormFieldError>
-            )}
+            {errors.name && <FormFieldError>{errors.name.message}</FormFieldError>}
           </div>
           <div className="input">
             <InputLabel className="label">{texts.descriptionLabel}</InputLabel>
@@ -97,14 +95,9 @@ export default function EditProjectPage() {
               className="textarea"
               {...register("description")}
             />
-            {errors.description && (
-              <FormFieldError>{errors.description.message}</FormFieldError>
-            )}
+            {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
           </div>
-          <SubmitButton
-            onClick={handleSubmit(submitHandler)}
-            disabled={!isValid || isSubmitting}
-          >
+          <SubmitButton onClick={handleSubmit(submitHandler)} disabled={!isValid || isSubmitting}>
             {isSubmitting ? texts.submittingText : texts.buttonText}
           </SubmitButton>
         </form>

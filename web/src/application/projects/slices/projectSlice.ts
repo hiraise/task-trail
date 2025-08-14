@@ -1,6 +1,7 @@
-import { Project, ProjectMember } from "@/domain/project/project.entity";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getProjectByIdThunk } from "../thunks/projectsThunks";
+
+import { Project, ProjectMember } from "@/domain/project/project.entity";
+import projectsApi from "@/infrastructure/adapters/projectsApi";
 
 type ProjectState = {
   project: Project | null;
@@ -40,15 +41,28 @@ const projectSlice = createSlice({
       state.members = state.members.filter((member) => member.id !== action.payload.memberId);
     },
   },
-  // Get project by ID
+  // RTKQ integration
   extraReducers: (builder) => {
     builder
-      .addCase(getProjectByIdThunk.pending, (state) => {
+      // Get project by ID
+      .addMatcher(projectsApi.endpoints.getById.matchPending, (state) => {
         state.isLoading = true;
       })
-      .addCase(getProjectByIdThunk.fulfilled, (state, action) => {
+      .addMatcher(projectsApi.endpoints.getById.matchFulfilled, (state, action) => {
         state.isLoading = false;
-        state.project = action.payload;
+        if (action.payload) state.project = action.payload;
+      })
+      .addMatcher(projectsApi.endpoints.getById.matchRejected, (state) => {
+        state.isLoading = false;
+      })
+      // Get members
+      .addMatcher(projectsApi.endpoints.getMembers.matchFulfilled, (state, action) => {
+        state.members = action.payload;
+      })
+      // Kick member
+      .addMatcher(projectsApi.endpoints.kickMember.matchFulfilled, (state, action) => {
+        const { memberId } = action.meta.arg.originalArgs;
+        state.members = state.members.filter((member) => member.id !== memberId);
       });
   },
 });

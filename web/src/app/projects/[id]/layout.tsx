@@ -4,22 +4,18 @@ import { useParams } from "next/navigation";
 
 import { useProjects } from "@/application/projects/hooks/useProjects";
 
-export default function ProjectLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProjectLayout({ children }: { children: React.ReactNode }) {
   const params = useParams();
   const id = Number(params.id);
-  const { getProjectById, clearCurrentProject } = useProjects();
+  const { getById, clearCurrent } = useProjects();
 
   useEffect(() => {
     async function fetchProject() {
-      await getProjectById(id);
+      await getById(id);
     }
     fetchProject();
-    return () => clearCurrentProject();
-  }, [id, getProjectById, clearCurrentProject]);
+    return () => clearCurrent();
+  }, [id, getById, clearCurrent]);
 
   return <>{children}</>;
 }

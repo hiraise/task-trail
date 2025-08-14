@@ -4,42 +4,14 @@ import { toast } from "sonner";
 
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
-import {
-  addMembersThunk,
-  editProjectThunk,
-  getProjectByIdThunk,
-  getProjectCandidatesThunk,
-  getProjectsThunk,
-  newProjectThunk,
-} from "../thunks/projectsThunks";
 import { ProjectPayload } from "@/domain/project/project.payload";
-import { Project } from "@/domain/project/project.entity";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { clearProject, kickAction, setMembers } from "../slices/projectSlice";
-import { User } from "@/domain/user/user.entity";
 import { EditProject } from "@/domain/project/project.contracts";
-import * as api from "@/infrastructure/adapters/projectsApi";
 import { removeById } from "../slices/projectsSlice";
+import * as api from "@/infrastructure/adapters/projectsApi";
 
-//TODO: Replace try/catch with status handling in thunks
-
-type UseProjectsResult = {
-  createProject: (payload: ProjectPayload) => Promise<Project | undefined>;
-  getProjects: () => Promise<void>;
-  getCandidates: (projectId?: number) => Promise<User[] | undefined>;
-  getProjectById: (id: number) => Promise<void>;
-  clearCurrentProject: () => void;
-  editProject: EditProject;
-  getMembers: (id: number) => Promise<void>;
-  addMembers: (id: number, emails: string[]) => Promise<void>;
-  deleteById: (id: number) => Promise<void>;
-  kick: (projectId: number, memberId: number) => Promise<void>;
-  leave: (id: number) => Promise<void>;
-  isLoading: boolean;
-  projects: Project[];
-};
-
-export const useProjects = (): UseProjectsResult => {
+export const useProjects = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const projects = useAppSelector((s) => s.projects);
@@ -47,26 +19,45 @@ export const useProjects = (): UseProjectsResult => {
 
   // Define hooks for API interactions
   const [triggerGetMembers] = api.useLazyGetMembersQuery();
-  const [kick] = api.useKickMemberMutation();
-  const [leave] = api.useLeaveMutation();
-  const [deleteProject] = api.useDeleteMutation();
+  const [triggerGetProjectById] = api.useLazyGetByIdQuery();
+  const [kickMemberMutation] = api.useKickMemberMutation();
+  const [leaveMutation] = api.useLeaveMutation();
+  const [deleteMutation] = api.useDeleteMutation();
+  const [editMutation] = api.useEditMutation();
+  const [triggerGet] = api.useLazyGetQuery();
+  const [addMembersMutation] = api.useAddMembersMutation();
+  const [triggerGetCandidates] = api.useLazyGetCandidatesQuery();
+  const [createMutation] = api.useCreateMutation();
 
-  const getProjects = useCallback(async () => {
+  /**
+   * Loads the list of projects from the API and updates the state.
+   * Displays an error toast if the request fails.
+   * Sets the loading state while the request is in progress.
+   *
+   * @returns {Promise<void>} Promise that resolves when projects are loaded.
+   */
+  const get = useCallback(async () => {
     setIsLoading(true);
     try {
-      await dispatch(getProjectsThunk()).unwrap();
+      await triggerGet().unwrap();
     } catch (error) {
       clientLogger.error("useProjects error:", { error });
       toast.error("Failed to load projects. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch]);
+  }, [triggerGet]);
 
-  const createProject = async (payload: ProjectPayload) => {
+  /**
+   * Creates a new project and navigates to its page on success.
+   *
+   * @param {ProjectPayload} payload - Project data.
+   * @returns {Promise<Project | undefined>} Newly created project or undefined if failed.
+   */
+  const create = async (payload: ProjectPayload) => {
     setIsLoading(true);
     try {
-      const project = await dispatch(newProjectThunk(payload)).unwrap();
+      const project = await createMutation(payload).unwrap();
       if (project) router.push(ROUTES.project(project.id.toString()));
       toast.success("Project created successfully");
       return project;
@@ -82,7 +73,7 @@ export const useProjects = (): UseProjectsResult => {
     async (projectId?: number) => {
       setIsLoading(true);
       try {
-        return await dispatch(getProjectCandidatesThunk(projectId)).unwrap();
+        return await triggerGetCandidates(projectId).unwrap();
       } catch (error) {
         clientLogger.error("useProjects getCandidates error:", { error });
         toast.error("Failed to load project candidates. Please try again.");
@@ -90,34 +81,41 @@ export const useProjects = (): UseProjectsResult => {
         setIsLoading(false);
       }
     },
-    [dispatch]
+    [triggerGetCandidates]
   );
 
-  const getProjectById = useCallback(
+  const getById = useCallback(
     async (id: number) => {
       try {
-        await dispatch(getProjectByIdThunk(id)).unwrap();
+        await triggerGetProjectById(id);
       } catch (error) {
         clientLogger.error("useProjects getProjectById error:", { error });
         toast.error("Failed to load project. Please try again.");
       }
     },
-    [dispatch]
+    [triggerGetProjectById]
   );
 
   /**
    * Clears the current project from the state.
    * @returns {void}
    */
-  const clearCurrentProject = useCallback(() => {
+  const clearCurrent = useCallback(() => {
     dispatch(clearProject());
   }, [dispatch]);
 
-  const editProject: EditProject = useCallback(
+  /**
+   * Updates a project by ID.
+   * @param {number} id Project ID
+   * @param {ProjectPayload} payload Updated project data of type
+   * @returns {Promise<void>} that resolves when update is complete
+   */
+  const edit: EditProject = useCallback(
     async (id, payload) => {
       setIsLoading(true);
       try {
-        await dispatch(editProjectThunk({ id, payload })).unwrap();
+        await editMutation({ id, payload }).unwrap();
+        await triggerGet().unwrap();
         toast.success("Project updated successfully");
       } catch (error) {
         clientLogger.error("useProjects editProject error:", { error });
@@ -126,7 +124,7 @@ export const useProjects = (): UseProjectsResult => {
         setIsLoading(false);
       }
     },
-    [dispatch]
+    [editMutation, triggerGet]
   );
 
   /**
@@ -153,7 +151,7 @@ export const useProjects = (): UseProjectsResult => {
   const addMembers = async (id: number, emails: string[]) => {
     setIsLoading(true);
     try {
-      await dispatch(addMembersThunk({ emails, id })).unwrap();
+      await addMembersMutation({ emails, id }).unwrap();
       const result = await triggerGetMembers(id);
       dispatch(setMembers(result.data ?? []));
     } catch (error) {
@@ -174,7 +172,7 @@ export const useProjects = (): UseProjectsResult => {
   const deleteById = async (id: number) => {
     setIsLoading(true);
     try {
-      await deleteProject(id).unwrap();
+      await deleteMutation(id).unwrap();
       dispatch(removeById(id));
       router.replace(ROUTES.projects);
       toast.success("Project deleted successfully");
@@ -192,10 +190,10 @@ export const useProjects = (): UseProjectsResult => {
    * @param {number} memberId - The ID of the member to be removed
    * @returns {Promise<void>} - Promise that resolves after the member is removed
    */
-  const kickMember = async (projectId: number, memberId: number) => {
+  const kick = async (projectId: number, memberId: number) => {
     setIsLoading(true);
     try {
-      await kick({ projectId, memberId }).unwrap();
+      await kickMemberMutation({ projectId, memberId }).unwrap();
       dispatch(kickAction({ memberId }));
       toast.success("Member kicked successfully");
     } catch (error) {
@@ -211,10 +209,10 @@ export const useProjects = (): UseProjectsResult => {
    * @param {number} id - The ID of the project to leave
    * @returns {Promise<void>} - Promise that resolves after the user leaves the project
    */
-  const leaveProject = async (id: number) => {
+  const leave = async (id: number) => {
     setIsLoading(true);
     try {
-      await leave({ projectId: id }).unwrap();
+      await leaveMutation({ projectId: id }).unwrap();
       router.replace(ROUTES.projects);
       toast.success("You have left the project");
     } catch (error) {
@@ -226,17 +224,17 @@ export const useProjects = (): UseProjectsResult => {
   };
 
   return {
-    createProject,
-    getProjects,
+    create,
+    get,
     getCandidates,
-    getProjectById,
-    clearCurrentProject,
-    editProject,
+    getById,
+    clearCurrent,
+    edit,
     getMembers,
     addMembers,
     deleteById,
-    kick: kickMember,
-    leave: leaveProject,
+    kick,
+    leave,
     isLoading,
     projects,
   };

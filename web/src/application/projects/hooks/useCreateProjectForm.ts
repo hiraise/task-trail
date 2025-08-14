@@ -11,14 +11,14 @@ interface UseCreateProjectFormReturn {
 
 export function useCreateProjectForm(): UseCreateProjectFormReturn {
   const { members, removeParticipant, reset } = useProjectCreation();
-  const { createProject } = useProjects();
+  const { create } = useProjects();
 
   const submitProject = async (formData: ProjectPayload) => {
     const data = {
       ...formData,
       participants: members.map((p) => p.email),
     };
-    await createProject(data);
+    await create(data);
     reset();
   };
 

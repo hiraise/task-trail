@@ -25,7 +25,7 @@ const projectTexts = {
 export default function ProjectsPage() {
   const router = useRouter();
   const { showCreateProject, showSortOptions } = useModalSheet();
-  const { getProjects, isLoading, projects } = useProjects();
+  const { get, isLoading, projects } = useProjects();
 
   const handleOpenProject = (projectId: number) => {
     router.push(ROUTES.project(projectId.toString()));
@@ -33,10 +33,10 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      await getProjects();
+      await get();
     };
     if (!projects || projects.length === 0) fetchProjects();
-  }, [getProjects, projects]);
+  }, [get, projects]);
 
   if (isLoading) return <LoadingScreen />;
 
