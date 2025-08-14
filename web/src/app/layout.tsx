@@ -1,11 +1,19 @@
 import { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 
 import "./globals.css";
 import { metadataTexts } from "@/shared/locales/metadata";
 import ClientRootLayout from "./_components/ClientRootLayout";
 
-const inter = Inter({ subsets: ["latin"] });
+const manrope = localFont({
+  src: [
+    {
+      path: "../../public/fonts/Manrope-Regular.ttf",
+      weight: "400",
+      style: "regular",
+    },
+  ],
+});
 
 export const metadata: Metadata = {
   title: metadataTexts.app.title,
@@ -26,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={manrope.className}>
         <ClientRootLayout>{children}</ClientRootLayout>
       </body>
     </html>
