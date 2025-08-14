@@ -8,10 +8,10 @@ import {
   DropdownItem,
   DropdownTrigger,
 } from "@/presentation/ui/DropdownMenu";
-import { MembersData } from "../MembersList/MembersList";
+
 import { ICONS } from "@/infrastructure/config/icons";
 import { Icon } from "@/presentation/ui/Icon";
-import { users } from "../MembersList/MembersList.mock";
+import { MembersData, users } from "../MembersList/MembersList.mock";
 
 interface DropdownMenuAssigneeProps {
   onSelect: (value: string) => void;

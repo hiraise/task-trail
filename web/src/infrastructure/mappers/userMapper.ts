@@ -9,7 +9,7 @@ interface ApiUser {
 
 export function mapUserFromApi(data: ApiUser): User {
   return {
-    id: String(data.id),
+    id: Number(data.id),
     username: String(data.username ?? ""),
     email: data.email,
     avatarUrl: String(data.avatarUrl ?? ""),
