@@ -22,7 +22,7 @@ export const handleAsyncAction = async <T>({
   action,
   errorMessage = errorTexts.somethingWentWrong,
   ...props
-}: AsyncOperationProps<T>): Promise<T | void> => {
+}: AsyncOperationProps<T>): Promise<T | undefined> => {
   const { onError, setIsLoading, showToastOnError = true } = props;
 
   setIsLoading(true);

@@ -53,7 +53,7 @@ export const useProjects = () => {
    * @param {ProjectPayload} payload - Project data.
    * @returns {Promise<Project | undefined>} Newly created project or undefined if failed.
    */
-  const create = async (payload: ProjectPayload) =>
+  const create = async (payload: ProjectPayload): Promise<Project | undefined> =>
     handleAsyncAction<Project>({
       action: async () => {
         const project = await createMutation(payload).unwrap();
