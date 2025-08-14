@@ -1,5 +1,5 @@
-include .env
-.PHONY: swag, mock, test, testcov, migrate-down, migrate-up
+-include .env
+.PHONY: swag, mock, test, testcov, migrate-down, migrate-up, linter
 
 swag:
 	swag init -g ./internal/controller/http/router.go
@@ -27,3 +27,6 @@ migrate-up:
 
 migrate-down:
 	migrate -database ${PG_CONNECTION_STRING}\?sslmode=disable -path ./migrations down 1
+
+linter:
+	golangci-lint run

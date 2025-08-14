@@ -137,7 +137,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 
 				uc, deps := mockUseCase(ctrl)
 				// mockTx(args.ctx, deps.txManager)
-				var mm []*dto.ProjectMember = make([]*dto.ProjectMember, len(testMembers))
+				var mm = make([]*dto.ProjectMember, len(testMembers))
 				copy(mm, testMembers)
 				mm = append(mm, &dto.ProjectMember{ID: 2, Email: "test1@mail.com"})
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
