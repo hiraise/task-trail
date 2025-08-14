@@ -42,7 +42,7 @@ export default function ProjectPage() {
   // Mock tasks for display
   const displayTasks = useMemo(() => mockTasks.slice(0, 4), []);
 
-  if (isLoading) {
+  if (isLoading && !project) {
     return (
       <MainContainer>
         <DashboardHeader />
