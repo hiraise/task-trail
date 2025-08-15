@@ -1,5 +1,6 @@
 const PROFILE_BASE = "/profile";
 const PROJECTS = "/projects";
+const TASKS = "/tasks";
 
 export const ROUTES = {
   login: "/",
@@ -7,7 +8,7 @@ export const ROUTES = {
   dashboard: "/dashboard",
   projects: PROJECTS,
   boards: "/boards",
-  tasks: "/tasks",
+  tasks: TASKS,
   archive: "/archive",
   confirm: "/confirm",
   passwordRecovery: "/password-recovery",
@@ -18,6 +19,7 @@ export const ROUTES = {
   projectMembers: (id: number) => `${PROJECTS}/${id}/members`,
   projectTasks: (id: number) => `${PROJECTS}/${id}/tasks`,
   editProject: (id: number) => `${PROJECTS}/${id}/edit-project`,
+  task: (id: number) => `${TASKS}/${id}`,
 };
 
 export const protectedRoutes = [
