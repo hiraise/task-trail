@@ -18,6 +18,8 @@
   --checkbox: rgba(128, 128, 128, 1);
   --dropdown-border: rgba(227, 227, 227, 1);
   --dropdown-shaddow: rgba(8, 8, 8, 0.15);
+
+  --border: rgba(0, 0, 0, 0.1);
 }
 
 :root:has(.no-doc-scroll) {
