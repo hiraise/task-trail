@@ -1,0 +1,18 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  padding-top: 90px;
+  padding-bottom: 24px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* TaskComments styles */
+.task-comments {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}

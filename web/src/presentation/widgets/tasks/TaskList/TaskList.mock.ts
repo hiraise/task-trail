@@ -14,8 +14,8 @@ export const mockTasks: Task[] = [
   },
   {
     id: 2,
-    title: "Implement login",
-    description: "Develop login functionality.",
+    title: "Еженедельный отчет по NPS",
+    description: "Подготовить еженедельный отчет по NPS и рейтингу удовлетворенности клиентов",
     status: "In progress",
     createdAt: new Date("2024-06-02"),
     updatedAt: new Date("2024-06-06"),

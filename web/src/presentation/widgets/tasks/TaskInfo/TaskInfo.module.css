@@ -1,0 +1,104 @@
+.taskInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* TaskTitle styles */
+.title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.title > h1 {
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.description {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--foreground);
+}
+
+/* TaskStatus styles */
+.statusContainer {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  background-color: rgba(240, 240, 240, 1);
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: scale 0.2s ease, background-color 0.2s ease;
+  border: none;
+}
+
+.statusContainer:hover {
+  cursor: pointer;
+}
+
+.statusContainer:active {
+  scale: 0.98;
+}
+
+.statusLabel > span {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* TaskDependencies styles */
+.taskDependencies {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.taskDependencies svg {
+  flex-shrink: 0;
+}
+
+.contentContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(200, 200, 200, 1);
+  background-color: var(--background);
+  transition: scale 0.2s ease, background-color 0.2s ease;
+}
+.contentContainer:hover {
+  cursor: pointer;
+  background-color: rgba(240, 240, 240, 1);
+}
+.contentContainer:active {
+  scale: 0.98;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.contentWrapper > span {
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
