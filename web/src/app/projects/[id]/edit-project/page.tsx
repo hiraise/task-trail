@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
 
 import "./styles.css";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
@@ -12,6 +11,7 @@ import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { useProjects } from "@/application/projects/hooks/useProjects";
+import { useProject } from "@/application/projects/hooks/useProject";
 
 const texts = {
   title: "Редактировать проект",
@@ -29,8 +29,7 @@ type FormValues = {
 };
 
 export default function EditProjectPage() {
-  const project = useAppSelector((state) => state.project.project);
-
+  const { project } = useProject();
   const { edit } = useProjects();
 
   const {

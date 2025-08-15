@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useMemo } from "react";
 
 import "./styles.css";
@@ -16,10 +15,10 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
 import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 import { mockTasks } from "@/presentation/widgets/projects/TaskList";
 import { Spinner } from "@/presentation/ui/Spinner";
+import { useProject } from "@/application/projects/hooks/useProject";
 
 const projectTexts = {
   membersTitle: "Участники проекта",
@@ -27,15 +26,7 @@ const projectTexts = {
 };
 
 export default function ProjectPage() {
-  const id = useParams().id as string;
-  const projectId = Number(id);
-
-  const { project, owner, isLoading } = useAppSelector((state) => ({
-    project: state.project.project,
-    owner: state.project.members.find((m) => m.isOwner)?.username || "Unknown",
-    isLoading: state.project.isLoading,
-  }));
-
+  const { project, owner, isLoading, projectId } = useProject();
   const { menuItems } = useProjectMenuItems(projectId);
   const { showCreateTask } = useModalSheet();
 
@@ -91,7 +82,10 @@ export default function ProjectPage() {
           </p>
         </div>
         <div className="members">
-          <ProjectMenuButton href={ROUTES.projectMembers(id)} text={projectTexts.membersTitle} />
+          <ProjectMenuButton
+            href={ROUTES.projectMembers(projectId)}
+            text={projectTexts.membersTitle}
+          />
           <div className="members-list">
             <UserAvatar />
             <UserAvatar />
@@ -100,7 +94,7 @@ export default function ProjectPage() {
           </div>
         </div>
         <div className="tasks">
-          <ProjectMenuButton href={ROUTES.projectTasks(id)} text={projectTexts.tasksTitle} />
+          <ProjectMenuButton href={ROUTES.projectTasks(projectId)} text={projectTexts.tasksTitle} />
           <div className="task-list">
             {displayTasks.map((task) => (
               <ProjectTask key={task.id} title={task.title} />

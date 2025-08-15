@@ -15,9 +15,9 @@ export const ROUTES = {
   profileEditPersonalData: `${PROFILE_BASE}/edit-personal-data`,
   profileChangePassword: `${PROFILE_BASE}/change-password`,
   project: (id: string) => `${PROJECTS}/${id}`,
-  projectMembers: (id: string) => `${PROJECTS}/${id}/members`,
-  projectTasks: (id: string) => `${PROJECTS}/${id}/tasks`,
-  editProject: (id: string) => `${PROJECTS}/${id}/edit-project`,
+  projectMembers: (id: number) => `${PROJECTS}/${id}/members`,
+  projectTasks: (id: number) => `${PROJECTS}/${id}/tasks`,
+  editProject: (id: number) => `${PROJECTS}/${id}/edit-project`,
 };
 
 export const protectedRoutes = [

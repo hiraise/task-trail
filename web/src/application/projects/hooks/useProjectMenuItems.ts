@@ -22,7 +22,7 @@ export const useProjectMenuItems = (projectId: number) => {
   const menuItems: MenuItem[] = [
     {
       label: "Редактировать проект",
-      onClick: () => router.push(ROUTES.editProject(String(projectId))),
+      onClick: () => router.push(ROUTES.editProject(projectId)),
       isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_EDIT),
     },
     {

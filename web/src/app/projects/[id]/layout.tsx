@@ -1,22 +1,24 @@
 "use client";
-import { useEffect } from "react";
-import { useParams } from "next/navigation";
 
+import { useEffect } from "react";
+
+import { useProject } from "@/application/projects/hooks/useProject";
 import { useProjects } from "@/application/projects/hooks/useProjects";
+import { Spinner } from "@/presentation/ui/Spinner";
 
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {
-  const params = useParams();
-  const id = Number(params.id);
   const { getById, getMembers, clearCurrent } = useProjects();
+  const { isLoading, projectId } = useProject();
 
   useEffect(() => {
     async function fetchProject() {
-      await getById(id);
-      await getMembers(id);
+      await getById(projectId);
+      await getMembers(projectId);
     }
     fetchProject();
     return () => clearCurrent();
-  }, [id, getById, clearCurrent, getMembers]);
+  }, [projectId, getById, clearCurrent, getMembers]);
 
+  if (isLoading) return <Spinner />;
   return <>{children}</>;
 }
