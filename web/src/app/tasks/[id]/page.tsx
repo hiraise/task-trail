@@ -8,7 +8,7 @@ import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { useTask } from "@/application/tasks/hooks/useTask";
 import { TaskInfo } from "@/presentation/widgets/tasks/TaskInfo";
 import ChangeTaskStatusModal from "@/presentation/widgets/modals/ChangeTaskStatusModal";
-import { useTaskModal } from "./TaskModalContext";
+import { MODAL_TYPE, useTaskModal } from "../TaskModalContext";
 import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
 
 export function TaskComments() {
@@ -20,8 +20,8 @@ export function TaskComments() {
 }
 
 export default function TaskPage() {
-  const { task, changeStatus } = useTask();
-  const { isStatusModalOpen, closeStatusModal } = useTaskModal();
+  const { task } = useTask();
+  const { isOpen, close } = useTaskModal();
 
   if (!task) return <LoadingScreen />;
 
@@ -37,13 +37,12 @@ export default function TaskPage() {
           <TaskComments />
         </div>
       </MainContainer>
-
+      {/* Modal */}
       <ChangeTaskStatusModal
         currentStatus={task.status}
-        isOpen={isStatusModalOpen}
-        onClose={closeStatusModal}
-        onBack={closeStatusModal}
-        onSubmit={changeStatus}
+        isOpen={isOpen(MODAL_TYPE.CHANGE_STATUS)}
+        onClose={close}
+        onBack={close}
       />
     </>
   );

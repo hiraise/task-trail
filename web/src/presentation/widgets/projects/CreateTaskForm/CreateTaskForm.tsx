@@ -5,8 +5,22 @@ import { FormValues } from "./CreateTaskForm.types";
 import { Input, Textarea } from "@/presentation/ui/Input";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { DropdownMenuAssignee } from "./DropdownMenuAssignee";
+// import { DropdownMenuAssignee } from "./DropdownMenuAssignee";
 import { DropdownMenuProject } from "./DropdownMenuProject";
+import { TaskDependenciesItem } from "../../tasks/TaskInfo/TaskDependenciesItem";
+import { Icon } from "@/presentation/ui/Icon";
+import { ICONS } from "@/infrastructure/config/icons";
+import { useTaskModals } from "@/application/tasks/hooks/useTaskModals";
+
+function SelectAssignee({ assignee }: { assignee: string }) {
+  const { showSelectAssignee } = useTaskModals();
+  return (
+    <TaskDependenciesItem onClick={showSelectAssignee}>
+      <Icon as={ICONS.profile} size="18px" />
+      <span>{assignee}</span>
+    </TaskDependenciesItem>
+  );
+}
 
 const texts = {
   title: "Новая задача",
@@ -53,9 +67,7 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
             {...register("name", { required: "Это поле обязательно" })}
             placeholder={texts.taskNamePlaceholder}
           />
-          {errors.name && (
-            <FormFieldError>{errors.name.message}</FormFieldError>
-          )}
+          {errors.name && <FormFieldError>{errors.name.message}</FormFieldError>}
           <Textarea
             rows={3}
             id="taskDescription"
@@ -67,9 +79,7 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
             autoComplete="off"
             className={styles.textarea}
           />
-          {errors.description && (
-            <FormFieldError>{errors.description.message}</FormFieldError>
-          )}
+          {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
           {/* Assignee dropdown */}
           <Controller
             name={"assignee"}
@@ -77,10 +87,9 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
             rules={{ required: "Это поле обязательно" }}
             render={({ field, fieldState }) => (
               <>
-                <DropdownMenuAssignee onSelect={field.onChange} />
-                {fieldState.error && (
-                  <FormFieldError>{fieldState.error.message}</FormFieldError>
-                )}
+                {/* <DropdownMenuAssignee onSelect={field.onChange} /> */}
+                <SelectAssignee assignee={field.value} />
+                {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
               </>
             )}
           ></Controller>
@@ -92,9 +101,7 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
             render={({ field, fieldState }) => (
               <>
                 <DropdownMenuProject onSelect={field.onChange} />
-                {fieldState.error && (
-                  <FormFieldError>{fieldState.error.message}</FormFieldError>
-                )}
+                {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
               </>
             )}
           ></Controller>

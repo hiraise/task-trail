@@ -5,6 +5,7 @@ import { Task, TaskStatus } from "@/domain/task/task.entity";
 import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
 import { update } from "../slices/taskSlice";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
+import { MembersData } from "@/presentation/widgets/projects/MembersList/MembersList.mock";
 
 export const useTask = () => {
   const params = useParams();
@@ -23,5 +24,15 @@ export const useTask = () => {
     }
   };
 
-  return { task, taskId, changeStatus };
+  const selectAssignee = (assignee: MembersData) => {
+    try {
+      dispatch(update({ assigneeId: assignee.id }));
+      toast.success(`Assignee changed to ${assignee.username}`);
+    } catch (error) {
+      clientLogger.error("Failed to change task assignee", { error });
+      toast.error("Failed to change task assignee");
+    }
+  };
+
+  return { task, taskId, changeStatus, selectAssignee };
 };

@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 
-import { TaskModalProvider } from "./TaskModalContext";
 import { useTask } from "@/application/tasks/hooks/useTask";
 import { useAppDispatch } from "@/infrastructure/redux/hooks";
 import { setTask } from "@/application/tasks/slices/taskSlice";
@@ -17,5 +16,5 @@ export default function TaskLayout({ children }: { children: React.ReactNode }) 
     dispatch(setTask(task));
   }, [dispatch, task]);
 
-  return <TaskModalProvider>{children}</TaskModalProvider>;
+  return <>{children}</>;
 }

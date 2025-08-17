@@ -39,20 +39,17 @@ export function ChangeTaskStatus({ status, onChange }: ChangeTaskStatusProps) {
   );
 }
 
-interface ChangeTaskStatusModalProps extends BaseModalProps {
+interface ChangeTaskStatusModalProps extends BaseModalProps<TaskStatus> {
   currentStatus: TaskStatus;
-  onSubmit: (status: TaskStatus) => void;
 }
 
 export default function ChangeTaskStatusModal({
   currentStatus,
-  onSubmit,
   ...props
 }: ChangeTaskStatusModalProps) {
   const handleSelectStatus = (newStatus: TaskStatus) => {
     if (currentStatus === newStatus) return;
-    onSubmit(newStatus);
-    props.onClose();
+    props.onClose(newStatus);
   };
 
   return (
