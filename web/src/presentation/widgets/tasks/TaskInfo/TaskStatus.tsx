@@ -5,15 +5,12 @@ import { Icon } from "@/presentation/ui/Icon";
 
 interface TaskStatusProps {
   status: string;
+  onClick: () => void;
 }
 
-export function TaskStatus({ status }: TaskStatusProps) {
-  const handleSelect = () => {
-    // TODO: Implement the logic for modal sheet
-    console.log("Status button clicked");
-  };
+export function TaskStatus({ status, onClick }: TaskStatusProps) {
   return (
-    <button className={styles.statusContainer} onClick={handleSelect}>
+    <button className={styles.statusContainer} onClick={onClick}>
       <span className={styles.statusLabel}>{status}</span>
       <Icon as={ICONS.downArrow} size="15px" />
     </button>

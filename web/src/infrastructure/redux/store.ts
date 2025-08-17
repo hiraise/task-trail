@@ -8,6 +8,7 @@ import projectReducer from "@/application/projects/slices/projectSlice";
 import errorSlice from "@/application/errors/slices/errorSlice";
 import { authApi } from "../adapters/authApi";
 import projectsApi from "../adapters/projectsApi";
+import taskReducer from "@/application/tasks/slices/taskSlice";
 
 export const store = configureStore({
   devTools: process.env.NODE_ENV === "development",
@@ -16,6 +17,7 @@ export const store = configureStore({
     user: userReducer,
     project: projectReducer,
     projects: projectsReducer,
+    task: taskReducer,
     globalError: errorSlice,
     [authApi.reducerPath]: authApi.reducer,
     [projectsApi.reducerPath]: projectsApi.reducer,

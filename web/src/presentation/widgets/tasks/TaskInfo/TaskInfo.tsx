@@ -6,8 +6,11 @@ import { ICONS } from "@/infrastructure/config/icons";
 import { Icon } from "@/presentation/ui/Icon";
 import { TaskStatus } from "./TaskStatus";
 import { TaskTitle } from "./TaskTitle";
+import { useTaskModal } from "@/app/tasks/[id]/TaskModalContext";
 
 export function TaskInfo({ task }: { task: Task }) {
+  const { openStatusModal } = useTaskModal();
+
   const handleProjectSelect = () => {
     console.log("Project selected");
   };
@@ -20,7 +23,7 @@ export function TaskInfo({ task }: { task: Task }) {
     <div className={styles.taskInfo}>
       <div className={styles.titleWrapper}>
         <div>
-          <TaskStatus status={task.status} />
+          <TaskStatus status={task.status} onClick={openStatusModal} />
         </div>
         <TaskTitle task={task} />
       </div>

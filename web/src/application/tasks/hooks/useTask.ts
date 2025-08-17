@@ -1,14 +1,27 @@
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
 
-import { mockTasks } from "@/presentation/widgets/tasks/TaskList";
-import { AppError, AppErrorType } from "@/shared/errors/types";
+import { Task, TaskStatus } from "@/domain/task/task.entity";
+import { useAppDispatch, useAppSelector } from "@/infrastructure/redux/hooks";
+import { update } from "../slices/taskSlice";
+import { clientLogger } from "@/infrastructure/config/clientLogger";
 
 export const useTask = () => {
   const params = useParams();
   const taskId = Number(params.id);
 
-  const task = mockTasks.find((task) => task.id === taskId);
-  if (!task) throw new AppError(AppErrorType.SERVER, "Task not found");
+  const task = useAppSelector((s) => s.task) as Task | null;
+  const dispatch = useAppDispatch();
 
-  return { task };
+  const changeStatus = (newStatus: TaskStatus) => {
+    try {
+      dispatch(update({ status: newStatus }));
+      toast.success(`Task status changed to ${newStatus}`);
+    } catch (error) {
+      clientLogger.error("Failed to update task status", { error });
+      toast.error("Failed to update task status");
+    }
+  };
+
+  return { task, taskId, changeStatus };
 };
