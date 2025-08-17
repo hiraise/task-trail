@@ -1,11 +1,11 @@
-export interface BaseModalProps {
+export interface BaseModalProps<T = void> {
   isOpen: boolean;
-  onClose: () => void;
-  onBack?: () => void;
+  onClose: (result?: T) => void;
+  onBack?: (result?: T) => void;
   fullScreen?: boolean;
 }
 
-export interface BaseModalComponentProps extends BaseModalProps {
+export interface BaseModalComponentProps<T = void> extends BaseModalProps<T> {
   title?: string;
   children: React.ReactNode;
   showBackButton?: boolean;

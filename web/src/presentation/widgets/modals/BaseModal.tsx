@@ -26,21 +26,19 @@ const StyledTitle = styled.h2`
   white-space: nowrap;
 `;
 
-export function BaseModal({
+export function BaseModal<T = void>({
   children,
   showBackButton = true,
   title,
   ...props
-}: BaseModalComponentProps) {
+}: BaseModalComponentProps<T>) {
   const { isOpen, onClose, onBack, fullScreen } = props;
   return (
     //TODO: refactor passing fullScreen prop
     // to BottomSheet, it should be handled in the component itself
     <BottomSheet isOpen={isOpen} onClose={onClose} fullScreen={fullScreen}>
       <StyledContainer>
-        {onBack && showBackButton && (
-          <StyledBackButton onClick={onBack} showLabel={false} />
-        )}
+        {onBack && showBackButton && <StyledBackButton onClick={onBack} showLabel={false} />}
         {title && <StyledTitle>{title}</StyledTitle>}
       </StyledContainer>
       {children}
