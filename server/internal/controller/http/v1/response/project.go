@@ -33,6 +33,13 @@ type projectCreateRes struct {
 	ID int `json:"id"`
 }
 
+type projectTaskStatusRes struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	IsDefault  bool   `json:"isDefault"`
+	IsResolved bool   `json:"isResolved"`
+}
+
 func ProjectListResFromDTO(data *dto.ProjectListRes) *projectListRes {
 	return &projectListRes{
 		ID:          data.ID,
@@ -54,7 +61,7 @@ func ProjectListResFromDTOBatch(data []*dto.ProjectListRes) []*projectListRes {
 	return retVal
 }
 
-func NewProjectCreateResFromDTO(projectID int) *projectCreateRes {
+func ProjectCreateResFromDTO(projectID int) *projectCreateRes {
 	return &projectCreateRes{ID: projectID}
 }
 
@@ -85,6 +92,26 @@ func ProjectMemberResFromDTOBatch(data []*dto.ProjectMember) []*projectMemberRes
 	var retVal []*projectMemberRes
 	for _, v := range data {
 		retVal = append(retVal, ProjectMemberResFromDTO(v))
+	}
+	return retVal
+}
+
+func ProjectTaskStatusResFromDTO(data *dto.ProjectStatus) *projectTaskStatusRes {
+	return &projectTaskStatusRes{
+		ID:         data.ID,
+		Name:       data.Name,
+		IsDefault:  data.IsDefault,
+		IsResolved: data.IsResolved,
+	}
+}
+
+func ProjectTaskStatusResFromDTOBatch(data []*dto.ProjectStatus) []*projectTaskStatusRes {
+	if len(data) == 0 {
+		return []*projectTaskStatusRes{}
+	}
+	var retVal []*projectTaskStatusRes
+	for _, v := range data {
+		retVal = append(retVal, ProjectTaskStatusResFromDTO(v))
 	}
 	return retVal
 }

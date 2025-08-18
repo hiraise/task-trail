@@ -971,6 +971,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/projects/{id}/tasks/statuses": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/project"
+                ],
+                "summary": "get project task statuses",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "project id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.projectTaskStatusRes"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "403": {
+                        "description": "access denied",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "project not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/tasks": {
             "post": {
                 "security": [
@@ -1451,6 +1508,23 @@ const docTemplate = `{
                 },
                 "tasksCount": {
                     "type": "integer"
+                }
+            }
+        },
+        "response.projectTaskStatusRes": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "isDefault": {
+                    "type": "boolean"
+                },
+                "isResolved": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

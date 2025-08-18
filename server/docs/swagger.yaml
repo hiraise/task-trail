@@ -177,6 +177,17 @@ definitions:
       tasksCount:
         type: integer
     type: object
+  response.projectTaskStatusRes:
+    properties:
+      id:
+        type: integer
+      isDefault:
+        type: boolean
+      isResolved:
+        type: boolean
+      name:
+        type: string
+    type: object
   response.taskCreateRes:
     properties:
       id:
@@ -789,6 +800,42 @@ paths:
       security:
       - BearerAuth: []
       summary: get project tasks
+      tags:
+      - /v1/project
+  /v1/projects/{id}/tasks/statuses:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: project id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.projectTaskStatusRes'
+            type: array
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "403":
+          description: access denied
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "404":
+          description: project not found
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+      security:
+      - BearerAuth: []
+      summary: get project task statuses
       tags:
       - /v1/project
   /v1/projects/candidates:

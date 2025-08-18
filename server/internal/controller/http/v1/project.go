@@ -42,7 +42,7 @@ func (r *projectRoutes) create(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewProjectCreateResFromDTO(id))
+	c.JSON(http.StatusOK, response.ProjectCreateResFromDTO(id))
 }
 
 // @Summary 	get list of projects
@@ -280,6 +280,28 @@ func (r *projectRoutes) getTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, response.TaskListResFromDTOBatch(res))
 }
 
+// @Summary 	get project task statuses
+// @Security BearerAuth
+// @Tags 		/v1/project
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "project id"
+// @Success 	200 {array} response.projectTaskStatusRes
+// @Failure		401 {object} response.ErrAPI "authentication required"
+// @Failure		403 {object} response.ErrAPI "access denied"
+// @Failure		404 {object} response.ErrAPI "project not found"
+// @Router 		/v1/projects/{id}/tasks/statuses [get]
+func (r *projectRoutes) getTaskStatuses(c *gin.Context) {
+	userID := utils.Must(r.contextmanager.GetUserID(c))
+	projectID := utils.Must(strconv.Atoi(c.Param("id")))
+	res, err := r.u.GetTaskStatuses(c, projectID, userID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.ProjectTaskStatusResFromDTOBatch(res))
+}
+
 func NewProjectRouter(
 	router *gin.RouterGroup,
 	u usecase.Project,
@@ -291,6 +313,7 @@ func NewProjectRouter(
 	g := router.Group("/projects")
 	g.DELETE(":id/leave", authMW, r.leaveByID)
 	g.DELETE(":id/members/:memberId", authMW, r.kickByID)
+	g.GET(":id/tasks/statuses", authMW, r.getTaskStatuses)
 	g.GET(":id/tasks", authMW, r.getTasks)
 	g.POST(":id/members", authMW, r.addMembers)
 	g.GET(":id/members", authMW, r.getMembers)

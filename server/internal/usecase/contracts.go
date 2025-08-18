@@ -93,6 +93,7 @@ type Project interface {
 	CheckMembership(ctx context.Context, projectID int, memberID int) error
 	VerifyAccess(ctx context.Context, projectID int, userID int, permisssion string) error
 	GetTasks(ctx context.Context, projectID int, userID int) ([]*dto.TaskListRes, error)
+	GetTaskStatuses(ctx context.Context, projectID int, userID int) ([]*dto.ProjectStatus, error)
 }
 
 type Task interface {
