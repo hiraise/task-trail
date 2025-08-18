@@ -10,7 +10,16 @@ func (u *UseCase) Leave(ctx context.Context, projectID int, memberID int) error 
 		if err := u.CheckMembership(ctx, projectID, memberID); err != nil {
 			return err
 		}
-		if err := u.VerifyAccess(ctx, projectID, memberID, usecase.PROJECT_OWNER); err == nil {
+		res, err := u.projectRepo.HasPermission(ctx, projectID, memberID, usecase.PROJECT_OWNER)
+		if err != nil {
+			return u.errHandler.InternalTrouble(
+				err, "failed to verify user access",
+				"projectID", projectID,
+				"userID", memberID,
+				"permission", usecase.PROJECT_OWNER,
+			)
+		}
+		if res {
 			return u.errHandler.Forbidden(
 				nil, "project owner cant leave project",
 				"projectID", projectID,
