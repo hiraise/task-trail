@@ -330,6 +330,20 @@ func (mr *MockProjectMockRecorder) AddMembers(ctx, data any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddMembers", reflect.TypeOf((*MockProject)(nil).AddMembers), ctx, data)
 }
 
+// CheckMembership mocks base method.
+func (m *MockProject) CheckMembership(ctx context.Context, projectID, memberID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckMembership", ctx, projectID, memberID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CheckMembership indicates an expected call of CheckMembership.
+func (mr *MockProjectMockRecorder) CheckMembership(ctx, projectID, memberID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMembership", reflect.TypeOf((*MockProject)(nil).CheckMembership), ctx, projectID, memberID)
+}
+
 // Create mocks base method.
 func (m *MockProject) Create(ctx context.Context, data *dto.ProjectCreate) (int, error) {
 	m.ctrl.T.Helper()
@@ -419,6 +433,35 @@ func (mr *MockProjectMockRecorder) GetMembers(ctx, projectID, userID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMembers", reflect.TypeOf((*MockProject)(nil).GetMembers), ctx, projectID, userID)
 }
 
+// GetTasks mocks base method.
+func (m *MockProject) GetTasks(ctx context.Context, projectID, userID int) ([]*dto.TaskListRes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTasks", ctx, projectID, userID)
+	ret0, _ := ret[0].([]*dto.TaskListRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTasks indicates an expected call of GetTasks.
+func (mr *MockProjectMockRecorder) GetTasks(ctx, projectID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTasks", reflect.TypeOf((*MockProject)(nil).GetTasks), ctx, projectID, userID)
+}
+
+// KickMember mocks base method.
+func (m *MockProject) KickMember(ctx context.Context, projectID, requesterID, memberID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "KickMember", ctx, projectID, requesterID, memberID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// KickMember indicates an expected call of KickMember.
+func (mr *MockProjectMockRecorder) KickMember(ctx, projectID, requesterID, memberID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KickMember", reflect.TypeOf((*MockProject)(nil).KickMember), ctx, projectID, requesterID, memberID)
+}
+
 // Leave mocks base method.
 func (m *MockProject) Leave(ctx context.Context, projectID, memberID int) error {
 	m.ctrl.T.Helper()
@@ -445,4 +488,57 @@ func (m *MockProject) UpdateByID(ctx context.Context, projectID, userID int, dat
 func (mr *MockProjectMockRecorder) UpdateByID(ctx, projectID, userID, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateByID", reflect.TypeOf((*MockProject)(nil).UpdateByID), ctx, projectID, userID, data)
+}
+
+// VerifyAccess mocks base method.
+func (m *MockProject) VerifyAccess(ctx context.Context, projectID, userID int, permisssion string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyAccess", ctx, projectID, userID, permisssion)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyAccess indicates an expected call of VerifyAccess.
+func (mr *MockProjectMockRecorder) VerifyAccess(ctx, projectID, userID, permisssion any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyAccess", reflect.TypeOf((*MockProject)(nil).VerifyAccess), ctx, projectID, userID, permisssion)
+}
+
+// MockTask is a mock of Task interface.
+type MockTask struct {
+	ctrl     *gomock.Controller
+	recorder *MockTaskMockRecorder
+	isgomock struct{}
+}
+
+// MockTaskMockRecorder is the mock recorder for MockTask.
+type MockTaskMockRecorder struct {
+	mock *MockTask
+}
+
+// NewMockTask creates a new mock instance.
+func NewMockTask(ctrl *gomock.Controller) *MockTask {
+	mock := &MockTask{ctrl: ctrl}
+	mock.recorder = &MockTaskMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTask) EXPECT() *MockTaskMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockTask) Create(ctx context.Context, data *dto.TaskCreate) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, data)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockTaskMockRecorder) Create(ctx, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTask)(nil).Create), ctx, data)
 }

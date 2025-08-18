@@ -628,6 +628,20 @@ func (mr *MockProjectRepositoryMockRecorder) CreateRoles(ctx, projectID, roles a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRoles", reflect.TypeOf((*MockProjectRepository)(nil).CreateRoles), ctx, projectID, roles)
 }
 
+// CreateStatuses mocks base method.
+func (m *MockProjectRepository) CreateStatuses(ctx context.Context, projectID int, data []*dto.ProjectStatusCreate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateStatuses", ctx, projectID, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateStatuses indicates an expected call of CreateStatuses.
+func (mr *MockProjectRepositoryMockRecorder) CreateStatuses(ctx, projectID, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStatuses", reflect.TypeOf((*MockProjectRepository)(nil).CreateStatuses), ctx, projectID, data)
+}
+
 // Delete mocks base method.
 func (m *MockProjectRepository) Delete(ctx context.Context, projectID int) error {
 	m.ctrl.T.Helper()
@@ -746,6 +760,36 @@ func (mr *MockProjectRepositoryMockRecorder) GetProjectRoles(ctx, projectID any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjectRoles", reflect.TypeOf((*MockProjectRepository)(nil).GetProjectRoles), ctx, projectID)
 }
 
+// GetTaskStatuses mocks base method.
+func (m *MockProjectRepository) GetTaskStatuses(ctx context.Context, projectID int) ([]*dto.ProjectStatus, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTaskStatuses", ctx, projectID)
+	ret0, _ := ret[0].([]*dto.ProjectStatus)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTaskStatuses indicates an expected call of GetTaskStatuses.
+func (mr *MockProjectRepositoryMockRecorder) GetTaskStatuses(ctx, projectID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTaskStatuses", reflect.TypeOf((*MockProjectRepository)(nil).GetTaskStatuses), ctx, projectID)
+}
+
+// GetTasks mocks base method.
+func (m *MockProjectRepository) GetTasks(ctx context.Context, projectID int) ([]*dto.TaskListRes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTasks", ctx, projectID)
+	ret0, _ := ret[0].([]*dto.TaskListRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTasks indicates an expected call of GetTasks.
+func (mr *MockProjectRepositoryMockRecorder) GetTasks(ctx, projectID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTasks", reflect.TypeOf((*MockProjectRepository)(nil).GetTasks), ctx, projectID)
+}
+
 // HasPermission mocks base method.
 func (m *MockProjectRepository) HasPermission(ctx context.Context, projectID, memberID int, permission string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -801,4 +845,43 @@ func (m *MockProjectRepository) VerifyMembership(ctx context.Context, projectID,
 func (mr *MockProjectRepositoryMockRecorder) VerifyMembership(ctx, projectID, memberID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyMembership", reflect.TypeOf((*MockProjectRepository)(nil).VerifyMembership), ctx, projectID, memberID)
+}
+
+// MockTaskRepository is a mock of TaskRepository interface.
+type MockTaskRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockTaskRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockTaskRepositoryMockRecorder is the mock recorder for MockTaskRepository.
+type MockTaskRepositoryMockRecorder struct {
+	mock *MockTaskRepository
+}
+
+// NewMockTaskRepository creates a new mock instance.
+func NewMockTaskRepository(ctrl *gomock.Controller) *MockTaskRepository {
+	mock := &MockTaskRepository{ctrl: ctrl}
+	mock.recorder = &MockTaskRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTaskRepository) EXPECT() *MockTaskRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockTaskRepository) Create(ctx context.Context, data *dto.TaskCreate) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, data)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockTaskRepositoryMockRecorder) Create(ctx, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTaskRepository)(nil).Create), ctx, data)
 }
