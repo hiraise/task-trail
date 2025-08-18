@@ -40,7 +40,9 @@ func (u *UseCase) Create(ctx context.Context, data *dto.ProjectCreate) (int, err
 			}
 			return u.errHandler.InternalTrouble(err, "failed to create project", "ownerID", data.OwnerID)
 		}
-
+		if err := u.projectRepo.CreateStatuses(ctx, id, usecase.DEFAULT_TASK_STATUSES); err != nil {
+			return u.errHandler.InternalTrouble(err, "failed to create project task statuses", "ownerID", data.OwnerID)
+		}
 		createdRoles, err := u.projectRepo.CreateRoles(ctx, id, defRolesNamesSlice)
 		if err != nil {
 			return u.errHandler.InternalTrouble(err, "failed to create default default project roles")
