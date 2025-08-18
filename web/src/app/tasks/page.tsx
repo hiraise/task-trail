@@ -14,6 +14,7 @@ import CreateTaskModal from "@/presentation/widgets/modals/CreateTaskModal";
 import SortProjectsModal from "@/presentation/widgets/modals/SortProjectsModal";
 import SelectAssigneeModal from "@/presentation/widgets/modals/SelectAssigneeModal";
 import { useTaskModals } from "@/application/tasks/hooks/useTaskModals";
+import SelectProjectModal from "@/presentation/widgets/modals/SelectProjectModal";
 
 export const tasksTexts = {
   title: "Задачи",
@@ -49,6 +50,11 @@ export default function TasksPage() {
       <SortProjectsModal isOpen={isOpen(MODAL_TYPE.SORT_TASKS)} onClose={close} />
       <SelectAssigneeModal
         isOpen={isOpen(MODAL_TYPE.SELECT_ASSIGNEE)}
+        onClose={close}
+        onBack={back}
+      />
+      <SelectProjectModal
+        isOpen={isOpen(MODAL_TYPE.SELECT_PROJECT)}
         onClose={close}
         onBack={back}
       />

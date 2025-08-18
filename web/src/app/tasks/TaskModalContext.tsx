@@ -6,6 +6,7 @@ export const MODAL_TYPE = {
   SORT_TASKS: "SORT_TASKS",
   CHANGE_STATUS: "CHANGE_STATUS",
   SELECT_ASSIGNEE: "SELECT_ASSIGNEE",
+  SELECT_PROJECT: "SELECT_PROJECT",
 } as const;
 
 type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];
