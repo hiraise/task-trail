@@ -27,11 +27,11 @@ interface Props {
 }
 
 export function CreateTaskForm({ onSubmit, isLoading }: Props) {
-  const { ...formValues } = useNewTask();
+  const { setFields, clearFields, initialValues, ...formValues } = useNewTask();
 
   const form = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: formValues,
+    defaultValues: { ...formValues },
   });
 
   const {
@@ -46,6 +46,8 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
   const submitHandler = async (data: FormValues) => {
     await onSubmit();
     alert("Submitted data: " + JSON.stringify(data, null, 2));
+    reset(initialValues);
+    clearFields();
   };
 
   // Reset form values when the context changes
@@ -72,6 +74,7 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
           <Input
             {...register("name", { required: "Это поле обязательно" })}
             placeholder={texts.taskNamePlaceholder}
+            onChange={(e) => setFields({ name: e.target.value })}
           />
           {errors.name && <FormFieldError>{errors.name.message}</FormFieldError>}
           <Textarea
@@ -84,6 +87,7 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
             disabled={isSubmitting}
             autoComplete="off"
             className={styles.textarea}
+            onChange={(e) => setFields({ description: e.target.value })}
           />
           {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
           <Controller

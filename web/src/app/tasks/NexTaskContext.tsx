@@ -1,4 +1,5 @@
 "use client";
+
 import { createContext, useContext, useState } from "react";
 
 interface NewTaskContextProps {
@@ -17,11 +18,15 @@ const initialContext: NewTaskContextProps = {
 
 interface NewTaskContextType extends NewTaskContextProps {
   setFields: (fields: Partial<NewTaskContextProps>) => void;
+  clearFields: () => void;
+  initialValues: NewTaskContextProps;
 }
 
 const NexTaskContext = createContext<NewTaskContextType>({
   ...initialContext,
   setFields: () => {},
+  clearFields: () => {},
+  initialValues: initialContext,
 });
 
 export function NexTaskProvider({ children }: { children: React.ReactNode }) {
@@ -31,7 +36,11 @@ export function NexTaskProvider({ children }: { children: React.ReactNode }) {
     setNewTask((prev) => ({ ...prev, ...fields }));
   };
 
-  const value = { ...newTask, setFields };
+  const clearFields = () => {
+    setNewTask(initialContext);
+  };
+
+  const value = { ...newTask, setFields, clearFields, initialValues: initialContext };
   return <NexTaskContext.Provider value={value}>{children}</NexTaskContext.Provider>;
 }
 

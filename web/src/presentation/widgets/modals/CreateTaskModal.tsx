@@ -7,7 +7,7 @@ export default function CreateTaskModal(props: BaseModalProps) {
 
   const handleSubmit = async () => {
     console.log("Task submitted");
-    // onClose();
+    onClose();
   };
 
   const handleClose = () => {
