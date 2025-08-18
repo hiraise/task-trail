@@ -67,7 +67,7 @@ func (r *projectRoutes) getProjects(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewProjectListResFromDTOBatch(res))
+	c.JSON(http.StatusOK, response.ProjectListResFromDTOBatch(res))
 }
 
 // @Summary 	get project by id
@@ -89,7 +89,7 @@ func (r *projectRoutes) getByID(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, response.NewProjecResFromDTO(res))
+	c.JSON(http.StatusOK, response.ProjecResFromDTO(res))
 }
 
 // @Summary 	add new members to project
@@ -182,7 +182,7 @@ func (r *projectRoutes) updateByID(c *gin.Context) {
 // @Failure		403 {object} response.ErrAPI "access denied"
 // @Failure		404 {object} response.ErrAPI "project not found"
 // @Router 		/v1/projects/{id}/members [get]
-func (r *projectRoutes) GetMembers(c *gin.Context) {
+func (r *projectRoutes) getMembers(c *gin.Context) {
 	userID := utils.Must(r.contextmanager.GetUserID(c))
 	projectID := utils.Must(strconv.Atoi(c.Param("id")))
 	res, err := r.u.GetMembers(c, projectID, userID)
@@ -258,6 +258,28 @@ func (r *projectRoutes) kickByID(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
+// @Summary 	get project tasks
+// @Security BearerAuth
+// @Tags 		/v1/project
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "project id"
+// @Success 	200 {array} response.taskListRes
+// @Failure		401 {object} response.ErrAPI "authentication required"
+// @Failure		403 {object} response.ErrAPI "access denied"
+// @Failure		404 {object} response.ErrAPI "project not found"
+// @Router 		/v1/projects/{id}/tasks [get]
+func (r *projectRoutes) getTasks(c *gin.Context) {
+	userID := utils.Must(r.contextmanager.GetUserID(c))
+	projectID := utils.Must(strconv.Atoi(c.Param("id")))
+	res, err := r.u.GetTasks(c, projectID, userID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.TaskListResFromDTOBatch(res))
+}
+
 func NewProjectRouter(
 	router *gin.RouterGroup,
 	u usecase.Project,
@@ -269,8 +291,9 @@ func NewProjectRouter(
 	g := router.Group("/projects")
 	g.DELETE(":id/leave", authMW, r.leaveByID)
 	g.DELETE(":id/members/:memberId", authMW, r.kickByID)
+	g.GET(":id/tasks", authMW, r.getTasks)
 	g.POST(":id/members", authMW, r.addMembers)
-	g.GET(":id/members", authMW, r.GetMembers)
+	g.GET(":id/members", authMW, r.getMembers)
 	g.GET("candidates", authMW, r.getCandidates)
 	g.DELETE(":id", authMW, r.deleteByID)
 	g.PATCH(":id", authMW, r.updateByID)
