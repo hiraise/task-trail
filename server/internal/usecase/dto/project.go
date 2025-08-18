@@ -44,6 +44,12 @@ type ProjectUpdate struct {
 	Description string
 }
 
+type ProjectStatusCreate struct {
+	Name       string
+	IsDefault  bool
+	IsResolved bool
+}
+
 // response
 
 type ProjectListRes struct {
@@ -77,4 +83,11 @@ type ProjectMember struct {
 type ProjectRights struct {
 	Role        string
 	Permissions []string
+}
+
+type ProjectStatus struct {
+	ID         int
+	Name       string
+	IsDefault  bool
+	IsResolved bool
 }
