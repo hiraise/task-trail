@@ -10,7 +10,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-01")),
     updatedAt: formatDate(new Date("2024-06-05")),
-    projectId: 101,
+    projectId: 1,
     assigneeId: 1,
   },
   {
@@ -20,7 +20,7 @@ export const mockTasks: Task[] = [
     status: "In progress",
     createdAt: formatDate(new Date("2024-06-02")),
     updatedAt: formatDate(new Date("2024-06-06")),
-    projectId: 101,
+    projectId: 2,
     assigneeId: 2,
   },
   {
@@ -30,7 +30,7 @@ export const mockTasks: Task[] = [
     status: "Done",
     createdAt: formatDate(new Date("2024-06-03")),
     updatedAt: formatDate(new Date("2024-06-07")),
-    projectId: 102,
+    projectId: 3,
     assigneeId: 3,
   },
   {
@@ -40,7 +40,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-04")),
     updatedAt: formatDate(new Date("2024-06-08")),
-    projectId: 102,
+    projectId: 4,
     assigneeId: 4,
   },
   {
@@ -50,7 +50,7 @@ export const mockTasks: Task[] = [
     status: "In progress",
     createdAt: formatDate(new Date("2024-06-05")),
     updatedAt: formatDate(new Date("2024-06-09")),
-    projectId: 103,
+    projectId: 5,
     assigneeId: 5,
   },
   {
@@ -60,7 +60,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-06")),
     updatedAt: formatDate(new Date("2024-06-10")),
-    projectId: 103,
+    projectId: 6,
     assigneeId: 6,
   },
   {
@@ -70,7 +70,7 @@ export const mockTasks: Task[] = [
     status: "Done",
     createdAt: formatDate(new Date("2024-06-07")),
     updatedAt: formatDate(new Date("2024-06-11")),
-    projectId: 104,
+    projectId: 7,
     assigneeId: 7,
   },
   {
@@ -80,7 +80,7 @@ export const mockTasks: Task[] = [
     status: "In progress",
     createdAt: formatDate(new Date("2024-06-08")),
     updatedAt: formatDate(new Date("2024-06-12")),
-    projectId: 104,
+    projectId: 8,
     assigneeId: 8,
   },
   {
@@ -90,7 +90,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-09")),
     updatedAt: formatDate(new Date("2024-06-13")),
-    projectId: 105,
+    projectId: 9,
     assigneeId: 9,
   },
   {
@@ -100,7 +100,7 @@ export const mockTasks: Task[] = [
     status: "Done",
     createdAt: formatDate(new Date("2024-06-10")),
     updatedAt: formatDate(new Date("2024-06-14")),
-    projectId: 105,
+    projectId: 10,
     assigneeId: 10,
   },
   {
@@ -110,7 +110,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-11")),
     updatedAt: formatDate(new Date("2024-06-15")),
-    projectId: 106,
+    projectId: 11,
     assigneeId: 11,
   },
   {
@@ -120,7 +120,7 @@ export const mockTasks: Task[] = [
     status: "In progress",
     createdAt: formatDate(new Date("2024-06-12")),
     updatedAt: formatDate(new Date("2024-06-16")),
-    projectId: 106,
+    projectId: 12,
     assigneeId: 12,
   },
   {
@@ -130,7 +130,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-13")),
     updatedAt: formatDate(new Date("2024-06-17")),
-    projectId: 107,
+    projectId: 13,
     assigneeId: 13,
   },
   {
@@ -140,7 +140,7 @@ export const mockTasks: Task[] = [
     status: "Done",
     createdAt: formatDate(new Date("2024-06-14")),
     updatedAt: formatDate(new Date("2024-06-18")),
-    projectId: 107,
+    projectId: 14,
     assigneeId: 14,
   },
   {
@@ -150,7 +150,7 @@ export const mockTasks: Task[] = [
     status: "In progress",
     createdAt: formatDate(new Date("2024-06-15")),
     updatedAt: formatDate(new Date("2024-06-19")),
-    projectId: 108,
+    projectId: 15,
     assigneeId: 15,
   },
   {
@@ -160,7 +160,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-16")),
     updatedAt: formatDate(new Date("2024-06-20")),
-    projectId: 108,
+    projectId: 16,
     assigneeId: 16,
   },
   {
@@ -170,7 +170,7 @@ export const mockTasks: Task[] = [
     status: "Done",
     createdAt: formatDate(new Date("2024-06-17")),
     updatedAt: formatDate(new Date("2024-06-21")),
-    projectId: 109,
+    projectId: 17,
     assigneeId: 17,
   },
   {
@@ -180,7 +180,7 @@ export const mockTasks: Task[] = [
     status: "In progress",
     createdAt: formatDate(new Date("2024-06-18")),
     updatedAt: formatDate(new Date("2024-06-22")),
-    projectId: 109,
+    projectId: 18,
     assigneeId: 18,
   },
   {
@@ -190,7 +190,7 @@ export const mockTasks: Task[] = [
     status: "Done",
     createdAt: formatDate(new Date("2024-06-19")),
     updatedAt: formatDate(new Date("2024-06-23")),
-    projectId: 110,
+    projectId: 19,
     assigneeId: 19,
   },
   {
@@ -200,7 +200,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-20")),
     updatedAt: formatDate(new Date("2024-06-24")),
-    projectId: 110,
+    projectId: 20,
     assigneeId: 20,
   },
   {
@@ -210,7 +210,7 @@ export const mockTasks: Task[] = [
     status: "In progress",
     createdAt: formatDate(new Date("2024-06-21")),
     updatedAt: formatDate(new Date("2024-06-25")),
-    projectId: 111,
+    projectId: 21,
     assigneeId: 21,
   },
   {
@@ -220,7 +220,7 @@ export const mockTasks: Task[] = [
     status: "Done",
     createdAt: formatDate(new Date("2024-06-22")),
     updatedAt: formatDate(new Date("2024-06-26")),
-    projectId: 111,
+    projectId: 22,
     assigneeId: 22,
   },
   {
@@ -230,7 +230,7 @@ export const mockTasks: Task[] = [
     status: "Open",
     createdAt: formatDate(new Date("2024-06-23")),
     updatedAt: formatDate(new Date("2024-06-27")),
-    projectId: 112,
+    projectId: 23,
     assigneeId: 23,
   },
   {
@@ -240,7 +240,7 @@ export const mockTasks: Task[] = [
     status: "In progress",
     createdAt: formatDate(new Date("2024-06-24")),
     updatedAt: formatDate(new Date("2024-06-28")),
-    projectId: 112,
+    projectId: 24,
     assigneeId: 24,
   },
   {
@@ -250,7 +250,7 @@ export const mockTasks: Task[] = [
     status: "Done",
     createdAt: formatDate(new Date("2024-06-25")),
     updatedAt: formatDate(new Date("2024-06-29")),
-    projectId: 113,
+    projectId: 25,
     assigneeId: 25,
   },
 ];

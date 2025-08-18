@@ -13,6 +13,7 @@ type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];
 
 type ModalStackItem = {
   type: ModalType;
+  props: unknown;
   resolve: (value: unknown) => void;
   reject: () => void;
 };
@@ -20,7 +21,7 @@ type ModalStackItem = {
 interface TaskModalContextProps {
   stack: ModalStackItem[];
   isOpen: (type: ModalType) => boolean;
-  open: <T>(type: ModalType) => Promise<T>;
+  open: <T>(type: ModalType, props?: unknown) => Promise<T>;
   close: <T>(result?: T) => void;
   back: <T>(result?: T) => void;
 }
@@ -34,10 +35,11 @@ export function TaskModalProvider({ children }: { children: React.ReactNode }) {
     return stack.length > 0 && stack[stack.length - 1].type === type;
   };
 
-  const open = <T,>(type: ModalType): Promise<T> => {
+  const open = <T,>(type: ModalType, props?: unknown): Promise<T> => {
     return new Promise<T>((resolve, reject) => {
       const item: ModalStackItem = {
         type,
+        props,
         resolve: resolve as (value: unknown) => void,
         reject,
       };

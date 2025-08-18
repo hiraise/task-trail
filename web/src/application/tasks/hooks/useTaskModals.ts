@@ -20,9 +20,9 @@ export const useTaskModals = () => {
     }
   };
 
-  const showSelectAssignee = async (): Promise<MembersData | undefined> => {
+  const showSelectAssignee = async (userId?: number): Promise<MembersData | undefined> => {
     try {
-      const assignee = await open<MembersData>(MODAL_TYPE.SELECT_ASSIGNEE);
+      const assignee = await open<MembersData>(MODAL_TYPE.SELECT_ASSIGNEE, { userId });
       // Temporary solution with sending seleted user to context
       // This should be replaced with a more robust state management solution
       if (assignee && formValues.assignee === assignee.username) return;
@@ -50,9 +50,9 @@ export const useTaskModals = () => {
     }
   };
 
-  const showSelectProject = async (): Promise<Project | undefined> => {
+  const showSelectProject = async (projectId?: number): Promise<Project | undefined> => {
     try {
-      const project = await open<Project>(MODAL_TYPE.SELECT_PROJECT);
+      const project = await open<Project>(MODAL_TYPE.SELECT_PROJECT, { projectId });
       // Temporary solution with sending selected project to context
       // This should be replaced with a more robust state management solution
       if (formValues.project === project.name) return;

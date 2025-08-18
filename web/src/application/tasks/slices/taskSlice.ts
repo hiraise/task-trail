@@ -1,10 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { Task } from "@/domain/task/task.entity";
+import { Task, TaskStatus } from "@/domain/task/task.entity";
 
-type TaskState = Task | null;
+export interface TaskState {
+  id: number;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  createdAt: string;
+  updatedAt: string;
+  projectId: number;
+  assigneeId?: number;
+}
 
-const initialState: TaskState = null;
+const initialState: TaskState = {} as TaskState;
 
 const taskSlice = createSlice({
   name: "task",
@@ -14,7 +23,7 @@ const taskSlice = createSlice({
       return action.payload;
     },
     clearTask: () => {
-      return null;
+      return {} as TaskState;
     },
     update: (state, action: PayloadAction<Partial<Task>>) => {
       if (state) {

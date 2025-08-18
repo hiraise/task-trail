@@ -10,6 +10,8 @@ import { TaskInfo } from "@/presentation/widgets/tasks/TaskInfo";
 import ChangeTaskStatusModal from "@/presentation/widgets/modals/ChangeTaskStatusModal";
 import { MODAL_TYPE, useTaskModal } from "../TaskModalContext";
 import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
+import SelectAssigneeModal from "@/presentation/widgets/modals/SelectAssigneeModal";
+import SelectProjectModal from "@/presentation/widgets/modals/SelectProjectModal";
 
 export function TaskComments() {
   return (
@@ -21,7 +23,7 @@ export function TaskComments() {
 
 export default function TaskPage() {
   const { task } = useTask();
-  const { isOpen, close } = useTaskModal();
+  const { isOpen, close, back } = useTaskModal();
 
   if (!task) return <LoadingScreen />;
 
@@ -43,6 +45,16 @@ export default function TaskPage() {
         isOpen={isOpen(MODAL_TYPE.CHANGE_STATUS)}
         onClose={close}
         onBack={close}
+      />
+      <SelectAssigneeModal
+        isOpen={isOpen(MODAL_TYPE.SELECT_ASSIGNEE)}
+        onClose={close}
+        onBack={back}
+      />
+      <SelectProjectModal
+        isOpen={isOpen(MODAL_TYPE.SELECT_PROJECT)}
+        onClose={close}
+        onBack={back}
       />
     </>
   );
