@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 20px;
+  height: 100%;
+}
+
+.projectList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.projectItem {
+  transition: background-color 0.3s ease;
+}
+
+.projectItem:hover {
+  cursor: pointer;
+  background-color: var(--grey);
+  border-radius: 16px;
+}
