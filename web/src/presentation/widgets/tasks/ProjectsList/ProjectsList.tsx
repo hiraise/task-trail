@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import clsx from "clsx";
 
 import styles from "./ProjectsList.module.css";
 
@@ -8,6 +9,7 @@ import { Project } from "@/domain/project/project.entity";
 import { projectsTexts } from "@/shared/locales/projects";
 import { Input } from "@/presentation/ui/Input/Input.styled";
 import { ProjectItem } from "./ProjectItem";
+import { useModalProps } from "@/application/tasks/hooks/useModalProps";
 
 interface ProjectsListProps {
   projects: Project[];
@@ -16,6 +18,7 @@ interface ProjectsListProps {
 
 export function ProjectsList({ projects, onSelect }: ProjectsListProps) {
   const [query, setQuery] = useState("");
+  const { projectId } = useModalProps<{ projectId?: number }>() || {};
 
   const filteredProjects = projects.filter(
     (project) =>
@@ -36,7 +39,7 @@ export function ProjectsList({ projects, onSelect }: ProjectsListProps) {
         {filteredProjects.map((project) => (
           <div
             key={project.id}
-            className={styles.projectItem}
+            className={clsx(styles.projectItem, project.id === projectId && styles.selected)}
             onClick={() => onSelect(project)}
             role="button"
           >

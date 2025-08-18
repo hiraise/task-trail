@@ -18,8 +18,12 @@
   transition: background-color 0.3s ease;
 }
 
+.userItem.selected,
 .userItem:hover {
-  cursor: pointer;
   background-color: var(--grey);
   border-radius: 16px;
+}
+
+.userItem:hover {
+  cursor: pointer;
 }

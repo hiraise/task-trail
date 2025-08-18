@@ -18,8 +18,12 @@
   transition: background-color 0.3s ease;
 }
 
+.projectItem.selected,
 .projectItem:hover {
-  cursor: pointer;
   background-color: var(--grey);
   border-radius: 16px;
+}
+
+.projectItem:hover {
+  cursor: pointer;
 }
