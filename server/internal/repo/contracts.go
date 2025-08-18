@@ -153,4 +153,14 @@ type ProjectRepository interface {
 	DeleteRoles(ctx context.Context, roleIDs []int) error
 
 	RemoveMembership(ctx context.Context, projectID int, userID int) error
+
+	// GetTaskStatuses return list of task status of passed project
+	GetTaskStatuses(ctx context.Context, projectID int) ([]*dto.ProjectStatus, error)
+	CreateStatuses(ctx context.Context, projectID int, data []*dto.ProjectStatusCreate) error
+
+	GetTasks(ctx context.Context, projectID int) ([]*dto.TaskListRes, error)
+}
+
+type TaskRepository interface {
+	Create(ctx context.Context, data *dto.TaskCreate) (int, error)
 }
