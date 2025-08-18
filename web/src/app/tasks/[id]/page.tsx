@@ -9,7 +9,6 @@ import { useTask } from "@/application/tasks/hooks/useTask";
 import { TaskInfo } from "@/presentation/widgets/tasks/TaskInfo";
 import ChangeTaskStatusModal from "@/presentation/widgets/modals/ChangeTaskStatusModal";
 import { MODAL_TYPE, useTaskModal } from "../TaskModalContext";
-import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
 import SelectAssigneeModal from "@/presentation/widgets/modals/SelectAssigneeModal";
 import SelectProjectModal from "@/presentation/widgets/modals/SelectProjectModal";
 
@@ -25,7 +24,7 @@ export default function TaskPage() {
   const { task } = useTask();
   const { isOpen, close, back } = useTaskModal();
 
-  if (!task) return <LoadingScreen />;
+  if (!task.id) return <h1>Уууупппс....такой задачи не существует</h1>;
 
   return (
     <>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -16,13 +17,20 @@ export const useTask = () => {
   const task = useAppSelector((s) => s.task);
   const dispatch = useAppDispatch();
 
-  const changeStatus = (newStatus: TaskStatus) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const changeStatus = async (newStatus: TaskStatus) => {
+    setIsLoading(true);
     try {
+      if (task.status === newStatus) return;
       dispatch(update({ status: newStatus }));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       toast.success(`Task status changed to ${newStatus}`);
     } catch (error) {
       clientLogger.error("Failed to update task status", { error });
       toast.error("Failed to update task status");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -36,28 +44,34 @@ export const useTask = () => {
   };
 
   const changeAssignee = async (assignee: MembersData) => {
+    setIsLoading(true);
     try {
       if (task.assigneeId && task.assigneeId === assignee.id) return;
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       dispatch(update({ assigneeId: assignee.id }));
       toast.success("Assignee was successfully changed");
     } catch (error) {
       clientLogger.error(`Fail to change assignee for task ${task.id}`, { error });
       toast.error(errorTexts.somethingWentWrong);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const changeProject = async (project: Project) => {
+    setIsLoading(true);
     try {
       if (task.projectId === project.id) return;
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       dispatch(update({ projectId: project.id }));
       toast.success("Project was successfully changed");
     } catch (error) {
       clientLogger.error(`Fail to change project for task: ${task.id}`, { error });
       toast.error(errorTexts.somethingWentWrong);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return { task, taskId, changeStatus, selectAssignee, changeAssignee, changeProject };
+  return { isLoading, task, taskId, changeStatus, selectAssignee, changeAssignee, changeProject };
 };

@@ -1,10 +1,7 @@
-"use client";
-
 import styles from "./FormSelectionOptions.module.css";
 
 import { ICONS } from "@/infrastructure/config/icons";
 import { Icon } from "@/presentation/ui/Icon";
-import { useTaskModals } from "@/application/tasks/hooks/useTaskModals";
 
 interface FormSelectionButtonProps {
   children: React.ReactNode;
@@ -44,22 +41,12 @@ function Placeholder({ value, placeholder }: PlaceholderProps) {
 
 interface AssigneeSelectionProps {
   username?: string;
-  onChange: (username: string) => void;
+  onClick: () => void;
 }
 
-export function AssigneeSelection({ username, onChange }: AssigneeSelectionProps) {
-  const { showSelectAssignee } = useTaskModals();
-
-  const handleOnClick = async () => {
-    const result = await showSelectAssignee();
-    if (result) {
-      const selectedUsername = result.username || result.email;
-      onChange(selectedUsername);
-    }
-  };
-
+export function AssigneeSelection({ username, onClick }: AssigneeSelectionProps) {
   return (
-    <FormSelectionButton onClick={handleOnClick}>
+    <FormSelectionButton onClick={onClick}>
       <ContentWrapper>
         <Icon as={ICONS.profile} size="18px" />
         <Placeholder placeholder="Ответственный" value={username} />
@@ -70,21 +57,12 @@ export function AssigneeSelection({ username, onChange }: AssigneeSelectionProps
 
 interface ProjectSelectionProps {
   project?: string;
-  onChange: (project: string) => void;
+  onClick: () => void;
 }
 
-export function ProjectSelection({ project, onChange }: ProjectSelectionProps) {
-  const { showSelectProject } = useTaskModals();
-
-  const handleOnClick = async () => {
-    const result = await showSelectProject();
-    if (result) {
-      onChange(result.name);
-    }
-  };
-
+export function ProjectSelection({ project, onClick }: ProjectSelectionProps) {
   return (
-    <FormSelectionButton onClick={handleOnClick}>
+    <FormSelectionButton onClick={onClick}>
       <ContentWrapper>
         <Icon as={ICONS.project} size="18px" />
         <Placeholder placeholder="Проект" value={project} />

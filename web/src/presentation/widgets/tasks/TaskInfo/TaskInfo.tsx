@@ -13,7 +13,7 @@ import { useTask } from "@/application/tasks/hooks/useTask";
 
 export function TaskInfo({ task }: { task: Task }) {
   const { showChangeSatus, showSelectAssignee, showSelectProject } = useTaskModals();
-  const { changeAssignee, changeProject } = useTask();
+  const { changeAssignee, changeProject, changeStatus } = useTask();
   const assignee = useAppSelector(selectAssignee);
   const project = useAppSelector(selectProject);
 
@@ -29,11 +29,17 @@ export function TaskInfo({ task }: { task: Task }) {
     await changeAssignee(result);
   };
 
+  const handleChangeStatus = async () => {
+    const result = await showChangeSatus();
+    if (!result) return;
+    await changeStatus(result);
+  };
+
   return (
     <div className={styles.taskInfo}>
       <div className={styles.titleWrapper}>
         <div>
-          <TaskStatus status={task.status} onClick={showChangeSatus} />
+          <TaskStatus status={task.status} onClick={handleChangeStatus} />
         </div>
         <TaskTitle task={task} />
       </div>

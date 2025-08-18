@@ -10,6 +10,7 @@ import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { AssigneeSelection, ProjectSelection } from "./FormSelectionOptions";
 import { useNewTask } from "@/app/tasks/NexTaskContext";
+import { useTaskModals } from "@/application/tasks/hooks/useTaskModals";
 
 const texts = {
   title: "Новая задача",
@@ -26,8 +27,22 @@ interface Props {
   isLoading?: boolean;
 }
 
+/**
+ * CreateTaskForm component renders a form for creating a new task.
+ *
+ * @remarks
+ * This implementation contains a temporary solution for synchronizing form state
+ * through context (`useNewTask`). The form fields are updated via context setters
+ * and reset when context values change. This approach may be refactored in the future
+ * for improved state management.
+ *
+ * @param {() => void | Promise<void>} onSubmit - Callback invoked when the form is submitted.
+ * @param {boolean} [isLoading] - Indicates if the form is in a loading/submitting state.
+ *
+ */
 export function CreateTaskForm({ onSubmit, isLoading }: Props) {
   const { setFields, clearFields, initialValues, ...formValues } = useNewTask();
+  const { showSelectAssignee, showSelectProject } = useTaskModals();
 
   const form = useForm<FormValues>({
     mode: "onChange",
@@ -66,6 +81,19 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
     }
   }, [formValues, getValues, reset]);
 
+  const handleAssigneeChange = async () => {
+    const result = await showSelectAssignee();
+    if (!result) return;
+    const selectedUsername = result.username || result.email;
+    setFields({ assignee: selectedUsername });
+  };
+
+  const handleProjectChange = async () => {
+    const result = await showSelectProject();
+    if (!result) return;
+    setFields({ project: result.name });
+  };
+
   return (
     <div className={styles.container}>
       <p className={styles.title}>{texts.title}</p>
@@ -96,7 +124,7 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
             rules={{ required: "Это поле обязательно" }}
             render={({ field, fieldState }) => (
               <>
-                <AssigneeSelection username={field.value} onChange={field.onChange} />
+                <AssigneeSelection username={field.value} onClick={handleAssigneeChange} />
                 {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
               </>
             )}
@@ -107,7 +135,7 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
             rules={{ required: "Это поле обязательно" }}
             render={({ field, fieldState }) => (
               <>
-                <ProjectSelection project={field.value} onChange={field.onChange} />
+                <ProjectSelection project={field.value} onClick={handleProjectChange} />
                 {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
               </>
             )}

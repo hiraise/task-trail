@@ -9,7 +9,7 @@ export const MODAL_TYPE = {
   SELECT_PROJECT: "SELECT_PROJECT",
 } as const;
 
-type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];
+export type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];
 
 type ModalStackItem = {
   type: ModalType;
