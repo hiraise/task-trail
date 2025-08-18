@@ -9,18 +9,24 @@ import { TaskTitle } from "./TaskTitle";
 import { useTaskModals } from "@/application/tasks/hooks/useTaskModals";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { selectAssignee, selectProject } from "@/application/tasks/slices/taskSelectors";
+import { useTask } from "@/application/tasks/hooks/useTask";
 
 export function TaskInfo({ task }: { task: Task }) {
   const { showChangeSatus, showSelectAssignee, showSelectProject } = useTaskModals();
+  const { changeAssignee, changeProject } = useTask();
   const assignee = useAppSelector(selectAssignee);
   const project = useAppSelector(selectProject);
 
   const handleProjectSelect = async () => {
-    await showSelectProject(task.projectId);
+    const result = await showSelectProject(task.projectId);
+    if (!result) return;
+    await changeProject(result);
   };
 
   const handleAssigneeSelect = async () => {
-    await showSelectAssignee(task.assigneeId);
+    const result = await showSelectAssignee(task.assigneeId);
+    if (!result) return;
+    await changeAssignee(result);
   };
 
   return (
