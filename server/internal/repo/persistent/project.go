@@ -506,3 +506,95 @@ func (r *PgProjectRepository) RemoveMembership(ctx context.Context, projectID in
 	}
 	return nil
 }
+
+func (r *PgProjectRepository) GetTaskStatuses(ctx context.Context, projectID int) ([]*dto.ProjectStatus, error) {
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return nil, err
+	}
+	query := `
+		SELECT ts.id, ts.name, ts.is_default, ts.is_resolved
+		FROM task_statuses AS ts
+		JOIN projects AS p ON p.ID = ts.project_id
+		WHERE ts.project_id = $1 AND p.deleted_at IS NULL AND ts.deleted_at IS NULL;
+	`
+	rows, err := r.getDb(ctx).Query(ctx, query, projectID)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+
+	items, err := ScanRows(rows, func(r pgx.Rows) (*dto.ProjectStatus, error) {
+		var item dto.ProjectStatus
+		if err := r.Scan(&item.ID, &item.Name, &item.IsDefault, &item.IsResolved); err != nil {
+			return nil, err
+		}
+		return &item, nil
+	})
+
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return items, nil
+}
+
+func (r *PgProjectRepository) CreateStatuses(ctx context.Context, projectID int, data []*dto.ProjectStatusCreate) error {
+	var subs []string
+	values := []any{projectID}
+	var index = 2
+	for _, item := range data {
+		values = append(values, item.Name, item.IsDefault, item.IsResolved)
+		subs = append(subs, fmt.Sprintf("($1, $%d, $%d, $%d)", index, index+1, index+2))
+		index += 3
+	}
+	query := fmt.Sprintf(`
+		INSERT INTO task_statuses (project_id, name, is_default, is_resolved)
+		VALUES
+		%s
+		RETURNING id, name;
+	`, strings.Join(subs, ",\n"))
+	res, err := r.getDb(ctx).Exec(ctx, query, values...)
+	if err != nil {
+		return r.handleError(err)
+	}
+	if int(res.RowsAffected()) != len(data) {
+		return repo.Wrap(fmt.Errorf("project does not exist"), repo.ErrNotFound)
+
+	}
+	return nil
+}
+
+func (r *PgProjectRepository) GetTasks(ctx context.Context, projectID int) ([]*dto.TaskListRes, error) {
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return nil, err
+	}
+
+	query := `
+		SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.author_id, t.assignee_id, t.status_id
+		FROM tasks as t 
+		WHERE t.project_id = $1 AND t.deleted_at IS NULL;
+	`
+	rows, err := r.getDb(ctx).Query(ctx, query, projectID)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+
+	retVal, err := ScanRows(rows, func(row pgx.Rows) (*dto.TaskListRes, error) {
+		var item dto.TaskListRes
+		if err := row.Scan(
+			&item.ID,
+			&item.Name,
+			&item.Description,
+			&item.CreatedAt,
+			&item.UpdatedAt,
+			&item.AuthorID,
+			&item.AssigneeID,
+			&item.StatusID,
+		); err != nil {
+			return nil, err
+		}
+		return &item, nil
+	})
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return retVal, nil
+}
