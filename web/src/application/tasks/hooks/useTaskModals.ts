@@ -1,11 +1,14 @@
+import { useNewTask } from "@/app/tasks/NexTaskContext";
 import { useTask } from "./useTask";
 import { MODAL_TYPE, useTaskModal } from "@/app/tasks/TaskModalContext";
 import { TaskStatus } from "@/domain/task/task.entity";
 import { MembersData } from "@/presentation/widgets/projects/MembersList/MembersList.mock";
+import { Project } from "@/domain/project/project.entity";
 
 export const useTaskModals = () => {
   const { task, changeStatus, selectAssignee } = useTask();
   const { open } = useTaskModal();
+  const { setFields, ...formValues } = useNewTask();
 
   const showChangeSatus = async (): Promise<void> => {
     try {
@@ -17,10 +20,15 @@ export const useTaskModals = () => {
     }
   };
 
-  const showSelectAssignee = async (): Promise<void> => {
+  const showSelectAssignee = async (): Promise<MembersData | undefined> => {
     try {
       const assignee = await open<MembersData>(MODAL_TYPE.SELECT_ASSIGNEE);
+      // Temporary solution with sending seleted user to context
+      // This should be replaced with a more robust state management solution
+      if (assignee && formValues.assignee === assignee.username) return;
       if (assignee) selectAssignee(assignee);
+      setFields({ assignee: assignee.username || assignee.email });
+      return assignee;
     } catch {
       return;
     }
@@ -42,5 +50,18 @@ export const useTaskModals = () => {
     }
   };
 
-  return { showChangeSatus, showSelectAssignee, showSortTasks, showCreateTask };
+  const showSelectProject = async (): Promise<Project | undefined> => {
+    try {
+      const project = await open<Project>(MODAL_TYPE.SELECT_PROJECT);
+      // Temporary solution with sending selected project to context
+      // This should be replaced with a more robust state management solution
+      if (formValues.project === project.name) return;
+      if (project) setFields({ project: project.name });
+      return project;
+    } catch {
+      return;
+    }
+  };
+
+  return { showChangeSatus, showSelectAssignee, showSortTasks, showCreateTask, showSelectProject };
 };

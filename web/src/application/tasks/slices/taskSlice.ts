@@ -6,7 +6,7 @@ type TaskState = Task | null;
 
 const initialState: TaskState = null;
 
-export const taskSlice = createSlice({
+const taskSlice = createSlice({
   name: "task",
   initialState,
   reducers: {

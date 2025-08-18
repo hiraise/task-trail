@@ -27,7 +27,6 @@ export const useTask = () => {
   const selectAssignee = (assignee: MembersData) => {
     try {
       dispatch(update({ assigneeId: assignee.id }));
-      toast.success(`Assignee changed to ${assignee.username}`);
     } catch (error) {
       clientLogger.error("Failed to change task assignee", { error });
       toast.error("Failed to change task assignee");
