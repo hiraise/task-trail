@@ -6,21 +6,22 @@ import (
 	"maps"
 	"slices"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase"
 	"task-trail/internal/usecase/dto"
 )
 
 var defaultRoles = map[string]dto.ProjectRoleCreate{
-	AdminRoleName: {
-		Name:        AdminRoleName,
-		Permissions: []string{PROJECT_INVITE_USERS, PROJECT_KICK_USERS, PROJECT_EDIT},
+	usecase.AdminRoleName: {
+		Name:        usecase.AdminRoleName,
+		Permissions: []string{usecase.PROJECT_INVITE_USERS, usecase.PROJECT_KICK_USERS, usecase.PROJECT_EDIT, usecase.PROJECT_CREATE_TASK, usecase.PROJECT_UPDATE_TASK, usecase.PROJECT_DELETE_TASK},
 	},
-	OwnerRoleName: {
-		Name:        OwnerRoleName,
-		Permissions: []string{PROJECT_OWNER, PROJECT_INVITE_USERS, PROJECT_KICK_USERS, PROJECT_SET_ROLES, PROJECT_EDIT, PROJECT_ARCHIVE, PROJECT_DELETE, PROJECT_GET_CANDIDATES},
+	usecase.OwnerRoleName: {
+		Name:        usecase.OwnerRoleName,
+		Permissions: []string{usecase.PROJECT_OWNER, usecase.PROJECT_INVITE_USERS, usecase.PROJECT_KICK_USERS, usecase.PROJECT_SET_ROLES, usecase.PROJECT_EDIT, usecase.PROJECT_ARCHIVE, usecase.PROJECT_DELETE, usecase.PROJECT_CREATE_TASK, usecase.PROJECT_UPDATE_TASK, usecase.PROJECT_DELETE_TASK},
 	},
-	MemberRoleName: {
-		Name:        MemberRoleName,
-		Permissions: []string{},
+	usecase.MemberRoleName: {
+		Name:        usecase.MemberRoleName,
+		Permissions: []string{usecase.PROJECT_CREATE_TASK, usecase.PROJECT_UPDATE_TASK, usecase.PROJECT_DELETE_TASK},
 	},
 }
 
@@ -58,7 +59,7 @@ func (u *UseCase) Create(ctx context.Context, data *dto.ProjectCreate) (int, err
 
 		}
 
-		role, err := u.findRolesInList(createdRoles, OwnerRoleName)
+		role, err := u.findRolesInList(createdRoles, usecase.OwnerRoleName)
 		if err != nil {
 			return err
 		}

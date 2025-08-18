@@ -3,11 +3,12 @@ package project
 import (
 	"context"
 	"slices"
+	"task-trail/internal/usecase"
 	"task-trail/internal/usecase/dto"
 )
 
 func (u *UseCase) AddMembers(ctx context.Context, data *dto.ProjectAddMembers) error {
-	if err := u.VerifyAccess(ctx, data.ProjectID, data.OwnerID, PROJECT_INVITE_USERS); err != nil {
+	if err := u.VerifyAccess(ctx, data.ProjectID, data.OwnerID, usecase.PROJECT_INVITE_USERS); err != nil {
 		return err
 	}
 	members, err := u.projectRepo.GetMembers(ctx, data.ProjectID)
@@ -38,7 +39,7 @@ func (u *UseCase) AddMembers(ctx context.Context, data *dto.ProjectAddMembers) e
 			return u.errHandler.InternalTrouble(err, "failed to get project roles", "projectID", data.ProjectID)
 		}
 
-		role, err := u.findRolesInList(roles, MemberRoleName)
+		role, err := u.findRolesInList(roles, usecase.MemberRoleName)
 		if err != nil {
 			return err
 		}

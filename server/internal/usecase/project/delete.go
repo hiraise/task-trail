@@ -2,11 +2,12 @@ package project
 
 import (
 	"context"
+	"task-trail/internal/usecase"
 )
 
 func (u *UseCase) Delete(ctx context.Context, projectID int, memberID int) error {
 	return u.txManager.DoWithTx(ctx, func(ctx context.Context) error {
-		if err := u.VerifyAccess(ctx, projectID, memberID, PROJECT_DELETE); err != nil {
+		if err := u.VerifyAccess(ctx, projectID, memberID, usecase.PROJECT_DELETE); err != nil {
 			return err
 		}
 		roles, err := u.projectRepo.GetProjectRoles(ctx, projectID)

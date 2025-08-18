@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"task-trail/internal/customerrors"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase"
 	"task-trail/internal/usecase/dto"
 	"task-trail/internal/usecase/project"
 	"testing"
@@ -25,8 +26,8 @@ func TestUseCase_GetMembers(t *testing.T) {
 	ctx := context.Background()
 	testArgs := args{ctx: ctx, projectID: 1, userID: 1}
 	retVal := []*dto.ProjectMember{
-		{ID: 1, Email: "Test", Permissions: []string{project.OwnerRoleName}},
-		{ID: 2, Email: "Test", Permissions: []string{project.MemberRoleName}},
+		{ID: 1, Email: "Test", Permissions: []string{usecase.OwnerRoleName}},
+		{ID: 2, Email: "Test", Permissions: []string{usecase.MemberRoleName}},
 	}
 	tests := []struct {
 		name        string

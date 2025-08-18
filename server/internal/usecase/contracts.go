@@ -4,6 +4,21 @@ import (
 	"context"
 	"task-trail/internal/usecase/dto"
 )
+const AdminRoleName = "admin"
+const OwnerRoleName = "owner"
+const MemberRoleName = "member"
+const PROJECT_OWNER string = "PROJECT_OWNER"
+const PROJECT_ADMIN string = "PROJECT_ADMIN"
+const PROJECT_INVITE_USERS string = "PROJECT_INVITE_USERS"
+const PROJECT_KICK_USERS string = "PROJECT_KICK_USERS"
+const PROJECT_SET_ROLES string = "PROJECT_SET_ROLES"
+const PROJECT_EDIT string = "PROJECT_EDIT"
+const PROJECT_ARCHIVE string = "PROJECT_ARCHIVE"
+const PROJECT_DELETE string = "PROJECT_DELETE"
+const PROJECT_GET_CANDIDATES string = "PROJECT_GET_CANDIDATES"
+const PROJECT_CREATE_TASK string = "PROJECT_CREATE_TASK"
+const PROJECT_UPDATE_TASK string = "PROJECT_UPDATE_TASK"
+const PROJECT_DELETE_TASK string = "PROJECT_DELETE_TASK"
 
 // Authentication defines the contract for user authentication and authorization use cases.
 // It provides methods for user login, registration, logout, token refresh, email verification,

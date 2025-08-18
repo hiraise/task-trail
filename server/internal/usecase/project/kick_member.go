@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 	"slices"
+	"task-trail/internal/usecase"
 )
 
 func (u *UseCase) KickMember(ctx context.Context, projectID int, requesterID int, memberID int) error {
@@ -23,7 +24,7 @@ func (u *UseCase) KickMember(ctx context.Context, projectID int, requesterID int
 			)
 		}
 
-		if !slices.Contains(requesterPerms, PROJECT_KICK_USERS) {
+		if !slices.Contains(requesterPerms, usecase.PROJECT_KICK_USERS) {
 			return u.errHandler.Forbidden(
 				err, "user dont have required permission",
 				"projectID", projectID,
@@ -40,7 +41,7 @@ func (u *UseCase) KickMember(ctx context.Context, projectID int, requesterID int
 				"memberID", memberID,
 			)
 		}
-		if slices.Contains(memberPerms, PROJECT_OWNER) {
+		if slices.Contains(memberPerms, usecase.PROJECT_OWNER) {
 			return u.errHandler.Forbidden(
 				err, "cant kick owner",
 				"projectID", projectID,
@@ -48,7 +49,7 @@ func (u *UseCase) KickMember(ctx context.Context, projectID int, requesterID int
 				"memberID", memberID,
 			)
 		}
-		if slices.Contains(memberPerms, PROJECT_ADMIN) && !slices.Contains(requesterPerms, PROJECT_OWNER) {
+		if slices.Contains(memberPerms, usecase.PROJECT_ADMIN) && !slices.Contains(requesterPerms, usecase.PROJECT_OWNER) {
 			return u.errHandler.Forbidden(
 				err, "only owner can kick admin user",
 				"projectID", projectID,

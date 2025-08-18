@@ -2,6 +2,7 @@ package project
 
 import (
 	"context"
+	"task-trail/internal/usecase"
 )
 
 func (u *UseCase) Leave(ctx context.Context, projectID int, memberID int) error {
@@ -9,7 +10,7 @@ func (u *UseCase) Leave(ctx context.Context, projectID int, memberID int) error 
 		if err := u.CheckMembership(ctx, projectID, memberID); err != nil {
 			return err
 		}
-		if err := u.VerifyAccess(ctx, projectID, memberID, PROJECT_OWNER); err == nil {
+		if err := u.VerifyAccess(ctx, projectID, memberID, usecase.PROJECT_OWNER); err == nil {
 			return u.errHandler.Forbidden(
 				nil, "project owner cant leave project",
 				"projectID", projectID,

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"task-trail/internal/customerrors"
 	"task-trail/internal/repo"
+	"task-trail/internal/usecase"
 	"task-trail/internal/usecase/dto"
 	"task-trail/internal/usecase/project"
 	"testing"
@@ -13,9 +14,9 @@ import (
 )
 
 var testRoles = []*dto.ProjectRoleRes{
-	{ID: 1, Name: project.AdminRoleName},
-	{ID: 2, Name: project.MemberRoleName},
-	{ID: 3, Name: project.OwnerRoleName},
+	{ID: 1, Name: usecase.AdminRoleName},
+	{ID: 2, Name: usecase.MemberRoleName},
+	{ID: 3, Name: usecase.OwnerRoleName},
 }
 
 func TestUseCase_AddMembers(t *testing.T) {
@@ -40,7 +41,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 		TaskCount:   0,
 	}
 	testMembers := []*dto.ProjectMember{
-		{ID: 1, Email: "test@mail.com", Permissions: []string{project.OwnerRoleName}},
+		{ID: 1, Email: "test@mail.com", Permissions: []string{usecase.OwnerRoleName}},
 	}
 	tests := []struct {
 		name        string
