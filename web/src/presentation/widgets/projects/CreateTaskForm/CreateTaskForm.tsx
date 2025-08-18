@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import styles from "./CreateTaskForm.module.css";
@@ -5,22 +8,8 @@ import { FormValues } from "./CreateTaskForm.types";
 import { Input, Textarea } from "@/presentation/ui/Input";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-// import { DropdownMenuAssignee } from "./DropdownMenuAssignee";
-import { DropdownMenuProject } from "./DropdownMenuProject";
-import { TaskDependenciesItem } from "../../tasks/TaskInfo/TaskDependenciesItem";
-import { Icon } from "@/presentation/ui/Icon";
-import { ICONS } from "@/infrastructure/config/icons";
-import { useTaskModals } from "@/application/tasks/hooks/useTaskModals";
-
-function SelectAssignee({ assignee }: { assignee: string }) {
-  const { showSelectAssignee } = useTaskModals();
-  return (
-    <TaskDependenciesItem onClick={showSelectAssignee}>
-      <Icon as={ICONS.profile} size="18px" />
-      <span>{assignee}</span>
-    </TaskDependenciesItem>
-  );
-}
+import { AssigneeSelection, ProjectSelection } from "./FormSelectionOptions";
+import { useNewTask } from "@/app/tasks/NexTaskContext";
 
 const texts = {
   title: "Новая задача",
@@ -38,25 +27,42 @@ interface Props {
 }
 
 export function CreateTaskForm({ onSubmit, isLoading }: Props) {
+  const { ...formValues } = useNewTask();
+
+  const form = useForm<FormValues>({
+    mode: "onChange",
+    defaultValues: formValues,
+  });
+
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors, isSubmitting, isValid },
-  } = useForm<FormValues>({
-    mode: "onChange",
-    defaultValues: {
-      name: "",
-      description: "",
-      assignee: "",
-      projectId: "",
-    },
-  });
+    control,
+    reset,
+    getValues,
+  } = form;
 
   const submitHandler = async (data: FormValues) => {
     await onSubmit();
     alert("Submitted data: " + JSON.stringify(data, null, 2));
   };
+
+  // Reset form values when the context changes
+  useEffect(() => {
+    const currentValues = getValues();
+    const shouldUpdate =
+      formValues.assignee !== currentValues.assignee ||
+      formValues.project !== currentValues.project;
+
+    if (shouldUpdate) {
+      reset({
+        ...currentValues,
+        assignee: formValues.assignee,
+        project: formValues.project,
+      });
+    }
+  }, [formValues, getValues, reset]);
 
   return (
     <div className={styles.container}>
@@ -80,27 +86,24 @@ export function CreateTaskForm({ onSubmit, isLoading }: Props) {
             className={styles.textarea}
           />
           {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
-          {/* Assignee dropdown */}
           <Controller
             name={"assignee"}
             control={control}
             rules={{ required: "Это поле обязательно" }}
             render={({ field, fieldState }) => (
               <>
-                {/* <DropdownMenuAssignee onSelect={field.onChange} /> */}
-                <SelectAssignee assignee={field.value} />
+                <AssigneeSelection username={field.value} onChange={field.onChange} />
                 {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
               </>
             )}
-          ></Controller>
-          {/* Project dropdown */}
+          />
           <Controller
-            name={"projectId"}
+            name={"project"}
             control={control}
             rules={{ required: "Это поле обязательно" }}
             render={({ field, fieldState }) => (
               <>
-                <DropdownMenuProject onSelect={field.onChange} />
+                <ProjectSelection project={field.value} onChange={field.onChange} />
                 {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
               </>
             )}
