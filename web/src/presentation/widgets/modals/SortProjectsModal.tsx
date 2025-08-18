@@ -1,6 +1,6 @@
 import { SortOption, SortProjects } from "../projects/SortProjects/SortProjects";
 import { BaseModal } from "./BaseModal";
-import { BaseModalProps } from "./modal.types";
+import { BaseModalProps } from "./BaseModal.types";
 
 export default function SortProjectsModal(props: BaseModalProps) {
   const { isOpen, onClose } = props;

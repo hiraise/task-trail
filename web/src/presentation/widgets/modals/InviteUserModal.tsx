@@ -1,15 +1,12 @@
 import { BaseModal } from "./BaseModal";
-import { BaseModalProps } from "./modal.types";
+import { BaseModalProps } from "./BaseModal.types";
 import { AddParticipantForm } from "@/presentation/widgets/projects/AddParticipantForm";
 
 interface InviteUserModalProps extends BaseModalProps {
   onSubmit?: (selectedParticipants: unknown[]) => void | Promise<void>;
 }
 
-export default function InviteUserModal({
-  onSubmit,
-  ...props
-}: InviteUserModalProps) {
+export default function InviteUserModal({ onSubmit, ...props }: InviteUserModalProps) {
   const { isOpen, onClose, onBack } = props;
 
   return (

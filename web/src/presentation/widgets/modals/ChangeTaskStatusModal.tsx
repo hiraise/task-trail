@@ -5,7 +5,7 @@ import { useState } from "react";
 import styles from "./ChangeTaskStatusModal.module.css";
 
 import { BaseModal } from "./BaseModal";
-import { BaseModalProps } from "./modal.types";
+import { BaseModalProps } from "./BaseModal.types";
 import { TASK_STATUS, TaskStatus } from "@/domain/task/task.entity";
 import { Icon } from "@/presentation/ui/Icon";
 import { ICONS } from "@/infrastructure/config/icons";

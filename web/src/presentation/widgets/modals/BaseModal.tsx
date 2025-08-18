@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-import { BaseModalComponentProps } from "./modal.types";
+import { BaseModalComponentProps } from "./BaseModal.types";
 import { BottomSheet } from "@/presentation/ui/BottomSheet/BottomSheet";
 import { BackButton } from "@/presentation/ui/BackButton/BackButton";
 

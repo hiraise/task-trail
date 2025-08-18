@@ -1,5 +1,5 @@
 import { BaseModal } from "./BaseModal";
-import { BaseModalProps } from "./modal.types";
+import { BaseModalProps } from "./BaseModal.types";
 import { CreateTaskForm } from "../projects/CreateTaskForm";
 
 export default function CreateTaskModal(props: BaseModalProps) {

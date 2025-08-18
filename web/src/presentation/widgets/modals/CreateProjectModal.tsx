@@ -1,5 +1,5 @@
 import { BaseModal } from "./BaseModal";
-import { BaseModalProps } from "./modal.types";
+import { BaseModalProps } from "./BaseModal.types";
 import { CreateProjectForm } from "@/presentation/widgets/projects/CreateProjectForm";
 import { useProjectCreation } from "@/application/projects/context/ProjectCreationContext";
 
