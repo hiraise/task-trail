@@ -4,6 +4,30 @@ import (
 	"context"
 	"task-trail/internal/usecase/dto"
 )
+
+var DEFAULT_TASK_STATUSES = []*dto.ProjectStatusCreate{
+	{
+		Name:       "Open",
+		IsDefault:  true,
+		IsResolved: false,
+	},
+	{
+		Name:       "In progress",
+		IsDefault:  false,
+		IsResolved: false,
+	},
+	{
+		Name:       "To verify",
+		IsDefault:  false,
+		IsResolved: false,
+	},
+	{
+		Name:       "Done",
+		IsDefault:  false,
+		IsResolved: true,
+	},
+}
+
 const AdminRoleName = "admin"
 const OwnerRoleName = "owner"
 const MemberRoleName = "member"
@@ -66,4 +90,11 @@ type Project interface {
 	Delete(ctx context.Context, projectID int, memberID int) error
 	Leave(ctx context.Context, projectID int, memberID int) error
 	KickMember(ctx context.Context, projectID int, requesterID int, memberID int) error
+	CheckMembership(ctx context.Context, projectID int, memberID int) error
+	VerifyAccess(ctx context.Context, projectID int, userID int, permisssion string) error
+	GetTasks(ctx context.Context, projectID int, userID int) ([]*dto.TaskListRes, error)
+}
+
+type Task interface {
+	Create(ctx context.Context, data *dto.TaskCreate) (int, error)
 }
