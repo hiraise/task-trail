@@ -1,0 +1,11 @@
+DELETE 
+FROM project_role_permission
+WHERE permission_id IN (
+    SELECT id 
+    FROM permissions
+    WHERE name IN ('PROJECT_CREATE_TASK','PROJECT_UPDATE_TASK','PROJECT_DELETE_TASK')
+);
+
+DELETE 
+FROM permissions
+WHERE name IN ('PROJECT_CREATE_TASK','PROJECT_UPDATE_TASK','PROJECT_DELETE_TASK')
