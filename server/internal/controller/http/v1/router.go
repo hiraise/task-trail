@@ -17,6 +17,7 @@ func NewRouter(
 	userUC usecase.User,
 	projectUC usecase.Project,
 	authUC usecase.Authentication,
+	taskUC usecase.Task,
 	contextmanager contextmanager.Gin,
 	errHandler customerrors.ErrorHandler,
 	storage storage.Service,
@@ -27,4 +28,5 @@ func NewRouter(
 	NewUserRouter(g, userUC, authMW, errHandler, contextmanager, storage)
 	NewProjectRouter(g, projectUC, authMW, errHandler, contextmanager)
 	NewAuthRouter(g, authUC, authMW, errHandler, contextmanager, cfg)
+	NewTaskRouter(g, taskUC, authMW, errHandler, contextmanager)
 }

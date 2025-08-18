@@ -20,6 +20,7 @@ import (
 	authuc "task-trail/internal/usecase/auth"
 	fileuc "task-trail/internal/usecase/file"
 	projectuc "task-trail/internal/usecase/project"
+	taskuc "task-trail/internal/usecase/task"
 	useruc "task-trail/internal/usecase/user"
 
 	"github.com/gin-gonic/gin"
@@ -66,6 +67,7 @@ func Run(cfg *config.Config) {
 	txManager := persistent.NewPgTxManager(pg.Pool)
 	userRepo := persistent.NewUserRepo(pg.Pool)
 	projectRepo := persistent.NewProjectRepo(pg.Pool)
+	taskRepo := persistent.NewTaskRepo(pg.Pool)
 	tokenRepo := persistent.NewRefreshTokenRepo(pg.Pool)
 	notificationRepo := api.NewSmtpNotificationRepo(smtp, logger, uuidGenerator, cfg.Frontend.VerifyURL, cfg.Frontend.ResetPasswordURL, cfg.Frontend.ProjectURL)
 	emailTokenRepo := persistent.NewEmailTokenRepo(pg.Pool)
@@ -96,7 +98,7 @@ func Run(cfg *config.Config) {
 
 	projectUC := projectuc.New(txManager, authUC, projectRepo, userRepo, notificationRepo, errHandler)
 	// init middlewares
-
+	taskUC := taskuc.New(txManager, projectUC, projectRepo, taskRepo, notificationRepo, errHandler)
 	recoveryMW := middleware.NewRecovery(logger1, contextm)
 	requestMW := middleware.NewRequest(contextm)
 	logMW := middleware.NewLog(logger1, contextm)
@@ -108,7 +110,7 @@ func Run(cfg *config.Config) {
 	httpServer.Use(logMW)
 	httpServer.Use(recoveryMW)
 	httpServer.Use(errorMW)
-	http.NewRouter(httpServer, errHandler, contextm, userUC, projectUC, authUC, storage, authMW, cfg)
+	http.NewRouter(httpServer, errHandler, contextm, userUC, projectUC, authUC, taskUC, storage, authMW, cfg)
 	tasks.CleanupRefreshTokens(tokenRepo, logger)
 	tasks.CleanupEmailTokens(emailTokenRepo, logger)
 	if err := httpServer.Run(); err != nil {

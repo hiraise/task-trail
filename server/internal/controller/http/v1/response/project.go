@@ -33,7 +33,7 @@ type projectCreateRes struct {
 	ID int `json:"id"`
 }
 
-func NewProjectListResFromDTO(data *dto.ProjectListRes) *projectListRes {
+func ProjectListResFromDTO(data *dto.ProjectListRes) *projectListRes {
 	return &projectListRes{
 		ID:          data.ID,
 		Name:        data.Name,
@@ -43,13 +43,13 @@ func NewProjectListResFromDTO(data *dto.ProjectListRes) *projectListRes {
 	}
 }
 
-func NewProjectListResFromDTOBatch(data []*dto.ProjectListRes) []*projectListRes {
+func ProjectListResFromDTOBatch(data []*dto.ProjectListRes) []*projectListRes {
 	if len(data) == 0 {
 		return []*projectListRes{}
 	}
 	var retVal []*projectListRes
 	for _, v := range data {
-		retVal = append(retVal, NewProjectListResFromDTO(v))
+		retVal = append(retVal, ProjectListResFromDTO(v))
 	}
 	return retVal
 }
@@ -58,7 +58,7 @@ func NewProjectCreateResFromDTO(projectID int) *projectCreateRes {
 	return &projectCreateRes{ID: projectID}
 }
 
-func NewProjecResFromDTO(data *dto.ProjectRes) *projectRes {
+func ProjecResFromDTO(data *dto.ProjectRes) *projectRes {
 	return &projectRes{
 		ID:          data.ID,
 		Name:        data.Name,
