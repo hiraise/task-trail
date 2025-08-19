@@ -8,18 +8,18 @@ import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { Input, Textarea } from "@/presentation/ui/Input";
 import { AddParticipant } from "./AddParticipant";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
-import { useCreateProjectForm } from "../../../../application/projects/hooks/useCreateProjectForm";
-import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 import { projectsTexts } from "@/shared/locales/projects";
 import { ProjectPayload } from "@/domain/project/project.payload";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 interface CreateProjectFormProps {
   onSubmit: () => void;
 }
 
 export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
-  const { members, removeParticipant, submitProject } = useCreateProjectForm();
-  const { showInviteUser } = useModalSheet();
+  const { showInviteUser } = useGlobalModals();
+  const emails: string[] = [];
+  const toogleMember = () => {};
 
   const {
     register,
@@ -34,24 +34,28 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
     },
   });
 
+  // Handle form submission and validation
   const submitHandler = async (data: ProjectPayload) => {
-    await submitProject(data);
-    // Call the onSubmit prop to notify parent component
+    const projectData: ProjectPayload = data;
+    console.log("Final project data with participants:", projectData);
     onSubmit();
   };
 
+  const handleInviteUser = async () => {
+    const emails = await showInviteUser();
+    if (!emails || emails.length === 0) return;
+    console.log("Invited emails:", emails);
+  };
+
   return (
-    <form
-      onSubmit={handleSubmit(submitHandler)}
-      className={styles.formContainer}
-    >
-      <p className={styles.title}>{projectsTexts.newProject}</p>
-      <Spacer size="16px" />
+    <form onSubmit={handleSubmit(submitHandler)} className={styles.formContainer}>
       <div className={styles.inputContainer}>
         <Input
           id="projectName"
           type="text"
-          {...register("name", projectNameValidator)}
+          {...register("name", {
+            ...projectNameValidator,
+          })}
           aria-invalid={!!errors.name}
           aria-describedby="projectName-error"
           placeholder={projectsTexts.projectNamePlaceholder}
@@ -70,24 +74,17 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
           autoComplete="off"
           className={styles.textarea}
         />
-        {errors.description && (
-          <FormFieldError>{errors.description.message}</FormFieldError>
-        )}
-        <AddParticipant onClick={showInviteUser} />
+        {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
+        <AddParticipant onClick={handleInviteUser} />
 
         {/* Display selected participants */}
-        {members.length > 0 && (
-          <SelectedUsers
-            users={members}
-            onDeleteUser={(user) => removeParticipant(user.email)}
-          />
+        {emails && emails.length > 0 && (
+          <SelectedUsers emails={emails} onDeleteUser={toogleMember} />
         )}
       </div>
       <Spacer size="24px" />
       <SubmitButton type="submit" disabled={!isValid || isSubmitting}>
-        {isSubmitting
-          ? projectsTexts.creatingProject
-          : projectsTexts.createProject}
+        {isSubmitting ? projectsTexts.creatingProject : projectsTexts.createProject}
       </SubmitButton>
     </form>
   );

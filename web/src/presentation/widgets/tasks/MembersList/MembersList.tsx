@@ -9,7 +9,7 @@ import { MembersData } from "../../projects/MembersList/MembersList.mock";
 import { Input } from "@/presentation/ui/Input/Input.styled";
 import { projectsTexts } from "@/shared/locales/projects";
 import { UserItem } from "../../projects/MembersList/UserItem";
-import { useModalProps } from "@/application/tasks/hooks/useModalProps";
+import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 
 interface MembersListProps {
   members: MembersData[];
@@ -18,7 +18,7 @@ interface MembersListProps {
 
 export function MembersList({ members, onSelect }: MembersListProps) {
   const [query, setQuery] = useState("");
-  const { userId } = useModalProps<{ userId?: number }>() || {};
+  const { userId } = useGlobalModalProps<{ userId?: number }>() || {};
 
   const filteredMembers = members.filter(
     (user) =>

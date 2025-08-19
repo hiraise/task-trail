@@ -11,10 +11,10 @@ import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { ProjectCard } from "@/presentation/widgets/projects/ProjectCard";
-import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 import { useProjects } from "@/application/projects/hooks/useProjects";
 import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 const projectTexts = {
   title: "Мои проекты",
@@ -24,7 +24,7 @@ const projectTexts = {
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const { showCreateProject, showSortOptions } = useModalSheet();
+  const { showCreateProject, showSortOptions } = useGlobalModals();
   const { get, isLoading, projects } = useProjects();
 
   const handleOpenProject = (projectId: number) => {
@@ -38,6 +38,18 @@ export default function ProjectsPage() {
     if (!projects || projects.length === 0) fetchProjects();
   }, [get, projects]);
 
+  // TODO: Implement sorting logic
+  const handleSortProjects = async () => {
+    const option = await showSortOptions();
+    console.log("Selected sort option:", option);
+  };
+
+  // TODO: Implement project creation logic
+  const handleCreateProject = async () => {
+    const data = await showCreateProject();
+    console.log("Created project data:", data);
+  };
+
   if (isLoading) return <LoadingScreen />;
 
   return (
@@ -45,7 +57,7 @@ export default function ProjectsPage() {
       <DashboardHeader />
       <div className="title-container">
         <h1>{projectTexts.title}</h1>
-        <IconButton icon={ICONS.sort} onClick={showSortOptions} />
+        <IconButton icon={ICONS.sort} onClick={handleSortProjects} />
       </div>
       {(!projects || projects.length === 0) && (
         <div className="empty-state">
@@ -62,7 +74,7 @@ export default function ProjectsPage() {
           />
         ))}
       </div>
-      <FloatingButton onClick={showCreateProject} variant="withBottomNav" />
+      <FloatingButton onClick={handleCreateProject} variant="withBottomNav" />
       <BottomNavBar />
     </MainContainer>
   );

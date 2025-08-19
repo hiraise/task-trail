@@ -6,13 +6,13 @@ import { ICONS } from "@/infrastructure/config/icons";
 import { Icon } from "@/presentation/ui/Icon";
 import { TaskStatus } from "./TaskStatus";
 import { TaskTitle } from "./TaskTitle";
-import { useTaskModals } from "@/application/tasks/hooks/useTaskModals";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { selectAssignee, selectProject } from "@/application/tasks/slices/taskSelectors";
 import { useTask } from "@/application/tasks/hooks/useTask";
 
 export function TaskInfo({ task }: { task: Task }) {
-  const { showChangeSatus, showSelectAssignee, showSelectProject } = useTaskModals();
+  const { showChangeSatus, showSelectAssignee, showSelectProject } = useGlobalModals();
   const { changeAssignee, changeProject, changeStatus } = useTask();
   const assignee = useAppSelector(selectAssignee);
   const project = useAppSelector(selectProject);

@@ -10,10 +10,10 @@ import { BackButton } from "@/presentation/ui/BackButton";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { ICONS } from "@/infrastructure/config/icons";
 import { MembersList } from "@/presentation/widgets/projects/MembersList";
-import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 import { useProjects } from "@/application/projects/hooks/useProjects";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 const texts = {
   title: "Участники проекта",
@@ -23,7 +23,7 @@ export default function ProjectMembersPage() {
   const project = useAppSelector((state) => state.project.project);
   const members = useAppSelector((state) => state.project.members);
 
-  const { showInviteUser } = useModalSheet();
+  const { showInviteUser } = useGlobalModals();
   const { isLoading, getMembers, addMembers } = useProjects();
 
   useEffect(() => {
@@ -34,20 +34,18 @@ export default function ProjectMembersPage() {
     fetchMembers();
   }, [getMembers, project]);
 
-  const handleAddMembers = async (data: string[]) => {
+  const handleAddMembers = async () => {
+    const emails = await showInviteUser();
+    if (!emails || emails.length === 0) return;
     try {
       if (!project) return;
-      await addMembers(project.id, data);
+      await addMembers(project.id, emails);
       toast.success("User invited successfully!");
     } catch (error) {
       console.error("Failed to invite user:", error);
       toast.error("Failed to invite user");
     }
   };
-
-  function handleAddMember() {
-    showInviteUser({ onSubmit: handleAddMembers });
-  }
 
   return (
     <MainContainer>
@@ -59,7 +57,7 @@ export default function ProjectMembersPage() {
         <div className="title-wrapper">
           <div className="members-title">
             <h1>{texts.title}</h1>
-            <IconButton icon={ICONS.addUser} size="24px" onClick={handleAddMember} />
+            <IconButton icon={ICONS.addUser} size="24px" onClick={handleAddMembers} />
           </div>
         </div>
         {isLoading && <LoadingScreen />}

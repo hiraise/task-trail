@@ -9,7 +9,7 @@ import { Project } from "@/domain/project/project.entity";
 import { projectsTexts } from "@/shared/locales/projects";
 import { Input } from "@/presentation/ui/Input/Input.styled";
 import { ProjectItem } from "./ProjectItem";
-import { useModalProps } from "@/application/tasks/hooks/useModalProps";
+import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 
 interface ProjectsListProps {
   projects: Project[];
@@ -18,7 +18,7 @@ interface ProjectsListProps {
 
 export function ProjectsList({ projects, onSelect }: ProjectsListProps) {
   const [query, setQuery] = useState("");
-  const { projectId } = useModalProps<{ projectId?: number }>() || {};
+  const { projectId } = useGlobalModalProps<{ projectId?: number }>() || {};
 
   const filteredProjects = projects.filter(
     (project) =>

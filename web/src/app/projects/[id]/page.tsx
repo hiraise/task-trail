@@ -15,10 +15,10 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
 import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 import { mockTasks } from "@/presentation/widgets/projects/TaskList";
 import { Spinner } from "@/presentation/ui/Spinner";
 import { useProject } from "@/application/projects/hooks/useProject";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 const projectTexts = {
   membersTitle: "Участники проекта",
@@ -28,10 +28,16 @@ const projectTexts = {
 export default function ProjectPage() {
   const { project, owner, isLoading, projectId } = useProject();
   const { menuItems } = useProjectMenuItems(projectId);
-  const { showCreateTask } = useModalSheet();
+  const { showCreateTask } = useGlobalModals();
 
   // Mock tasks for display
   const displayTasks = useMemo(() => mockTasks.slice(0, 4), []);
+
+  // TODO: Implement task creation logic
+  const handleCreateTask = async () => {
+    const data = await showCreateTask();
+    console.log("New task created:", data);
+  };
 
   if (isLoading && !project) {
     return (
@@ -102,7 +108,7 @@ export default function ProjectPage() {
           </div>
         </div>
       </div>
-      <FloatingButton onClick={showCreateTask} />
+      <FloatingButton onClick={handleCreateTask} />
     </MainContainer>
   );
 }

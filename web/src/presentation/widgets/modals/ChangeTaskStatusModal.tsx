@@ -9,13 +9,14 @@ import { BaseModalProps } from "./BaseModal.types";
 import { TASK_STATUS, TaskStatus } from "@/domain/task/task.entity";
 import { Icon } from "@/presentation/ui/Icon";
 import { ICONS } from "@/infrastructure/config/icons";
+import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 
 interface ChangeTaskStatusProps {
-  status: TaskStatus;
   onChange: (newStatus: TaskStatus) => void;
 }
 
-export function ChangeTaskStatus({ status, onChange }: ChangeTaskStatusProps) {
+export function ChangeTaskStatus({ onChange }: ChangeTaskStatusProps) {
+  const { status } = useGlobalModalProps<{ status: string }>() ?? {};
   const [selectedStatus, setSelectedStatus] = useState(status);
 
   const handleStatusChange = (newStatus: TaskStatus) => {
@@ -39,22 +40,14 @@ export function ChangeTaskStatus({ status, onChange }: ChangeTaskStatusProps) {
   );
 }
 
-interface ChangeTaskStatusModalProps extends BaseModalProps<TaskStatus> {
-  currentStatus: TaskStatus;
-}
-
-export default function ChangeTaskStatusModal({
-  currentStatus,
-  ...props
-}: ChangeTaskStatusModalProps) {
+export default function ChangeTaskStatusModal(props: BaseModalProps<TaskStatus>) {
   const handleSelectStatus = (newStatus: TaskStatus) => {
-    if (currentStatus === newStatus) return;
     props.onClose(newStatus);
   };
 
   return (
     <BaseModal title="Статус задачи" {...props}>
-      <ChangeTaskStatus status={currentStatus} onChange={handleSelectStatus} />
+      <ChangeTaskStatus onChange={handleSelectStatus} />
     </BaseModal>
   );
 }

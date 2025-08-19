@@ -6,8 +6,6 @@ import { Input } from "@/presentation/ui/Input";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
-import { useParticipantForm } from "../../../../application/projects/hooks/useParticipantForm";
-import { useBottomSheet } from "@/app/_components/BottomSheetContext";
 import { projectsTexts } from "@/shared/locales/projects";
 import { useClickOutside } from "@/shared/hooks/useClickOutside";
 
@@ -28,19 +26,28 @@ interface AddParticipantFormProps {
 }
 
 export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
-  const {
-    selectedParticipants,
-    handleUserSelect,
-    handleDeleteUser,
-    inviteMembers,
-  } = useParticipantForm();
-
-  const { backSheet } = useBottomSheet();
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   // Use a ref for the dropdown to handle clicks outside of it
   const dropdownRef = useRef<HTMLDivElement>(null);
   useClickOutside([inputRef, dropdownRef], () => setShowDropdown(false));
+
+  const [members, setMembers] = useState<UserData[]>([]);
+
+  const toggleParticipant = (user: BaseUserData) => {
+    setMembers((prev) => {
+      const isSelected = prev.some((member) => member.email === user.email);
+      if (isSelected) {
+        return prev.filter((member) => member.email !== user.email);
+      } else {
+        return [...prev, { email: user.email }];
+      }
+    });
+    console.log("Toggled participant:", user);
+  };
+
+  // Convert string emails to UserData objects
+  const emails = members.map((user: BaseUserData) => user.email);
 
   const {
     control,
@@ -55,14 +62,9 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
   const queryValue = watch("query");
 
   const submitHandler = async () => {
-    if (!onSubmit) {
-      inviteMembers();
-      backSheet();
-      return;
-    }
-    const selectedEmails = selectedParticipants.map((user) => user.email);
-    if (selectedEmails.length > 0) await onSubmit(selectedEmails);
-    backSheet();
+    if (!onSubmit) return;
+    // const selectedEmails = selectedParticipants.map((user) => user.email);
+    if (emails.length > 0) await onSubmit(emails);
   };
 
   return (
@@ -87,40 +89,31 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
       </div>
       {/* Show info message when no dropdown is shown */}
       {!showDropdown && (
-        <span className={styles.infoMessage}>
-          {projectsTexts.inviteMemberInfo}
-        </span>
+        <span className={styles.infoMessage}>{projectsTexts.inviteMemberInfo}</span>
       )}
 
       {/* Middle section that contains both dropdown and selected users */}
-
       {showDropdown && (
         <div className={styles.dropDown} ref={dropdownRef}>
           <UsersList
-            onUserSelect={handleUserSelect}
-            selectedUsers={selectedParticipants}
+            onUserSelect={toggleParticipant}
+            selectedUsers={members}
             searchQuery={queryValue}
           />
         </div>
       )}
       {showDropdown && <div className={styles.middle} />}
-      {selectedParticipants.length > 0 && (
+      {members.length > 0 && (
         <SelectedUsers
-          users={selectedParticipants}
-          onDeleteUser={handleDeleteUser}
+          emails={emails}
+          onDeleteUser={toggleParticipant}
           isExpanded={!showDropdown}
         />
       )}
 
       <div className={styles.btnContainer}>
-        <SubmitButton
-          type="submit"
-          className={styles.button}
-          disabled={isSubmitting}
-        >
-          {isSubmitting
-            ? projectsTexts.invitingToProject
-            : projectsTexts.inviteToProject}
+        <SubmitButton type="submit" className={styles.button} disabled={isSubmitting}>
+          {isSubmitting ? projectsTexts.invitingToProject : projectsTexts.inviteToProject}
         </SubmitButton>
       </div>
     </form>

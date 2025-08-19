@@ -7,7 +7,8 @@ import { Toaster } from "sonner";
 import { store } from "@/infrastructure/redux/store";
 import { GlobalErrorBanner } from "./GlobalErrorBanner";
 import { AuthAndUserInitializer } from "./AuthAndUserInitializer";
-import { BottomSheetProvider } from "./BottomSheetContext";
+import { GlobalModalProvider } from "./GlobalModalContext";
+import { GlobalModalManager } from "./GlobalModalManager";
 
 export default function ClientRootLayout({
   children,
@@ -26,7 +27,10 @@ export default function ClientRootLayout({
       <Toaster position="bottom-right" richColors />
       <GlobalErrorBanner />
       <AuthAndUserInitializer />
-      <BottomSheetProvider>{children}</BottomSheetProvider>
+      <GlobalModalProvider>
+        {children}
+        <GlobalModalManager />
+      </GlobalModalProvider>
     </Provider>
   );
 }
