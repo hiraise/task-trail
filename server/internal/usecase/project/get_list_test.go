@@ -45,7 +45,7 @@ func TestUseCase_GetList(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().GetList(gomock.Any(), gomock.Any()).Return(retVal, nil)
 				return uc
 			},
@@ -57,7 +57,7 @@ func TestUseCase_GetList(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().GetList(gomock.Any(), gomock.Any()).Return(nil, repo.ErrNotFound)
 				return uc
 			},
@@ -70,7 +70,7 @@ func TestUseCase_GetList(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().GetList(gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc
 			},

@@ -39,7 +39,7 @@ func TestUseCase_Leave(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(false, nil)
@@ -53,7 +53,7 @@ func TestUseCase_Leave(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrNotFound)
 				return uc
@@ -67,7 +67,7 @@ func TestUseCase_Leave(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
 				return uc
@@ -81,7 +81,7 @@ func TestUseCase_Leave(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrNotFound)
 				return uc
@@ -95,7 +95,7 @@ func TestUseCase_Leave(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
@@ -110,7 +110,7 @@ func TestUseCase_Leave(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(false, repo.ErrInternal)
@@ -125,7 +125,7 @@ func TestUseCase_Leave(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(false, nil)

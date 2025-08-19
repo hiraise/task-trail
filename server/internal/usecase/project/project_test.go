@@ -18,7 +18,7 @@ type testDeps struct {
 	errHandler       customerrors.ErrorHandler
 }
 
-func mockUseCase(ctrl *gomock.Controller) (*project.UseCase, *testDeps) {
+func mockDependencies(ctrl *gomock.Controller) (*project.UseCase, *testDeps) {
 	projectRepo := mocks.NewMockProjectRepository(ctrl)
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	txManager := mocks.NewMockTxManager(ctrl)

@@ -44,7 +44,7 @@ func TestUseCase_GetCandidates(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetCandidates(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(retVal, nil)
 				return uc
@@ -57,7 +57,7 @@ func TestUseCase_GetCandidates(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(false, nil)
 				return uc
 			},
@@ -70,7 +70,7 @@ func TestUseCase_GetCandidates(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetCandidates(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc

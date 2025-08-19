@@ -43,7 +43,7 @@ func TestUseCase_GetMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(retVal, nil)
 				return uc
@@ -56,7 +56,7 @@ func TestUseCase_GetMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrNotFound)
 				return uc
 			},
@@ -69,7 +69,7 @@ func TestUseCase_GetMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
 				return uc
 			},
@@ -82,7 +82,7 @@ func TestUseCase_GetMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().VerifyMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc

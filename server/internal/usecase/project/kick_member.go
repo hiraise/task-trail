@@ -17,7 +17,7 @@ func (u *UseCase) KickMember(ctx context.Context, projectID int, requesterID int
 		requesterPerms, err := u.projectRepo.GetMemberRights(ctx, projectID, requesterID)
 		if err != nil {
 			return u.errHandler.InternalTrouble(
-				err, "cant load requester permissions",
+				err, "failed to load requester permissions",
 				"projectID", projectID,
 				"requesterID", requesterID,
 				"memberID", memberID,
@@ -35,7 +35,7 @@ func (u *UseCase) KickMember(ctx context.Context, projectID int, requesterID int
 		memberPerms, err := u.projectRepo.GetMemberRights(ctx, projectID, memberID)
 		if err != nil {
 			return u.errHandler.InternalTrouble(
-				err, "cant load requester",
+				err, "failed to load member permissions",
 				"projectID", projectID,
 				"requesterID", requesterID,
 				"memberID", memberID,
@@ -60,7 +60,7 @@ func (u *UseCase) KickMember(ctx context.Context, projectID int, requesterID int
 
 		if err := u.projectRepo.RemoveMembership(ctx, projectID, memberID); err != nil {
 			return u.errHandler.InternalTrouble(
-				err, "failed to leave from project",
+				err, "failed to kick from project",
 				"projectID", projectID,
 				"userID", memberID,
 			)

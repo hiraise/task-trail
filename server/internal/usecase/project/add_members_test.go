@@ -57,7 +57,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(ctx, gomock.Any()).Return(testMembers, nil)
@@ -80,7 +80,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(ctx, gomock.Any()).Return(testMembers, nil)
@@ -107,7 +107,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(false, nil)
 				return uc
 			},
@@ -121,7 +121,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
 				return uc
@@ -136,7 +136,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				// mockTx(args.ctx, deps.txManager)
 				var mm = make([]*dto.ProjectMember, len(testMembers))
 				copy(mm, testMembers)
@@ -155,7 +155,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				// mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(testMembers, nil)
@@ -172,7 +172,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(testMembers, nil)
@@ -190,7 +190,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(testMembers, nil)
@@ -213,7 +213,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(testMembers, nil)
@@ -236,7 +236,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(testMembers, nil)
@@ -259,7 +259,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(testMembers, nil)
@@ -283,7 +283,7 @@ func TestUseCase_AddMembers(t *testing.T) {
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
 
-				uc, deps := mockUseCase(ctrl)
+				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.projectRepo.EXPECT().GetMembers(gomock.Any(), gomock.Any()).Return(testMembers, nil)
