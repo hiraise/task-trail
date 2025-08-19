@@ -1,5 +1,5 @@
 import styles from "./SortItem.module.css";
-import { SortOption } from "./SortProjects";
+import { SortOption } from "./SortItems";
 
 interface SortItemProps {
   option: SortOption;

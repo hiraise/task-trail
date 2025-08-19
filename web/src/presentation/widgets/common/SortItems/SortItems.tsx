@@ -1,11 +1,7 @@
 import { useState } from "react";
 
 import { SortItem } from "./SortItem";
-import styles from "./SortProjects.module.css";
-
-const optionsText = {
-  title: "Сортировка",
-};
+import styles from "./SortItems.module.css";
 
 export interface SortOption {
   value: string;
@@ -19,11 +15,11 @@ export const options = [
   { value: "nameDesc", label: "По алфавиту Я – А" },
 ];
 
-interface SortProjectsProps {
+interface SortItemsProps {
   onSelect?: (option: SortOption) => void;
 }
 
-export function SortProjects({ onSelect }: SortProjectsProps) {
+export function SortItems({ onSelect }: SortItemsProps) {
   const [selectedOption, setSelectedOption] = useState<SortOption | null>(null);
 
   const handleSelect = (option: SortOption) => {
@@ -33,8 +29,7 @@ export function SortProjects({ onSelect }: SortProjectsProps) {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>{optionsText.title}</h2>
-      <div className={styles.options}>
+      <div className={styles.content}>
         {options.map((option) => (
           <SortItem
             key={option.value}
