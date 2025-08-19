@@ -26,7 +26,7 @@ type TaskListRes struct {
 	Description *string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	AuthorID    *int
+	AuthorID    int
 	AssigneeID  *int
 	StatusID    *int
 }

@@ -11,7 +11,7 @@ type taskListRes struct {
 	Description *string   `json:"description"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
-	AuthorID    *int      `json:"authorId"`
+	AuthorID    int       `json:"authorId"`
 	AssigneeID  *int      `json:"assigneeId"`
 	StatusID    *int      `json:"statusId"`
 }
