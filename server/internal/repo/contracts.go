@@ -31,6 +31,7 @@ type UserRepository interface {
 	Update(ctx context.Context, dto *dto.UserUpdate) error
 	GetIdsByEmails(ctx context.Context, emails []string) ([]*dto.UserEmailAndID, error)
 	Delete(ctx context.Context, userID int) error
+	GetTasks(ctx context.Context, userID int) ([]*dto.TaskListRes, error)
 }
 type VerificationRepository interface {
 	Create(ctx context.Context, userID int, code int) error
@@ -159,6 +160,7 @@ type ProjectRepository interface {
 	CreateStatuses(ctx context.Context, projectID int, data []*dto.ProjectStatusCreate) error
 
 	GetTasks(ctx context.Context, projectID int) ([]*dto.TaskListRes, error)
+	DeleteTasks(ctx context.Context, projectID int) error
 }
 
 type TaskRepository interface {

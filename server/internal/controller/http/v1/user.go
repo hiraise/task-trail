@@ -106,6 +106,26 @@ func (r *usersRoutes) updateMe(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, response.NewCurrentResFromDTO(res))
 }
+
+// @Summary 	get users tasks
+// @Security BearerAuth
+// @Tags 		/v1/users
+// @Accept 		json
+// @Produce 	json
+// @Success 	200 {array} response.taskListRes
+// @Failure		401 {object} response.ErrAPI "authentication required"
+// @Failure		403 {object} response.ErrAPI "access denied"
+// @Router 		/v1/users/me/tasks [get]
+func (r *usersRoutes) getTasks(c *gin.Context) {
+	userID := utils.Must(r.contextmanager.GetUserID(c))
+	res, err := r.u.GetTasks(c, userID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.TaskListResFromDTOBatch(res))
+}
+
 func NewUserRouter(
 	router *gin.RouterGroup,
 	u usecase.User,
@@ -116,6 +136,7 @@ func NewUserRouter(
 ) {
 	r := &usersRoutes{u: u, contextmanager: contextmanager, errHandler: errHandler, storage: storage}
 	g := router.Group("/users")
+	g.GET("me/tasks", authMW, r.getTasks)
 	g.PATCH("me/avatar", authMW, r.updateAvatar)
 	g.GET(":id", authMW, r.getUser)
 	g.GET("me", authMW, r.getMe)

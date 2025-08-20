@@ -37,6 +37,14 @@ func (u *UseCase) Delete(ctx context.Context, projectID int, memberID int) error
 				"initiatorID", memberID,
 			)
 		}
+
+		if err := u.projectRepo.DeleteTasks(ctx, projectID); err != nil {
+			return u.errHandler.InternalTrouble(
+				err, "failed to delete project tasks",
+				"projectID", projectID,
+				"initiatorID", memberID,
+			)
+		}
 		return nil
 	})
 }

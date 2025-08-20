@@ -598,3 +598,23 @@ func (r *PgProjectRepository) GetTasks(ctx context.Context, projectID int) ([]*d
 	}
 	return retVal, nil
 }
+
+func (r *PgProjectRepository) DeleteTasks(ctx context.Context, projectID int) error {
+	if err := r.ensureInTransaction(ctx); err != nil {
+		return err
+	}
+
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return err
+	}
+	query := `
+		UPDATE tasks
+		SET deleted_at = $1
+		WHERE project_id = $2 AND deleted_at IS NULL
+	`
+	_, err := r.getDb(ctx).Exec(ctx, query, time.Now(), projectID)
+	if err != nil {
+		return r.handleError(err)
+	}
+	return nil
+}

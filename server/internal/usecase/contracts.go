@@ -70,6 +70,7 @@ type User interface {
 	UpdateAvatar(ctx context.Context, data *dto.FileUpload) (*dto.UserAvatar, error)
 	UpdateByID(ctx context.Context, data *dto.UserUpdate) (*dto.CurrentUser, error)
 	GetCurrentByID(ctx context.Context, ID int) (*dto.CurrentUser, error)
+	GetTasks(ctx context.Context, userID int) ([]*dto.TaskListRes, error)
 }
 
 // File defines the contract for file storage operations.

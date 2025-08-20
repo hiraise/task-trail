@@ -183,6 +183,21 @@ func (mr *MockUserRepositoryMockRecorder) GetIdsByEmails(ctx, emails any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIdsByEmails", reflect.TypeOf((*MockUserRepository)(nil).GetIdsByEmails), ctx, emails)
 }
 
+// GetTasks mocks base method.
+func (m *MockUserRepository) GetTasks(ctx context.Context, userID int) ([]*dto.TaskListRes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTasks", ctx, userID)
+	ret0, _ := ret[0].([]*dto.TaskListRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTasks indicates an expected call of GetTasks.
+func (mr *MockUserRepositoryMockRecorder) GetTasks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTasks", reflect.TypeOf((*MockUserRepository)(nil).GetTasks), ctx, userID)
+}
+
 // Update mocks base method.
 func (m *MockUserRepository) Update(ctx context.Context, arg1 *dto.UserUpdate) error {
 	m.ctrl.T.Helper()
@@ -668,6 +683,20 @@ func (m *MockProjectRepository) DeleteRoles(ctx context.Context, roleIDs []int) 
 func (mr *MockProjectRepositoryMockRecorder) DeleteRoles(ctx, roleIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoles", reflect.TypeOf((*MockProjectRepository)(nil).DeleteRoles), ctx, roleIDs)
+}
+
+// DeleteTasks mocks base method.
+func (m *MockProjectRepository) DeleteTasks(ctx context.Context, projectID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTasks", ctx, projectID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTasks indicates an expected call of DeleteTasks.
+func (mr *MockProjectRepositoryMockRecorder) DeleteTasks(ctx, projectID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTasks", reflect.TypeOf((*MockProjectRepository)(nil).DeleteTasks), ctx, projectID)
 }
 
 // GetByID mocks base method.

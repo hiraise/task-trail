@@ -170,3 +170,40 @@ func (r *PgUserRepository) Delete(ctx context.Context, userID int) error {
 	}
 	return nil
 }
+
+func (r *PgUserRepository) GetTasks(ctx context.Context, userID int) ([]*dto.TaskListRes, error) {
+	if err := ValidateID(userID, "userID"); err != nil {
+		return nil, err
+	}
+
+	query := `
+		SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.author_id, t.assignee_id, t.status_id
+		FROM tasks as t 
+		WHERE t.assignee_id = $1 AND t.deleted_at IS NULL;
+	`
+	rows, err := r.getDb(ctx).Query(ctx, query, userID)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+
+	retVal, err := ScanRows(rows, func(row pgx.Rows) (*dto.TaskListRes, error) {
+		var item dto.TaskListRes
+		if err := row.Scan(
+			&item.ID,
+			&item.Name,
+			&item.Description,
+			&item.CreatedAt,
+			&item.UpdatedAt,
+			&item.AuthorID,
+			&item.AssigneeID,
+			&item.StatusID,
+		); err != nil {
+			return nil, err
+		}
+		return &item, nil
+	})
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return retVal, nil
+}
