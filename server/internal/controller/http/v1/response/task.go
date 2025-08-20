@@ -14,6 +14,7 @@ type taskListRes struct {
 	AuthorID    int       `json:"authorId"`
 	AssigneeID  *int      `json:"assigneeId"`
 	StatusID    *int      `json:"statusId"`
+	ProjectID   int       `json:"projectId"`
 }
 
 type taskCreateRes struct {
@@ -30,6 +31,7 @@ func TaskListResFromDTO(data *dto.TaskListRes) *taskListRes {
 		AuthorID:    data.AuthorID,
 		AssigneeID:  data.AssigneeID,
 		StatusID:    data.StatusID,
+		ProjectID:   data.ProjectID,
 	}
 }
 

@@ -177,7 +177,7 @@ func (r *PgUserRepository) GetTasks(ctx context.Context, userID int) ([]*dto.Tas
 	}
 
 	query := `
-		SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.author_id, t.assignee_id, t.status_id
+		SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.author_id, t.assignee_id, t.status_id, t.project_id
 		FROM tasks as t 
 		WHERE t.assignee_id = $1 AND t.deleted_at IS NULL;
 	`
@@ -197,6 +197,7 @@ func (r *PgUserRepository) GetTasks(ctx context.Context, userID int) ([]*dto.Tas
 			&item.AuthorID,
 			&item.AssigneeID,
 			&item.StatusID,
+			&item.ProjectID,
 		); err != nil {
 			return nil, err
 		}

@@ -24,6 +24,7 @@ type TaskListRes struct {
 	ID          int
 	Name        string
 	Description *string
+	ProjectID   int
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	AuthorID    int
