@@ -2,7 +2,8 @@ import styles from "./TaskList.module.css";
 
 import { toast } from "sonner";
 import { TaskItem } from "./TaskItem";
-import { tasks as mockTasks, Task } from "./TaskList.mock";
+import { tasks as mockTasks } from "./TaskList.mock";
+import { Task } from "@/domain/task/task.entity";
 
 interface TaskListProps {
   availableTasks?: Task[];
@@ -19,11 +20,7 @@ export function TaskList({ availableTasks }: TaskListProps) {
     <div className={styles.container}>
       {tasks.map((task) => {
         return (
-          <div
-            key={task.id}
-            className={styles.userWrapper}
-            onClick={() => handleOnClick(task.id)}
-          >
+          <div key={task.id} className={styles.userWrapper} onClick={() => handleOnClick(task.id)}>
             <TaskItem title={task.title} />
           </div>
         );

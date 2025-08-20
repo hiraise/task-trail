@@ -1,3 +1,4 @@
+import { Task } from "../task/task.entity";
 import { User } from "../user/user.entity";
 import { Project, ProjectMember } from "./project.entity";
 import { EditProjectPayload, ProjectPayload } from "./project.payload";
@@ -12,6 +13,7 @@ export type DeleteProject = (id: number) => Promise<void>;
 export type EditProject = (id: number, payload: EditProjectPayload) => Promise<void>;
 export type KickMember = (projectId: number, memberId: number) => Promise<void>;
 export type Leave = (id: number) => Promise<void>;
+export type GetTasks = (id: number) => Promise<Task[]>;
 
 export type ProjectService = {
   getProjects: GetProjects;
@@ -24,4 +26,5 @@ export type ProjectService = {
   deleteProject: DeleteProject;
   kickMember: KickMember;
   leave: Leave;
+  getTasks: GetTasks;
 };

@@ -2,6 +2,7 @@ import { createSelector } from "@reduxjs/toolkit/react";
 
 import { RootState } from "@/infrastructure/redux/store";
 import { Project, ProjectMember } from "@/domain/project/project.entity";
+import { Task } from "@/domain/task/task.entity";
 
 interface ProjectData {
   project: Project | null;
@@ -17,5 +18,18 @@ export const selectProjectData = createSelector(
     owner: projectState.members.find((m) => m.isOwner)?.username || "Unknown",
     isLoading: projectState.isLoading,
     members: projectState.members,
+  })
+);
+
+interface ProjectTasks {
+  projectId: number | undefined;
+  tasks: Task[];
+}
+
+export const selectProjectTasks = createSelector(
+  (state: RootState) => state.project,
+  (projectState): ProjectTasks => ({
+    projectId: projectState.project?.id,
+    tasks: projectState.tasks,
   })
 );

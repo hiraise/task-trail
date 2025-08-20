@@ -15,6 +15,7 @@ import { mapUserFromApi } from "../mappers/userMapper";
 import { PERMISSIONS, Project, ProjectMember } from "@/domain/project/project.entity";
 import { ApiProject, mapProjectFromApi } from "./projectMapper";
 import { hasPermission } from "@/shared/utils/permissions";
+import { ApiTask, mapProjectTasksFromApi } from "./taskMapper";
 
 //TODO: Handle different error types appropriately
 
@@ -132,6 +133,19 @@ const leave = async (id: number) => {
   }
 };
 
+const getTasks = async (id: number) => {
+  try {
+    const response = await axiosClient.get<ApiTask[]>(API_ROUTES.PROJECT_TASKS(id));
+    if (!Array.isArray(response.data)) {
+      throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
+    }
+    return response.data.map((t) => mapProjectTasksFromApi(t));
+  } catch (error) {
+    clientLogger.error("Get project tasks error", { error, id });
+    throw new AppError(AppErrorType.SERVER, "Failed to get project tasks");
+  }
+};
+
 export const projectService: ProjectService = {
   getProjects: getProjects,
   newProject: newProject,
@@ -143,4 +157,5 @@ export const projectService: ProjectService = {
   deleteProject: deleteProject,
   kickMember: kickMember,
   leave: leave,
+  getTasks: getTasks,
 };

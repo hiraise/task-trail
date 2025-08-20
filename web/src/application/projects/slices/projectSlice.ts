@@ -2,11 +2,12 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { Project, ProjectMember } from "@/domain/project/project.entity";
 import projectsApi from "@/infrastructure/adapters/projectsApi";
+import { Task } from "@/domain/task/task.entity";
 
 type ProjectState = {
   project: Project | null;
   members: ProjectMember[];
-  tasks: string[];
+  tasks: Task[];
   isLoading: boolean;
 };
 
@@ -58,6 +59,10 @@ const projectSlice = createSlice({
       // Get members
       .addMatcher(projectsApi.endpoints.getMembers.matchFulfilled, (state, action) => {
         state.members = action.payload;
+      })
+      // Get tasks
+      .addMatcher(projectsApi.endpoints.getTasks.matchFulfilled, (state, action) => {
+        state.tasks = action.payload;
       })
       // Kick member
       .addMatcher(projectsApi.endpoints.kickMember.matchFulfilled, (state, action) => {

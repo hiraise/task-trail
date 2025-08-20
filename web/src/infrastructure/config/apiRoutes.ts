@@ -24,4 +24,5 @@ export const API_ROUTES = {
   KICK_MEMBER: (projectId: number, memberId: number) =>
     `${PROJECTS}/${projectId}/members/${memberId}`,
   LEAVE_PROJECT: (id: number) => `${PROJECTS}/${id}/leave`,
+  PROJECT_TASKS: (id: number) => `${PROJECTS}/${id}/tasks`,
 };

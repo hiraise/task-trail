@@ -9,8 +9,11 @@ import {
   EditProjectArgs,
   KickMemberArgs,
   LeaveProjectArgs,
+  GetTasksArgs,
   TAG_TYPES,
 } from "./projectsApi.types";
+
+import { Task } from "@/domain/task/task.entity";
 
 const projectsApi = createApi({
   reducerPath: "projectsApi",
@@ -189,6 +192,13 @@ const projectsApi = createApi({
         { type: TAG_TYPES.CANDIDATE, id: projectId },
       ],
     }),
+    getTasks: builder.query<Task[], GetTasksArgs>({
+      queryFn: async ({ projectId }) => {
+        const tasks = await projectService.getTasks(projectId);
+        return { data: tasks };
+      },
+      providesTags: (_, __, { projectId }) => [{ type: TAG_TYPES.TASKS, id: projectId }],
+    }),
   }),
 });
 
@@ -204,6 +214,7 @@ export const {
   useLazyGetMembersQuery,
   useDeleteMutation,
   useEditMutation,
+  useLazyGetTasksQuery,
 } = projectsApi;
 
 export default projectsApi;

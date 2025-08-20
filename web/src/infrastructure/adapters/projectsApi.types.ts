@@ -5,6 +5,7 @@ export const TAG_TYPES = {
   PROJECTS: "Projects",
   MEMBER: "Member",
   CANDIDATE: "Candidate",
+  TASKS: "Tasks",
 } as const;
 
 export interface KickMemberArgs {
@@ -30,4 +31,8 @@ export interface CreateProjectArgs {
   name: string;
   description?: string;
   participants?: string[];
+}
+
+export interface GetTasksArgs {
+  projectId: number;
 }

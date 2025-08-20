@@ -29,6 +29,7 @@ export const useProjects = () => {
   const [addMembersMutation] = api.useAddMembersMutation();
   const [triggerGetCandidates] = api.useLazyGetCandidatesQuery();
   const [createMutation] = api.useCreateMutation();
+  const [triggerGetTasks] = api.useLazyGetTasksQuery();
 
   /**
    * Loads the list of projects from the API and updates the state.
@@ -147,6 +148,16 @@ export const useProjects = () => {
     [triggerGetMembers, dispatch]
   );
 
+  const getTasks = useCallback(
+    async (id: number) =>
+      handleAsyncAction({
+        action: () => triggerGetTasks({ projectId: id }),
+        setIsLoading,
+        errorMessage: "Failed to load project tasks. Please try again.",
+      }),
+    [triggerGetTasks]
+  );
+
   /**
    * Adds new members to a project by their email addresses.
    * After successfully adding members, refreshes the project members list.
@@ -230,6 +241,7 @@ export const useProjects = () => {
     deleteById,
     kick,
     leave,
+    getTasks,
     isLoading,
     projects,
   };

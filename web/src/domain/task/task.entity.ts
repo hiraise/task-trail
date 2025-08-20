@@ -1,13 +1,18 @@
 export interface Task {
   id: number;
   title: string;
-  description: string;
-  status: TaskStatus;
+  description?: string;
+  statusId: number;
   createdAt: string;
   updatedAt: string;
   projectId: number;
+  authorId: number;
   assigneeId?: number;
 }
 
-export const TASK_STATUS = ["Open", "In progress", "To verify", "Done"] as const;
-export type TaskStatus = (typeof TASK_STATUS)[number];
+export interface TaskStatus {
+  id: number;
+  name: string;
+  isDefault: boolean;
+  isResolved: boolean;
+}
