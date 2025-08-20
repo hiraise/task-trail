@@ -7,14 +7,7 @@ import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { useTask } from "@/application/tasks/hooks/useTask";
 import { TaskInfo } from "@/presentation/widgets/tasks/TaskInfo";
-
-function TaskComments() {
-  return (
-    <div className="task-comments">
-      <h1>Комментарии</h1>
-    </div>
-  );
-}
+import { Comments } from "@/presentation/widgets/tasks/Comments";
 
 export default function TaskPage() {
   const { task } = useTask();
@@ -30,7 +23,7 @@ export default function TaskPage() {
         </div>
         <div className="content">
           <TaskInfo task={task} />
-          <TaskComments />
+          <Comments />
         </div>
       </MainContainer>
     </>

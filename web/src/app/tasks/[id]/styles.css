@@ -10,9 +10,3 @@
   flex-direction: column;
   gap: 20px;
 }
-
-/* TaskComments styles */
-.task-comments {
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-}

@@ -11,32 +11,21 @@
   align-items: center;
 }
 
-.avatarContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  align-items: center;
-  background-color: rgba(240, 240, 240, 1);
-}
-
 .userInfo {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
 
-  p.name {
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 18px;
-  }
+.userInfo > p.name {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 18px;
+}
 
-  p.email {
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 18px;
-    opacity: 40%;
-  }
+.userInfo > p.email {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 18px;
+  opacity: 40%;
 }
