@@ -8,6 +8,7 @@ import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { projectsTexts } from "@/shared/locales/projects";
 import { useClickOutside } from "@/shared/hooks/useClickOutside";
+import { useCreateProjectForm } from "@/application/projects/hooks/useCreateProjectForm";
 
 export interface BaseUserData {
   email: string;
@@ -32,22 +33,11 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   useClickOutside([inputRef, dropdownRef], () => setShowDropdown(false));
 
-  const [members, setMembers] = useState<UserData[]>([]);
+  // Use the custom hook to access the project form state and methods
+  const { state, toggleParticipant } = useCreateProjectForm();
 
-  const toggleParticipant = (user: BaseUserData) => {
-    setMembers((prev) => {
-      const isSelected = prev.some((member) => member.email === user.email);
-      if (isSelected) {
-        return prev.filter((member) => member.email !== user.email);
-      } else {
-        return [...prev, { email: user.email }];
-      }
-    });
-    console.log("Toggled participant:", user);
-  };
-
-  // Convert string emails to UserData objects
-  const emails = members.map((user: BaseUserData) => user.email);
+  // Convert string emails to UserData objects for UsersList component
+  const selectedUsers: BaseUserData[] = state.participants.map((email) => ({ email }));
 
   const {
     control,
@@ -61,11 +51,14 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
 
   const queryValue = watch("query");
 
-  const submitHandler = async () => {
-    if (!onSubmit) return;
-    // const selectedEmails = selectedParticipants.map((user) => user.email);
-    if (emails.length > 0) await onSubmit(emails);
+  const submitHandler = () => {
+    if (!onSubmit || state.participants.length === 0) return;
+    onSubmit(state.participants);
   };
+
+  const handleUserSelect = (user: BaseUserData) => toggleParticipant(user.email);
+
+  const handleUserDelete = (user: UserData) => toggleParticipant(user.email);
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className={styles.container}>
@@ -96,17 +89,17 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
       {showDropdown && (
         <div className={styles.dropDown} ref={dropdownRef}>
           <UsersList
-            onUserSelect={toggleParticipant}
-            selectedUsers={members}
+            onUserSelect={handleUserSelect}
+            selectedUsers={selectedUsers}
             searchQuery={queryValue}
           />
         </div>
       )}
       {showDropdown && <div className={styles.middle} />}
-      {members.length > 0 && (
+      {state.participants.length > 0 && (
         <SelectedUsers
-          emails={emails}
-          onDeleteUser={toggleParticipant}
+          emails={state.participants}
+          onDeleteUser={handleUserDelete}
           isExpanded={!showDropdown}
         />
       )}

@@ -2,7 +2,6 @@ import { useForm } from "react-hook-form";
 
 import styles from "./CreateProjectForm.module.css";
 import { Spacer } from "../../primitives/Spacer";
-import { projectNameValidator } from "@/shared/utils/validate";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { Input, Textarea } from "@/presentation/ui/Input";
@@ -10,41 +9,35 @@ import { AddParticipant } from "./AddParticipant";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { projectsTexts } from "@/shared/locales/projects";
 import { ProjectPayload } from "@/domain/project/project.payload";
-import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
+import { useCreateProjectForm } from "@/application/projects/hooks/useCreateProjectForm";
+import { projectNameValidator } from "@/shared/utils/validate";
+import { UserData } from "../AddParticipantForm/AddParticipantForm";
 
 interface CreateProjectFormProps {
   onSubmit: () => void;
 }
 
 export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
-  const { showInviteUser } = useGlobalModals();
-  const emails: string[] = [];
-  const toogleMember = () => {};
+  const { state, setState, toggleParticipant, submitForm, handleInviteUser } =
+    useCreateProjectForm();
+  const emails = state.participants;
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting },
   } = useForm<ProjectPayload>({
     mode: "onChange",
     defaultValues: {
-      name: "",
-      description: "",
-      participants: [],
+      name: state.name,
+      description: state.description,
+      participants: state.participants,
     },
   });
 
-  // Handle form submission and validation
   const submitHandler = async (data: ProjectPayload) => {
-    const projectData: ProjectPayload = data;
-    console.log("Final project data with participants:", projectData);
+    await submitForm(data);
     onSubmit();
-  };
-
-  const handleInviteUser = async () => {
-    const emails = await showInviteUser();
-    if (!emails || emails.length === 0) return;
-    console.log("Invited emails:", emails);
   };
 
   return (
@@ -55,6 +48,7 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
           type="text"
           {...register("name", {
             ...projectNameValidator,
+            onChange: (e) => setState({ name: e.target.value }),
           })}
           aria-invalid={!!errors.name}
           aria-describedby="projectName-error"
@@ -66,7 +60,9 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
         <Textarea
           rows={3}
           id="projectDescription"
-          {...register("description")}
+          {...register("description", {
+            onChange: (e) => setState({ description: e.target.value }),
+          })}
           aria-invalid={!!errors.description}
           aria-describedby="projectDescription-error"
           placeholder={projectsTexts.projectDescriptionPlaceholder}
@@ -79,11 +75,14 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
 
         {/* Display selected participants */}
         {emails && emails.length > 0 && (
-          <SelectedUsers emails={emails} onDeleteUser={toogleMember} />
+          <SelectedUsers
+            emails={emails}
+            onDeleteUser={(user: UserData) => toggleParticipant(user.email)}
+          />
         )}
       </div>
       <Spacer size="24px" />
-      <SubmitButton type="submit" disabled={!isValid || isSubmitting}>
+      <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? projectsTexts.creatingProject : projectsTexts.createProject}
       </SubmitButton>
     </form>

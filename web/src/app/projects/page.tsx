@@ -44,12 +44,6 @@ export default function ProjectsPage() {
     console.log("Selected sort option:", option);
   };
 
-  // TODO: Implement project creation logic
-  const handleCreateProject = async () => {
-    const data = await showCreateProject();
-    console.log("Created project data:", data);
-  };
-
   if (isLoading) return <LoadingScreen />;
 
   return (
@@ -74,7 +68,7 @@ export default function ProjectsPage() {
           />
         ))}
       </div>
-      <FloatingButton onClick={handleCreateProject} variant="withBottomNav" />
+      <FloatingButton onClick={showCreateProject} variant="withBottomNav" />
       <BottomNavBar />
     </MainContainer>
   );
