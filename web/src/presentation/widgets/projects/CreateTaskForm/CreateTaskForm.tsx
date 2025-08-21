@@ -1,113 +1,122 @@
 "use client";
 
+import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import styles from "./CreateTaskForm.module.css";
-import { FormValues } from "./CreateTaskForm.types";
 import { Input, Textarea } from "@/presentation/ui/Input";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { AssigneeSelection, ProjectSelection } from "./FormSelectionOptions";
-import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
+import { useCreateTaskForm } from "@/application/tasks/hooks/useCreateTaskForm";
+import { TaskPayload } from "@/domain/task/task.payload";
+import { tasksTexts } from "@/shared/locales/tasks";
 
-const texts = {
-  title: "Новая задача",
-  taskNamePlaceholder: "Название задачи",
-  taskDescriptionPlaceholder: "Описание задачи",
-  assigneePlaceholder: "Выберите исполнителя",
-  projectPlaceholder: "Выберите проект",
-  buttonText: "Создать задачу",
-  submittingText: "Создание задачи...",
-};
-
-interface Props {
-  onSubmit: () => void | Promise<void>;
-  isLoading?: boolean;
+interface CreateTaskFormProps {
+  onSubmit: () => void;
 }
 
-export function CreateTaskForm({ onSubmit, isLoading }: Props) {
-  const { showSelectAssignee, showSelectProject } = useGlobalModals();
+export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
+  const {
+    state,
+    projectName,
+    memberName,
+    setState,
+    handleSelectAssignee,
+    handleSelectProject,
+    submitForm,
+  } = useCreateTaskForm();
 
-  const form = useForm<FormValues>({
+  const form = useForm<TaskPayload>({
     mode: "onChange",
-    defaultValues: {
-      name: "",
-      description: "",
-      assignee: "",
-      project: "",
-    },
+    defaultValues: state,
   });
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting, isValid },
     control,
   } = form;
 
-  const submitHandler = async (data: FormValues) => {
-    await onSubmit();
-    alert("Submitted data: " + JSON.stringify(data, null, 2));
-  };
+  useEffect(() => {
+    setValue("assigneeId", state.assigneeId);
+  }, [state.assigneeId, setValue]);
 
-  const handleAssigneeChange = async () => {
-    const result = await showSelectAssignee();
-    if (!result) return;
-    const selectedUsername = result.username || result.email;
-    console.log("Selected assignee:", selectedUsername);
-  };
+  useEffect(() => {
+    setValue("projectId", state.projectId);
+  }, [state.projectId, setValue]);
 
-  const handleProjectChange = async () => {
-    const result = await showSelectProject();
-    if (!result) return;
-    console.log("Selected project:", result);
+  const submitHandler = async (data: TaskPayload) => {
+    await submitForm(data);
+    onSubmit();
   };
 
   return (
     <form className={styles.form} onSubmit={handleSubmit(submitHandler)}>
       <div className={styles.inputFields}>
         <Input
-          {...register("name", { required: "Это поле обязательно" })}
-          placeholder={texts.taskNamePlaceholder}
+          {...register("name", {
+            required: "Это поле обязательно",
+            onChange: (e) => setState({ name: e.target.value }),
+          })}
+          placeholder={tasksTexts.taskNamePlaceholder}
         />
         {errors.name && <FormFieldError>{errors.name.message}</FormFieldError>}
         <Textarea
           rows={3}
           id="taskDescription"
-          {...register("description")}
+          {...register("description", {
+            onChange: (e) => setState({ description: e.target.value }),
+          })}
           aria-invalid={!!errors.description}
           aria-describedby="taskDescription-error"
-          placeholder={texts.taskDescriptionPlaceholder}
+          placeholder={tasksTexts.taskDescriptionPlaceholder}
           disabled={isSubmitting}
           autoComplete="off"
           className={styles.textarea}
         />
         {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
         <Controller
-          name={"assignee"}
+          name={"assigneeId"}
           control={control}
           rules={{ required: "Это поле обязательно" }}
           render={({ field, fieldState }) => (
             <>
-              <AssigneeSelection username={field.value} onClick={handleAssigneeChange} />
+              <AssigneeSelection
+                username={memberName}
+                onClick={async () => {
+                  await handleSelectAssignee();
+                  field.onChange(state.assigneeId);
+                  console.log("Assignee id: ", state.assigneeId);
+                  console.log("Assignee id: ", field.value);
+                }}
+              />
               {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
             </>
           )}
         />
         <Controller
-          name={"project"}
+          name={"projectId"}
           control={control}
           rules={{ required: "Это поле обязательно" }}
           render={({ field, fieldState }) => (
             <>
-              <ProjectSelection project={field.value} onClick={handleProjectChange} />
+              <ProjectSelection
+                project={projectName}
+                onClick={async () => {
+                  await handleSelectProject();
+                  field.onChange(state.projectId);
+                }}
+              />
               {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
             </>
           )}
-        ></Controller>
+        />
       </div>
       <SubmitButton disabled={!isValid || isSubmitting}>
-        {isLoading ? texts.submittingText : texts.buttonText}
+        {isSubmitting ? tasksTexts.submittingText : tasksTexts.buttonText}
       </SubmitButton>
     </form>
   );

@@ -4,6 +4,7 @@ const PASSWORD = `${AUTH}/password`;
 const USERS = `${API_VERSION}/users`;
 const USERS_ME = `${USERS}/me`;
 const PROJECTS = `${API_VERSION}/projects`;
+const TASKS = `${API_VERSION}/tasks`;
 
 export const API_ROUTES = {
   LOGIN: `${AUTH}/login`,
@@ -17,7 +18,8 @@ export const API_ROUTES = {
   FORGOT_PASSWORD: `${PASSWORD}/forgot`,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   CURRENT_USER: USERS_ME,
-  PROJECTS: `${PROJECTS}`,
+  // PROJECTS API
+  PROJECTS: PROJECTS,
   PROJECT_BY_ID: (id: number) => `${PROJECTS}/${id}`,
   PROJECT_MEMBERS: (id?: number) => `${PROJECTS}${id ? `/${id}` : ""}/members`,
   GET_CANDIDATES: (id?: number) => `${PROJECTS}/candidates${id ? `/?id=${id}` : ""}`,
@@ -25,4 +27,6 @@ export const API_ROUTES = {
     `${PROJECTS}/${projectId}/members/${memberId}`,
   LEAVE_PROJECT: (id: number) => `${PROJECTS}/${id}/leave`,
   PROJECT_TASKS: (id: number) => `${PROJECTS}/${id}/tasks`,
+  // TASKS API
+  TASKS: TASKS,
 };

@@ -9,6 +9,7 @@ import errorSlice from "@/application/errors/slices/errorSlice";
 import { authApi } from "../adapters/authApi";
 import projectsApi from "../adapters/projectsApi";
 import taskReducer from "@/application/tasks/slices/taskSlice";
+import tasksApi from "../adapters/tasksApi";
 
 export const store = configureStore({
   devTools: process.env.NODE_ENV === "development",
@@ -21,6 +22,7 @@ export const store = configureStore({
     globalError: errorSlice,
     [authApi.reducerPath]: authApi.reducer,
     [projectsApi.reducerPath]: projectsApi.reducer,
+    [tasksApi.reducerPath]: tasksApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

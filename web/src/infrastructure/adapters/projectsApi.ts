@@ -155,7 +155,6 @@ const projectsApi = createApi({
         const members = await projectService.getMembers(projectId);
         return { data: members };
       },
-
       providesTags: (_, __, projectId) => [{ type: TAG_TYPES.MEMBER, id: projectId }],
     }),
     /**
@@ -192,6 +191,13 @@ const projectsApi = createApi({
         { type: TAG_TYPES.CANDIDATE, id: projectId },
       ],
     }),
+    /**
+     * @endpoint getTasks
+     * Retrieves a list of tasks for a specified project.
+     * @param {GetTasksArgs} args - The arguments containing `projectId` (ID of the project).
+     * @returns {Task[]} - Returns an array of Task objects belonging to the project.
+     * @providesTags TASKS - Provides the TASKS tag for cache management and data updates.
+     */
     getTasks: builder.query<Task[], GetTasksArgs>({
       queryFn: async ({ projectId }) => {
         const tasks = await projectService.getTasks(projectId);

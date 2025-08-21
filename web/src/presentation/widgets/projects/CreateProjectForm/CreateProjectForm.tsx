@@ -28,11 +28,7 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<ProjectPayload>({
     mode: "onChange",
-    defaultValues: {
-      name: state.name,
-      description: state.description,
-      participants: state.participants,
-    },
+    defaultValues: state,
   });
 
   const submitHandler = async (data: ProjectPayload) => {
