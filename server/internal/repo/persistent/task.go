@@ -48,3 +48,30 @@ func (r *PgTaskRepository) Create(ctx context.Context, data *dto.TaskCreate) (in
 	}
 	return id, nil
 }
+
+func (r *PgTaskRepository) GetByID(ctx context.Context, taskID int) (*dto.TaskListRes, error) {
+	if err := ValidateID(taskID, "taskID"); err != nil {
+		return nil, err
+	}
+
+	query := `
+		SELECT t.id, t.name, t.description, t.created_at, t.updated_at, t.author_id, t.assignee_id, t.status_id, t.project_id
+		FROM tasks as t 
+		WHERE t.id = $1 AND t.deleted_at IS NULL;
+	`
+	var item dto.TaskListRes
+	if err := r.getDb(ctx).QueryRow(ctx, query, taskID).Scan(
+		&item.ID,
+		&item.Name,
+		&item.Description,
+		&item.CreatedAt,
+		&item.UpdatedAt,
+		&item.AuthorID,
+		&item.AssigneeID,
+		&item.StatusID,
+		&item.ProjectID,
+	); err != nil {
+		return nil, r.handleError(err)
+	}
+	return &item, nil
+}

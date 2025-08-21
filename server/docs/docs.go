@@ -412,7 +412,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "get list of projects",
                 "responses": {
@@ -452,7 +452,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "create new project",
                 "parameters": [
@@ -509,7 +509,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "get list of candidates to add to the project",
                 "parameters": [
@@ -560,7 +560,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "get project by id",
                 "parameters": [
@@ -606,7 +606,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "delete project by id",
                 "parameters": [
@@ -655,7 +655,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "update project by id",
                 "parameters": [
@@ -709,7 +709,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "leave from project by id",
                 "parameters": [
@@ -760,7 +760,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "get project members",
                 "parameters": [
@@ -816,7 +816,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "add new members to project",
                 "parameters": [
@@ -870,7 +870,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "kick user from project",
                 "parameters": [
@@ -928,7 +928,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "get project tasks",
                 "parameters": [
@@ -985,7 +985,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/project"
+                    "/v1/projects"
                 ],
                 "summary": "get project task statuses",
                 "parameters": [
@@ -1077,6 +1077,60 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "user not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tasks/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/tasks"
+                ],
+                "summary": "get task by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "task id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.taskListRes"
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "403": {
+                        "description": "access denied",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "task not found",
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
@@ -1598,6 +1652,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "projectId": {
+                    "type": "integer"
                 },
                 "statusId": {
                     "type": "integer"

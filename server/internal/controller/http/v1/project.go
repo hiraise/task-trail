@@ -21,7 +21,7 @@ type projectRoutes struct {
 
 // @Summary 	create new project
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		body body request.projectCreateReq true "project data"
@@ -48,7 +48,7 @@ func (r *projectRoutes) create(c *gin.Context) {
 // @Summary 	get list of projects
 // @Description List of projects where current user is a member or owner
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Success 	200 {array} response.projectListRes
@@ -73,7 +73,7 @@ func (r *projectRoutes) getProjects(c *gin.Context) {
 // @Summary 	get project by id
 // @Description Project by id, where current user is a member
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"
@@ -95,7 +95,7 @@ func (r *projectRoutes) getByID(c *gin.Context) {
 // @Summary 	add new members to project
 // @Description validate list of candidates, create accounts if they do not exist yet, and add them to the project
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"
@@ -122,7 +122,7 @@ func (r *projectRoutes) addMembers(c *gin.Context) {
 // @Summary 	get list of candidates to add to the project
 // @Description Candidates are participatns in other projects owned by the current user
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id query int false "project id"
@@ -147,7 +147,7 @@ func (r *projectRoutes) getCandidates(c *gin.Context) {
 
 // @Summary 	update project by id
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"
@@ -173,7 +173,7 @@ func (r *projectRoutes) updateByID(c *gin.Context) {
 
 // @Summary 	get project members
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"
@@ -195,7 +195,7 @@ func (r *projectRoutes) getMembers(c *gin.Context) {
 
 // @Summary 	delete project by id
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"
@@ -216,7 +216,7 @@ func (r *projectRoutes) deleteByID(c *gin.Context) {
 
 // @Summary 	leave from project by id
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"
@@ -237,7 +237,7 @@ func (r *projectRoutes) leaveByID(c *gin.Context) {
 
 // @Summary 	kick user from project
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"
@@ -260,7 +260,7 @@ func (r *projectRoutes) kickByID(c *gin.Context) {
 
 // @Summary 	get project tasks
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"
@@ -282,7 +282,7 @@ func (r *projectRoutes) getTasks(c *gin.Context) {
 
 // @Summary 	get project task statuses
 // @Security BearerAuth
-// @Tags 		/v1/project
+// @Tags 		/v1/projects
 // @Accept 		json
 // @Produce 	json
 // @Param 		id path int true "project id"

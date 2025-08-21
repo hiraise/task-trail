@@ -207,6 +207,8 @@ definitions:
         type: integer
       name:
         type: string
+      projectId:
+        type: integer
       statusId:
         type: integer
       updatedAt:
@@ -496,7 +498,7 @@ paths:
       - BearerAuth: []
       summary: get list of projects
       tags:
-      - /v1/project
+      - /v1/projects
     post:
       consumes:
       - application/json
@@ -530,7 +532,7 @@ paths:
       - BearerAuth: []
       summary: create new project
       tags:
-      - /v1/project
+      - /v1/projects
   /v1/projects/{id}:
     delete:
       consumes:
@@ -562,7 +564,7 @@ paths:
       - BearerAuth: []
       summary: delete project by id
       tags:
-      - /v1/project
+      - /v1/projects
     get:
       consumes:
       - application/json
@@ -592,7 +594,7 @@ paths:
       - BearerAuth: []
       summary: get project by id
       tags:
-      - /v1/project
+      - /v1/projects
     patch:
       consumes:
       - application/json
@@ -625,7 +627,7 @@ paths:
       - BearerAuth: []
       summary: update project by id
       tags:
-      - /v1/project
+      - /v1/projects
   /v1/projects/{id}/leave:
     delete:
       consumes:
@@ -657,7 +659,7 @@ paths:
       - BearerAuth: []
       summary: leave from project by id
       tags:
-      - /v1/project
+      - /v1/projects
   /v1/projects/{id}/members:
     get:
       consumes:
@@ -693,7 +695,7 @@ paths:
       - BearerAuth: []
       summary: get project members
       tags:
-      - /v1/project
+      - /v1/projects
     post:
       consumes:
       - application/json
@@ -728,7 +730,7 @@ paths:
       - BearerAuth: []
       summary: add new members to project
       tags:
-      - /v1/project
+      - /v1/projects
   /v1/projects/{id}/members/{memberId}:
     delete:
       consumes:
@@ -765,7 +767,7 @@ paths:
       - BearerAuth: []
       summary: kick user from project
       tags:
-      - /v1/project
+      - /v1/projects
   /v1/projects/{id}/tasks:
     get:
       consumes:
@@ -801,7 +803,7 @@ paths:
       - BearerAuth: []
       summary: get project tasks
       tags:
-      - /v1/project
+      - /v1/projects
   /v1/projects/{id}/tasks/statuses:
     get:
       consumes:
@@ -837,7 +839,7 @@ paths:
       - BearerAuth: []
       summary: get project task statuses
       tags:
-      - /v1/project
+      - /v1/projects
   /v1/projects/candidates:
     get:
       consumes:
@@ -870,7 +872,7 @@ paths:
       - BearerAuth: []
       summary: get list of candidates to add to the project
       tags:
-      - /v1/project
+      - /v1/projects
   /v1/tasks:
     post:
       consumes:
@@ -904,6 +906,40 @@ paths:
       security:
       - BearerAuth: []
       summary: create new task
+      tags:
+      - /v1/tasks
+  /v1/tasks/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.taskListRes'
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "403":
+          description: access denied
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "404":
+          description: task not found
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+      security:
+      - BearerAuth: []
+      summary: get task by id
       tags:
       - /v1/tasks
   /v1/users/{id}:
