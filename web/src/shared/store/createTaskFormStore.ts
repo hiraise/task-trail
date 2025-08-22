@@ -1,28 +1,29 @@
 import { BaseStore, createStore } from "./baseStore";
+import { Project, ProjectMember } from "@/domain/project/project.entity";
 
 export interface TaskFormData {
   name: string;
   description: string;
-  assigneeId?: number;
-  projectId: number;
+  assignee?: Partial<ProjectMember>;
+  project?: Partial<Project>;
 }
 
 const initialState: TaskFormData = {
   name: "",
   description: "",
-  assigneeId: undefined,
-  projectId: 0,
+  assignee: undefined,
+  project: undefined,
 };
 
 function extraMethods(store: BaseStore<TaskFormData>) {
-  const selectAssignee = (assigneeId: number) => {
-    if (store.data.assigneeId === assigneeId) return;
-    store.set({ assigneeId: assigneeId });
+  const selectAssignee = (assignee: Partial<ProjectMember>) => {
+    if (store.data.assignee === assignee) return;
+    store.set({ assignee: assignee });
   };
 
-  const selectProject = (projectId: number) => {
-    if (store.data.projectId === projectId) return;
-    store.set({ projectId: projectId });
+  const selectProject = (project: Partial<Project>) => {
+    if (store.data.project === project) return;
+    store.set({ project: project });
   };
   return { selectAssignee, selectProject };
 }

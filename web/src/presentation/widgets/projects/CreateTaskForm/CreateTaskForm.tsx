@@ -9,46 +9,34 @@ import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { AssigneeSelection, ProjectSelection } from "./FormSelectionOptions";
 import { useCreateTaskForm } from "@/application/tasks/hooks/useCreateTaskForm";
-import { TaskPayload } from "@/domain/task/task.payload";
 import { tasksTexts } from "@/shared/locales/tasks";
+import { FormValues } from "./CreateTaskForm.types";
 
 interface CreateTaskFormProps {
   onSubmit: () => void;
 }
 
 export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
-  const {
-    state,
-    projectName,
-    memberName,
-    setState,
-    handleSelectAssignee,
-    handleSelectProject,
-    submitForm,
-  } = useCreateTaskForm();
+  const { state, initialData, setState, handleSelectAssignee, handleSelectProject, submitForm } =
+    useCreateTaskForm();
 
-  const form = useForm<TaskPayload>({
+  const form = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: state,
+    defaultValues: initialData,
   });
+
+  useEffect(() => {
+    form.reset(initialData);
+  }, [form, initialData]);
 
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting, isValid },
     control,
   } = form;
 
-  useEffect(() => {
-    setValue("assigneeId", state.assigneeId);
-  }, [state.assigneeId, setValue]);
-
-  useEffect(() => {
-    setValue("projectId", state.projectId);
-  }, [state.projectId, setValue]);
-
-  const submitHandler = async (data: TaskPayload) => {
+  const submitHandler = async (data: FormValues) => {
     await submitForm(data);
     onSubmit();
   };
@@ -81,19 +69,12 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
         <Controller
           name={"assigneeId"}
           control={control}
-          rules={{ required: "Это поле обязательно" }}
-          render={({ field, fieldState }) => (
+          render={() => (
             <>
               <AssigneeSelection
-                username={memberName}
-                onClick={async () => {
-                  await handleSelectAssignee();
-                  field.onChange(state.assigneeId);
-                  console.log("Assignee id: ", state.assigneeId);
-                  console.log("Assignee id: ", field.value);
-                }}
+                username={state.assignee?.username || state.assignee?.email}
+                onClick={handleSelectAssignee}
               />
-              {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
             </>
           )}
         />
@@ -101,15 +82,9 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
           name={"projectId"}
           control={control}
           rules={{ required: "Это поле обязательно" }}
-          render={({ field, fieldState }) => (
+          render={({ fieldState }) => (
             <>
-              <ProjectSelection
-                project={projectName}
-                onClick={async () => {
-                  await handleSelectProject();
-                  field.onChange(state.projectId);
-                }}
-              />
+              <ProjectSelection project={state.project?.name} onClick={handleSelectProject} />
               {fieldState.error && <FormFieldError>{fieldState.error.message}</FormFieldError>}
             </>
           )}

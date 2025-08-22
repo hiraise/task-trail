@@ -3,41 +3,53 @@ import { createSelector } from "@reduxjs/toolkit/react";
 import { RootState } from "@/infrastructure/redux/store";
 import { users as mockUsers } from "@/presentation/widgets/projects/MembersList/MembersList.mock";
 import { mockProjects } from "@/presentation/widgets/tasks/ProjectsList/ProjectsList.mock";
+import { Project, ProjectMember } from "@/domain/project/project.entity";
 
 export const selectTask = createSelector(
   (state: RootState) => state.task,
   (task) => task
 );
 
-export const selectMemberById = createSelector(
+const selectMemberById = createSelector(
   (state: RootState) => state.project.members,
   (_: RootState, memberId?: number) => memberId,
-  (members, memberId): string => {
-    if (memberId === undefined) return "";
+  (members, memberId): Partial<ProjectMember> => {
     const member = members.find((m) => m.id === memberId);
     if (!member) {
       console.warn(`Assignee username not found for memberId ${memberId}.`);
-      return "";
+      return {};
     }
-    return member.username || member.email;
+    return { id: member.id, username: member.username, email: member.email };
   }
 );
 
-export const selectProjectById = createSelector(
+const selectProjectById = createSelector(
   (state: RootState) => state.projects,
   (state: RootState) => state.project.project,
   (_: RootState, projectId: number | undefined) => projectId,
-  (projects, currentProject, projectId) => {
-    if (!projectId && currentProject) return currentProject.name;
-    const isCurrent = currentProject?.id === projectId;
-    if (currentProject && isCurrent) return currentProject.name;
+  (projects, currentProject, projectId): Partial<Project> => {
+    if (!projectId && currentProject) {
+      return { id: currentProject.id, name: currentProject.name };
+    }
     const project = projects.find((p) => p.id === projectId);
     if (!project) {
       console.warn(`Project not found for projectId ${projectId}.`);
-      return "";
+      return {};
     }
-    return project.name;
+    return { id: project.id, name: project.name };
   }
+);
+
+export const selectMemberAndProject = createSelector(
+  [
+    (state: RootState) => state,
+    (_: RootState, assigneeId?: number) => assigneeId,
+    (_: RootState, __: number | undefined, projectId?: number) => projectId,
+  ],
+  (state, assigneeId, projectId) => ({
+    member: selectMemberById(state, assigneeId),
+    project: selectProjectById(state, projectId),
+  })
 );
 
 export const selectAssignee = createSelector(
