@@ -24,7 +24,7 @@ export default function SelectProjectModal(props: BaseModalProps<Project>) {
   };
 
   return (
-    <BaseModal {...props} fullScreen={true} title="Проект">
+    <BaseModal {...props} fullScreen showBackButton title="Проект">
       <ProjectsList projects={projects} onSelect={handleOnSelect} />
     </BaseModal>
   );

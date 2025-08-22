@@ -15,7 +15,7 @@ export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) 
   };
 
   return (
-    <BaseModal {...props} fullScreen={true} title="Ответственный">
+    <BaseModal {...props} fullScreen showBackButton title="Ответственный">
       <MembersList members={members} onSelect={handleOnSelect} />
     </BaseModal>
   );
