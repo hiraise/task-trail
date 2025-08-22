@@ -21,7 +21,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     mode: "onChange",
   });
 
-  const { state, initialData, handleSelectAssignee, handleSelectProject, submitForm } =
+  const { state, initialData, setState, handleSelectAssignee, handleSelectProject, submitForm } =
     useCreateTaskForm(form);
 
   useEffect(() => {
@@ -46,6 +46,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
         <Input
           {...register("name", {
             required: tasksTexts.requiredField,
+            onChange: (e) => setState({ name: e.target.value }),
           })}
           placeholder={tasksTexts.taskNamePlaceholder}
         />
@@ -53,7 +54,9 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
         <Textarea
           rows={3}
           id="taskDescription"
-          {...register("description")}
+          {...register("description", {
+            onChange: (e) => setState({ description: e.target.value }),
+          })}
           aria-invalid={!!errors.description}
           aria-describedby="taskDescription-error"
           placeholder={tasksTexts.taskDescriptionPlaceholder}
