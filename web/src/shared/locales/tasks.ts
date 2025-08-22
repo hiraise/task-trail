@@ -6,4 +6,5 @@ export const tasksTexts = {
   projectPlaceholder: "Выберите проект",
   buttonText: "Создать задачу",
   submittingText: "Создание задачи...",
+  requiredField: "Это поле обязательно",
 };

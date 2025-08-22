@@ -17,13 +17,12 @@ interface CreateTaskFormProps {
 }
 
 export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
-  const { state, initialData, setState, handleSelectAssignee, handleSelectProject, submitForm } =
-    useCreateTaskForm();
-
   const form = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: initialData,
   });
+
+  const { state, initialData, handleSelectAssignee, handleSelectProject, submitForm } =
+    useCreateTaskForm(form);
 
   useEffect(() => {
     form.reset(initialData);
@@ -46,8 +45,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
       <div className={styles.inputFields}>
         <Input
           {...register("name", {
-            required: "Это поле обязательно",
-            onChange: (e) => setState({ name: e.target.value }),
+            required: tasksTexts.requiredField,
           })}
           placeholder={tasksTexts.taskNamePlaceholder}
         />
@@ -55,9 +53,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
         <Textarea
           rows={3}
           id="taskDescription"
-          {...register("description", {
-            onChange: (e) => setState({ description: e.target.value }),
-          })}
+          {...register("description")}
           aria-invalid={!!errors.description}
           aria-describedby="taskDescription-error"
           placeholder={tasksTexts.taskDescriptionPlaceholder}
@@ -70,18 +66,16 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
           name={"assigneeId"}
           control={control}
           render={() => (
-            <>
-              <AssigneeSelection
-                username={state.assignee?.username || state.assignee?.email}
-                onClick={handleSelectAssignee}
-              />
-            </>
+            <AssigneeSelection
+              username={state.assignee?.username || state.assignee?.email}
+              onClick={handleSelectAssignee}
+            />
           )}
         />
         <Controller
           name={"projectId"}
           control={control}
-          rules={{ required: "Это поле обязательно" }}
+          rules={{ required: tasksTexts.requiredField }}
           render={({ fieldState }) => (
             <>
               <ProjectSelection project={state.project?.name} onClick={handleSelectProject} />

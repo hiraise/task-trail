@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from "react";
+import { UseFormReturn } from "react-hook-form";
 
 import { useStore } from "@/shared/hooks/useStore";
 import { createTaskFormStore, TaskFormData } from "@/shared/store/createTaskFormStore";
@@ -10,7 +11,7 @@ import { FormValues } from "@/presentation/widgets/projects/CreateTaskForm/Creat
 
 const selector = (state: TaskFormData) => state;
 
-export function useCreateTaskForm() {
+export function useCreateTaskForm(form: UseFormReturn<FormValues>) {
   const { showSelectAssignee, showSelectProject } = useGlobalModals();
   const state = useStore(createTaskFormStore, selector);
   const { create } = useTask();
@@ -18,43 +19,15 @@ export function useCreateTaskForm() {
     selectMemberAndProject(s, state.assignee?.id, state.project?.id)
   );
 
-  /**
-   * Synchronizes the `project` field in the `createTaskFormStore` with the selected project from the store.
-   *
-   * If the form state does not have a project but a project is available from the selector,
-   * this effect sets the project in the form store to ensure consistency.
-   *
-   * @remarks
-   * This effect runs whenever the `project` or `state.project` dependencies change.
-   *
-   * @param project - The currently selected project from the store.
-   * @param state.project - The project currently set in the form state.
-   */
   useEffect(() => {
     if (!state.project && project) {
       createTaskFormStore.set({ project: project });
+      if (project.id) {
+        form.setValue("projectId", project.id, { shouldValidate: true });
+      }
     }
-  }, [project, state.project]);
+  }, [project, state.project, form]);
 
-  const setState = useCallback((partialState: Partial<TaskFormData>) => {
-    createTaskFormStore.set(partialState);
-  }, []);
-
-  /**
-   * Memoized initial form data for creating a task.
-   *
-   * Contains the current values for the task name, description, assignee ID, and project ID
-   * from the form state. Useful for initializing form fields or resetting the form.
-   *
-   * @remarks
-   * This value is recomputed whenever the form state changes.
-   *
-   * @returns An object with the following properties:
-   * - `name`: The task name from the form state.
-   * - `description`: The task description from the form state.
-   * - `assigneeId`: The ID of the selected assignee, if any.
-   * - `projectId`: The ID of the selected project, if any.
-   */
   const initialData = useMemo(() => {
     return {
       name: state.name,
@@ -77,18 +50,19 @@ export function useCreateTaskForm() {
     const result = await showSelectAssignee();
     if (!result) return;
     createTaskFormStore.set({ assignee: result });
+    form.setValue("assigneeId", result.id, { shouldValidate: true });
   };
 
   const handleSelectProject = async () => {
     const result = await showSelectProject();
     if (!result) return;
     createTaskFormStore.set({ project: result });
+    form.setValue("projectId", result.id, { shouldValidate: true });
   };
 
   return {
     state,
     initialData,
-    setState,
     submitForm,
     handleSelectAssignee,
     handleSelectProject,
