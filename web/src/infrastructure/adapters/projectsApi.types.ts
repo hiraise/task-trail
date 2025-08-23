@@ -32,7 +32,3 @@ export interface CreateProjectArgs {
   description?: string;
   participants?: string[];
 }
-
-export interface GetTasksArgs {
-  projectId: number;
-}

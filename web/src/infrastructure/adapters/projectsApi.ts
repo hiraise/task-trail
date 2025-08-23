@@ -9,11 +9,8 @@ import {
   EditProjectArgs,
   KickMemberArgs,
   LeaveProjectArgs,
-  GetTasksArgs,
   TAG_TYPES,
 } from "./projectsApi.types";
-
-import { Task } from "@/domain/task/task.entity";
 
 const projectsApi = createApi({
   reducerPath: "projectsApi",
@@ -191,20 +188,6 @@ const projectsApi = createApi({
         { type: TAG_TYPES.CANDIDATE, id: projectId },
       ],
     }),
-    /**
-     * @endpoint getTasks
-     * Retrieves a list of tasks for a specified project.
-     * @param {GetTasksArgs} args - The arguments containing `projectId` (ID of the project).
-     * @returns {Task[]} - Returns an array of Task objects belonging to the project.
-     * @providesTags TASKS - Provides the TASKS tag for cache management and data updates.
-     */
-    getTasks: builder.query<Task[], GetTasksArgs>({
-      queryFn: async ({ projectId }) => {
-        const tasks = await projectService.getTasks(projectId);
-        return { data: tasks };
-      },
-      providesTags: (_, __, { projectId }) => [{ type: TAG_TYPES.TASKS, id: projectId }],
-    }),
   }),
 });
 
@@ -220,7 +203,6 @@ export const {
   useLazyGetMembersQuery,
   useDeleteMutation,
   useEditMutation,
-  useLazyGetTasksQuery,
 } = projectsApi;
 
 export default projectsApi;

@@ -1,7 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
-
 import "./styles.css";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
@@ -15,9 +13,8 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
 import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { mockTasks } from "@/presentation/widgets/projects/TaskList";
 import { Spinner } from "@/presentation/ui/Spinner";
-import { useProject } from "@/application/projects/hooks/useProject";
+import { useGetTasks, useProject } from "@/application/projects/hooks/useProject";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 const projectTexts = {
@@ -31,7 +28,8 @@ export default function ProjectPage() {
   const { showCreateTask } = useGlobalModals();
 
   // Mock tasks for display
-  const displayTasks = useMemo(() => mockTasks.slice(0, 4), []);
+  const { data: tasks } = useGetTasks();
+  const displayTasks = tasks?.slice(0, 4) ?? [];
 
   // TODO: Implement task creation logic
   const handleCreateTask = async () => {

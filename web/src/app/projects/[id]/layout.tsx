@@ -7,8 +7,10 @@ import { useProjects } from "@/application/projects/hooks/useProjects";
 import { Spinner } from "@/presentation/ui/Spinner";
 
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {
+  // TODO: replace fetching data with React Query
   const { getById, getMembers, clearCurrent } = useProjects();
   const { isLoading, projectId } = useProject();
+  // const { data: tasks, isLoading, isError } = useGetTasks();
 
   useEffect(() => {
     async function fetchProject() {

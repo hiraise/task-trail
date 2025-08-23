@@ -1,5 +1,5 @@
 import { useParams, useRouter } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { taskService } from "@/infrastructure/api/taskService";
@@ -21,12 +21,14 @@ export const useGetTask = () => {
 
 export const useCreateTask = () => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   return useMutation<number, Error, TaskPayload>({
     mutationFn: taskService.create,
-    onSuccess: (taskId) => {
+    onSuccess: (taskId, payload) => {
       router.push(ROUTES.task(taskId));
       toast.success("Task created successfully");
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectTasks(payload.projectId) });
     },
     onError: () => toast.error("Failed to create task"),
   });

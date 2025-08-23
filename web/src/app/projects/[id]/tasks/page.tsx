@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 import "./styles.css";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
@@ -11,28 +9,16 @@ import { ICONS } from "@/infrastructure/config/icons";
 import { TaskList } from "@/presentation/widgets/projects/TaskList";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
-import { useProjects } from "@/application/projects/hooks/useProjects";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
-import { selectProjectTasks } from "@/application/projects/slices/projectSelectors";
 import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
+import { useGetTasks } from "@/application/projects/hooks/useProject";
 
 const texts = {
   title: "Задачи проекта",
 };
 
 export default function ProjectTasksPage() {
-  const { projectId, tasks } = useAppSelector(selectProjectTasks);
   const { showSortOptions, showCreateTask } = useGlobalModals();
-
-  const { isLoading, getTasks } = useProjects();
-
-  useEffect(() => {
-    async function fetchMembers() {
-      if (!projectId) return;
-      await getTasks(projectId);
-    }
-    fetchMembers();
-  }, [getTasks, projectId]);
+  const { data: tasks, isLoading } = useGetTasks();
 
   // TODO: Implement sorting logic
   const handleSortTasks = async () => {
@@ -47,6 +33,8 @@ export default function ProjectTasksPage() {
   };
 
   if (isLoading) return <LoadingScreen />;
+
+  if (!tasks) return <h1>Как-будто нет задач, или что-то пошло не так</h1>;
 
   if (tasks.length === 0)
     return (

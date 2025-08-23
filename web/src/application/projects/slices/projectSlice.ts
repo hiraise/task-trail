@@ -60,10 +60,6 @@ const projectSlice = createSlice({
       .addMatcher(projectsApi.endpoints.getMembers.matchFulfilled, (state, action) => {
         state.members = action.payload;
       })
-      // Get tasks
-      .addMatcher(projectsApi.endpoints.getTasks.matchFulfilled, (state, action) => {
-        state.tasks = action.payload;
-      })
       // Kick member
       .addMatcher(projectsApi.endpoints.kickMember.matchFulfilled, (state, action) => {
         const { memberId } = action.meta.arg.originalArgs;

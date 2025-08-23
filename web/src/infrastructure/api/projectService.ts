@@ -17,7 +17,8 @@ import { ApiProject, mapProjectFromApi } from "./projectMapper";
 import { hasPermission } from "@/shared/utils/permissions";
 import { ApiTask, mapProjectTasksFromApi } from "./taskMapper";
 
-//TODO: Handle different error types appropriately
+//TODO: Handle different error types appropriately.
+// Refactor ProjectService like TasksService
 
 const getProjects: GetProjects = async () => {
   try {
