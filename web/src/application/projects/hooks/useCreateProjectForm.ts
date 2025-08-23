@@ -1,38 +1,44 @@
 import { useCallback } from "react";
 
-import { createProjectFormStore, ProjectFormData } from "@/shared/store/createProjectFormStore";
-import { useStore } from "@/shared/hooks/useStore";
+import { useCreateProjectFormStore, ProjectFormData } from "@/shared/store/createProjectFormStore";
 import { useProjects } from "./useProjects";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { ProjectPayload } from "@/domain/project/project.payload";
 
-const selector = (state: ProjectFormData) => state;
-
 export function useCreateProjectForm() {
-  const state = useStore(createProjectFormStore, selector);
+  const state = useCreateProjectFormStore();
   const { create } = useProjects();
   const { showInviteUser } = useGlobalModals();
 
-  const setState = useCallback((partialState: Partial<ProjectFormData>) => {
-    createProjectFormStore.set(partialState);
-  }, []);
+  const setState = useCallback(
+    (partialState: Partial<ProjectFormData>) => {
+      state.set(partialState);
+    },
+    [state]
+  );
 
   const submitForm = useCallback(
     async (data: ProjectPayload) => {
       console.log("Final project data with participants:", data);
       await create(data);
-      createProjectFormStore.reset();
+      state.reset();
     },
-    [create]
+    [create, state]
   );
 
-  const toggleParticipant = useCallback((email: string) => {
-    createProjectFormStore.toggleParticipant(email);
-  }, []);
+  const toggleParticipant = useCallback(
+    (email: string) => {
+      state.toggleParticipant(email);
+    },
+    [state]
+  );
 
-  const addParticipant = useCallback((email: string) => {
-    createProjectFormStore.addParticipant(email);
-  }, []);
+  const addParticipant = useCallback(
+    (email: string) => {
+      state.addParticipant(email);
+    },
+    [state]
+  );
 
   const handleInviteUser = async () => {
     const emails = await showInviteUser();

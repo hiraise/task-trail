@@ -1,9 +1,16 @@
-import { BaseStore, createStore } from "./baseStore";
+import { create } from "zustand";
 
 export interface ProjectFormData {
   name: string;
   description: string;
   participants: string[];
+}
+
+interface ProjectFormActions {
+  set: (partialState: Partial<ProjectFormData>) => void;
+  reset: () => void;
+  addParticipant: (email: string) => void;
+  toggleParticipant: (email: string) => void;
 }
 
 const initialState: ProjectFormData = {
@@ -12,22 +19,23 @@ const initialState: ProjectFormData = {
   participants: [],
 };
 
-function extraMethods(store: BaseStore<ProjectFormData>) {
-  const addParticipant = (email: string) => {
-    if (!store.data.participants.includes(email)) {
-      store.set({ participants: [...store.data.participants, email] });
-    }
-  };
-
-  const toggleParticipant = (email: string) => {
-    const participants = store.data.participants;
-    if (participants.includes(email)) {
-      store.set({ participants: participants.filter((p) => p !== email) });
-    } else {
-      store.set({ participants: [...participants, email] });
-    }
-  };
-  return { addParticipant, toggleParticipant };
-}
-
-export const createProjectFormStore = createStore(initialState, extraMethods);
+export const useCreateProjectFormStore = create<ProjectFormData & ProjectFormActions>(
+  (set, get) => ({
+    ...initialState,
+    set: (partialState) => set(partialState),
+    reset: () => set(initialState),
+    addParticipant: (email: string) => {
+      if (!get().participants.includes(email)) {
+        set({ participants: [...get().participants, email] });
+      }
+    },
+    toggleParticipant: (email: string) => {
+      const participants = get().participants;
+      if (participants.includes(email)) {
+        set({ participants: participants.filter((p) => p !== email) });
+      } else {
+        set({ participants: [...participants, email] });
+      }
+    },
+  })
+);

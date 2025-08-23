@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 
-import { useStore } from "@/shared/hooks/useStore";
-import { createTaskFormStore, TaskFormData } from "@/shared/store/createTaskFormStore";
+import { useCreateTaskFormStore, TaskFormData } from "@/shared/store/createTaskFormStore";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { FormValues } from "@/presentation/widgets/projects/CreateTaskForm/CreateTaskForm.types";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { selectMemberAndProject } from "../slices/taskSelectors";
 import { useCreateTask } from "./useTasks";
 
-const selector = (state: TaskFormData) => state;
-
 export function useCreateTaskForm(form: UseFormReturn<FormValues>) {
   const { showSelectAssignee, showSelectProject } = useGlobalModals();
-  const state = useStore(createTaskFormStore, selector);
+  const state = useCreateTaskFormStore();
 
   const { mutateAsync: createTask } = useCreateTask();
   const { project } = useAppSelector((s) =>
@@ -22,12 +19,12 @@ export function useCreateTaskForm(form: UseFormReturn<FormValues>) {
 
   useEffect(() => {
     if (!state.project && project) {
-      createTaskFormStore.set({ project: project });
+      state.set({ project: project });
       if (project.id) {
         form.setValue("projectId", project.id, { shouldValidate: true });
       }
     }
-  }, [project, state.project, form]);
+  }, [project, state.project, form, state]);
 
   const initialData = useMemo(() => {
     return {
@@ -38,30 +35,33 @@ export function useCreateTaskForm(form: UseFormReturn<FormValues>) {
     };
   }, [state]);
 
-  const setState = useCallback((partialState: Partial<TaskFormData>) => {
-    createTaskFormStore.set(partialState);
-  }, []);
+  const setState = useCallback(
+    (partialState: Partial<TaskFormData>) => {
+      state.set(partialState);
+    },
+    [state]
+  );
 
   const submitForm = useCallback(
     async (data: FormValues) => {
       await createTask(data);
-      createTaskFormStore.reset();
+      state.reset();
       form.reset();
     },
-    [createTask, form]
+    [createTask, form, state]
   );
 
   const handleSelectAssignee = async () => {
     const result = await showSelectAssignee();
     if (!result) return;
-    createTaskFormStore.set({ assignee: result });
+    state.set({ assignee: result });
     form.setValue("assigneeId", result.id, { shouldValidate: true });
   };
 
   const handleSelectProject = async () => {
     const result = await showSelectProject();
     if (!result) return;
-    createTaskFormStore.set({ project: result });
+    state.set({ project: result });
     form.setValue("projectId", result.id, { shouldValidate: true });
   };
 
