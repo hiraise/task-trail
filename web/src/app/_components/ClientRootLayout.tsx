@@ -3,12 +3,15 @@
 import { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { Toaster } from "sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { store } from "@/infrastructure/redux/store";
 import { GlobalErrorBanner } from "./GlobalErrorBanner";
 import { AuthAndUserInitializer } from "./AuthAndUserInitializer";
 import { GlobalModalProvider } from "./GlobalModalContext";
 import { GlobalModalManager } from "./GlobalModalManager";
+
+const queryClient = new QueryClient();
 
 export default function ClientRootLayout({
   children,
@@ -27,10 +30,12 @@ export default function ClientRootLayout({
       <Toaster position="bottom-right" richColors />
       <GlobalErrorBanner />
       <AuthAndUserInitializer />
-      <GlobalModalProvider>
-        {children}
-        <GlobalModalManager />
-      </GlobalModalProvider>
+      <QueryClientProvider client={queryClient}>
+        <GlobalModalProvider>
+          {children}
+          <GlobalModalManager />
+        </GlobalModalProvider>
+      </QueryClientProvider>
     </Provider>
   );
 }

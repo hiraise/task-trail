@@ -29,4 +29,5 @@ export const API_ROUTES = {
   PROJECT_TASKS: (id: number) => `${PROJECTS}/${id}/tasks`,
   // TASKS API
   TASKS: TASKS,
+  TASKS_BY_ID: (id: number) => `${TASKS}/${id}`,
 };

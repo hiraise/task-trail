@@ -3,18 +3,19 @@ import { UseFormReturn } from "react-hook-form";
 
 import { useStore } from "@/shared/hooks/useStore";
 import { createTaskFormStore, TaskFormData } from "@/shared/store/createTaskFormStore";
-import { useTask } from "@/application/tasks/hooks/useTask";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { FormValues } from "@/presentation/widgets/projects/CreateTaskForm/CreateTaskForm.types";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { selectMemberAndProject } from "../slices/taskSelectors";
+import { useCreateTask } from "./useTasks";
 
 const selector = (state: TaskFormData) => state;
 
 export function useCreateTaskForm(form: UseFormReturn<FormValues>) {
   const { showSelectAssignee, showSelectProject } = useGlobalModals();
   const state = useStore(createTaskFormStore, selector);
-  const { create } = useTask();
+
+  const { mutateAsync: createTask } = useCreateTask();
   const { project } = useAppSelector((s) =>
     selectMemberAndProject(s, state.assignee?.id, state.project?.id)
   );
@@ -43,11 +44,11 @@ export function useCreateTaskForm(form: UseFormReturn<FormValues>) {
 
   const submitForm = useCallback(
     async (data: FormValues) => {
-      await create(data);
+      await createTask(data);
       createTaskFormStore.reset();
       form.reset();
     },
-    [create, form]
+    [createTask, form]
   );
 
   const handleSelectAssignee = async () => {

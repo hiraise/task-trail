@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { TaskStatus } from "@/domain/task/task.entity";
@@ -9,41 +9,15 @@ import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { MembersData } from "@/presentation/widgets/projects/MembersList/MembersList.mock";
 import { Project } from "@/domain/project/project.entity";
 import { errorTexts } from "@/shared/locales/messages";
-import { handleAsyncAction } from "@/shared/utils/handleAsyncAction";
-import { ROUTES } from "@/infrastructure/config/routes";
 import { selectTask } from "../slices/taskSelectors";
-import { TaskPayload } from "@/domain/task/task.payload";
-import * as api from "@/infrastructure/adapters/tasksApi";
 
 export const useTask = () => {
-  const router = useRouter();
   const params = useParams();
   const taskId = Number(params.id);
 
   const dispatch = useAppDispatch();
   const task = useAppSelector(selectTask);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Define hooks for API interactions
-  const [createMutation] = api.useCreateMutation();
-
-  /**
-   * Creates a new task in the specified project.
-   * @function create
-   * @param {TaskPayload} payload - The arguments containing `projectId` (ID of the project), `name` (task title), `description` (task details), and other optional task properties.
-   * @returns {void} - Returns nothing. Navigates to the created task's project page and shows a success toast on success.
-   * @sideEffects Navigates, shows toast, updates loading state.
-   */
-  const create = (payload: TaskPayload) =>
-    handleAsyncAction<void>({
-      action: async () => {
-        const task = await createMutation(payload).unwrap();
-        if (task) router.push(ROUTES.project(task.id.toString()));
-        toast.success("Task created successfully");
-      },
-      setIsLoading,
-      errorMessage: "Failed to create task",
-    });
 
   const changeStatus = async (newStatus: TaskStatus) => {
     setIsLoading(true);
@@ -107,6 +81,6 @@ export const useTask = () => {
     selectAssignee,
     changeAssignee,
     changeProject,
-    create,
+    // create,
   };
 };

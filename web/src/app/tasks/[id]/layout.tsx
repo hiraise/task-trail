@@ -1,20 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
-
-import { useTask } from "@/application/tasks/hooks/useTask";
-import { useAppDispatch } from "@/infrastructure/redux/hooks";
-import { setTask } from "@/application/tasks/slices/taskSlice";
-import { mockTasks } from "@/presentation/widgets/tasks/TaskList";
+import { useGetTask } from "@/application/tasks/hooks/useTasks";
 
 export default function TaskLayout({ children }: { children: React.ReactNode }) {
-  const { taskId } = useTask();
-  const task = mockTasks.find((task) => task.id === taskId);
-  const dispatch = useAppDispatch();
+  const { data: task, isLoading, isError } = useGetTask();
 
-  useEffect(() => {
-    dispatch(setTask(task));
-  }, [dispatch, task]);
+  if (isLoading) return <div>Loading task...</div>;
+  if (isError) return <div>Error loading task</div>;
+  if (!task) return <div>Task not found</div>;
 
   return <>{children}</>;
 }
