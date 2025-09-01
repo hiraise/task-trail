@@ -20,6 +20,7 @@ export const useLogin = () => {
     mutationFn: authService.login,
     onSuccess: () => {
       toast.success(successTexts.loginSuccess);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user });
       router.replace(from);
     },
