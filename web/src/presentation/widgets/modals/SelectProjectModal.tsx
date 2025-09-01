@@ -1,22 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
-
 import { Project } from "@/domain/project/project.entity";
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
 import { ProjectsList } from "../tasks/ProjectsList";
-import { useProjects } from "@/application/projects/hooks/useProjects";
+import { useGet } from "@/application/projects/hooks/useProject";
 
 export default function SelectProjectModal(props: BaseModalProps<Project>) {
-  const { projects, get } = useProjects();
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      await get();
-    };
-    if (!projects || projects.length === 0) fetchProjects();
-  }, [get, projects]);
+  const { data: projects = [] } = useGet();
 
   const handleOnSelect = (project: Project) => {
     props.onClose(project);

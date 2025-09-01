@@ -1,13 +1,16 @@
 "use client";
 
-import { MembersData } from "../projects/MembersList/MembersList.mock";
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
 import { MembersList } from "../tasks/MembersList/MembersList";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { useGetProjectMembers } from "@/application/projects/hooks/useProject";
+import { useParams } from "next/navigation";
+import { MembersData } from "@/domain/user/user.entity";
 
 export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) {
-  const members = useAppSelector((s) => s.project.members);
+  const params = useParams();
+  const projectId = Number(params.id);
+  const { data: members = [] } = useGetProjectMembers(projectId);
 
   const handleOnSelect = (user: MembersData) => {
     props.onClose(user);

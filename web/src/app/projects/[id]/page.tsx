@@ -13,9 +13,8 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
 import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { Spinner } from "@/presentation/ui/Spinner";
-import { useGetTasks, useProject } from "@/application/projects/hooks/useProject";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
+import { useGetProjectData } from "@/application/projects/hooks/useGetProjectData";
 
 const projectTexts = {
   membersTitle: "Участники проекта",
@@ -23,47 +22,19 @@ const projectTexts = {
 };
 
 export default function ProjectPage() {
-  const { project, owner, isLoading, projectId } = useProject();
+  const { project, owner, projectId, tasks } = useGetProjectData();
   const { menuItems } = useProjectMenuItems(projectId);
   const { showCreateTask } = useGlobalModals();
 
-  // Mock tasks for display
-  const { data: tasks } = useGetTasks();
-  const displayTasks = tasks?.slice(0, 4) ?? [];
+  if (!project || !tasks) return null;
+
+  const displayTasks = tasks.slice(0, 4) ?? [];
 
   // TODO: Implement task creation logic
   const handleCreateTask = async () => {
     const data = await showCreateTask();
     console.log("New task created:", data);
   };
-
-  if (isLoading && !project) {
-    return (
-      <MainContainer>
-        <DashboardHeader />
-        <div className="container">
-          <BackButton />
-        </div>
-        <div className="content">
-          <Spinner />
-        </div>
-      </MainContainer>
-    );
-  }
-
-  if (!project) {
-    return (
-      <MainContainer>
-        <DashboardHeader />
-        <div className="container">
-          <BackButton />
-        </div>
-        <div className="content">
-          <h1>Такого проекта не существует</h1>
-        </div>
-      </MainContainer>
-    );
-  }
 
   return (
     <MainContainer>

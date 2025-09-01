@@ -1,13 +1,13 @@
 import { useCallback } from "react";
 
 import { useCreateProjectFormStore, ProjectFormData } from "@/shared/store/createProjectFormStore";
-import { useProjects } from "./useProjects";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { ProjectPayload } from "@/domain/project/project.payload";
+import { useCreateProject } from "./useProject";
 
 export function useCreateProjectForm() {
   const state = useCreateProjectFormStore();
-  const { create } = useProjects();
+  const { mutateAsync: create } = useCreateProject();
   const { showInviteUser } = useGlobalModals();
 
   const setState = useCallback(

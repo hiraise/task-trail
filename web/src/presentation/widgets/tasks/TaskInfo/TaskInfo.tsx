@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 import styles from "./TaskInfo.module.css";
 
 import { Task } from "@/domain/task/task.entity";
@@ -7,39 +9,38 @@ import { Icon } from "@/presentation/ui/Icon";
 import { TaskStatus } from "./TaskStatus";
 import { TaskTitle } from "./TaskTitle";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
-import { selectAssignee, selectProject } from "@/application/tasks/slices/taskSelectors";
-import { useTask } from "@/application/tasks/hooks/useTask";
+import { useGetTaskInfo } from "@/application/tasks/hooks/useTasks";
 
 export function TaskInfo({ task }: { task: Task }) {
-  const { showChangeSatus, showSelectAssignee, showSelectProject } = useGlobalModals();
-  const { changeAssignee, changeProject, changeStatus } = useTask();
-  const assignee = useAppSelector(selectAssignee);
-  const project = useAppSelector(selectProject);
+  const { showChangeStatus, showSelectAssignee, showSelectProject } = useGlobalModals();
+  const { status, projectId, assignee, project } = useGetTaskInfo(task.id);
 
   const handleProjectSelect = async () => {
     const result = await showSelectProject(task.projectId);
     if (!result) return;
-    await changeProject(result);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    toast.success(`Select project with id: ${result.id}`);
   };
 
   const handleAssigneeSelect = async () => {
     const result = await showSelectAssignee(task.assigneeId);
     if (!result) return;
-    await changeAssignee(result);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    toast.success(`Select assignee with id: ${task.assigneeId}`);
   };
 
   const handleChangeStatus = async () => {
-    const result = await showChangeSatus();
+    const result = await showChangeStatus({ currentStatus: status, projectId: projectId });
     if (!result) return;
-    await changeStatus(result);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    toast.success(`Change status with: ${result.name}`);
   };
 
   return (
     <div className={styles.taskInfo}>
       <div className={styles.titleWrapper}>
         <div>
-          <TaskStatus status={task.status} onClick={handleChangeStatus} />
+          <TaskStatus status={status} onClick={handleChangeStatus} />
         </div>
         <TaskTitle task={task} />
       </div>

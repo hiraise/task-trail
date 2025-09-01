@@ -9,7 +9,7 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { PERMISSIONS, ProjectMember } from "@/domain/project/project.entity";
 import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { Spinner } from "@/presentation/ui/Spinner";
-import { useProjects } from "@/application/projects/hooks/useProjects";
+import { useKickMember } from "@/application/projects/hooks/useProject";
 
 const showDeleteButton = (currentUser: ProjectMember, member: ProjectMember) => {
   if (member.isOwner || member.isAdmin) return false;
@@ -36,12 +36,12 @@ export function MembersList({ members }: MembersListProps) {
   const currentUser = members.find((m) => currentUserId && m.id === currentUserId);
   const projectId = Number(useParams().id);
 
-  const { kick, isLoading } = useProjects();
+  const { mutateAsync: kick, isPending: isLoading } = useKickMember(projectId);
   const [kickingUserId, setKickingUserId] = useState<number | null>(null);
 
   const handleOnClick = async (memberId: number) => {
     setKickingUserId(memberId);
-    await kick(projectId, memberId);
+    await kick(memberId);
     setKickingUserId(null);
   };
 
