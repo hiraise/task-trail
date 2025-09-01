@@ -3,7 +3,7 @@ import axiosClient from "./axiosClient";
 import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
-import { mapUserFromApi } from "../mappers/userMapper";
+import { mapUserFromApi } from "./userMapper";
 import { PERMISSIONS, Project, ProjectMember } from "@/domain/project/project.entity";
 import { ApiProject, mapProjectFromApi } from "./projectMapper";
 import { hasPermission } from "@/shared/utils/permissions";
