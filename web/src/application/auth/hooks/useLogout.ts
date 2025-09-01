@@ -16,7 +16,7 @@ export const useLogout = () => {
     mutationFn: authService.logout,
     onSuccess: () => {
       toast.success(successTexts.logoutSuccess);
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.user });
+      queryClient.resetQueries({ queryKey: [QUERY_KEYS.user, QUERY_KEYS.auth] });
       router.replace(ROUTES.login);
     },
     onError: (error) => {
