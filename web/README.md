@@ -1,4 +1,9 @@
+# TaskTrail
+
 ![MIT License](https://img.shields.io/github/license/hiraise/tt-frontend)
+![GitHub stars](https://img.shields.io/github/stars/hiraise/tt-frontend)
+![GitHub forks](https://img.shields.io/github/forks/hiraise/tt-frontend)
+![GitHub issues](https://img.shields.io/github/issues/hiraise/tt-frontend)
 
 ---
 
@@ -6,41 +11,57 @@
 
 ---
 
-# TaskTrail
-
 TaskTrail is a modern, open-source, self-hosted task tracking web application built with **Next.js** and TypeScript. The project follows a modular, Clean Architecture-inspired structure for scalability, maintainability, and clear separation of concerns.
 
 ## Features
 
-- **Authentication**: Login and signup with Redux Toolkit state management
-- **Responsive Design**: Mobile-first, adaptive UI
-- **Localization**: Multi-language support for text and images
-- **Reusable Components**: Library of UI components and widgets
-- **Centralized Error Handling**: Global and local error management
-- **Extensible Architecture**: Easily add new features and integrations
-- **Go Backend Integration**: In progress (currently using mock API for some features)
-- **Testing**: Vitest and Testing Library (coverage expanding)
+- **Authentication**: Login and signup functionality.
+- **State Management**: Client-side state management with Zustand and server-side state with React Query.
+- **Responsive Design**: Mobile-first, adaptive UI for all screen sizes.
+- **Localization**: Multi-language support for text and images.
+- **Reusable Components**: A rich library of UI components and widgets.
+- **Centralized Error Handling**: Global and local error management for a consistent user experience.
+- **Extensible Architecture**: Easily add new features and integrations.
+- **Testing**: Unit and integration tests with Jest and React Testing Library.
 
 ## Tech Stack
 
-- **Next.js** (App Router, SSR-ready)
+- **Next.js** (App Router, SSR)
 - **TypeScript**
-- **Redux Toolkit**
-- **styled-components**
-- **Vitest** + **Testing Library**
+- **Zustand** (for client-side state management)
+- **React Query** (for server-side state management)
+- **Styled-components**
+- **Jest** + **React Testing Library**
+- **ESLint** for code quality
 
 ## Project Structure
 
 ```
 src/
-├── app/             # Application entry points and pages
-│   ├── (auth)/      # Authentication pages (login, signup)
-│   ├── dashboard/   # Dashboard layout and pages
-├── application/     # Application-specific use-cases and logic
-├── domain/          # Core business logic and domain entities
-├── infrastructure/  # API clients, config, redux store
-├── presentation/    # UI components and widgets
-├── shared/          # Utilities, hooks, localization, errors
+├── app/                # Next.js App Router, pages, and layouts
+│   ├── _components/      # Global layout components
+│   ├── (auth)/           # Authentication-related pages
+│   ├── dashboard/        # Main dashboard page
+│   └── ...               # Other feature-based routes
+├── application/        # Application-level logic (use cases)
+│   ├── auth/
+│   ├── projects/
+│   └── ...
+├── domain/             # Core business logic and entities
+│   ├── auth/
+│   ├── project/
+│   └── ...
+├── infrastructure/     # API clients, configurations
+│   ├── api/
+│   └── config/
+├── presentation/       # UI components
+│   ├── ui/               # Generic, reusable UI components
+│   └── widgets/          # Composite components (widgets)
+└── shared/             # Shared utilities, hooks, constants, etc.
+    ├── constants/
+    ├── hooks/
+    ├── locales/
+    └── utils/
 ```
 
 ## Getting Started
@@ -52,51 +73,83 @@ src/
 
 ### Installation
 
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/SergeyRusinovich/tt-frontend.git
+    ```
+
+2.  **Navigate to the project directory:**
+
+    ```bash
+    cd tt-frontend
+    ```
+
+3.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+
+### Running the Development Server
+
+To run the app in development mode, use:
+
 ```bash
-git clone https://github.com/SergeyRusinovich/tt-frontend.git
-cd tt-frontend
-npm install # or yarn install
+npm run dev
+# or
+yarn dev
 ```
 
-### Running Locally
-
-```bash
-npm run dev # or yarn dev
-```
-
-Visit [http://localhost:3000](http://localhost:3000) in your browser.
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
 ### Building for Production
 
+To build the application for production, use:
+
 ```bash
-npm run build # or yarn build
+npm run build
 ```
 
-Production files will be in the `out/` directory.
+This will create an optimized build in the `.next` directory.
 
-### Testing
+### Running Tests
+
+To run the test suite, use:
 
 ```bash
-npm test # or yarn test
+npm test
 ```
 
 ## Contributing
 
-Contributions are welcome! To contribute:
+Contributions are welcome! If you'd like to contribute, please follow these steps:
 
-1. Fork the repository
-2. Create a new branch: `git checkout -b feature-name`
-3. Commit your changes: `git commit -m "Description of changes"`
-4. Push to your fork: `git push origin feature-name`
-5. Open a pull request
+1.  **Fork the repository.**
+2.  **Create a new branch:**
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+3.  **Make your changes and commit them:**
+    ```bash
+    git commit -m "feat: Add your new feature"
+    ```
+4.  **Push to your branch:**
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+5.  **Open a pull request** against the `main` branch.
 
 ## Roadmap
 
 - [x] Login system with mock API
 - [x] Route protection with auth guard
-- [ ] Task board UI
+- [x] Task board UI
+- [x] User profile page
+- [x] Basic project management features
 - [ ] Real backend (Go) integration
-- [ ] Project management features
+- [ ] Team collaboration features
 
 ## License
 
@@ -104,13 +157,11 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Architecture Overview
 
-TaskTrail uses a modular architecture inspired by Clean Architecture principles:
+TaskTrail uses a modular architecture inspired by Clean Architecture principles to ensure a clean separation of concerns, making the codebase scalable and maintainable.
 
-- **App Layer (`app/`)**: Entry points and routing
-- **Application Layer (`application/`)**: Use-cases, state, and side effects
-- **Domain Layer (`domain/`)**: Core business logic, domain entities, framework-agnostic
-- **Infrastructure Layer (`infrastructure/`)**: API clients, config, redux store
-- **Presentation Layer (`presentation/`)**: UI components and widgets
-- **Shared Layer (`shared/`)**: Utilities, hooks, localization, errors
-
-This structure ensures scalability, maintainability, and a clear separation of concerns.
+- **`app`**: The entry point of the application, containing routes, layouts, and pages as per the Next.js App Router paradigm.
+- **`application`**: Contains the application-specific business rules and use cases. It orchestrates the flow of data between the domain and the infrastructure layers.
+- **`domain`**: The core of the application, containing the business logic and entities. This layer is independent of any framework or external dependency.
+- **`infrastructure`**: Implements the interfaces defined in the application layer, handling external concerns like API communication, database access, etc.
+- **`presentation`**: Contains the UI components, widgets, and everything related to the user interface.
+- **`shared`**: A collection of utilities, hooks, constants, and other shared code that can be used across the entire application.
