@@ -9,14 +9,7 @@ import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
 import { projectsTexts } from "@/shared/locales/projects";
 import { useClickOutside } from "@/shared/hooks/useClickOutside";
 import { useCreateProjectForm } from "@/application/projects/hooks/useCreateProjectForm";
-
-export interface BaseUserData {
-  email: string;
-}
-export interface UserData extends BaseUserData {
-  username?: string;
-  avatarUrl?: string;
-}
+import { BaseUserData, UserData } from "@/domain/user/user.entity";
 
 interface FormValues {
   query: string;

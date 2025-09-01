@@ -1,1 +1,1 @@
-export { AddParticipantForm, type BaseUserData } from "./AddParticipantForm";
+export { AddParticipantForm } from "./AddParticipantForm";

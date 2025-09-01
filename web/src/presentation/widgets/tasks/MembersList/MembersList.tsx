@@ -5,11 +5,11 @@ import clsx from "clsx";
 
 import styles from "./MembersList.module.css";
 
-import { MembersData } from "../../projects/MembersList/MembersList.mock";
 import { Input } from "@/presentation/ui/Input/Input.styled";
 import { projectsTexts } from "@/shared/locales/projects";
 import { UserItem } from "../../projects/MembersList/UserItem";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
+import { MembersData } from "@/domain/user/user.entity";
 
 interface MembersListProps {
   members: MembersData[];
