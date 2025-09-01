@@ -22,5 +22,6 @@ export const useLogout = () => {
     onError: (error) => {
       clientLogger.error("Logout error:", { logout: error });
     },
+    retry: false,
   });
 };
