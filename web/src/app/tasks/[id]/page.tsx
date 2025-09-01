@@ -8,14 +8,11 @@ import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { TaskInfo } from "@/presentation/widgets/tasks/TaskInfo";
 import { Comments } from "@/presentation/widgets/tasks/Comments";
 import { useGetTask } from "@/application/tasks/hooks/useTasks";
-import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
 
 export default function TaskPage() {
-  const { data, isLoading, isError, error } = useGetTask();
+  const { data: task } = useGetTask();
 
-  if (isLoading) return <LoadingScreen />;
-  if (isError) return <div>Ошибка: {error.message}</div>;
-  if (!data) return <div>Уууупппс....такой задачи не существует</div>;
+  if (!task) return null;
 
   return (
     <>
@@ -25,7 +22,7 @@ export default function TaskPage() {
           <BackButton />
         </div>
         <div className="content">
-          <TaskInfo task={data} />
+          <TaskInfo task={task} />
           <Comments />
         </div>
       </MainContainer>

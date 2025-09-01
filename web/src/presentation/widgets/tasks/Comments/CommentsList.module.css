@@ -1,0 +1,29 @@
+.comments {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Styles for CommentsListItem */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: rgba(240, 240, 240, 1);
+}
+
+.user {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.container > span {
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 400;
+  word-break: break-word;
+}

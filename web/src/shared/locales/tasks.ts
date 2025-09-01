@@ -7,4 +7,10 @@ export const tasksTexts = {
   buttonText: "Создать задачу",
   submittingText: "Создание задачи...",
   requiredField: "Это поле обязательно",
+  comments: {
+    title: "Комментарии",
+    send: "Отправить",
+    sending: "Отправка...",
+    cancel: "Отменить",
+  },
 };

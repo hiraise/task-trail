@@ -1,3 +1,5 @@
+import { User } from "../user/user.entity";
+
 export interface Task {
   id: number;
   title: string;
@@ -15,4 +17,12 @@ export interface TaskStatus {
   name: string;
   isDefault: boolean;
   isResolved: boolean;
+}
+
+export interface TaskComment {
+  id: number;
+  author: User;
+  createdAt: string;
+  updatedAt?: string;
+  text: string;
 }
