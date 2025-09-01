@@ -1,17 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Provider } from "react-redux";
 import { Toaster } from "sonner";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { store } from "@/infrastructure/redux/store";
-import { GlobalErrorBanner } from "./GlobalErrorBanner";
 import { AuthAndUserInitializer } from "./AuthAndUserInitializer";
 import { GlobalModalProvider } from "./GlobalModalContext";
 import { GlobalModalManager } from "./GlobalModalManager";
+import { handleGlobalError } from "@/shared/errors/handleGlobalError";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: handleGlobalError,
+  }),
+  mutationCache: new MutationCache({
+    onError: handleGlobalError,
+  }),
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
 export default function ClientRootLayout({
   children,
@@ -26,16 +39,13 @@ export default function ClientRootLayout({
   if (!isClient) return null;
 
   return (
-    <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
       <Toaster position="bottom-right" richColors />
-      <GlobalErrorBanner />
-      <QueryClientProvider client={queryClient}>
-        <AuthAndUserInitializer />
-        <GlobalModalProvider>
-          {children}
-          <GlobalModalManager />
-        </GlobalModalProvider>
-      </QueryClientProvider>
-    </Provider>
+      <AuthAndUserInitializer />
+      <GlobalModalProvider>
+        {children}
+        <GlobalModalManager />
+      </GlobalModalProvider>
+    </QueryClientProvider>
   );
 }
