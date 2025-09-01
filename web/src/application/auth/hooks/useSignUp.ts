@@ -1,36 +1,25 @@
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 import { ROUTES } from "@/infrastructure/config/routes";
-import { useAppDispatch } from "@/infrastructure/redux/hooks";
-import { signUpThunk } from "../thunks/authThunks";
+import { authService } from "@/infrastructure/api/authService";
+import { AuthPayload } from "@/domain/auth/auth.payload";
+import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-interface SignUpFormProps {
-  email: string;
-  password: string;
-}
-
-export const useSignUp = () => {
+export const useSignUp = (payload: AuthPayload) => {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState(false);
 
-  const signUp = async ({ email, password }: SignUpFormProps) => {
-    const thunk = signUpThunk({ email, password });
-    setLoading(true);
-    try {
-      await dispatch(thunk).unwrap();
+  return useMutation<void, Error, AuthPayload>({
+    mutationFn: authService.signUp,
+    onSuccess: () => {
       toast.success(successTexts.signUpSuccessCheckEmail);
-      router.push(ROUTES.confirm + `?email=${encodeURIComponent(email)}`);
-    } catch (error) {
-      //TODO: add log to sentry
-      console.log(errorTexts.somethingWentWrong, error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { signUp, loading };
+      router.push(ROUTES.confirm + `?email=${encodeURIComponent(payload.email)}`);
+    },
+    onError: (error) => {
+      clientLogger.error("Failed to signup", { error });
+      toast.error(errorTexts.somethingWentWrong);
+    },
+  });
 };

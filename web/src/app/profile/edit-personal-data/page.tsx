@@ -7,7 +7,6 @@ import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import { Spacer } from "@/presentation/widgets/primitives/Spacer";
 import { PersonalDataForm } from "@/presentation/widgets/profile/PersonalDataForm/PersonalDataForm";
 import { useUpdateUser } from "@/application/user/hooks/useUpdateUser";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { getDisplayName } from "@/shared/utils/getDisplayName";
 
 const personalDataTexts = {
@@ -16,11 +15,10 @@ const personalDataTexts = {
 };
 
 export default function EditPersonalDataPage() {
-  const { updateUser } = useUpdateUser();
-  const user = useAppSelector((state) => state.user.data);
+  const { user, update } = useUpdateUser();
 
   const handleSumbit = async (data: { username: string }) => {
-    await updateUser({ data });
+    await update.mutateAsync(data);
   };
 
   return (

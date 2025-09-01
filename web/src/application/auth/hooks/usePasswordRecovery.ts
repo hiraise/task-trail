@@ -1,26 +1,16 @@
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { useAppDispatch } from "@/infrastructure/redux/hooks";
-import { forgotPasswordThunk } from "../thunks/authThunks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
+import { authService } from "@/infrastructure/api/authService";
 
 export const usePasswordRecovery = () => {
-  const [loading, setLoading] = useState(false);
-  const dispatch = useAppDispatch();
-
-  const recover = async (email: string) => {
-    setLoading(true);
-    try {
-      await dispatch(forgotPasswordThunk(email)).unwrap();
-      toast.success("Email sent successfully!");
-    } catch (error) {
+  return useMutation<void, Error, string>({
+    mutationFn: authService.forgotPassword,
+    onSuccess: () => toast.success("Email sent successfully!"),
+    onError: (error) => {
       clientLogger.error("Password recovery error", { error });
       toast.error("Failed to send email. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { recover, loading };
+    },
+  });
 };

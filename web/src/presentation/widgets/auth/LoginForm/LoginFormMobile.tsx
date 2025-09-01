@@ -19,7 +19,7 @@ export const LoginFormMobile = () => {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const { login, loading } = useLogin();
+  const { mutateAsync: login, isPending: loading } = useLogin();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

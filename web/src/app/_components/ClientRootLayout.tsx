@@ -29,8 +29,8 @@ export default function ClientRootLayout({
     <Provider store={store}>
       <Toaster position="bottom-right" richColors />
       <GlobalErrorBanner />
-      <AuthAndUserInitializer />
       <QueryClientProvider client={queryClient}>
+        <AuthAndUserInitializer />
         <GlobalModalProvider>
           {children}
           <GlobalModalManager />

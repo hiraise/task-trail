@@ -2,22 +2,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { useAppSelector } from "@/infrastructure/redux/hooks";
-import { selectProjectData } from "../slices/projectSelectors";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { projectService } from "@/infrastructure/api/projectService";
 import { EditProjectPayload, ProjectPayload } from "@/domain/project/project.payload";
 import { Project } from "@/domain/project/project.entity";
 import { ROUTES } from "@/infrastructure/config/routes";
-
-export const useProject = () => {
-  const params = useParams();
-  const projectId = Number(params.id);
-
-  const { project, owner, isLoading, members } = useAppSelector(selectProjectData);
-
-  return { isLoading, project, projectId, owner, members };
-};
 
 export const useGetTasks = () => {
   const params = useParams();

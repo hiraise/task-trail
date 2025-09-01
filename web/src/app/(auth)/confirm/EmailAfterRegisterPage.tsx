@@ -14,6 +14,7 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import EmailResendContainer from "@/presentation/widgets/auth/EmailConfirm/EmailResendContainer";
 import { emailConfirmTexts } from "@/shared/locales/emailConfirm";
 import { useResendEmail } from "@/application/auth/hooks/useResendEmail";
+import { openUserInbox } from "@/shared/utils/openUserInbox";
 
 const ImageContainer = styled.div`
   display: flex;
@@ -38,7 +39,7 @@ export default function EmailConfirmPageWrapper() {
 function EmailConfirmPage() {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "example@gmail.com";
-  const emailConfirm = useResendEmail(email);
+  const { mutateAsync: emailConfirm } = useResendEmail(email);
 
   return (
     <MainContainer>
@@ -57,9 +58,9 @@ function EmailConfirmPage() {
       <Spacer size="57px" />
       <EmailResendContainer
         initialDelay={10}
-        onResend={emailConfirm.resendEmail}
+        onResend={() => emailConfirm(email)}
       ></EmailResendContainer>
-      <SubmitButton $variant="primary" onClick={emailConfirm.openUserInbox}>
+      <SubmitButton $variant="primary" onClick={() => openUserInbox(email)}>
         {emailConfirmTexts.openEmail}
       </SubmitButton>
     </MainContainer>

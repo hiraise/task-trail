@@ -7,13 +7,13 @@ import { Container } from "./ConfirmByTokenPage";
 
 export default function ErrorView({ message }: { message: string }) {
   const email = useSearchParams().get("email") || "";
-  const { resendEmail } = useResendEmail(email);
+  const { mutateAsync: resendEmail } = useResendEmail(email);
 
   return (
     <Container>
       <h2 style={{ color: "red" }}>{message}</h2>
       <Spacer size="16px" />
-      <SubmitButton onClick={resendEmail}>Запросить код повторно</SubmitButton>
+      <SubmitButton onClick={() => resendEmail(email)}>Запросить код повторно</SubmitButton>
     </Container>
   );
 }

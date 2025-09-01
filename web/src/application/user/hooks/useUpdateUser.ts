@@ -1,22 +1,27 @@
 import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { User } from "@/domain/user/user.entity";
-import { useAppDispatch } from "@/infrastructure/redux/hooks";
-import { updateUserThunk } from "../thunks/userThunks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
+import { userService } from "@/infrastructure/api/userService";
+import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 export const useUpdateUser = () => {
-  const dispatch = useAppDispatch();
+  const queryClient = useQueryClient();
+  const user = queryClient.getQueryData<User>(QUERY_KEYS.user);
 
-  const updateUser = async ({ data }: { data: Partial<User> }) => {
-    try {
-      await dispatch(updateUserThunk(data)).unwrap();
+  const update = useMutation<User | null, Error, Partial<User>>({
+    mutationFn: userService.updateUser,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user });
       toast.success("User updated successfully");
-    } catch (error) {
-      clientLogger.error("Update user error:", { error });
+    },
+    onError: (error) => {
+      clientLogger.error("Failed to update user", { error });
       toast.error("Failed to update user");
-    }
-  };
+    },
+  });
 
-  return { updateUser };
+  return { user, update };
 };

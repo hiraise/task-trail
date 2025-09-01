@@ -1,30 +1,26 @@
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { logoutThunk } from "../thunks/authThunks";
-import { useAppDispatch } from "@/infrastructure/redux/hooks";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { successTexts } from "@/shared/locales/messages";
+import { authService } from "@/infrastructure/api/authService";
+import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 export const useLogout = () => {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const logout = async () => {
-    setLoading(true);
-    try {
-      await dispatch(logoutThunk()).unwrap();
+  return useMutation<void, Error, void>({
+    mutationFn: authService.logout,
+    onSuccess: () => {
       toast.success(successTexts.logoutSuccess);
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.user });
       router.replace(ROUTES.login);
-    } catch (error) {
+    },
+    onError: (error) => {
       clientLogger.error("Logout error:", { logout: error });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { logout, loading };
+    },
+  });
 };
