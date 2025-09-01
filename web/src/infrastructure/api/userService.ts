@@ -2,10 +2,9 @@ import axiosClient from "./axiosClient";
 import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
-import { mapUserFromApi } from "./userMapper";
+import { mapAvatarFromApi, mapUserFromApi } from "./userMapper";
 import { UserService } from "@/domain/user/user.contracts";
 import { User } from "@/domain/user/user.entity";
-import { mapAvatarFromApi } from "./avatarMapper";
 
 export const userService: UserService = {
   /**

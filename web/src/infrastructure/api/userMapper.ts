@@ -7,6 +7,14 @@ interface ApiUser {
   avatarUrl?: string;
 }
 
+interface AvatarApi {
+  avatarUrl?: string;
+}
+
+export function mapAvatarFromApi(data: AvatarApi): string | null {
+  return data.avatarUrl ?? null;
+}
+
 export function mapUserFromApi(data: ApiUser): User {
   return {
     id: Number(data.id),
