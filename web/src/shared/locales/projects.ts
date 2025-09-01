@@ -1,4 +1,9 @@
 export const projectsTexts = {
+  projects: {
+    title: "Мои проекты",
+    noProjects: "Нет проектов",
+    createFirstProject: "Создайте свой первый проект!",
+  },
   newProject: "Новый проект",
   projectNamePlaceholder: "Название проекта",
   projectDescriptionPlaceholder: "Описание проекта",
