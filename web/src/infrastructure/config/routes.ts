@@ -15,7 +15,7 @@ export const ROUTES = {
   profile: PROFILE_BASE,
   profileEditPersonalData: `${PROFILE_BASE}/edit-personal-data`,
   profileChangePassword: `${PROFILE_BASE}/change-password`,
-  project: (id: string) => `${PROJECTS}/${id}`,
+  project: (id: number) => `${PROJECTS}/${id}`,
   projectMembers: (id: number) => `${PROJECTS}/${id}/members`,
   projectTasks: (id: number) => `${PROJECTS}/${id}/tasks`,
   editProject: (id: number) => `${PROJECTS}/${id}/edit-project`,
