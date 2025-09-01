@@ -6,6 +6,12 @@ import { taskService } from "@/infrastructure/api/taskService";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { TaskPayload } from "@/domain/task/task.payload";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { Task } from "@/domain/task/task.entity";
+import { Project } from "@/domain/project/project.entity";
+import {
+  useGetProjectMembers,
+  useGetProjectStatuses,
+} from "@/application/projects/hooks/useProject";
 
 export const useGetTask = () => {
   const params = useParams();
@@ -32,4 +38,27 @@ export const useCreateTask = () => {
     },
     onError: () => toast.error("Failed to create task"),
   });
+};
+
+export const useGetTaskInfo = (id: number) => {
+  const queryClient = useQueryClient();
+  const task = queryClient.getQueryData<Task>([QUERY_KEYS.task(id), id]);
+
+  const { data: statuses } = useGetProjectStatuses(task!.projectId);
+  const status = statuses?.find((s) => s.id === task?.statusId);
+
+  const { data: members } = useGetProjectMembers(task!.projectId);
+  const assignee = members?.find((m) => m.id === task?.assigneeId);
+
+  const project =
+    task?.projectId != null
+      ? queryClient.getQueryData<Project>(QUERY_KEYS.project(task.projectId))
+      : undefined;
+
+  return {
+    status,
+    projectId: task?.projectId,
+    assignee: assignee?.username ?? assignee?.email,
+    project: project?.name ?? "",
+  };
 };
