@@ -7,6 +7,11 @@ export const tasksTexts = {
   buttonText: "Создать задачу",
   submittingText: "Создание задачи...",
   requiredField: "Это поле обязательно",
+  tasks: {
+    title: "Задачи",
+    noTasks: "Нет задач",
+    createFirstTask: "Создайте свою первую задачу!",
+  },
   comments: {
     title: "Комментарии",
     send: "Отправить",

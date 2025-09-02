@@ -10,12 +10,7 @@ import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { mockTasks, TaskList } from "@/presentation/widgets/tasks/TaskList";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
-
-const tasksTexts = {
-  title: "Задачи",
-  noTasks: "Нет задач",
-  createFirstTask: "Создайте свою первую задачу!",
-};
+import { tasksTexts } from "@/shared/locales/tasks";
 
 export default function TasksPage() {
   const { showSortOptions, showCreateTask } = useGlobalModals();
@@ -38,13 +33,13 @@ export default function TasksPage() {
       <MainContainer>
         <DashboardHeader />
         <div className="title-container">
-          <h1>{tasksTexts.title}</h1>
+          <h1>{tasksTexts.tasks.title}</h1>
           <IconButton icon={ICONS.sort} onClick={handleSortTasks} />
         </div>
         {(!tasks || tasks.length === 0) && (
           <div className="empty-state">
-            <h2>{tasksTexts.noTasks}</h2>
-            <p>{tasksTexts.createFirstTask}</p>
+            <h2>{tasksTexts.tasks.noTasks}</h2>
+            <p>{tasksTexts.tasks.createFirstTask}</p>
           </div>
         )}
         <TaskList tasks={tasks} />
