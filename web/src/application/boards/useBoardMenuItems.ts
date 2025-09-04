@@ -7,6 +7,7 @@ export interface MenuItem {
 }
 
 export const useBoardMenuItems = (boardId: number) => {
+  console.log("Board id: ", boardId);
   const menuItems: MenuItem[] = [
     {
       label: boardsTexts.menuItems.edit,
