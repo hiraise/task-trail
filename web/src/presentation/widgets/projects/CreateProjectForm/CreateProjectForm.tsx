@@ -11,7 +11,7 @@ import { projectsTexts } from "@/shared/locales/projects";
 import { ProjectPayload } from "@/domain/project/project.payload";
 import { useCreateProjectForm } from "@/application/projects/hooks/useCreateProjectForm";
 import { projectNameValidator } from "@/shared/utils/validate";
-import { UserData } from "../AddParticipantForm/AddParticipantForm";
+import { UserData } from "@/domain/user/user.entity";
 
 interface CreateProjectFormProps {
   onSubmit: () => void;

@@ -1,6 +1,7 @@
 import styles from "./SelectedUsers.module.css";
-import { UserData } from "../AddParticipantForm/AddParticipantForm";
+
 import { SelectedUserEmail } from "../SelectedUserEmail";
+import { UserData } from "@/domain/user/user.entity";
 
 interface SelectedUsersProps {
   emails: string[];
