@@ -30,6 +30,9 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
    * @param {DragStartEvent} event - The drag start event.
    */
   const handleDragStart = useCallback(({ active }: DragStartEvent) => {
+    if (window.navigator && window.navigator.vibrate) {
+      window.navigator.vibrate(150);
+    }
     setActiveTask(active.data.current?.task ?? null);
   }, []);
 
