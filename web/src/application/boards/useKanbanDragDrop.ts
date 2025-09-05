@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { DragEndEvent, DragStartEvent, DragOverEvent } from "@dnd-kit/core";
+import { DragStartEvent, DragOverEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 
 import {
@@ -97,15 +97,8 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
    * Handles the logic when a drag operation ends, updating task position or column as needed.
    * @param {DragEndEvent} event - The drag end event.
    */
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
+  const handleDragEnd = useCallback(() => {
     setActiveTask(null);
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    if (activeId === overId) return;
   }, []);
 
   const handlers = useMemo(
