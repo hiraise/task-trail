@@ -18,6 +18,7 @@ export default function SwimlaneColumn({ memberId, column, tasks, index }: Swiml
   const { setNodeRef } = useDroppable({
     id: `column-${memberId}-${column}`,
     data: {
+      type: "Container",
       container: {
         userId: memberId,
         column: column,

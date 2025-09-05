@@ -21,11 +21,7 @@ export function KanbanBoard({ board }: { board: Board }) {
   };
   return (
     <div className={styles.kanbanContainer}>
-      <DndContext
-        onDragStart={handlers.handleDragStart}
-        onDragOver={handlers.handleDragOver}
-        onDragEnd={handlers.handleDragEnd}
-      >
+      <DndContext {...handlers}>
         <div className={styles.kanbanGrid}>
           {/* Headers */}
           {boardColumns.map((col) => (

@@ -11,7 +11,7 @@ interface SortableKanbanTaskProps {
 export function SortableKanbanTask({ task }: SortableKanbanTaskProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
-    data: { task },
+    data: { type: "Task", task: task },
   });
 
   const extraStyle = {
