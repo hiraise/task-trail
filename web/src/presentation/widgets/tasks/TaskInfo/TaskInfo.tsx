@@ -15,6 +15,8 @@ export function TaskInfo({ task }: { task: Task }) {
   const { showChangeStatus, showSelectAssignee, showSelectProject } = useGlobalModals();
   const { status, projectId, assignee, project } = useGetTaskInfo(task.id);
 
+  if (!project || !assignee) return null;
+
   const handleProjectSelect = async () => {
     const result = await showSelectProject(task.projectId);
     if (!result) return;
@@ -23,7 +25,7 @@ export function TaskInfo({ task }: { task: Task }) {
   };
 
   const handleAssigneeSelect = async () => {
-    const result = await showSelectAssignee(task.assigneeId);
+    const result = await showSelectAssignee({ userId: task.assigneeId, projectId: task.projectId });
     if (!result) return;
     await new Promise((resolve) => setTimeout(resolve, 1500));
     toast.success(`Select assignee with id: ${task.assigneeId}`);

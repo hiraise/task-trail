@@ -10,6 +10,11 @@ export interface ChangeStatusProps {
   projectId?: number;
 }
 
+export interface SelectAssigneeProps {
+  projectId?: number;
+  userId?: number;
+}
+
 export const useGlobalModals = () => {
   const { open } = useGlobalModalContext();
 
@@ -25,8 +30,8 @@ export const useGlobalModals = () => {
   );
 
   return {
-    showSelectAssignee: (userId?: number) =>
-      safeOpen<MembersData>(MODAL_TYPE.SELECT_ASSIGNEE, { userId }),
+    showSelectAssignee: (props?: SelectAssigneeProps) =>
+      safeOpen<MembersData>(MODAL_TYPE.SELECT_ASSIGNEE, { ...props }),
 
     showSelectProject: (projectId?: number) =>
       safeOpen<Project>(MODAL_TYPE.SELECT_PROJECT, { projectId }),

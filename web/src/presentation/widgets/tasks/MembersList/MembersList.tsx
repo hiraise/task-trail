@@ -8,17 +8,17 @@ import styles from "./MembersList.module.css";
 import { Input } from "@/presentation/ui/Input/Input.styled";
 import { projectsTexts } from "@/shared/locales/projects";
 import { UserItem } from "../../projects/MembersList/UserItem";
-import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { MembersData } from "@/domain/user/user.entity";
 
 interface MembersListProps {
+  selectedUserId?: number;
   members: MembersData[];
   onSelect: (user: MembersData) => void;
 }
 
-export function MembersList({ members, onSelect }: MembersListProps) {
+export function MembersList(props: MembersListProps) {
+  const { selectedUserId: userId, members, onSelect } = props;
   const [query, setQuery] = useState("");
-  const { userId } = useGlobalModalProps<{ userId?: number }>() || {};
 
   const filteredMembers = members.filter(
     (user) =>
