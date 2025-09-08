@@ -5,7 +5,7 @@ import CommentUserInfo from "./CommentUserInfo";
 import { DropdownMenu } from "../../projects/DropdownMenu";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { ICONS } from "@/infrastructure/config/icons";
-import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
+
 import { formatDate } from "@/shared/utils/formatters";
 
 interface CommentsListItemProps {
@@ -13,8 +13,7 @@ interface CommentsListItemProps {
 }
 
 export default function CommentsListItem({ comment }: CommentsListItemProps) {
-  //TODO: replace menu items
-  const { menuItems } = useProjectMenuItems(4);
+  //TODO: implement menu items
 
   return (
     <div className={styles.container}>
@@ -24,7 +23,7 @@ export default function CommentsListItem({ comment }: CommentsListItemProps) {
           createdAt={formatDate(comment.createdAt)}
           updatedAt={comment.updatedAt ? formatDate(comment.updatedAt) : undefined}
         />
-        <DropdownMenu trigger={<IconButton icon={ICONS.menu} size="24px" />} items={menuItems} />
+        <DropdownMenu trigger={<IconButton icon={ICONS.menu} size="24px" />} items={[]} />
       </div>
       <span>{comment.text}</span>
     </div>

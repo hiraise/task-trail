@@ -7,8 +7,8 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { TaskPayload } from "@/domain/task/task.payload";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { Task } from "@/domain/task/task.entity";
-import { Project } from "@/domain/project/project.entity";
 import {
+  useGetById,
   useGetProjectMembers,
   useGetProjectStatuses,
 } from "@/application/projects/hooks/useProject";
@@ -50,10 +50,7 @@ export const useGetTaskInfo = (id: number) => {
   const { data: members } = useGetProjectMembers(task!.projectId);
   const assignee = members?.find((m) => m.id === task?.assigneeId);
 
-  const project =
-    task?.projectId != null
-      ? queryClient.getQueryData<Project>(QUERY_KEYS.project(task.projectId))
-      : undefined;
+  const { data: project } = useGetById(task!.projectId);
 
   return {
     status,
