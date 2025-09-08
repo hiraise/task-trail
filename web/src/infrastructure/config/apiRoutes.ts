@@ -32,4 +32,5 @@ export const API_ROUTES = {
   // TASKS API
   TASKS: TASKS,
   TASKS_BY_ID: (id: number) => `${TASKS}/${id}`,
+  USER_TASKS: `${USERS_ME}/tasks`,
 };

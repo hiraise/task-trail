@@ -8,13 +8,16 @@ import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { ICONS } from "@/infrastructure/config/icons";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
-import { mockTasks, TaskList } from "@/presentation/widgets/tasks/TaskList";
+import { TaskList } from "@/presentation/widgets/tasks/TaskList";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { tasksTexts } from "@/shared/locales/tasks";
+import { useGetUserTasks } from "@/application/user/hooks/useGetUserTasks";
 
 export default function TasksPage() {
   const { showSortOptions, showCreateTask } = useGlobalModals();
-  const tasks = mockTasks;
+  const { data: tasks } = useGetUserTasks();
+
+  if (!tasks) return null;
 
   // TODO: Implement create task logic
   const handleCreateTask = async () => {
