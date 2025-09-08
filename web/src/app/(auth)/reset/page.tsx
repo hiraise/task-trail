@@ -35,7 +35,7 @@ interface Props {
   isLoading?: boolean;
 }
 
-export function PasswordResetForm({ onSubmit, isLoading }: Props) {
+function PasswordResetForm({ onSubmit, isLoading }: Props) {
   const {
     register,
     handleSubmit,
