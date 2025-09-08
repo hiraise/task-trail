@@ -133,4 +133,14 @@ export const authService: AuthService = {
       throw new AppError(AppErrorType.AUTH, "Forgot password error");
     }
   },
+
+  //TODO: add doc and error handle
+  async passwordReset(payload) {
+    try {
+      await axiosClient.post(API_ROUTES.RESET_PASSWORD, payload);
+    } catch (error) {
+      clientLogger.error("Reset password error", { error });
+      throw new AppError(AppErrorType.AUTH, "Reset password error");
+    }
+  },
 };

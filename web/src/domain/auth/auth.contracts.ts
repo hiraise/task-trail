@@ -1,4 +1,4 @@
-import { AuthPayload, ChangePasswordPayload } from "./auth.payload";
+import { AuthPayload, ChangePasswordPayload, PasswordResetPayload } from "./auth.payload";
 
 export type AuthService = {
   login: (payload: AuthPayload) => Promise<void>;
@@ -9,4 +9,5 @@ export type AuthService = {
   checkAuthStatus: () => Promise<void>;
   changePassword: (payload: ChangePasswordPayload) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
+  passwordReset: (payload: PasswordResetPayload) => Promise<void>;
 };

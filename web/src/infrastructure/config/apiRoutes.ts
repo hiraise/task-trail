@@ -16,6 +16,7 @@ export const API_ROUTES = {
   RESEND_VERIFICATION: `${AUTH}/resend-verification`,
   CHANGE_PASSWORD: `${PASSWORD}/change`,
   FORGOT_PASSWORD: `${PASSWORD}/forgot`,
+  RESET_PASSWORD: `${PASSWORD}/reset`,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   CURRENT_USER: USERS_ME,
   // PROJECTS API

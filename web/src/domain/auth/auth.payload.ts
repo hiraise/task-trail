@@ -7,3 +7,8 @@ export type ChangePasswordPayload = {
   newPassword: string;
   oldPassword: string;
 };
+
+export type PasswordResetPayload = {
+  password: string;
+  token: string;
+};
