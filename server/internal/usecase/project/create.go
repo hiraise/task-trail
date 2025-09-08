@@ -17,7 +17,7 @@ var defaultRoles = map[string]dto.ProjectRoleCreate{
 	},
 	usecase.OwnerRoleName: {
 		Name:        usecase.OwnerRoleName,
-		Permissions: []string{usecase.PROJECT_OWNER, usecase.PROJECT_INVITE_USERS, usecase.PROJECT_KICK_USERS, usecase.PROJECT_SET_ROLES, usecase.PROJECT_EDIT, usecase.PROJECT_ARCHIVE, usecase.PROJECT_DELETE, usecase.PROJECT_CREATE_TASK, usecase.PROJECT_UPDATE_TASK, usecase.PROJECT_DELETE_TASK},
+		Permissions: []string{usecase.PROJECT_OWNER, usecase.PROJECT_INVITE_USERS, usecase.PROJECT_KICK_USERS, usecase.PROJECT_GET_CANDIDATES, usecase.PROJECT_SET_ROLES, usecase.PROJECT_EDIT, usecase.PROJECT_ARCHIVE, usecase.PROJECT_DELETE, usecase.PROJECT_CREATE_TASK, usecase.PROJECT_UPDATE_TASK, usecase.PROJECT_DELETE_TASK},
 	},
 	usecase.MemberRoleName: {
 		Name:        usecase.MemberRoleName,
