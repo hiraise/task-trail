@@ -4,7 +4,11 @@ import { clientLogger } from "../config/clientLogger";
 import axiosClient from "./axiosClient";
 import { Domain, mapHttpError } from "@/shared/errors/mapHttpError";
 import { AuthService } from "@/domain/auth/auth.contracts";
-import { AuthPayload } from "@/domain/auth/auth.payload";
+import {
+  AuthPayload,
+  ChangePasswordPayload,
+  PasswordResetPayload,
+} from "@/domain/auth/auth.payload";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 export const authService: AuthService = {
@@ -105,11 +109,11 @@ export const authService: AuthService = {
   /**
    * Changes the password for the current user.
    *
-   * @param {object} payload - The payload containing the new password and any required fields.
+   * @param {ChangePasswordPayload} payload - The payload containing the new password and any required fields.
    * @returns {Promise<void>} Resolves if the password is changed successfully, otherwise throws an error.
    * @throws {AppError} Throws an authentication error if the request fails.
    */
-  async changePassword(payload) {
+  async changePassword(payload: ChangePasswordPayload): Promise<void> {
     try {
       await axiosClient.post(API_ROUTES.CHANGE_PASSWORD, payload);
     } catch (error) {
@@ -125,7 +129,7 @@ export const authService: AuthService = {
    * @returns {Promise<void>} Resolves if the email is sent successfully, otherwise throws an error.
    * @throws {AppError} Throws an authentication error if the request fails.
    */
-  async forgotPassword(email) {
+  async forgotPassword(email: string): Promise<void> {
     try {
       await axiosClient.post(API_ROUTES.FORGOT_PASSWORD, { email });
     } catch (error) {
@@ -134,8 +138,14 @@ export const authService: AuthService = {
     }
   },
 
-  //TODO: add doc and error handle
-  async passwordReset(payload) {
+  /**
+   * Resets the user's password using a token.
+   *
+   * @param {PasswordResetPayload} payload - The payload containing the password reset token and new password.
+   * @returns {Promise<void>} Resolves if the password is reset successfully, otherwise throws an error.
+   * @throws {AppError} Throws an authentication error if the request fails.
+   */
+  async passwordReset(payload: PasswordResetPayload): Promise<void> {
     try {
       await axiosClient.post(API_ROUTES.RESET_PASSWORD, payload);
     } catch (error) {
