@@ -209,7 +209,7 @@ func (r *authRoutes) forgotPWD(c *gin.Context) {
 func (r *authRoutes) resetPWD(c *gin.Context) {
 	data, err := request.BindResetPasswordDTO(c)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	if err := r.u.ResetPassword(c, data); err != nil {
