@@ -96,7 +96,7 @@ func (r *usersRoutes) updateMe(c *gin.Context) {
 	userID := utils.Must(r.contextmanager.GetUserID(c))
 	data, err := request.BindUserUpdateDTO(c, userID)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	res, err := r.u.UpdateByID(c, data)

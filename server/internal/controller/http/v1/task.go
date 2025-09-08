@@ -34,7 +34,7 @@ func (r *taskRoutes) create(c *gin.Context) {
 	userID := utils.Must(r.contextmanager.GetUserID(c))
 	data, err := request.BindTaskCreateDTO(c, userID)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	id, err := r.u.Create(c, data)

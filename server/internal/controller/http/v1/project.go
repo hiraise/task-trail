@@ -34,7 +34,7 @@ func (r *projectRoutes) create(c *gin.Context) {
 	userID := utils.Must(r.contextmanager.GetUserID(c))
 	data, err := request.BindProjectCreateDTO(c, userID)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	id, err := r.u.Create(c, data)
@@ -59,7 +59,7 @@ func (r *projectRoutes) getProjects(c *gin.Context) {
 	userID := utils.Must(r.contextmanager.GetUserID(c))
 	data, err := request.BindProjectListDTO(c, userID)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	res, err := r.u.GetList(c, data)
@@ -109,7 +109,7 @@ func (r *projectRoutes) addMembers(c *gin.Context) {
 	projectID := utils.Must(strconv.Atoi(c.Param("id")))
 	data, err := request.BindProjectAddMembersDTO(c, userID, projectID)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	if err := r.u.AddMembers(c, data); err != nil {
@@ -161,7 +161,7 @@ func (r *projectRoutes) updateByID(c *gin.Context) {
 	projectID := utils.Must(strconv.Atoi(c.Param("id")))
 	data, err := request.BindProjectUpdateDTO(c)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(r.errHandler.Validation(err))
 		return
 	}
 	if err := r.u.UpdateByID(c, projectID, userID, data); err != nil {
