@@ -1,0 +1,67 @@
+:root {
+  --font-family: "Manrope";
+  --text-primary: rgba(32, 32, 32, 1);
+  --text-primary-contrast: rgba(251, 251, 251, 1);
+  --text-secondary: rgba(126, 126, 126, 1);
+  --text-accent: rgba(64, 111, 213, 1);
+}
+
+h1 {
+  font-size: 42px;
+  line-height: 46px;
+  font-weight: 600;
+  font-family: var(--font-family);
+}
+
+/* Base */
+.body-reg {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 400;
+  font-family: var(--font-family);
+  color: var(--text-secondary);
+}
+
+.body-reg-2 {
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 400;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
+.caption-2-reg {
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 400;
+  font-family: var(--font-family);
+}
+
+.caption-med {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 550;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: underline;
+  text-decoration-style: solid;
+}
+
+/* Buttons */
+
+.btn-font-m {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 550;
+  font-family: var(--font-family);
+}
+
+.btn-font-s {
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 550;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
