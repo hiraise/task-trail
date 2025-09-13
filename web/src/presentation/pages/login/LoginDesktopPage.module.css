@@ -1,0 +1,45 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100vh;
+}
+
+.header {
+  background-color: var(--bg-primary);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding-top: 32px;
+  padding-bottom: 16px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  background-color: var(--bg-primary);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.bottomContent {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bottomContent :global(.body-reg-2) {
+  opacity: 70%;
+}

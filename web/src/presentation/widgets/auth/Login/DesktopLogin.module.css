@@ -1,0 +1,41 @@
+.cardBackground {
+  position: relative;
+  width: 680px;
+  height: 470px;
+  border-radius: 12px;
+  background-color: var(--bg-card);
+}
+
+.search {
+  position: absolute;
+  top: 48px;
+  left: 57px;
+}
+
+.task {
+  position: absolute;
+  top: 91.96px;
+  left: 577.6px;
+}
+
+.title {
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  white-space: pre-line;
+  gap: 12px;
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.formWapper {
+  position: absolute;
+  top: 170px;
+  left: 40px;
+  right: 40px;
+  bottom: 48px;
+}
