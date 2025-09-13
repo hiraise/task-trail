@@ -12,6 +12,16 @@ const manrope = localFont({
       weight: "400",
       style: "normal",
     },
+    {
+      path: "../../public/fonts/Manrope-Medium.ttf",
+      weight: "550",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/Manrope-SemiBold.ttf",
+      weight: "600",
+      style: "normal",
+    },
   ],
 });
 
