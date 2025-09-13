@@ -1,0 +1,4 @@
+.root {
+  background: var(--bg-primary-contrast);
+  height: 100vh;
+}
