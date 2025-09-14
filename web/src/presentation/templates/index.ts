@@ -1,0 +1,1 @@
+export { AuthDesktopTemplate } from "./AuthDesktopTemplate";

@@ -18,6 +18,8 @@
 }
 
 .forgotPassword {
+  height: 32px;
+  align-content: center;
   align-self: flex-end;
 }
 
