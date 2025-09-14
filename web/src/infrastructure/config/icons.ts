@@ -1,3 +1,4 @@
+// App icons
 import SearchIcon from "../../../public/icons/iconamoon_search-bold.svg";
 import ProfileIcon from "../../../public/icons/iconamoon_profile.svg";
 import ProjectIcon from "../../../public/icons/codicon_github-project.svg";
@@ -18,6 +19,11 @@ import MenuIcon from "../../../public/icons/menu_icon.svg";
 import AddUserIcon from "../../../public/icons/user-add.svg";
 import DeleteIcon from "../../../public/icons/trash.svg";
 import DownArrow from "../../../public/icons/ArrowDown.svg";
+import LogoDesktop from "../../../public/icons/LogoDesktop.svg";
+import MailIcon from "../../../public/icons/MailIcon.svg";
+import LockIcon from "../../../public/icons/LockIcon.svg";
+import ShowIcon from "../../../public/icons/ShowIcon.svg";
+import HideIcon from "../../../public/icons/HideIcon.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -40,4 +46,22 @@ export const ICONS = {
   menu: MenuIcon,
   addUser: AddUserIcon,
   delete: DeleteIcon,
+  logoDesktop: LogoDesktop,
+  mail: MailIcon,
+  lock: LockIcon,
+  show: ShowIcon,
+  hide: HideIcon,
+};
+
+// Design elements
+import SearchDesignElement from "../../../public/elements/search.svg";
+import TaskDesignElement from "../../../public/elements/task.svg";
+import PictureDesignElement from "../../../public/elements/picture.svg";
+import LockDesignElement from "../../../public/elements/lock.svg";
+
+export const DESIGN_ELEMENTS = {
+  search: SearchDesignElement,
+  task: TaskDesignElement,
+  picture: PictureDesignElement,
+  lock: LockDesignElement,
 };

@@ -3,15 +3,15 @@ import styled from "styled-components";
 
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
-import { loginTexts } from "@/shared/locales/login";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import PrivacyText from "../../common/PrivacyText";
 import { Stack } from "../../primitives/Stack";
 import { usePasswordRecovery } from "@/application/auth/hooks/usePasswordRecovery";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { getEmailValidator } from "@/shared/utils/validate";
 import { Input, InputLabel } from "@/presentation/ui/Input";
+import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
+import { authTexts } from "@/shared/locales/auth";
 
 const FormContainer = styled.form`
   display: flex;
@@ -22,7 +22,7 @@ type FormValues = {
   email: string;
 };
 
-export default function PasswordRecoveryForm() {
+export function PasswordRecoveryFormMobile() {
   const { mutateAsync: recover, isPending: loading } = usePasswordRecovery();
 
   const {
@@ -54,18 +54,18 @@ export default function PasswordRecoveryForm() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder={loginTexts.emailPlaceholder}
+            placeholder={authTexts.emailPlaceholder}
             {...register("email", getEmailValidator())}
           />
           {errors.email && <FormFieldError>{errors.email.message}</FormFieldError>}
         </Stack>
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading || isSubmitting}>
-          {loading ? sharedTexts.sending : sharedTexts.send}
+          {loading ? authTexts.sending : authTexts.send}
         </SubmitButton>
       </FormContainer>
       <Spacer size="8px" />
-      <PrivacyText btnName={sharedTexts.send} />
+      <PrivacyPolicyMobile btnName={sharedTexts.send} />
     </MobileContainer>
   );
 }

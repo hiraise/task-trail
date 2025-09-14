@@ -24,6 +24,16 @@ TaskTrail is a modern, open-source, self-hosted task tracking web application bu
 - **Extensible Architecture**: Easily add new features and integrations.
 - **Testing**: Unit and integration tests with Jest and React Testing Library.
 
+## ✨ Features
+
+### Login Page
+
+Here's a sneak peek of our clean and intuitive login interface, available on both desktop and mobile devices.
+
+|                      Desktop                      |                     Mobile                      |
+| :-----------------------------------------------: | :---------------------------------------------: |
+| ![Desktop Login](./docs/images/login-desktop.png) | ![Mobile Login](./docs/images/login-mobile.png) |
+
 ## Tech Stack
 
 - **Next.js** (App Router, SSR)

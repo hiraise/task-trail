@@ -1,44 +1,46 @@
-import { useState } from "react";
+"use client";
 
-import { sharedTexts } from "@/shared/locales/sharedTexts";
-import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { DesktopWrapper, DesktopCard, Title, Form } from "./LoginForm.styled";
-import { Input } from "@/presentation/ui/Input";
+import Link from "next/link";
+import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-export const LoginFormDesktop = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import styles from "./LoginFormDesktop.module.css";
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+import { ROUTES } from "@/infrastructure/config/routes";
+import { authTexts } from "@/shared/locales/auth";
+import { SubmitButton } from "../_components";
+import { useLogin } from "@/application/auth/hooks/useLogin";
+import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
+import { AuthFormFieldsDesktop, schema, type FormData } from "../AuthFormFields";
+
+export function LoginFormDesktop() {
+  const { mutateAsync: login, isPending: isLoading } = useLogin();
+  const form = useForm<FormData>({ mode: "onChange", resolver: zodResolver(schema) });
+  const {
+    handleSubmit,
+    formState: { isSubmitting, isValid },
+  } = form;
+
+  const submitHandler = async (data: FormData) => {
+    await login({ email: data.email, password: data.password });
+    console.log("Form values: ", data);
   };
-
   return (
-    <DesktopWrapper>
-      <DesktopCard>
-        <Title>Добро пожаловать!</Title>
-        <Form onSubmit={handleSubmit}>
-          <Input
-            id="email"
-            type="email"
-            placeholder="Email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            id="password"
-            type="password"
-            placeholder="Пароль"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <SubmitButton type="submit">{sharedTexts.login}</SubmitButton>
-        </Form>
-      </DesktopCard>
-    </DesktopWrapper>
+    <FormProvider {...form}>
+      <form className={styles.container} onSubmit={handleSubmit(submitHandler)}>
+        <div className={styles.formItems}>
+          <AuthFormFieldsDesktop />
+          <Link href={ROUTES.passwordRecovery} className={styles.forgotPassword}>
+            <span className="btn-font-s"> {authTexts.login.forgotPassword}</span>
+          </Link>
+        </div>
+        <div className={styles.formItems}>
+          <SubmitButton className="btn-font-m" disabled={!isValid || isSubmitting}>
+            {isSubmitting || isLoading ? authTexts.login.loggingIn : authTexts.login.login}
+          </SubmitButton>
+          <PrivacyPolicyDesktop btnName={authTexts.login.login} />
+        </div>
+      </form>
+    </FormProvider>
   );
-};
+}

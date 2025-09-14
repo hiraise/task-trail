@@ -1,3 +1,5 @@
+@import url("../styles/text.css");
+
 :root {
   --background: rgb(255, 255, 255);
   --foreground: rgb(0, 0, 0);
@@ -20,6 +22,19 @@
   --dropdown-shaddow: rgba(8, 8, 8, 0.15);
 
   --border: rgba(0, 0, 0, 0.1);
+
+  /* Design colors */
+  --bg-primary-contrast: rgba(32, 32, 32, 1);
+  --bg-primary: rgba(251, 251, 251, 1);
+  --bg-secondary: rgba(239, 239, 239, 1);
+  --bg-card: rgba(255, 255, 255, 1);
+
+  /* Icons */
+  --icon-primary: rgba(32, 32, 32, 1);
+  --icon-critical: rgba(255, 50, 50, 1);
+
+  /* Borders */
+  --border-critical: rgba(255, 50, 50, 1);
 }
 
 :root:has(.no-doc-scroll) {

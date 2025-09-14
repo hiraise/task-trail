@@ -1,11 +1,5 @@
 export const sharedTexts = {
-  signUp: "Зарегистрироваться",
-  login: "Войти",
-  privacyPolicyAgreement: "Нажимая кнопку {btnName} вы соглашаетесь \r\nс ",
-  privacyPolicyText: "Политикой конфиденциальности",
-  privacyPolicyLink: "https://google.com",
   send: "Отправить",
-  sending: "Отправляем...",
   emailLabel: "Введите email",
   projects: "Проекты",
   boards: "Доски",

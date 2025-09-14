@@ -1,5 +1,8 @@
-import { useDevice } from "@/shared/hooks/useDevice";
+"use client";
+
 import { ReactNode } from "react";
+
+import { useDevice } from "@/shared/hooks/useDevice";
 
 interface DeviceBasedProps {
   mobile: ReactNode;

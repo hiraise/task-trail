@@ -3,16 +3,15 @@ import { useRouter } from "next/navigation";
 
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
-import { Form } from "./LoginForm.styled";
-import { loginTexts } from "@/shared/locales/login";
-import { sharedTexts } from "@/shared/locales/sharedTexts";
-import { LoginFields } from "../../common/LoginFields";
+import { Form } from "./LoginFormMobile.styled";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { TextButton } from "@/presentation/ui/TextButton";
 import { useLogin } from "@/application/auth/hooks/useLogin";
-import PrivacyText from "../../common/PrivacyText";
 import { Spinner } from "@/presentation/ui/Spinner";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
+import { AuthFormFieldsMobile } from "../AuthFormFields";
+import { authTexts } from "@/shared/locales/auth";
 
 export const LoginFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -29,23 +28,23 @@ export const LoginFormMobile = () => {
   return (
     <MobileContainer>
       <Form onSubmit={handleSubmit}>
-        <LoginFields
+        <AuthFormFieldsMobile
           email={email}
           setEmail={setEmail}
           password={password}
           setPassword={setPassword}
-        ></LoginFields>
+        />
         <Spacer size="12px" />
         <TextButton onClick={() => router.push(ROUTES.passwordRecovery)}>
-          {loginTexts.forgotPassword}
+          {authTexts.login.forgotPassword}
         </TextButton>
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading}>
-          {loading ? <Spinner size={16} /> : sharedTexts.login}
+          {loading ? <Spinner size={16} /> : authTexts.login.login}
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
-      <PrivacyText btnName={sharedTexts.login} />
+      <PrivacyPolicyMobile btnName={authTexts.login.login} />
     </MobileContainer>
   );
 };
