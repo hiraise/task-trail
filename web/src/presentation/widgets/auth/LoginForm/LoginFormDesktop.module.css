@@ -22,9 +22,3 @@
   align-content: center;
   align-self: flex-end;
 }
-
-.inputStack {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}

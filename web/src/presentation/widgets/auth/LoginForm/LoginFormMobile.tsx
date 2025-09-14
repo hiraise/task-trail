@@ -6,13 +6,13 @@ import { MobileContainer } from "../../primitives/MobileContainer";
 import { Form } from "./LoginFormMobile.styled";
 import { loginTexts } from "@/shared/locales/login";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
-import { LoginFields } from "../../common/LoginFields";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { TextButton } from "@/presentation/ui/TextButton";
 import { useLogin } from "@/application/auth/hooks/useLogin";
 import { Spinner } from "@/presentation/ui/Spinner";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
+import { AuthFormFieldsMobile } from "../AuthFormFields";
 
 export const LoginFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -29,12 +29,12 @@ export const LoginFormMobile = () => {
   return (
     <MobileContainer>
       <Form onSubmit={handleSubmit}>
-        <LoginFields
+        <AuthFormFieldsMobile
           email={email}
           setEmail={setEmail}
           password={password}
           setPassword={setPassword}
-        ></LoginFields>
+        />
         <Spacer size="12px" />
         <TextButton onClick={() => router.push(ROUTES.passwordRecovery)}>
           {loginTexts.forgotPassword}
