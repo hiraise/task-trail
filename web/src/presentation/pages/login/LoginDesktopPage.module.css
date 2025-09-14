@@ -1,13 +1,15 @@
-.bottomContent {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.search {
   position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 48px;
+  left: 57px;
 }
 
-.bottomContent :global(.body-reg-2) {
-  opacity: 70%;
+.task {
+  position: absolute;
+  top: 91.96px;
+  left: 577.6px;
+}
+
+.text {
+  opacity: 0.7;
 }
