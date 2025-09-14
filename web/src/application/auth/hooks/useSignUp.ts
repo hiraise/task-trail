@@ -8,12 +8,12 @@ import { authService } from "@/infrastructure/api/authService";
 import { AuthPayload } from "@/domain/auth/auth.payload";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export const useSignUp = (payload: AuthPayload) => {
+export const useSignUp = () => {
   const router = useRouter();
 
   return useMutation<void, Error, AuthPayload>({
     mutationFn: authService.signUp,
-    onSuccess: () => {
+    onSuccess: (_, payload) => {
       toast.success(successTexts.signUpSuccessCheckEmail);
       router.push(ROUTES.confirm + `?email=${encodeURIComponent(payload.email)}`);
     },
