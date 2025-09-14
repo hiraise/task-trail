@@ -10,7 +10,7 @@ import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { signupTexts } from "@/shared/locales/signup";
 import { useSignUp } from "@/application/auth/hooks/useSignUp";
-import PrivacyText from "../../common/PrivacyText";
+import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
 
 export const SignUpFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -38,7 +38,7 @@ export const SignUpFormMobile = () => {
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
-      <PrivacyText btnName={sharedTexts.login} />
+      <PrivacyPolicyMobile btnName={sharedTexts.login} />
     </MobileContainer>
   );
 };

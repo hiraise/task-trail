@@ -9,11 +9,11 @@ import styles from "./LoginFormDesktop.module.css";
 
 import { ROUTES } from "@/infrastructure/config/routes";
 import { authTexts } from "@/shared/locales/auth";
-import { interpolate } from "@/shared/utils/interpolate";
 import { ICONS } from "@/infrastructure/config/icons";
 import { Input, SubmitButton } from "../_components";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { useLogin } from "@/application/auth/hooks/useLogin";
+import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
 
 function InputStack({ children }: { children: React.ReactNode }) {
   return <div className={styles.inputStack}>{children}</div>;
@@ -76,14 +76,7 @@ export function LoginFormDesktop() {
         <SubmitButton className="btn-font-m" disabled={!isValid || isSubmitting}>
           {isSubmitting || isLoading ? authTexts.login.loggingIn : authTexts.login.login}
         </SubmitButton>
-        <p>
-          <span className={styles.privacyPolicy}>
-            {interpolate(authTexts.privacyPolicy.text, { btnName: authTexts.login.login })}
-          </span>
-          <Link href={authTexts.privacyPolicy.buttonLink}>
-            <span className="caption-med">{authTexts.privacyPolicy.buttonText} </span>
-          </Link>
-        </p>
+        <PrivacyPolicyDesktop btnName={authTexts.login.login} />
       </div>
     </form>
   );

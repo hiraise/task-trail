@@ -10,9 +10,9 @@ import { LoginFields } from "../../common/LoginFields";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { TextButton } from "@/presentation/ui/TextButton";
 import { useLogin } from "@/application/auth/hooks/useLogin";
-import PrivacyText from "../../common/PrivacyText";
 import { Spinner } from "@/presentation/ui/Spinner";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
 
 export const LoginFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -45,7 +45,7 @@ export const LoginFormMobile = () => {
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
-      <PrivacyText btnName={sharedTexts.login} />
+      <PrivacyPolicyMobile btnName={sharedTexts.login} />
     </MobileContainer>
   );
 };

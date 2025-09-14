@@ -6,12 +6,12 @@ import { MobileContainer } from "../../primitives/MobileContainer";
 import { loginTexts } from "@/shared/locales/login";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import PrivacyText from "../../common/PrivacyText";
 import { Stack } from "../../primitives/Stack";
 import { usePasswordRecovery } from "@/application/auth/hooks/usePasswordRecovery";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { getEmailValidator } from "@/shared/utils/validate";
 import { Input, InputLabel } from "@/presentation/ui/Input";
+import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
 
 const FormContainer = styled.form`
   display: flex;
@@ -65,7 +65,7 @@ export default function PasswordRecoveryForm() {
         </SubmitButton>
       </FormContainer>
       <Spacer size="8px" />
-      <PrivacyText btnName={sharedTexts.send} />
+      <PrivacyPolicyMobile btnName={sharedTexts.send} />
     </MobileContainer>
   );
 }
