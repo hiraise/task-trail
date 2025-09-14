@@ -5,6 +5,7 @@ export const authTexts = {
   changingPassword: "Изменение пароля",
   passwordPlaceholder: "********",
   noAccount: "Нет аккаунта?",
+  hasAccount: "Уже есть аккаунт?",
   login: {
     title: "Вход",
     description: "Введите почту и пароль\r\nдля входа в свою учетную запись",
@@ -22,5 +23,6 @@ export const authTexts = {
     title: "Регистрация",
     signup: "Зарегистрироваться",
     description: "Введите почту и придумайте пароль,\r\nчтобы создать новую учетную запись",
+    signingUp: "Регистрация...",
   },
 };
