@@ -2,7 +2,7 @@
 
 import { ROUTES } from "@/infrastructure/config/routes";
 import { MobileLogo } from "@/presentation/ui/MobileLogo";
-import { SignUpFormMobile } from "@/presentation/widgets/auth/SignUpForm/SignUpFormMobile";
+import { SignupFormMobile } from "@/presentation/widgets/auth/SignUpForm";
 import { BottomLinks } from "@/presentation/widgets/common/BottomLinks";
 import { SectionTitle } from "@/presentation/widgets/common/SectionTitle";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
@@ -17,7 +17,7 @@ export function SignupMobilePage() {
       <Spacer size="56px" />
       <SectionTitle title={signupTexts.title} subtitle={signupTexts.subtitle} />
       <Spacer size="56px" />
-      <SignUpFormMobile />
+      <SignupFormMobile />
       <Spacer size="121px" />
       <BottomLinks
         href={ROUTES.login}
