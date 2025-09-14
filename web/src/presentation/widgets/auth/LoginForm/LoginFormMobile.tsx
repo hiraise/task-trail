@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
-import { Form } from "./LoginForm.styled";
+import { Form } from "./LoginFormMobile.styled";
 import { loginTexts } from "@/shared/locales/login";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { LoginFields } from "../../common/LoginFields";

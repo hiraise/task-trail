@@ -5,7 +5,7 @@ import { FormEvent, useState } from "react";
 import { LoginFields } from "../../common/LoginFields";
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
-import { Form } from "../LoginForm/LoginForm.styled";
+import { Form } from "../LoginForm/LoginFormMobile.styled";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { signupTexts } from "@/shared/locales/signup";

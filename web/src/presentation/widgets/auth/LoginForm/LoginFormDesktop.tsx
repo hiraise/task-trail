@@ -5,17 +5,15 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import styles from "./LoginDesktopForm.module.css";
+import styles from "./LoginFormDesktop.module.css";
 
 import { ROUTES } from "@/infrastructure/config/routes";
 import { authTexts } from "@/shared/locales/auth";
-
 import { interpolate } from "@/shared/utils/interpolate";
 import { ICONS } from "@/infrastructure/config/icons";
-import { Input } from "./Input";
+import { Input, SubmitButton } from "../_components";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { useLogin } from "@/application/auth/hooks/useLogin";
-import { SubmitButton } from "./SubmitButton";
 
 function InputStack({ children }: { children: React.ReactNode }) {
   return <div className={styles.inputStack}>{children}</div>;
@@ -28,7 +26,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export function LoginDesktopForm() {
+export function LoginFormDesktop() {
   const { mutateAsync: login, isPending: isLoading } = useLogin();
   const form = useForm<FormData>({ mode: "onChange", resolver: zodResolver(schema) });
   const {

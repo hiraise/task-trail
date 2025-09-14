@@ -5,7 +5,6 @@ export const authTexts = {
   changingPassword: "Изменение пароля",
   passwordPlaceholder: "********",
   noAccount: "Нет аккаунта?",
-  signUp: "Зарегистрироваться",
   login: {
     title: "Вход",
     description: "Введите почту и пароль\r\nдля входа в свою учетную запись",
@@ -18,5 +17,10 @@ export const authTexts = {
     text: "Нажимая кнопку {btnName} вы соглашаетесь с ",
     buttonText: "Политикой конфиденциальности",
     buttonLink: "https://google.com",
+  },
+  signup: {
+    title: "Регистрация",
+    signup: "Зарегистрироваться",
+    description: "Введите почту и придумайте пароль,\r\nчтобы создать новую учетную запись",
   },
 };
