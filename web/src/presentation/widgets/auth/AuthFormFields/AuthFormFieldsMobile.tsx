@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-import { Stack } from "../primitives/Stack";
+import { Stack } from "../../primitives/Stack";
 import { loginTexts } from "@/shared/locales/login";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { Input, InputLabel } from "@/presentation/ui/Input";
@@ -18,7 +18,7 @@ interface LoginFieldsProps {
   setPassword: (value: string) => void;
 }
 
-export const LoginFields = ({
+export const AuthFormFieldsMobile = ({
   email,
   setEmail,
   password,
