@@ -12,6 +12,7 @@ import { useParams } from "next/navigation";
 import { mockBoards } from "@/domain/board/board.mocks";
 import { Board } from "@/domain/board/board.entity";
 import { KanbanBoard } from "@/presentation/widgets/boards/KanbanBoard";
+import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 
 function BoardTopBar({ board }: { board: Board }) {
   const { menuItems } = useBoardMenuItems(board.id);
@@ -33,11 +34,16 @@ export default function BoardPage() {
 
   if (!board) return null;
 
+  const handleCreateTask = () => {
+    console.log("Create task button");
+  };
+
   return (
     <main>
       <DashboardHeader />
       <BoardTopBar board={board} />
       <KanbanBoard board={board} />
+      <FloatingButton onClick={handleCreateTask} />
     </main>
   );
 }
