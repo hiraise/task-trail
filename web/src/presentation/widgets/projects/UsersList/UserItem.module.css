@@ -11,17 +11,6 @@
   align-items: center;
 }
 
-.avatarContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  align-items: center;
-  background-color: var(--avatar-bg);
-}
-
 .email {
   font-size: 14px;
   font-weight: 400;

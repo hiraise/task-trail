@@ -23,7 +23,7 @@ type FormValues = {
 };
 
 export default function PasswordRecoveryForm() {
-  const { recover, loading } = usePasswordRecovery();
+  const { mutateAsync: recover, isPending: loading } = usePasswordRecovery();
 
   const {
     register,
@@ -57,9 +57,7 @@ export default function PasswordRecoveryForm() {
             placeholder={loginTexts.emailPlaceholder}
             {...register("email", getEmailValidator())}
           />
-          {errors.email && (
-            <FormFieldError>{errors.email.message}</FormFieldError>
-          )}
+          {errors.email && <FormFieldError>{errors.email.message}</FormFieldError>}
         </Stack>
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading || isSubmitting}>

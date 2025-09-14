@@ -7,9 +7,9 @@ import { UserItem } from "./UserItem";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { PERMISSIONS, ProjectMember } from "@/domain/project/project.entity";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
 import { Spinner } from "@/presentation/ui/Spinner";
-import { useProjects } from "@/application/projects/hooks/useProjects";
+import { useKickMember } from "@/application/projects/hooks/useProject";
+import { useGetCurrentUser } from "@/application/user/hooks/useGetCurrentUser";
 
 const showDeleteButton = (currentUser: ProjectMember, member: ProjectMember) => {
   if (member.isOwner || member.isAdmin) return false;
@@ -32,16 +32,16 @@ interface MembersListProps {
 }
 
 export function MembersList({ members }: MembersListProps) {
-  const currentUserId = useAppSelector((s) => (s.user.data?.id ? Number(s.user.data.id) : null));
-  const currentUser = members.find((m) => currentUserId && m.id === currentUserId);
+  const { data: user } = useGetCurrentUser();
+  const currentUser = members.find((m) => user && m.id === user.id);
   const projectId = Number(useParams().id);
 
-  const { kick, isLoading } = useProjects();
+  const { mutateAsync: kick, isPending: isLoading } = useKickMember(projectId);
   const [kickingUserId, setKickingUserId] = useState<number | null>(null);
 
   const handleOnClick = async (memberId: number) => {
     setKickingUserId(memberId);
-    await kick(projectId, memberId);
+    await kick(memberId);
     setKickingUserId(null);
   };
 

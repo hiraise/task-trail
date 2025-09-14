@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import styled from "styled-components";
 
 import { useEmailConfirm } from "@/application/auth/hooks/useEmailConfirm";
@@ -15,24 +15,14 @@ export const Container = styled.div`
 `;
 
 export default function ConfirmByTokenPage({ token }: { token: string }) {
-  const { status, errorMessage, confirmEmail } = useEmailConfirm();
-  const hasTriggeredRef = useRef(false);
+  const { mutateAsync: confirm, isError, isPending, isSuccess, error } = useEmailConfirm();
 
   useEffect(() => {
-    if (token && !hasTriggeredRef.current) {
-      hasTriggeredRef.current = true;
-      confirmEmail(token);
-    }
-  }, [token, confirmEmail]);
+    if (token) confirm(token);
+  }, [confirm, token]);
 
-  switch (status) {
-    case "loading":
-      return <LoadingScreen />;
-    case "success":
-      return <SuccessConfirmationView />;
-    case "error":
-      return <ErrorView message={errorMessage || "Неизвестная ошибка"} />;
-    default:
-      return <LoadingScreen />;
-  }
+  if (isPending) return <LoadingScreen />;
+  if (isError) return <ErrorView message={error.message} />;
+  if (isSuccess) return <SuccessConfirmationView />;
+  return <LoadingScreen />;
 }

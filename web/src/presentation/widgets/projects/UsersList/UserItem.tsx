@@ -1,6 +1,6 @@
 import styles from "./UserItem.module.css";
-import { ICONS } from "@/infrastructure/config/icons";
-import { Icon } from "@/presentation/ui/Icon";
+
+import { UserAvatar } from "../../common/UserAvatar";
 
 interface UserItemProps {
   email: string;
@@ -9,9 +9,7 @@ interface UserItemProps {
 export function UserItem({ email }: UserItemProps) {
   return (
     <div className={styles.userInfo}>
-      <div className={styles.avatarContainer}>
-        <Icon as={ICONS.profile} size="18px" />
-      </div>
+      <UserAvatar />
       <p className={styles.email}>{email}</p>
     </div>
   );

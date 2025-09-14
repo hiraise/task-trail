@@ -10,7 +10,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^2.7.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@tanstack/react-query": "^5.85.5",
     "axios": "^1.9.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -20,9 +22,9 @@
     "react-dom": "^19.0.0",
     "react-easy-crop": "^5.4.2",
     "react-hook-form": "^7.58.1",
-    "react-redux": "^9.2.0",
     "sonner": "^2.0.3",
-    "styled-components": "^6.1.17"
+    "styled-components": "^6.1.17",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

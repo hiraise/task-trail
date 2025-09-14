@@ -6,12 +6,11 @@ import { Project } from "@/domain/project/project.entity";
 
 interface ProjectCardProps {
   project: Project;
-  onClick?: () => void;
 }
 
-export function ProjectCard({ project, onClick }: ProjectCardProps) {
+export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div className={styles.cardContainer} onClick={onClick}>
+    <div className={styles.cardContainer}>
       <div className={styles.cardInfoWrapper}>
         <Icon as={ICONS.project} size="24px" />
         <span>{pluralizeTasks(project.totalTasks)}</span>

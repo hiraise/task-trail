@@ -9,7 +9,7 @@ import { ChangePasswordForm } from "@/presentation/widgets/profile/ChangePasswor
 import { usePasswordChange } from "@/application/auth/hooks/usePasswordChange";
 
 export default function ChangePasswordPage() {
-  const { changePassword, isLoading } = usePasswordChange();
+  const { mutateAsync: changePassword, isPending: isLoading } = usePasswordChange();
 
   return (
     <MainContainer>

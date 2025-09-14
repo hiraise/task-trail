@@ -16,7 +16,7 @@ export const SignUpFormMobile = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { signUp, loading } = useSignUp();
+  const { mutateAsync: signUp, isPending: loading } = useSignUp({ email, password });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -38,7 +38,7 @@ export const SignUpFormMobile = () => {
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
-      <PrivacyText btnName={sharedTexts.login}/>
+      <PrivacyText btnName={sharedTexts.login} />
     </MobileContainer>
   );
 };

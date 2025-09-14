@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { motion as m, useDragControls } from "framer-motion";
+import clsx from "clsx";
 
 import styles from "./BottomSheet.module.css";
 import { useScrollLock } from "@/shared/hooks/useScrollLock";
@@ -38,15 +39,11 @@ export function BottomSheet(props: BottomSheetProps) {
 
   return (
     <m.div className={styles.bottomSheet} role="dialog" aria-modal="true">
-      <m.div
-        className={styles.overlay}
-        exit={{ opacity: 0 }}
-        onClick={handleOverlayClick}
-      />
+      <m.div className={styles.overlay} exit={{ opacity: 0 }} onClick={handleOverlayClick} />
       <div className={styles.wrapper}>
         <m.div
           ref={contentRef}
-          className={`${styles.content} ${fullScreen ? styles.fullScreen : ""}`}
+          className={clsx(styles.content, { [styles.fullScreen]: fullScreen })}
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           exit={{ y: "100%" }}

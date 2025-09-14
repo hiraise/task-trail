@@ -115,3 +115,21 @@ export const projectNameValidator = {
     message: "Название проекта не должно превышать 255 символа",
   },
 };
+
+export const getPasswordValidator = () => ({
+  required: "Введите новый пароль",
+  minLength: { value: 8, message: "Пароль должен быть не короче 8 символов" },
+  validate: (value: string) => {
+    if (!/[A-Z]/.test(value)) {
+      return "Пароль должен содержать хотя бы одну заглавную букву";
+    }
+    if (!/[a-z]/.test(value)) {
+      return "Пароль должен содержать хотя бы одну строчную букву";
+    }
+    if (!/[0-9]/.test(value)) {
+      return "Пароль должен содержать хотя бы одну цифру";
+    }
+
+    return true;
+  },
+});

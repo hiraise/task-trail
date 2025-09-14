@@ -2,56 +2,50 @@ import { useForm } from "react-hook-form";
 
 import styles from "./CreateProjectForm.module.css";
 import { Spacer } from "../../primitives/Spacer";
-import { projectNameValidator } from "@/shared/utils/validate";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { Input, Textarea } from "@/presentation/ui/Input";
 import { AddParticipant } from "./AddParticipant";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
-import { useCreateProjectForm } from "../../../../application/projects/hooks/useCreateProjectForm";
-import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
 import { projectsTexts } from "@/shared/locales/projects";
 import { ProjectPayload } from "@/domain/project/project.payload";
+import { useCreateProjectForm } from "@/application/projects/hooks/useCreateProjectForm";
+import { projectNameValidator } from "@/shared/utils/validate";
+import { UserData } from "@/domain/user/user.entity";
 
 interface CreateProjectFormProps {
   onSubmit: () => void;
 }
 
 export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
-  const { members, removeParticipant, submitProject } = useCreateProjectForm();
-  const { showInviteUser } = useModalSheet();
+  const { state, setState, toggleParticipant, submitForm, handleInviteUser } =
+    useCreateProjectForm();
+  const emails = state.participants;
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting, isValid },
+    formState: { errors, isSubmitting },
   } = useForm<ProjectPayload>({
     mode: "onChange",
-    defaultValues: {
-      name: "",
-      description: "",
-      participants: [],
-    },
+    defaultValues: state,
   });
 
   const submitHandler = async (data: ProjectPayload) => {
-    await submitProject(data);
-    // Call the onSubmit prop to notify parent component
+    await submitForm(data);
     onSubmit();
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(submitHandler)}
-      className={styles.formContainer}
-    >
-      <p className={styles.title}>{projectsTexts.newProject}</p>
-      <Spacer size="16px" />
+    <form onSubmit={handleSubmit(submitHandler)} className={styles.formContainer}>
       <div className={styles.inputContainer}>
         <Input
           id="projectName"
           type="text"
-          {...register("name", projectNameValidator)}
+          {...register("name", {
+            ...projectNameValidator,
+            onChange: (e) => setState({ name: e.target.value }),
+          })}
           aria-invalid={!!errors.name}
           aria-describedby="projectName-error"
           placeholder={projectsTexts.projectNamePlaceholder}
@@ -62,7 +56,9 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
         <Textarea
           rows={3}
           id="projectDescription"
-          {...register("description")}
+          {...register("description", {
+            onChange: (e) => setState({ description: e.target.value }),
+          })}
           aria-invalid={!!errors.description}
           aria-describedby="projectDescription-error"
           placeholder={projectsTexts.projectDescriptionPlaceholder}
@@ -70,24 +66,20 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
           autoComplete="off"
           className={styles.textarea}
         />
-        {errors.description && (
-          <FormFieldError>{errors.description.message}</FormFieldError>
-        )}
-        <AddParticipant onClick={showInviteUser} />
+        {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
+        <AddParticipant onClick={handleInviteUser} />
 
         {/* Display selected participants */}
-        {members.length > 0 && (
+        {emails && emails.length > 0 && (
           <SelectedUsers
-            users={members}
-            onDeleteUser={(user) => removeParticipant(user.email)}
+            emails={emails}
+            onDeleteUser={(user: UserData) => toggleParticipant(user.email)}
           />
         )}
       </div>
       <Spacer size="24px" />
-      <SubmitButton type="submit" disabled={!isValid || isSubmitting}>
-        {isSubmitting
-          ? projectsTexts.creatingProject
-          : projectsTexts.createProject}
+      <SubmitButton type="submit" disabled={isSubmitting}>
+        {isSubmitting ? projectsTexts.creatingProject : projectsTexts.createProject}
       </SubmitButton>
     </form>
   );

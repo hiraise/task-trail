@@ -1,21 +1,13 @@
-import { AuthPayload, ChangePasswordPayload } from "./auth.payload";
-
-export type Login = (payload: AuthPayload) => Promise<void>;
-export type Logout = () => Promise<void>;
-export type SignUp = (payload: AuthPayload) => Promise<void>;
-export type ResendVerification = (email: string) => Promise<void>;
-export type ConfirmEmail = (token: string) => Promise<void>;
-export type CheckAuthStatus = () => Promise<void>;
-export type ChangePassword = (payload: ChangePasswordPayload) => Promise<void>;
-export type ForgotPassword = (email: string) => Promise<void>;
+import { AuthPayload, ChangePasswordPayload, PasswordResetPayload } from "./auth.payload";
 
 export type AuthService = {
-  login: Login;
-  logout: Logout;
-  signUp: SignUp;
-  resendVerification: ResendVerification;
-  confirmEmail: ConfirmEmail;
-  checkAuthStatus: CheckAuthStatus;
-  changePassword: ChangePassword;
-  forgotPassword: ForgotPassword;
+  login: (payload: AuthPayload) => Promise<void>;
+  logout: () => Promise<void>;
+  signUp: (payload: AuthPayload) => Promise<void>;
+  resendVerification: (email: string) => Promise<void>;
+  confirmEmail: (token: string) => Promise<void>;
+  checkAuthStatus: () => Promise<void>;
+  changePassword: (payload: ChangePasswordPayload) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  passwordReset: (payload: PasswordResetPayload) => Promise<void>;
 };

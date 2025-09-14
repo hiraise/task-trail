@@ -1,30 +1,57 @@
-import { useProjectCreation } from "../context/ProjectCreationContext";
-import { useProjects } from "./useProjects";
+import { useCallback } from "react";
+
+import { useCreateProjectFormStore, ProjectFormData } from "@/shared/store/createProjectFormStore";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { ProjectPayload } from "@/domain/project/project.payload";
-import { BaseUserData } from "@/presentation/widgets/projects/AddParticipantForm/AddParticipantForm";
+import { useCreateProject } from "./useProject";
 
-interface UseCreateProjectFormReturn {
-  members: BaseUserData[];
-  removeParticipant: (email: string) => void;
-  submitProject: (formData: ProjectPayload) => Promise<void>;
-}
+export function useCreateProjectForm() {
+  const state = useCreateProjectFormStore();
+  const { mutateAsync: create } = useCreateProject();
+  const { showInviteUser } = useGlobalModals();
 
-export function useCreateProjectForm(): UseCreateProjectFormReturn {
-  const { members, removeParticipant, reset } = useProjectCreation();
-  const { create } = useProjects();
+  const setState = useCallback(
+    (partialState: Partial<ProjectFormData>) => {
+      state.set(partialState);
+    },
+    [state]
+  );
 
-  const submitProject = async (formData: ProjectPayload) => {
-    const data = {
-      ...formData,
-      participants: members.map((p) => p.email),
-    };
-    await create(data);
-    reset();
+  const submitForm = useCallback(
+    async (data: ProjectPayload) => {
+      console.log("Final project data with participants:", data);
+      await create(data);
+      state.reset();
+    },
+    [create, state]
+  );
+
+  const toggleParticipant = useCallback(
+    (email: string) => {
+      state.toggleParticipant(email);
+    },
+    [state]
+  );
+
+  const addParticipant = useCallback(
+    (email: string) => {
+      state.addParticipant(email);
+    },
+    [state]
+  );
+
+  const handleInviteUser = async () => {
+    const emails = await showInviteUser();
+    if (!emails || emails.length === 0) return;
+    setState({ participants: emails });
   };
 
   return {
-    members,
-    removeParticipant,
-    submitProject,
+    state,
+    setState,
+    toggleParticipant,
+    addParticipant,
+    submitForm,
+    handleInviteUser,
   };
 }

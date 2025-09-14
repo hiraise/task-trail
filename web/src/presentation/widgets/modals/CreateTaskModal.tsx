@@ -1,21 +1,12 @@
 import { BaseModal } from "./BaseModal";
-import { BaseModalProps } from "./modal.types";
+import { BaseModalProps } from "./BaseModal.types";
 import { CreateTaskForm } from "../projects/CreateTaskForm";
 
 export default function CreateTaskModal(props: BaseModalProps) {
-  const { isOpen, onClose, onBack } = props;
-
-  const handleSubmit = async () => {
-    console.log("Task submitted");
-    // onClose();
-  };
-
-  const handleClose = () => {
-    onClose();
-  };
+  const handleSubmit = () => props.onClose();
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleClose} onBack={onBack}>
+    <BaseModal {...props} title="Новая задача">
       <CreateTaskForm onSubmit={handleSubmit} />
     </BaseModal>
   );

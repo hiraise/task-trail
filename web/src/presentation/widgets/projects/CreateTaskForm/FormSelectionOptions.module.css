@@ -1,0 +1,46 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-radius: 8px;
+  padding: 12px;
+  background-color: var(--grey);
+  transition: scale 0.2s ease;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.container:hover {
+  cursor: pointer;
+  background-color: rgba(240, 240, 240, 1);
+}
+.container:active {
+  scale: 0.98;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.contentWrapper > span {
+  font-size: 14px;
+  font-weight: 400;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  color: var(--foreground);
+}
+
+span.placeholder {
+  color: var(--foreground);
+  opacity: 0.23;
+}

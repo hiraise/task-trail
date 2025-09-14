@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
 
 import "./styles.css";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
@@ -11,7 +10,8 @@ import { Input, InputLabel, Textarea } from "@/presentation/ui/Input";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { useProjects } from "@/application/projects/hooks/useProjects";
+import { useEditProject } from "@/application/projects/hooks/useProject";
+import { useGetProjectData } from "@/application/projects/hooks/useGetProjectData";
 
 const texts = {
   title: "Редактировать проект",
@@ -29,9 +29,8 @@ type FormValues = {
 };
 
 export default function EditProjectPage() {
-  const project = useAppSelector((state) => state.project.project);
-
-  const { edit } = useProjects();
+  const { project } = useGetProjectData();
+  const { mutateAsync: edit } = useEditProject();
 
   const {
     register,
@@ -55,7 +54,7 @@ export default function EditProjectPage() {
 
   const submitHandler = async (data: FormValues) => {
     if (!project) return;
-    await edit(project.id, {
+    await edit({
       name: data.name,
       description: data.description,
     });

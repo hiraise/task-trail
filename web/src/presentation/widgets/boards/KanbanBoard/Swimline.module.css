@@ -1,0 +1,35 @@
+.taskGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 180px);
+}
+
+.swimlines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100px;
+  border-width: 0px 1px 0px 1px;
+  border-style: solid;
+  border-color: rgba(217, 217, 217, 1);
+  border-bottom: 1px solid rgba(205, 205, 205, 1);
+  padding: 0px 10px;
+}
+
+.assigneeButton {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  padding-left: 10px;
+  margin-bottom: 16px;
+}
+
+.assigneeButton > span {
+  font-size: 16px;
+  line-height: 18px;
+  font-weight: 400;
+}
+
+.assigneeButton:hover {
+  cursor: pointer;
+}

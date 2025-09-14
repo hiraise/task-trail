@@ -1,26 +1,19 @@
 import styles from "./SelectedUsers.module.css";
-import { UserData } from "../AddParticipantForm/AddParticipantForm";
+
 import { SelectedUserEmail } from "../SelectedUserEmail";
+import { UserData } from "@/domain/user/user.entity";
 
 interface SelectedUsersProps {
-  users: UserData[];
+  emails: string[];
   onDeleteUser: (user: UserData) => void;
   isExpanded?: boolean;
 }
 
-export function SelectedUsers({
-  users,
-  onDeleteUser,
-  isExpanded = false,
-}: SelectedUsersProps) {
+export function SelectedUsers({ emails, onDeleteUser, isExpanded = false }: SelectedUsersProps) {
   return (
     <div className={isExpanded ? styles.expanded : styles.container}>
-      {users.toReversed().map((user) => (
-        <SelectedUserEmail
-          key={user.email} // Use email as unique key
-          email={user.email}
-          onClick={onDeleteUser}
-        />
+      {emails.toReversed().map((email) => (
+        <SelectedUserEmail key={email} email={email} onClick={onDeleteUser} />
       ))}
     </div>
   );

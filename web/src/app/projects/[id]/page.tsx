@@ -1,8 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useMemo } from "react";
-
 import "./styles.css";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
@@ -16,10 +13,8 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
 import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
-import { useModalSheet } from "@/application/projects/hooks/useModalSheet";
-import { mockTasks } from "@/presentation/widgets/projects/TaskList";
-import { Spinner } from "@/presentation/ui/Spinner";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
+import { useGetProjectData } from "@/application/projects/hooks/useGetProjectData";
 
 const projectTexts = {
   membersTitle: "Участники проекта",
@@ -27,48 +22,19 @@ const projectTexts = {
 };
 
 export default function ProjectPage() {
-  const id = useParams().id as string;
-  const projectId = Number(id);
-
-  const { project, owner, isLoading } = useAppSelector((state) => ({
-    project: state.project.project,
-    owner: state.project.members.find((m) => m.isOwner)?.username || "Unknown",
-    isLoading: state.project.isLoading,
-  }));
-
+  const { project, owner, projectId, tasks } = useGetProjectData();
   const { menuItems } = useProjectMenuItems(projectId);
-  const { showCreateTask } = useModalSheet();
+  const { showCreateTask } = useGlobalModals();
 
-  // Mock tasks for display
-  const displayTasks = useMemo(() => mockTasks.slice(0, 4), []);
+  if (!project || !tasks) return null;
 
-  if (isLoading) {
-    return (
-      <MainContainer>
-        <DashboardHeader />
-        <div className="container">
-          <BackButton />
-        </div>
-        <div className="content">
-          <Spinner />
-        </div>
-      </MainContainer>
-    );
-  }
+  const displayTasks = tasks.slice(0, 4) ?? [];
 
-  if (!project) {
-    return (
-      <MainContainer>
-        <DashboardHeader />
-        <div className="container">
-          <BackButton />
-        </div>
-        <div className="content">
-          <h1>Такого проекта не существует</h1>
-        </div>
-      </MainContainer>
-    );
-  }
+  // TODO: Implement task creation logic
+  const handleCreateTask = async () => {
+    const data = await showCreateTask();
+    console.log("New task created:", data);
+  };
 
   return (
     <MainContainer>
@@ -91,7 +57,10 @@ export default function ProjectPage() {
           </p>
         </div>
         <div className="members">
-          <ProjectMenuButton href={ROUTES.projectMembers(id)} text={projectTexts.membersTitle} />
+          <ProjectMenuButton
+            href={ROUTES.projectMembers(projectId)}
+            text={projectTexts.membersTitle}
+          />
           <div className="members-list">
             <UserAvatar />
             <UserAvatar />
@@ -100,7 +69,7 @@ export default function ProjectPage() {
           </div>
         </div>
         <div className="tasks">
-          <ProjectMenuButton href={ROUTES.projectTasks(id)} text={projectTexts.tasksTitle} />
+          <ProjectMenuButton href={ROUTES.projectTasks(projectId)} text={projectTexts.tasksTitle} />
           <div className="task-list">
             {displayTasks.map((task) => (
               <ProjectTask key={task.id} title={task.title} />
@@ -108,7 +77,7 @@ export default function ProjectPage() {
           </div>
         </div>
       </div>
-      <FloatingButton onClick={showCreateTask} />
+      <FloatingButton onClick={handleCreateTask} />
     </MainContainer>
   );
 }

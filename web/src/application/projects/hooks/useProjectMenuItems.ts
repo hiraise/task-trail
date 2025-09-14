@@ -1,11 +1,11 @@
 import { useRouter } from "next/navigation";
 
+import { useMemo } from "react";
+
 import { ROUTES } from "@/infrastructure/config/routes";
-import { useProjects } from "./useProjects";
 import { PERMISSIONS } from "@/domain/project/project.entity";
 import { hasPermission } from "@/shared/utils/permissions";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
-import { useMemo } from "react";
+import { useDeleteProject, useGetById, useLeaveProject } from "./useProject";
 
 export interface MenuItem {
   label: string;
@@ -14,15 +14,18 @@ export interface MenuItem {
 }
 
 export const useProjectMenuItems = (projectId: number) => {
-  const { deleteById, leave } = useProjects();
-  const project = useAppSelector((state) => state.project.project);
-  const permissions = useMemo(() => project?.permissions || [], [project]);
   const router = useRouter();
+
+  const { data: project } = useGetById(projectId);
+  const { mutateAsync: deleteById } = useDeleteProject();
+  const { mutateAsync: leave } = useLeaveProject();
+
+  const permissions = useMemo(() => project?.permissions || [], [project]);
 
   const menuItems: MenuItem[] = [
     {
       label: "Редактировать проект",
-      onClick: () => router.push(ROUTES.editProject(String(projectId))),
+      onClick: () => router.push(ROUTES.editProject(projectId)),
       isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_EDIT),
     },
     {

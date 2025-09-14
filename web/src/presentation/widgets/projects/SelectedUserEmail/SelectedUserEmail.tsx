@@ -1,7 +1,7 @@
+import { UserData } from "@/domain/user/user.entity";
 import styles from "./SelectedUserEmail.module.css";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
-import { UserData } from "../AddParticipantForm/AddParticipantForm";
 
 interface SelectedUserEmailProps {
   email: string;

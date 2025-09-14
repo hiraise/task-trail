@@ -1,7 +1,8 @@
 import styles from "./UserItem.module.css";
-import { UserData } from "../AddParticipantForm/AddParticipantForm";
+
 import { UserItem } from "./UserItem";
 import { CheckBox } from "@/presentation/ui/CheckBox";
+import { UserData } from "@/domain/user/user.entity";
 
 interface UserItemCheckBoxProps {
   user: UserData;
@@ -9,11 +10,7 @@ interface UserItemCheckBoxProps {
   onSelect?: (user: UserData) => void;
 }
 
-export function UserItemCheckBox({
-  user,
-  isSelected = false,
-  onSelect,
-}: UserItemCheckBoxProps) {
+export function UserItemCheckBox({ user, isSelected = false, onSelect }: UserItemCheckBoxProps) {
   const handleCheckboxChange = () => {
     if (onSelect) onSelect(user);
   };

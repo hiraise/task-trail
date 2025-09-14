@@ -6,18 +6,10 @@ import { Input } from "@/presentation/ui/Input";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
-import { useParticipantForm } from "../../../../application/projects/hooks/useParticipantForm";
-import { useBottomSheet } from "@/app/_components/BottomSheetContext";
 import { projectsTexts } from "@/shared/locales/projects";
 import { useClickOutside } from "@/shared/hooks/useClickOutside";
-
-export interface BaseUserData {
-  email: string;
-}
-export interface UserData extends BaseUserData {
-  username?: string;
-  avatarUrl?: string;
-}
+import { useCreateProjectForm } from "@/application/projects/hooks/useCreateProjectForm";
+import { BaseUserData, UserData } from "@/domain/user/user.entity";
 
 interface FormValues {
   query: string;
@@ -28,19 +20,17 @@ interface AddParticipantFormProps {
 }
 
 export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
-  const {
-    selectedParticipants,
-    handleUserSelect,
-    handleDeleteUser,
-    inviteMembers,
-  } = useParticipantForm();
-
-  const { backSheet } = useBottomSheet();
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   // Use a ref for the dropdown to handle clicks outside of it
   const dropdownRef = useRef<HTMLDivElement>(null);
   useClickOutside([inputRef, dropdownRef], () => setShowDropdown(false));
+
+  // Use the custom hook to access the project form state and methods
+  const { state, toggleParticipant } = useCreateProjectForm();
+
+  // Convert string emails to UserData objects for UsersList component
+  const selectedUsers: BaseUserData[] = state.participants.map((email) => ({ email }));
 
   const {
     control,
@@ -54,16 +44,14 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
 
   const queryValue = watch("query");
 
-  const submitHandler = async () => {
-    if (!onSubmit) {
-      inviteMembers();
-      backSheet();
-      return;
-    }
-    const selectedEmails = selectedParticipants.map((user) => user.email);
-    if (selectedEmails.length > 0) await onSubmit(selectedEmails);
-    backSheet();
+  const submitHandler = () => {
+    if (!onSubmit || state.participants.length === 0) return;
+    onSubmit(state.participants);
   };
+
+  const handleUserSelect = (user: BaseUserData) => toggleParticipant(user.email);
+
+  const handleUserDelete = (user: UserData) => toggleParticipant(user.email);
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className={styles.container}>
@@ -87,40 +75,31 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
       </div>
       {/* Show info message when no dropdown is shown */}
       {!showDropdown && (
-        <span className={styles.infoMessage}>
-          {projectsTexts.inviteMemberInfo}
-        </span>
+        <span className={styles.infoMessage}>{projectsTexts.inviteMemberInfo}</span>
       )}
 
       {/* Middle section that contains both dropdown and selected users */}
-
       {showDropdown && (
         <div className={styles.dropDown} ref={dropdownRef}>
           <UsersList
             onUserSelect={handleUserSelect}
-            selectedUsers={selectedParticipants}
+            selectedUsers={selectedUsers}
             searchQuery={queryValue}
           />
         </div>
       )}
       {showDropdown && <div className={styles.middle} />}
-      {selectedParticipants.length > 0 && (
+      {state.participants.length > 0 && (
         <SelectedUsers
-          users={selectedParticipants}
-          onDeleteUser={handleDeleteUser}
+          emails={state.participants}
+          onDeleteUser={handleUserDelete}
           isExpanded={!showDropdown}
         />
       )}
 
       <div className={styles.btnContainer}>
-        <SubmitButton
-          type="submit"
-          className={styles.button}
-          disabled={isSubmitting}
-        >
-          {isSubmitting
-            ? projectsTexts.invitingToProject
-            : projectsTexts.inviteToProject}
+        <SubmitButton type="submit" className={styles.button} disabled={isSubmitting}>
+          {isSubmitting ? projectsTexts.invitingToProject : projectsTexts.inviteToProject}
         </SubmitButton>
       </div>
     </form>

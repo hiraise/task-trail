@@ -1,16 +1,14 @@
 import { clsx } from "clsx";
 
 import styles from "./UsersList.module.css";
+
 import { UserItemCheckBox } from "./UserItemCheckbox";
-import { BaseUserData } from "../AddParticipantForm/AddParticipantForm";
 import { VALIDATION_PATTERNS } from "@/shared/utils/validate";
 import { UserItem } from "./UserItem";
 import { projectsTexts } from "@/shared/locales/projects";
-import { useEffect, useState } from "react";
-import { useProjects } from "@/application/projects/hooks/useProjects";
-import { User } from "@/domain/user/user.entity";
 import { Spinner } from "@/presentation/ui/Spinner";
-import { useAppSelector } from "@/infrastructure/redux/hooks";
+import { useGetCandidates } from "@/application/projects/hooks/useProject";
+import { BaseUserData } from "@/domain/user/user.entity";
 
 interface UsersListProps {
   onUserSelect: (data: BaseUserData) => void;
@@ -18,23 +16,16 @@ interface UsersListProps {
   searchQuery?: string;
 }
 
-export function UsersList({
-  onUserSelect,
-  selectedUsers = [],
-  searchQuery = "",
-}: UsersListProps) {
-  const { isLoading, getCandidates } = useProjects();
-  const [usersToDisplay, setUsersToDisplay] = useState<User[]>([]);
-  const project = useAppSelector((state) => state.project.project);
+export function UsersList({ onUserSelect, selectedUsers = [], searchQuery = "" }: UsersListProps) {
+  const { data: usersToDisplay, isLoading } = useGetCandidates();
 
-  // Fetch candidates when component mounts or when getCandidates changes
-  useEffect(() => {
-    const fetch = async () => {
-      const candidates = await getCandidates(project?.id);
-      setUsersToDisplay(candidates ?? []);
-    };
-    fetch();
-  }, [getCandidates, project?.id]);
+  if (!usersToDisplay || (usersToDisplay.length === 0 && !searchQuery)) {
+    return (
+      <div className={clsx(styles.container, styles.emptyState)}>
+        Уппппссс... Похоже, что у вас нет кандидатов для добавления в проект.
+      </div>
+    );
+  }
 
   // Filter users based on search query
   const filteredUsers = searchQuery
@@ -49,14 +40,6 @@ export function UsersList({
     return (
       <div className={styles.container}>
         <Spinner size={30} />
-      </div>
-    );
-  }
-
-  if (filteredUsers.length === 0 && !searchQuery) {
-    return (
-      <div className={clsx(styles.container, styles.emptyState)}>
-        Уппппссс... Похоже, что у вас нет кандидатов для добавления в проект.
       </div>
     );
   }
@@ -79,9 +62,7 @@ export function UsersList({
   return (
     <div className={styles.container}>
       {filteredUsers.map((user) => {
-        const isSelected = selectedUsers.some(
-          (selected) => selected.email === user.email
-        );
+        const isSelected = selectedUsers.some((selected) => selected.email === user.email);
 
         return (
           <UserItemCheckBox

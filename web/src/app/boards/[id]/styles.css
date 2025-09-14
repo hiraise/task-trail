@@ -1,0 +1,18 @@
+/* Styles for BoardTopBar */
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 70px 20px 10px 20px;
+  position: relative;
+}
+
+.boardTitle {
+  font-size: 17px;
+  line-height: 16px;
+  font-weight: 500;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}

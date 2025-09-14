@@ -1,18 +1,18 @@
 import Image from "next/image";
+import clsx from "clsx";
 
 import styles from "./UserAvatar.module.css";
 import { ASSETS } from "@/infrastructure/config/assets";
 
-export function UserAvatar() {
+interface UserAvatarProps {
+  className?: string;
+  src?: string;
+}
+
+export function UserAvatar({ className, src = ASSETS.placeholder.image }: UserAvatarProps) {
   return (
-    <div className={styles.container}>
-      <Image
-        className={styles.avatar}
-        src={ASSETS.placeholder.image}
-        alt="User Avatar"
-        width={24}
-        height={17}
-      />
+    <div className={clsx(styles.container, className)}>
+      <Image className={styles.avatar} src={src} alt="User Avatar" fill />
     </div>
   );
 }
