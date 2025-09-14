@@ -5,8 +5,4 @@
   text-align: center;
   white-space: pre-line;
   gap: 12px;
-  position: absolute;
-  top: 40px;
-  left: 50%;
-  transform: translateX(-50%);
 }
