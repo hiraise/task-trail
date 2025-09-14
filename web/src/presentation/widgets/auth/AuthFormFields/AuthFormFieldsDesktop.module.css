@@ -3,3 +3,14 @@
   flex-direction: column;
   gap: 4px;
 }
+
+.passwordInputContainer {
+  position: relative;
+}
+
+.showPasswordButton {
+  position: absolute;
+  right: 16px;
+  top: 8px;
+  bottom: 8px;
+}

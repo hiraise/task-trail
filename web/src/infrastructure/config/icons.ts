@@ -22,6 +22,8 @@ import DownArrow from "../../../public/icons/ArrowDown.svg";
 import LogoDesktop from "../../../public/icons/LogoDesktop.svg";
 import MailIcon from "../../../public/icons/MailIcon.svg";
 import LockIcon from "../../../public/icons/LockIcon.svg";
+import ShowIcon from "../../../public/icons/ShowIcon.svg";
+import HideIcon from "../../../public/icons/HideIcon.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -47,6 +49,8 @@ export const ICONS = {
   logoDesktop: LogoDesktop,
   mail: MailIcon,
   lock: LockIcon,
+  show: ShowIcon,
+  hide: HideIcon,
 };
 
 // Design elements
