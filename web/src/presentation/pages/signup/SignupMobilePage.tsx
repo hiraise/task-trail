@@ -7,22 +7,21 @@ import { BottomLinks } from "@/presentation/widgets/common/BottomLinks";
 import { SectionTitle } from "@/presentation/widgets/common/SectionTitle";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { Spacer } from "@/presentation/widgets/primitives/Spacer";
-import { sharedTexts } from "@/shared/locales/sharedTexts";
-import { signupTexts } from "@/shared/locales/signup";
+import { authTexts } from "@/shared/locales/auth";
 
 export function SignupMobilePage() {
   return (
     <MainContainer>
       <MobileLogo />
       <Spacer size="56px" />
-      <SectionTitle title={signupTexts.title} subtitle={signupTexts.subtitle} />
+      <SectionTitle title={authTexts.signup.title} subtitle={authTexts.signup.description} />
       <Spacer size="56px" />
       <SignupFormMobile />
       <Spacer size="121px" />
       <BottomLinks
         href={ROUTES.login}
-        text={signupTexts.hasAccount}
-        buttonText={sharedTexts.login}
+        text={authTexts.hasAccount}
+        buttonText={authTexts.login.login}
       />
     </MainContainer>
   );

@@ -33,8 +33,8 @@ export function AuthFormFieldsDesktop() {
           id="email"
           type="email"
           {...register("email")}
-          placeholder="Email"
-          label="email"
+          placeholder={authTexts.emailPlaceholder}
+          label={authTexts.emailPlaceholder}
           autoComplete="email"
           hasError={!!errors.email}
         />
@@ -47,8 +47,8 @@ export function AuthFormFieldsDesktop() {
             id="password"
             type={showPassword ? "text" : "password"}
             {...register("password")}
-            placeholder={authTexts.login.passwordPlaceholder}
-            label={authTexts.login.passwordPlaceholder}
+            placeholder={authTexts.passwordPlaceholder}
+            label={authTexts.passwordPlaceholder}
             autoComplete="none"
             hasError={!!errors.password}
           />

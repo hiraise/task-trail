@@ -6,11 +6,10 @@ import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
 import { Form } from "../LoginForm/LoginFormMobile.styled";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { sharedTexts } from "@/shared/locales/sharedTexts";
-import { signupTexts } from "@/shared/locales/signup";
 import { useSignUp } from "@/application/auth/hooks/useSignUp";
 import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
 import { AuthFormFieldsMobile } from "../AuthFormFields";
+import { authTexts } from "@/shared/locales/auth";
 
 export const SignupFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -34,11 +33,11 @@ export const SignupFormMobile = () => {
         />
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading}>
-          {loading ? signupTexts.signingUp : sharedTexts.signUp}
+          {loading ? authTexts.signup.signingUp : authTexts.signup.signup}
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
-      <PrivacyPolicyMobile btnName={sharedTexts.login} />
+      <PrivacyPolicyMobile btnName={authTexts.login.login} />
     </MobileContainer>
   );
 };

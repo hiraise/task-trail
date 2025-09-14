@@ -1,15 +1,19 @@
-import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { interpolate } from "@/shared/utils/interpolate";
 import { StyledLink, StyledText } from "./PrivacyPolicyMobile.styled";
+import { authTexts } from "@/shared/locales/auth";
 
-export function PrivacyPolicyMobile({ btnName = sharedTexts.login }: { btnName: string }) {
+export function PrivacyPolicyMobile({ btnName }: { btnName: string }) {
   return (
     <StyledText>
-      {interpolate(sharedTexts.privacyPolicyAgreement, {
+      {interpolate(authTexts.privacyPolicy.text, {
         btnName: btnName,
       })}
-      <StyledLink href={sharedTexts.privacyPolicyLink} target="_blank" rel="noopener noreferrer">
-        {sharedTexts.privacyPolicyText}
+      <StyledLink
+        href={authTexts.privacyPolicy.buttonLink}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {authTexts.privacyPolicy.buttonText}
       </StyledLink>
     </StyledText>
   );

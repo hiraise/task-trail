@@ -3,7 +3,8 @@ export const authTexts = {
   confirmNewPassword: "Повторите новый пароль",
   changePassword: "Изменить пароль",
   changingPassword: "Изменение пароля",
-  passwordPlaceholder: "********",
+  emailPlaceholder: "E-mail",
+  passwordPlaceholder: "Пароль",
   noAccount: "Нет аккаунта?",
   hasAccount: "Уже есть аккаунт?",
   send: "Отправить",
@@ -14,7 +15,6 @@ export const authTexts = {
     forgotPassword: "Забыли пароль?",
     login: "Войти",
     loggingIn: "Вход в систему...",
-    passwordPlaceholder: "Пароль",
   },
   privacyPolicy: {
     text: "Нажимая кнопку {btnName} вы соглашаетесь с ",

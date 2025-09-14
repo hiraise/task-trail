@@ -4,8 +4,6 @@ import { useRouter } from "next/navigation";
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
 import { Form } from "./LoginFormMobile.styled";
-import { loginTexts } from "@/shared/locales/login";
-import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { TextButton } from "@/presentation/ui/TextButton";
 import { useLogin } from "@/application/auth/hooks/useLogin";
@@ -13,6 +11,7 @@ import { Spinner } from "@/presentation/ui/Spinner";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
 import { AuthFormFieldsMobile } from "../AuthFormFields";
+import { authTexts } from "@/shared/locales/auth";
 
 export const LoginFormMobile = () => {
   const [email, setEmail] = useState("");
@@ -37,15 +36,15 @@ export const LoginFormMobile = () => {
         />
         <Spacer size="12px" />
         <TextButton onClick={() => router.push(ROUTES.passwordRecovery)}>
-          {loginTexts.forgotPassword}
+          {authTexts.login.forgotPassword}
         </TextButton>
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading}>
-          {loading ? <Spinner size={16} /> : sharedTexts.login}
+          {loading ? <Spinner size={16} /> : authTexts.login.login}
         </SubmitButton>
       </Form>
       <Spacer size="8px" />
-      <PrivacyPolicyMobile btnName={sharedTexts.login} />
+      <PrivacyPolicyMobile btnName={authTexts.login.login} />
     </MobileContainer>
   );
 };

@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
-import { loginTexts } from "@/shared/locales/login";
 import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { Stack } from "../../primitives/Stack";
@@ -12,6 +11,7 @@ import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { getEmailValidator } from "@/shared/utils/validate";
 import { Input, InputLabel } from "@/presentation/ui/Input";
 import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
+import { authTexts } from "@/shared/locales/auth";
 
 const FormContainer = styled.form`
   display: flex;
@@ -54,14 +54,14 @@ export function PasswordRecoveryFormMobile() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder={loginTexts.emailPlaceholder}
+            placeholder={authTexts.emailPlaceholder}
             {...register("email", getEmailValidator())}
           />
           {errors.email && <FormFieldError>{errors.email.message}</FormFieldError>}
         </Stack>
         <Spacer size="20px" />
         <SubmitButton type="submit" disabled={loading || isSubmitting}>
-          {loading ? sharedTexts.sending : sharedTexts.send}
+          {loading ? authTexts.sending : authTexts.send}
         </SubmitButton>
       </FormContainer>
       <Spacer size="8px" />

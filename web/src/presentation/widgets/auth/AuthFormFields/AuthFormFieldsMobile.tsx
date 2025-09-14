@@ -1,9 +1,8 @@
 import styled from "styled-components";
 
 import { Stack } from "../../primitives/Stack";
-import { loginTexts } from "@/shared/locales/login";
-import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { Input, InputLabel } from "@/presentation/ui/Input";
+import { authTexts } from "@/shared/locales/auth";
 
 const InputContainer = styled.div`
   display: flex;
@@ -27,24 +26,24 @@ export const AuthFormFieldsMobile = ({
   return (
     <InputContainer>
       <Stack gap="4px">
-        <InputLabel htmlFor="email">{sharedTexts.emailLabel}</InputLabel>
+        <InputLabel htmlFor="email">{authTexts.emailPlaceholder}</InputLabel>
         <Input
           id="email"
           type="email"
           autoComplete="email"
-          placeholder={loginTexts.emailPlaceholder}
+          placeholder={authTexts.emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
       </Stack>
       <Stack gap="4px">
-        <InputLabel htmlFor="password">{loginTexts.passwordLabel}</InputLabel>
+        <InputLabel htmlFor="password">{authTexts.passwordPlaceholder}</InputLabel>
         <Input
           id="password"
           type="password"
           autoComplete="current-password"
-          placeholder={loginTexts.passwordPlaceholder}
+          placeholder={authTexts.passwordPlaceholder}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
