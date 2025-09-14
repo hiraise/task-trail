@@ -22,7 +22,7 @@ type FormValues = {
   email: string;
 };
 
-export default function PasswordRecoveryForm() {
+export function PasswordRecoveryFormMobile() {
   const { mutateAsync: recover, isPending: loading } = usePasswordRecovery();
 
   const {
