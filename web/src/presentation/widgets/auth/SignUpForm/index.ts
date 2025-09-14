@@ -1,2 +1,2 @@
 export { SignupFormDesktop } from "./SignupFormDesktop";
-export { SignupFormMobile } from "./SignUpFormMobile";
+export { SignupFormMobile } from "./SignupFormMobile";
