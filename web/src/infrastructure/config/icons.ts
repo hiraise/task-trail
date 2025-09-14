@@ -23,10 +23,6 @@ import LogoDesktop from "../../../public/icons/LogoDesktop.svg";
 import MailIcon from "../../../public/icons/MailIcon.svg";
 import LockIcon from "../../../public/icons/LockIcon.svg";
 
-// Design elements
-import SearchDesignElement from "../../../public/elements/search.svg";
-import TaskDesignElement from "../../../public/elements/task.svg";
-
 export const ICONS = {
   search: SearchIcon,
   profile: ProfileIcon,
@@ -53,7 +49,15 @@ export const ICONS = {
   lock: LockIcon,
 };
 
+// Design elements
+import SearchDesignElement from "../../../public/elements/search.svg";
+import TaskDesignElement from "../../../public/elements/task.svg";
+import PictureDesignElement from "../../../public/elements/picture.svg";
+import LockDesignElement from "../../../public/elements/lock.svg";
+
 export const DESIGN_ELEMENTS = {
   search: SearchDesignElement,
   task: TaskDesignElement,
+  picture: PictureDesignElement,
+  lock: LockDesignElement,
 };
