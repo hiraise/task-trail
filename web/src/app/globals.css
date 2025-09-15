@@ -27,6 +27,7 @@
   --bg-primary-contrast: rgba(32, 32, 32, 1);
   --bg-primary: rgba(251, 251, 251, 1);
   --bg-secondary: rgba(239, 239, 239, 1);
+  --bg-secondary-2: rgba(245, 245, 245, 1);
   --bg-card: rgba(255, 255, 255, 1);
 
   /* Icons */
@@ -35,6 +36,7 @@
 
   /* Borders */
   --border-critical: rgba(255, 50, 50, 1);
+  --border-secondary-2: rgba(245, 245, 245, 1);
 }
 
 :root:has(.no-doc-scroll) {
