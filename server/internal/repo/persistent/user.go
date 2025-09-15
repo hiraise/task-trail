@@ -133,6 +133,7 @@ func (r *PgUserRepository) Update(ctx context.Context, dto *dto.UserUpdate) erro
 	if len(kwargs) == 0 {
 		return nil
 	}
+	kwargs["updated_at"] = time.Now()
 	return r.updateByID(ctx, "users", dto.ID, kwargs)
 }
 
@@ -165,7 +166,8 @@ func (r *PgUserRepository) GetIdsByEmails(ctx context.Context, emails []string) 
 }
 
 func (r *PgUserRepository) Delete(ctx context.Context, userID int) error {
-	if err := r.updateByID(ctx, "users", userID, map[string]any{"deleted_at": time.Now()}); err != nil {
+	data := map[string]any{"deleted_at": time.Now(), "updated_at": time.Now()}
+	if err := r.updateByID(ctx, "users", userID, data); err != nil {
 		return r.handleError(err)
 	}
 	return nil

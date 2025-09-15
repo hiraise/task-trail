@@ -23,15 +23,15 @@ func mockDependencies(ctrl *gomock.Controller) (*project.UseCase, *testDeps) {
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	txManager := mocks.NewMockTxManager(ctrl)
 	errHandler := customerrors.NewErrHander()
-	mockAuhtUC := mocks.NewMockAuthentication(ctrl)
-	mockNotificationRepo := mocks.NewMockNotificationRepository(ctrl)
-	uc := project.New(txManager, mockAuhtUC, projectRepo, userRepo, mockNotificationRepo, errHandler)
+	authUC := mocks.NewMockAuthentication(ctrl)
+	notificationRepo := mocks.NewMockNotificationRepository(ctrl)
+	uc := project.New(txManager, authUC, projectRepo, userRepo, notificationRepo, errHandler)
 	deps := &testDeps{
-		authUC:           *mockAuhtUC,
+		authUC:           *authUC,
 		txManager:        *txManager,
 		projectRepo:      *projectRepo,
 		userRepo:         *userRepo,
-		notificationRepo: *mockNotificationRepo,
+		notificationRepo: *notificationRepo,
 		errHandler:       errHandler,
 	}
 	return uc, deps

@@ -438,6 +438,7 @@ func (r *PgProjectRepository) Update(ctx context.Context, projectID int, data *d
 	if len(kwargs) == 0 {
 		return nil
 	}
+	kwargs["updated_at"] = time.Now()
 	return r.updateByID(ctx, "projects", projectID, kwargs)
 }
 
@@ -445,7 +446,8 @@ func (r *PgProjectRepository) Delete(ctx context.Context, projectID int) error {
 	if err := ValidateID(projectID, "projectID"); err != nil {
 		return err
 	}
-	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"deleted_at": time.Now()}); err != nil {
+	data := map[string]any{"deleted_at": time.Now(), "updated_at": time.Now()}
+	if err := r.updateByID(ctx, "projects", projectID, data); err != nil {
 		return r.handleError(err)
 	}
 	return nil
@@ -475,14 +477,16 @@ func (r *PgProjectRepository) DeleteRoles(ctx context.Context, roleIDs []int) er
 }
 
 func (r *PgProjectRepository) Archive(ctx context.Context, projectID int) error {
-	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"archived_at": time.Now()}); err != nil {
+	data := map[string]any{"archived_at": time.Now(), "updated_at": time.Now()}
+	if err := r.updateByID(ctx, "projects", projectID, data); err != nil {
 		return r.handleError(err)
 	}
 	return nil
 }
 
 func (r *PgProjectRepository) Unarchive(ctx context.Context, projectID int) error {
-	if err := r.updateByID(ctx, "projects", projectID, map[string]any{"archived_at": nil}); err != nil {
+	data := map[string]any{"archived_at": nil, "updated_at": time.Now()}
+	if err := r.updateByID(ctx, "projects", projectID, data); err != nil {
 		return r.handleError(err)
 	}
 	return nil
