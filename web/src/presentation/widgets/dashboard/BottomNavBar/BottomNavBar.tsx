@@ -3,11 +3,10 @@ import { usePathname } from "next/navigation";
 import { Label, NavBar, NavItem } from "./BottomNavBar.styled";
 import { Icon } from "@/presentation/ui/Icon";
 import { navItems } from "./BottomNavBar.config";
+import { normalize } from "@/shared/utils/formatters";
 
 export function BottomNavBar() {
   const pathName = usePathname();
-
-  const normalize = (str: string) => str.replace(/\/+$/, "");
 
   return (
     <NavBar>
