@@ -914,3 +914,32 @@ func (mr *MockTaskRepositoryMockRecorder) Create(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTaskRepository)(nil).Create), ctx, data)
 }
+
+// GetByID mocks base method.
+func (m *MockTaskRepository) GetByID(ctx context.Context, taskID int) (*dto.TaskListRes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, taskID)
+	ret0, _ := ret[0].(*dto.TaskListRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockTaskRepositoryMockRecorder) GetByID(ctx, taskID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockTaskRepository)(nil).GetByID), ctx, taskID)
+}
+
+// UpdateByID mocks base method.
+func (m *MockTaskRepository) UpdateByID(ctx context.Context, taskID int, data *dto.TaskUpdate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateByID", ctx, taskID, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateByID indicates an expected call of UpdateByID.
+func (mr *MockTaskRepositoryMockRecorder) UpdateByID(ctx, taskID, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateByID", reflect.TypeOf((*MockTaskRepository)(nil).UpdateByID), ctx, taskID, data)
+}

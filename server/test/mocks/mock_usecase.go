@@ -223,6 +223,21 @@ func (mr *MockUserMockRecorder) GetCurrentByID(ctx, ID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentByID", reflect.TypeOf((*MockUser)(nil).GetCurrentByID), ctx, ID)
 }
 
+// GetTasks mocks base method.
+func (m *MockUser) GetTasks(ctx context.Context, userID int) ([]*dto.TaskListRes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTasks", ctx, userID)
+	ret0, _ := ret[0].([]*dto.TaskListRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTasks indicates an expected call of GetTasks.
+func (mr *MockUserMockRecorder) GetTasks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTasks", reflect.TypeOf((*MockUser)(nil).GetTasks), ctx, userID)
+}
+
 // UpdateAvatar mocks base method.
 func (m *MockUser) UpdateAvatar(ctx context.Context, data *dto.FileUpload) (*dto.UserAvatar, error) {
 	m.ctrl.T.Helper()
@@ -556,4 +571,19 @@ func (m *MockTask) Create(ctx context.Context, data *dto.TaskCreate) (int, error
 func (mr *MockTaskMockRecorder) Create(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTask)(nil).Create), ctx, data)
+}
+
+// GetByID mocks base method.
+func (m *MockTask) GetByID(ctx context.Context, userID, taskID int) (*dto.TaskListRes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, userID, taskID)
+	ret0, _ := ret[0].(*dto.TaskListRes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockTaskMockRecorder) GetByID(ctx, userID, taskID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockTask)(nil).GetByID), ctx, userID, taskID)
 }

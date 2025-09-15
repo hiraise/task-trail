@@ -3,6 +3,7 @@ package persistent
 import (
 	"context"
 	"task-trail/internal/usecase/dto"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -74,4 +75,48 @@ func (r *PgTaskRepository) GetByID(ctx context.Context, taskID int) (*dto.TaskLi
 		return nil, r.handleError(err)
 	}
 	return &item, nil
+}
+
+func (r *PgTaskRepository) UpdateByID(ctx context.Context, taskID int, data *dto.TaskUpdate) error {
+	if err := ValidateID(taskID, "taskID"); err != nil {
+		return err
+	}
+	if err := ValidateIsNotNil(data); err != nil {
+		return err
+	}
+
+	kwargs := make(map[string]any)
+	if data.Name != nil {
+		kwargs["name"] = data.Name
+	}
+
+	if data.Description != nil {
+		kwargs["description"] = data.Description
+	}
+
+	if data.AssigneeID != nil {
+		if err := ValidateID(*data.AssigneeID, "assigneeID"); err != nil {
+			return err
+		}
+		kwargs["assignee_id"] = data.AssigneeID
+	}
+
+	if data.ProjectID != nil {
+		if err := ValidateID(*data.ProjectID, "projectID"); err != nil {
+			return err
+		}
+		kwargs["project_id"] = data.ProjectID
+	}
+	if data.StatusID != nil {
+		if err := ValidateID(*data.StatusID, "statusID"); err != nil {
+			return err
+		}
+		kwargs["status_id"] = data.StatusID
+	}
+	if len(kwargs) == 0 {
+		return nil
+	}
+
+	kwargs["updated_at"] = time.Now()
+	return r.updateByID(ctx, "tasks", taskID, kwargs)
 }

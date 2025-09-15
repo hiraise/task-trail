@@ -20,6 +20,19 @@ type TaskCreate struct {
 	StatusID    *int
 }
 
+type TaskEdit struct {
+	Name        *string
+	Description *string
+}
+
+type TaskUpdate struct {
+	Name        *string
+	Description *string
+	ProjectID   *int
+	AssigneeID  *int
+	StatusID    *int
+}
+
 type TaskListRes struct {
 	ID          int
 	Name        string

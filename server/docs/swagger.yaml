@@ -92,6 +92,15 @@ definitions:
     - name
     - projectId
     type: object
+  request.taskEditReq:
+    properties:
+      description:
+        type: string
+      name:
+        maxLength: 254
+        minLength: 6
+        type: string
+    type: object
   request.updateReq:
     properties:
       username:
@@ -940,6 +949,45 @@ paths:
       security:
       - BearerAuth: []
       summary: get task by id
+      tags:
+      - /v1/tasks
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: task data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.taskEditReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.taskCreateRes'
+        "400":
+          description: invalid request body
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "404":
+          description: user or task not found
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+      security:
+      - BearerAuth: []
+      summary: edit task by id
       tags:
       - /v1/tasks
   /v1/users/{id}:
