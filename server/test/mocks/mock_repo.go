@@ -685,18 +685,46 @@ func (mr *MockProjectRepositoryMockRecorder) DeleteRoles(ctx, roleIDs any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoles", reflect.TypeOf((*MockProjectRepository)(nil).DeleteRoles), ctx, roleIDs)
 }
 
-// DeleteTasks mocks base method.
-func (m *MockProjectRepository) DeleteTasks(ctx context.Context, projectID int) error {
+// DeleteRolesByProjectID mocks base method.
+func (m *MockProjectRepository) DeleteRolesByProjectID(ctx context.Context, projectID int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteTasks", ctx, projectID)
+	ret := m.ctrl.Call(m, "DeleteRolesByProjectID", ctx, projectID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteTasks indicates an expected call of DeleteTasks.
-func (mr *MockProjectRepositoryMockRecorder) DeleteTasks(ctx, projectID any) *gomock.Call {
+// DeleteRolesByProjectID indicates an expected call of DeleteRolesByProjectID.
+func (mr *MockProjectRepositoryMockRecorder) DeleteRolesByProjectID(ctx, projectID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTasks", reflect.TypeOf((*MockProjectRepository)(nil).DeleteTasks), ctx, projectID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRolesByProjectID", reflect.TypeOf((*MockProjectRepository)(nil).DeleteRolesByProjectID), ctx, projectID)
+}
+
+// DeleteStatusesByProjectID mocks base method.
+func (m *MockProjectRepository) DeleteStatusesByProjectID(ctx context.Context, projectID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteStatusesByProjectID", ctx, projectID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteStatusesByProjectID indicates an expected call of DeleteStatusesByProjectID.
+func (mr *MockProjectRepositoryMockRecorder) DeleteStatusesByProjectID(ctx, projectID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteStatusesByProjectID", reflect.TypeOf((*MockProjectRepository)(nil).DeleteStatusesByProjectID), ctx, projectID)
+}
+
+// DeleteTasksByProjectID mocks base method.
+func (m *MockProjectRepository) DeleteTasksByProjectID(ctx context.Context, projectID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTasksByProjectID", ctx, projectID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTasksByProjectID indicates an expected call of DeleteTasksByProjectID.
+func (mr *MockProjectRepositoryMockRecorder) DeleteTasksByProjectID(ctx, projectID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTasksByProjectID", reflect.TypeOf((*MockProjectRepository)(nil).DeleteTasksByProjectID), ctx, projectID)
 }
 
 // GetByID mocks base method.
@@ -832,6 +860,21 @@ func (m *MockProjectRepository) HasPermission(ctx context.Context, projectID, me
 func (mr *MockProjectRepositoryMockRecorder) HasPermission(ctx, projectID, memberID, permission any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasPermission", reflect.TypeOf((*MockProjectRepository)(nil).HasPermission), ctx, projectID, memberID, permission)
+}
+
+// IsStatusBelongProject mocks base method.
+func (m *MockProjectRepository) IsStatusBelongProject(ctx context.Context, projectID, statusID int) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsStatusBelongProject", ctx, projectID, statusID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsStatusBelongProject indicates an expected call of IsStatusBelongProject.
+func (mr *MockProjectRepositoryMockRecorder) IsStatusBelongProject(ctx, projectID, statusID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsStatusBelongProject", reflect.TypeOf((*MockProjectRepository)(nil).IsStatusBelongProject), ctx, projectID, statusID)
 }
 
 // RemoveMembership mocks base method.

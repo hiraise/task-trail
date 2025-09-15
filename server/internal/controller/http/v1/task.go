@@ -67,7 +67,29 @@ func (r *taskRoutes) getByID(c *gin.Context) {
 	c.JSON(http.StatusOK, response.TaskListResFromDTO(res))
 }
 
-// @Summary 	edit task by id
+// @Summary 	change task status
+// @Security BearerAuth
+// @Tags 		/v1/tasks
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "task id"
+// @Param 		statusId path int true "status id"
+// @Success 	200 {object} response.taskCreateRes
+// @Failure		401 {object} response.ErrAPI "authentication required"
+// @Failure		404 {object} response.ErrAPI "user or task not found"
+// @Router 		/v1/tasks/{id}/status/{statusId} [patch]
+func (r *taskRoutes) changeStatus(c *gin.Context) {
+	userID := utils.Must(r.contextmanager.GetUserID(c))
+	taskID := utils.Must(strconv.Atoi(c.Param("id")))
+	statusID := utils.Must(strconv.Atoi(c.Param("statusId")))
+	if err := r.u.ChangeStatus(c, userID, taskID, statusID); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
+
+// @Summary 	edit task
 // @Security BearerAuth
 // @Tags 		/v1/tasks
 // @Accept 		json
@@ -79,7 +101,7 @@ func (r *taskRoutes) getByID(c *gin.Context) {
 // @Failure		401 {object} response.ErrAPI "authentication required"
 // @Failure		404 {object} response.ErrAPI "user or task not found"
 // @Router 		/v1/tasks/{id} [patch]
-func (r *taskRoutes) editById(c *gin.Context) {
+func (r *taskRoutes) edit(c *gin.Context) {
 	userID := utils.Must(r.contextmanager.GetUserID(c))
 	taskID := utils.Must(strconv.Atoi(c.Param("id")))
 	data, err := request.BindTaskEditDTO(c)
@@ -103,7 +125,8 @@ func NewTaskRouter(
 ) {
 	r := &taskRoutes{u: u, contextmanager: contextmanager, errHandler: errHandler}
 	g := router.Group("/tasks")
-	g.PATCH(":id", authMW, r.editById)
+	g.PATCH(":id/status/:statusId", authMW, r.changeStatus)
+	g.PATCH(":id", authMW, r.edit)
 	g.GET(":id", authMW, r.getByID)
 	g.POST("", authMW, r.create)
 }

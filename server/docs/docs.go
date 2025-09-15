@@ -1152,7 +1152,7 @@ const docTemplate = `{
                 "tags": [
                     "/v1/tasks"
                 ],
-                "summary": "edit task by id",
+                "summary": "edit task",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1182,6 +1182,61 @@ const docTemplate = `{
                         "description": "invalid request body",
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "user or task not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tasks/{id}/status/{statusId}": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/tasks"
+                ],
+                "summary": "change task status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "task id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "status id",
+                        "name": "statusId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.taskCreateRes"
                         }
                     },
                     "401": {

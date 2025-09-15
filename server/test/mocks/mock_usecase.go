@@ -558,6 +558,20 @@ func (m *MockTask) EXPECT() *MockTaskMockRecorder {
 	return m.recorder
 }
 
+// ChangeStatus mocks base method.
+func (m *MockTask) ChangeStatus(ctx context.Context, userID, taskID, statusID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeStatus", ctx, userID, taskID, statusID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeStatus indicates an expected call of ChangeStatus.
+func (mr *MockTaskMockRecorder) ChangeStatus(ctx, userID, taskID, statusID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeStatus", reflect.TypeOf((*MockTask)(nil).ChangeStatus), ctx, userID, taskID, statusID)
+}
+
 // Create mocks base method.
 func (m *MockTask) Create(ctx context.Context, data *dto.TaskCreate) (int, error) {
 	m.ctrl.T.Helper()
@@ -571,6 +585,20 @@ func (m *MockTask) Create(ctx context.Context, data *dto.TaskCreate) (int, error
 func (mr *MockTaskMockRecorder) Create(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTask)(nil).Create), ctx, data)
+}
+
+// Edit mocks base method.
+func (m *MockTask) Edit(ctx context.Context, userID, taskID int, data *dto.TaskEdit) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Edit", ctx, userID, taskID, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Edit indicates an expected call of Edit.
+func (mr *MockTaskMockRecorder) Edit(ctx, userID, taskID, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Edit", reflect.TypeOf((*MockTask)(nil).Edit), ctx, userID, taskID, data)
 }
 
 // GetByID mocks base method.
