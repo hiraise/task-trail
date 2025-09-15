@@ -1,5 +1,4 @@
 // App icons
-import SearchIcon from "../../../public/icons/iconamoon_search-bold.svg";
 import ProfileIcon from "../../../public/icons/iconamoon_profile.svg";
 import ProjectIcon from "../../../public/icons/codicon_github-project.svg";
 import BoardIcon from "../../../public/icons/circum_view-board.svg";
@@ -7,7 +6,6 @@ import TaskIcon from "../../../public/icons/hugeicons_task-01.svg";
 import ArchiveIcon from "../../../public/icons/material-symbols-light_archive-outline.svg";
 import ProfileLargeIcon from "../../../public/icons/profile-large.svg";
 import CameraIcon from "../../../public/icons/camera.svg";
-import RightArrowIcon from "../../../public/icons/Right_arrow.svg";
 import LeftArrowIcon from "../../../public/icons/Left_arrow.svg";
 import CheckIcon from "../../../public/icons/check.svg";
 import CloseIcon from "../../../public/icons/close.svg";
@@ -20,10 +18,14 @@ import AddUserIcon from "../../../public/icons/user-add.svg";
 import DeleteIcon from "../../../public/icons/trash.svg";
 import DownArrow from "../../../public/icons/ArrowDown.svg";
 import LogoDesktop from "../../../public/icons/LogoDesktop.svg";
+import LogoMedium from "../../../public/icons/LogoMedium.svg";
 import MailIcon from "../../../public/icons/MailIcon.svg";
 import LockIcon from "../../../public/icons/LockIcon.svg";
 import ShowIcon from "../../../public/icons/ShowIcon.svg";
 import HideIcon from "../../../public/icons/HideIcon.svg";
+import SearchIcon from "../../../public/icons/SearchIcon.svg";
+import ArrowLeftWithPadding from "../../../public/icons/ArrowLeftWithPadding.svg";
+import ArrowRight from "../../../public/icons/ArrowRight.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -34,8 +36,9 @@ export const ICONS = {
   archive: ArchiveIcon,
   profileLarge: ProfileLargeIcon,
   camera: CameraIcon,
-  rightArrow: RightArrowIcon,
+  rightArrow: ArrowRight,
   leftArrow: LeftArrowIcon,
+  leftArrowWithPadding: ArrowLeftWithPadding,
   downArrow: DownArrow,
   check: CheckIcon,
   close: CloseIcon,
@@ -47,6 +50,7 @@ export const ICONS = {
   addUser: AddUserIcon,
   delete: DeleteIcon,
   logoDesktop: LogoDesktop,
+  logoMedium: LogoMedium,
   mail: MailIcon,
   lock: LockIcon,
   show: ShowIcon,
