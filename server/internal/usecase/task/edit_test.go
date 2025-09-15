@@ -47,7 +47,6 @@ func TestUseCase_Edit(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *task.UseCase {
 
 				uc, deps := mockDependencies(ctrl)
-				mockTx(args.ctx, deps.txManager)
 				// get task uc
 				deps.taskRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(retVal, nil)
 				deps.projectUC.EXPECT().CheckMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -66,7 +65,6 @@ func TestUseCase_Edit(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *task.UseCase {
 
 				uc, deps := mockDependencies(ctrl)
-				mockTx(args.ctx, deps.txManager)
 				// get task uc
 				deps.taskRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(retVal, nil)
 				deps.projectUC.EXPECT().CheckMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -85,7 +83,6 @@ func TestUseCase_Edit(t *testing.T) {
 			uc: func(ctrl *gomock.Controller, args args) *task.UseCase {
 
 				uc, deps := mockDependencies(ctrl)
-				mockTx(args.ctx, deps.txManager)
 				// get task uc
 				deps.taskRepo.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(retVal, nil)
 				deps.projectUC.EXPECT().CheckMembership(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -104,7 +101,7 @@ func TestUseCase_Edit(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			u := tt.uc(ctrl, tt.args)
-			err := u.Edit(tt.args.ctx, tt.args.userID, testArgs.taskID, tt.args.data)
+			err := u.Edit(tt.args.ctx, tt.args.userID, tt.args.taskID, tt.args.data)
 			if tt.wantErr {
 				var e *customerrors.Err
 				if err == nil {
