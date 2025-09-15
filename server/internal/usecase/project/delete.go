@@ -10,14 +10,6 @@ func (u *UseCase) Delete(ctx context.Context, projectID int, memberID int) error
 		if err := u.VerifyAccess(ctx, projectID, memberID, usecase.PROJECT_DELETE); err != nil {
 			return err
 		}
-		roles, err := u.projectRepo.GetProjectRoles(ctx, projectID)
-		if err != nil {
-			return u.errHandler.InternalTrouble(
-				err, "failed to get project roles",
-				"projectID", projectID,
-				"initiatorID", memberID,
-			)
-		}
 		if err := u.projectRepo.Delete(ctx, projectID); err != nil {
 			return u.errHandler.InternalTrouble(
 				err, "failed to delete project",
@@ -25,22 +17,26 @@ func (u *UseCase) Delete(ctx context.Context, projectID int, memberID int) error
 				"initiatorID", memberID,
 			)
 		}
-		ids := make([]int, 0, len(roles))
-		for _, u := range roles {
-			ids = append(ids, u.ID)
-		}
-		if err := u.projectRepo.DeleteRoles(ctx, ids); err != nil {
+
+		if err := u.projectRepo.DeleteRolesByProjectID(ctx, projectID); err != nil {
 			return u.errHandler.InternalTrouble(
 				err, "failed to delete project roles",
-				"roleIDs", ids,
 				"projectID", projectID,
 				"initiatorID", memberID,
 			)
 		}
 
-		if err := u.projectRepo.DeleteTasks(ctx, projectID); err != nil {
+		if err := u.projectRepo.DeleteTasksByProjectID(ctx, projectID); err != nil {
 			return u.errHandler.InternalTrouble(
 				err, "failed to delete project tasks",
+				"projectID", projectID,
+				"initiatorID", memberID,
+			)
+		}
+
+		if err := u.projectRepo.DeleteStatusesByProjectID(ctx, projectID); err != nil {
+			return u.errHandler.InternalTrouble(
+				err, "failed to delete project statuses",
 				"projectID", projectID,
 				"initiatorID", memberID,
 			)

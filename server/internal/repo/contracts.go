@@ -152,15 +152,15 @@ type ProjectRepository interface {
 	// It returns an error if called outside of a transaction, if the operation fails,
 	// or if the number of delete roles does not match the input slice length.
 	DeleteRoles(ctx context.Context, roleIDs []int) error
-
+	DeleteRolesByProjectID(ctx context.Context, projectID int) error
 	RemoveMembership(ctx context.Context, projectID int, userID int) error
-
 	// GetTaskStatuses return list of task status of passed project
 	GetTaskStatuses(ctx context.Context, projectID int) ([]*dto.ProjectStatus, error)
 	CreateStatuses(ctx context.Context, projectID int, data []*dto.ProjectStatusCreate) error
-
+	IsStatusBelongProject(ctx context.Context, projectID int, statusID int) (bool, error)
+	DeleteStatusesByProjectID(ctx context.Context, projectID int) error
 	GetTasks(ctx context.Context, projectID int) ([]*dto.TaskListRes, error)
-	DeleteTasks(ctx context.Context, projectID int) error
+	DeleteTasksByProjectID(ctx context.Context, projectID int) error
 }
 
 type TaskRepository interface {

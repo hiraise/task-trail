@@ -463,10 +463,37 @@ func (r *PgProjectRepository) DeleteRoles(ctx context.Context, roleIDs []int) er
 	}
 	query := `
 		UPDATE project_roles
-		SET deleted_at = $1
+		SET 
+			deleted_at = $1
+			updated_at = $1
 		WHERE id = ANY ($2) AND deleted_at IS NULL;
 	`
 	tag, err := r.getDb(ctx).Exec(ctx, query, time.Now(), roleIDs)
+	if err != nil {
+		return r.handleError(err)
+	}
+	if tag.RowsAffected() == 0 {
+		return repo.ErrNotFound
+	}
+	return nil
+}
+
+func (r *PgProjectRepository) DeleteRolesByProjectID(ctx context.Context, projectID int) error {
+	if err := r.ensureInTransaction(ctx); err != nil {
+		return err
+	}
+
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return err
+	}
+	query := `
+		UPDATE project_roles
+		SET 
+			deleted_at = $1
+			updated_at = $1
+		WHERE project_id = $2 AND deleted_at IS NULL;
+	`
+	tag, err := r.getDb(ctx).Exec(ctx, query, time.Now(), projectID)
 	if err != nil {
 		return r.handleError(err)
 	}
@@ -565,7 +592,50 @@ func (r *PgProjectRepository) CreateStatuses(ctx context.Context, projectID int,
 	}
 	return nil
 }
+func (r *PgProjectRepository) IsStatusBelongProject(ctx context.Context, projectID int, statusID int) (bool, error) {
+	if err := ValidateIDsMap(map[string]int{
+		"projectID": projectID,
+		"statusID":  statusID,
+	}); err != nil {
+		return false, err
+	}
+	query := `
+		SELECT EXISTS (
+			SELECT 1
+			FROM task_statuses AS ts
+			WHERE ts.project_id = $1 AND ts.id = $2 AND ts.deleted_at is NULL
+		);`
+	var result bool
+	if err := r.getDb(ctx).QueryRow(ctx, query, projectID, statusID).Scan(&result); err != nil {
+		return false, r.handleError(err)
+	}
+	return result, nil
+}
 
+func (r *PgProjectRepository) DeleteStatusesByProjectID(ctx context.Context, projectID int) error {
+	if err := r.ensureInTransaction(ctx); err != nil {
+		return err
+	}
+
+	if err := ValidateID(projectID, "projectID"); err != nil {
+		return err
+	}
+	query := `
+		UPDATE task_statuses
+		SET 
+			deleted_at = $1
+			updated_at = $1
+		WHERE project_id = $2 AND deleted_at IS NULL;
+	`
+	tag, err := r.getDb(ctx).Exec(ctx, query, time.Now(), projectID)
+	if err != nil {
+		return r.handleError(err)
+	}
+	if tag.RowsAffected() == 0 {
+		return repo.ErrNotFound
+	}
+	return nil
+}
 func (r *PgProjectRepository) GetTasks(ctx context.Context, projectID int) ([]*dto.TaskListRes, error) {
 	if err := ValidateID(projectID, "projectID"); err != nil {
 		return nil, err
@@ -604,7 +674,7 @@ func (r *PgProjectRepository) GetTasks(ctx context.Context, projectID int) ([]*d
 	return retVal, nil
 }
 
-func (r *PgProjectRepository) DeleteTasks(ctx context.Context, projectID int) error {
+func (r *PgProjectRepository) DeleteTasksByProjectID(ctx context.Context, projectID int) error {
 	if err := r.ensureInTransaction(ctx); err != nil {
 		return err
 	}
@@ -614,7 +684,9 @@ func (r *PgProjectRepository) DeleteTasks(ctx context.Context, projectID int) er
 	}
 	query := `
 		UPDATE tasks
-		SET deleted_at = $1
+		SET 
+			deleted_at = $1
+			updated_at = $1
 		WHERE project_id = $2 AND deleted_at IS NULL
 	`
 	_, err := r.getDb(ctx).Exec(ctx, query, time.Now(), projectID)

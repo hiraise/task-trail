@@ -5,7 +5,6 @@ import (
 	"errors"
 	"task-trail/internal/customerrors"
 	"task-trail/internal/repo"
-	"task-trail/internal/usecase/dto"
 	"task-trail/internal/usecase/project"
 	"testing"
 
@@ -40,10 +39,10 @@ func TestUseCase_Delete(t *testing.T) {
 				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return([]*dto.ProjectRoleRes{{ID: 1, Name: "test"}}, nil)
 				deps.projectRepo.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().DeleteRoles(gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().DeleteTasks(gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().DeleteRolesByProjectID(gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().DeleteTasksByProjectID(gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().DeleteStatusesByProjectID(gomock.Any(), gomock.Any()).Return(nil)
 				return uc
 			},
 
@@ -78,21 +77,6 @@ func TestUseCase_Delete(t *testing.T) {
 			wantErrMsg:  "failed to verify user access",
 		},
 		{
-			name: "failed to get project roles",
-			args: testArgs,
-			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
-
-				uc, deps := mockDependencies(ctrl)
-				mockTx(args.ctx, deps.txManager)
-				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return(nil, repo.ErrInternal)
-				return uc
-			},
-			wantErr:     true,
-			wantErrType: customerrors.InternalErr,
-			wantErrMsg:  "failed to get project roles",
-		},
-		{
 			name: "failed to delete project",
 			args: testArgs,
 			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
@@ -100,7 +84,6 @@ func TestUseCase_Delete(t *testing.T) {
 				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return([]*dto.ProjectRoleRes{{ID: 1, Name: "test"}}, nil)
 				deps.projectRepo.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
 				return uc
 			},
@@ -116,9 +99,8 @@ func TestUseCase_Delete(t *testing.T) {
 				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return([]*dto.ProjectRoleRes{{ID: 1, Name: "test"}}, nil)
 				deps.projectRepo.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().DeleteRoles(gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
+				deps.projectRepo.EXPECT().DeleteRolesByProjectID(gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
 				return uc
 			},
 			wantErr:     true,
@@ -133,15 +115,32 @@ func TestUseCase_Delete(t *testing.T) {
 				uc, deps := mockDependencies(ctrl)
 				mockTx(args.ctx, deps.txManager)
 				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
-				deps.projectRepo.EXPECT().GetProjectRoles(gomock.Any(), gomock.Any()).Return([]*dto.ProjectRoleRes{{ID: 1, Name: "test"}}, nil)
 				deps.projectRepo.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().DeleteRoles(gomock.Any(), gomock.Any()).Return(nil)
-				deps.projectRepo.EXPECT().DeleteTasks(gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
+				deps.projectRepo.EXPECT().DeleteRolesByProjectID(gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().DeleteTasksByProjectID(gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
 				return uc
 			},
 			wantErr:     true,
 			wantErrType: customerrors.InternalErr,
 			wantErrMsg:  "failed to delete project tasks",
+		},
+		{
+			name: "failed to delete project statuses",
+			args: testArgs,
+			uc: func(ctrl *gomock.Controller, args args) *project.UseCase {
+
+				uc, deps := mockDependencies(ctrl)
+				mockTx(args.ctx, deps.txManager)
+				deps.projectRepo.EXPECT().HasPermission(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(true, nil)
+				deps.projectRepo.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().DeleteRolesByProjectID(gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().DeleteTasksByProjectID(gomock.Any(), gomock.Any()).Return(nil)
+				deps.projectRepo.EXPECT().DeleteStatusesByProjectID(gomock.Any(), gomock.Any()).Return(repo.ErrInternal)
+				return uc
+			},
+			wantErr:     true,
+			wantErrType: customerrors.InternalErr,
+			wantErrMsg:  "failed to delete project statuses",
 		},
 	}
 	for _, tt := range tests {
