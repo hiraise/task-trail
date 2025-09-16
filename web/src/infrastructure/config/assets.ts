@@ -17,4 +17,7 @@ export const ASSETS = {
   icons: {
     ...ICONS,
   },
+  images: {
+    task: addBasePath("/images/task.png"),
+  },
 };
