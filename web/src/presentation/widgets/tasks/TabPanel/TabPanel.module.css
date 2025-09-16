@@ -1,0 +1,22 @@
+.tabsContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.tab {
+  border-bottom: 2px solid var(--bg-secondary-2);
+}
+
+.tab:not(.active) {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+.tab.active {
+  border-bottom: 2px solid var(--bg-primary-contrast);
+}
+
+.tab.active > span {
+  color: var(--text-primary);
+  opacity: 1;
+}
