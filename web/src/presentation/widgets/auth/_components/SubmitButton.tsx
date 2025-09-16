@@ -1,11 +1,29 @@
 import styled, { css } from "styled-components";
 
-type ButtonVariant = "primary";
+type ButtonVariant = "primary" | "text";
 
 const variantStyles = {
   primary: css`
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
     background: var(--bg-primary-contrast);
     color: var(--text-primary-contrast);
+    padding: 12px 16px;
+
+    &:hover {
+      opacity: 0.6;
+    }
+  `,
+
+  text: css`
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    background: transparent;
+    color: var(--text-primary);
+    padding: 8px;
 
     &:hover {
       opacity: 0.6;
@@ -14,7 +32,6 @@ const variantStyles = {
 };
 
 const BaseButton = styled.button<{ $variant?: ButtonVariant }>`
-  padding: 12px 16px;
   border: none;
   border-radius: 10000px;
   cursor: pointer;

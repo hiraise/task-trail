@@ -10,13 +10,10 @@ interface FloatingButtonProps {
   variant?: FloatingButtonVariant;
 }
 
-export function FloatingButton({
-  onClick,
-  variant = "default",
-}: FloatingButtonProps) {
+export function FloatingButton({ onClick, variant = "default" }: FloatingButtonProps) {
   return (
     <div className={clsx(styles.floatingButton, styles[variant])}>
-      <IconButton icon={ICONS.addButton} onClick={onClick} />
+      <IconButton icon={ICONS.addButton} onClick={onClick} size="40px" />
     </div>
   );
 }

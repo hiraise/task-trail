@@ -14,7 +14,7 @@ import { IconButtonProps } from "./IconButton.types";
  * @returns A styled button element containing the specified icon, with variant-based styling and accessibility support.
  */
 
-export function IconButton({ icon, variant, size, ...rest }: IconButtonProps) {
+export function IconButton({ icon, variant, size = "24px", ...rest }: IconButtonProps) {
   return (
     <StyledButton $variant={variant} {...rest}>
       <Icon as={icon} size={size} inheritColor />
