@@ -11,7 +11,7 @@ import CheckIcon from "../../../public/icons/check.svg";
 import CloseIcon from "../../../public/icons/close.svg";
 import SortIcon from "../../../public/icons/mi_sort.svg";
 import AddButtonIcon from "../../../public/icons/iconoir_plus_circle.svg";
-import PlusIcon from "../../../public/icons/iconoir_plus.svg";
+import PlusIcon from "../../../public/icons/PlusIcon.svg";
 import CheckMarkIcon from "../../../public/icons/checkMark.svg";
 import MenuIcon from "../../../public/icons/menu_icon.svg";
 import AddUserIcon from "../../../public/icons/user-add.svg";
