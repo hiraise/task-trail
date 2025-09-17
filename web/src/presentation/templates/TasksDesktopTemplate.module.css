@@ -1,13 +1,3 @@
-.container {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-  background-color: var(--bg-secondary);
-  padding: 20px;
-  width: 100vw;
-  height: 100vh;
-}
-
 .contentWrapper {
   display: flex;
   flex-direction: column;
@@ -21,20 +11,4 @@
   border-radius: 12px;
   background-color: var(--bg-card);
   box-shadow: 0px 0px 24px 0px rgba(0, 0, 0, 0.04);
-}
-
-.topBar {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 8px;
-}
-
-.button > span {
-  color: var(--text-primary-contrast);
-}
-.button > svg {
-  display: block;
-  margin: -4px;
 }
