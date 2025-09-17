@@ -6,11 +6,11 @@ import { TaskListTopBarDesktop } from "@/presentation/widgets/tasks/TaskList";
 import { useTabPanel } from "@/presentation/widgets/tasks/TabPanel/TabPanelContext";
 import { TabType } from "@/presentation/widgets/tasks/TabPanel/TabPanel";
 import { TaskListDesktop } from "@/presentation/widgets/tasks/TaskList/TaskListDesktop";
-import { useGetUserTasks } from "@/application/user/hooks/useGetUserTasks";
+import { useGetTaskListData } from "@/application/tasks/hooks/useGetTaskListData";
 
 export function TasksDesktopPage() {
   const { activeTab } = useTabPanel();
-  const { data: tasks } = useGetUserTasks();
+  const { tasks } = useGetTaskListData();
 
   if (!tasks) return null;
 

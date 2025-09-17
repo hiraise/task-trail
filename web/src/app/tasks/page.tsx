@@ -7,7 +7,7 @@ import { TabPanelProvider } from "@/presentation/widgets/tasks/TabPanel";
 export default function TasksPage() {
   return (
     <TabPanelProvider>
-      <DeviceBased desktop={<TasksDesktopPage />} mobile={<TasksMobilePage />} />;
+      <DeviceBased desktop={<TasksDesktopPage />} mobile={<TasksMobilePage />} />
     </TabPanelProvider>
   );
 }

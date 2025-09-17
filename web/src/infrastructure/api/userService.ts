@@ -26,6 +26,23 @@ export const userService: UserService = {
   },
 
   /**
+   * Retrieves a user by their unique identifier.
+   *
+   * @param {number} id - The unique identifier of the user to retrieve.
+   * @returns {Promise<User>} A promise that resolves to the mapped User entity.
+   * @throws {AppError} Throws an AppError if the request fails.
+   */
+  async getById(id: number): Promise<User> {
+    try {
+      const response = await axiosClient.get(API_ROUTES.USER_BY_ID(id));
+      return mapUserFromApi(response.data);
+    } catch (error) {
+      clientLogger.error(`Failed to get user with id: ${id}`, { error });
+      throw new AppError(AppErrorType.UNKNOWN, "Failed to get user");
+    }
+  },
+
+  /**
    * Uploads a new avatar for the current user.
    *
    * Sends a PATCH request with the provided FormData containing the avatar image.
