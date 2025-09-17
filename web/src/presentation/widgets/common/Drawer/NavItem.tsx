@@ -16,7 +16,7 @@ interface NavItemProps {
 
 export function NavItem({ item, isExpanded }: NavItemProps) {
   const pathName = usePathname();
-  const isActive = normalize(pathName) === normalize(item.href);
+  const isActive = normalize(pathName).startsWith(normalize(item.href));
 
   return (
     <Link href={item.href} className={clsx(styles.navItem, { [styles.active]: isActive })}>
