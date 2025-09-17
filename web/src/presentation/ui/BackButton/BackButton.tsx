@@ -1,3 +1,5 @@
+"use client";
+
 import clsx from "clsx";
 
 import styles from "./BackButton.module.css";
@@ -15,7 +17,7 @@ export function BackButton({ onClick, showLabel = true, className }: BackButtonP
   const handleClick = () => {
     if (onClick) {
       onClick();
-    } else {
+    } else if (typeof window !== "undefined") {
       window.history.back();
     }
   };

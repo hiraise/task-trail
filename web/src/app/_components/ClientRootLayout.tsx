@@ -32,7 +32,10 @@ declare global {
     __TANSTACK_QUERY_CLIENT__: import("@tanstack/query-core").QueryClient;
   }
 }
-window.__TANSTACK_QUERY_CLIENT__ = queryClient;
+
+if (typeof window !== "undefined") {
+  window.__TANSTACK_QUERY_CLIENT__ = queryClient;
+}
 
 export default function ClientRootLayout({
   children,
