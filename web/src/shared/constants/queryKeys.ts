@@ -1,16 +1,15 @@
 export const QUERY_KEYS = {
   auth: ["auth"] as const,
-  user: ["user"] as const,
-  userTasks: ["user", "task"] as const,
+  currentUser: ["me"] as const,
+  userTasks: ["me", "task"] as const,
+  user: (id: number) => ["user", id] as const,
   tasks: ["tasks"] as const,
   task: (id: number) => ["task", id] as const,
   projects: ["projects"] as const,
-  project: (projectId: number) => ["project", projectId] as const,
-  projectTasks: (projectId: number) => ["tasks", "project", projectId] as const,
-  projectStatuses: (projectId: number) => ["statuses", "project", projectId] as const,
-  projectMembers: (projectId: number) => ["members", "project", projectId] as const,
-  projectCandidates: (projectId?: number) =>
-    projectId != null
-      ? (["candidates", "project", projectId] as const)
-      : (["candidates", "project"] as const),
+  project: (id: number) => ["project", id] as const,
+  projectTasks: (id: number) => ["tasks", "project", id] as const,
+  projectStatuses: (id: number) => ["statuses", "project", id] as const,
+  projectMembers: (id: number) => ["members", "project", id] as const,
+  projectCandidates: (id?: number) =>
+    id != null ? (["candidates", "project", id] as const) : (["candidates", "project"] as const),
 };

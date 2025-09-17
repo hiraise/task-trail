@@ -8,7 +8,7 @@ export const useGetCurrentUser = () => {
   const { isAuthenticated, authInitializing } = useCheckAuthStatus();
 
   return useQuery({
-    queryKey: QUERY_KEYS.user,
+    queryKey: QUERY_KEYS.currentUser,
     queryFn: userService.getCurrentUser,
     enabled: !authInitializing && isAuthenticated,
     retry: false,

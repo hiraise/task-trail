@@ -11,7 +11,7 @@ export const useUploadAvatar = () => {
   return useMutation<string | null, Error, FormData>({
     mutationFn: userService.uploadAvatar,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUser });
       toast.success("Avatar updated successfully!");
     },
     onError: (error) => {

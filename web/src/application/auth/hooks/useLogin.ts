@@ -21,7 +21,7 @@ export const useLogin = () => {
     onSuccess: () => {
       toast.success(successTexts.loginSuccess);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUser });
       router.replace(from);
     },
     onError: (error) => {
