@@ -6,7 +6,6 @@ import TaskIcon from "../../../public/icons/hugeicons_task-01.svg";
 import ArchiveIcon from "../../../public/icons/material-symbols-light_archive-outline.svg";
 import ProfileLargeIcon from "../../../public/icons/profile-large.svg";
 import CameraIcon from "../../../public/icons/camera.svg";
-import LeftArrowIcon from "../../../public/icons/Left_arrow.svg";
 import CheckIcon from "../../../public/icons/check.svg";
 import CloseIcon from "../../../public/icons/close.svg";
 import SortIcon from "../../../public/icons/SortIcon.svg";
@@ -24,6 +23,7 @@ import LockIcon from "../../../public/icons/LockIcon.svg";
 import ShowIcon from "../../../public/icons/ShowIcon.svg";
 import HideIcon from "../../../public/icons/HideIcon.svg";
 import SearchIcon from "../../../public/icons/SearchIcon.svg";
+import ArrowLeft from "../../../public/icons/ArrowLeft.svg";
 import ArrowLeftWithPadding from "../../../public/icons/ArrowLeftWithPadding.svg";
 import ArrowRight from "../../../public/icons/ArrowRight.svg";
 
@@ -37,7 +37,7 @@ export const ICONS = {
   profileLarge: ProfileLargeIcon,
   camera: CameraIcon,
   rightArrow: ArrowRight,
-  leftArrow: LeftArrowIcon,
+  leftArrow: ArrowLeft,
   leftArrowWithPadding: ArrowLeftWithPadding,
   downArrow: DownArrow,
   check: CheckIcon,
