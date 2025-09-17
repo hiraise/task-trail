@@ -21,6 +21,13 @@ h1.medium {
   font-family: var(--font-family);
 }
 
+h2 {
+  font-size: 26px;
+  line-height: 30px;
+  font-weight: 550;
+  font-family: var(--font-family);
+}
+
 /* Base */
 .body-med {
   font-size: 16px;
