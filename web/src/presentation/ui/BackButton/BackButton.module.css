@@ -1,21 +1,25 @@
 .button {
   height: 24px;
   display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 4px 8px 4px 0;
   align-self: flex-start;
   align-items: center;
   border: none;
   background: none;
-
-  span {
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 18px;
-    color: var(--icon-grey);
-  }
 
   @media (hover: hover) and (pointer: fine) {
     &:hover {
       cursor: pointer;
     }
   }
+}
+
+.button > span {
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 550;
+  font-family: var(--font-family);
+  color: var(--text-secondary);
 }
