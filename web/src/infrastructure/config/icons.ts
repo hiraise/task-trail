@@ -1,6 +1,6 @@
 // App icons
-import ProfileIcon from "../../../public/icons/iconamoon_profile.svg";
-import ProjectIcon from "../../../public/icons/codicon_github-project.svg";
+import ProfileIcon from "../../../public/icons/ProfileIcon.svg";
+import ProjectIcon from "../../../public/icons/ProjectIcon.svg";
 import BoardIcon from "../../../public/icons/circum_view-board.svg";
 import TaskIcon from "../../../public/icons/hugeicons_task-01.svg";
 import ArchiveIcon from "../../../public/icons/material-symbols-light_archive-outline.svg";
@@ -13,6 +13,7 @@ import AddButtonIcon from "../../../public/icons/iconoir_plus_circle.svg";
 import PlusIcon from "../../../public/icons/PlusIcon.svg";
 import CheckMarkIcon from "../../../public/icons/checkMark.svg";
 import MenuIcon from "../../../public/icons/menu_icon.svg";
+import MenuHorizontalIcon from "../../../public/icons/MenuHorizontalIcon.svg";
 import AddUserIcon from "../../../public/icons/user-add.svg";
 import DeleteIcon from "../../../public/icons/trash.svg";
 import DownArrow from "../../../public/icons/ArrowDown.svg";
@@ -26,6 +27,7 @@ import SearchIcon from "../../../public/icons/SearchIcon.svg";
 import ArrowLeft from "../../../public/icons/ArrowLeft.svg";
 import ArrowLeftWithPadding from "../../../public/icons/ArrowLeftWithPadding.svg";
 import ArrowRight from "../../../public/icons/ArrowRight.svg";
+import EditIcon from "../../../public/icons/EditIcon.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -47,6 +49,7 @@ export const ICONS = {
   plus: PlusIcon,
   checkMark: CheckMarkIcon,
   menu: MenuIcon,
+  menuHorizontal: MenuHorizontalIcon,
   addUser: AddUserIcon,
   delete: DeleteIcon,
   logoDesktop: LogoDesktop,
@@ -55,6 +58,7 @@ export const ICONS = {
   lock: LockIcon,
   show: ShowIcon,
   hide: HideIcon,
+  edit: EditIcon,
 };
 
 // Design elements
