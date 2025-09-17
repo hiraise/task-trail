@@ -1,0 +1,15 @@
+.topBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.button > span {
+  color: var(--text-primary-contrast);
+}
+.button > svg {
+  display: block;
+  margin: -4px;
+}
