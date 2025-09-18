@@ -5,7 +5,6 @@ import { motion as m, useDragControls } from "framer-motion";
 import clsx from "clsx";
 
 import styles from "./BottomSheet.module.css";
-import { useScrollLock } from "@/shared/hooks/useScrollLock";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -19,7 +18,6 @@ export function BottomSheet(props: BottomSheetProps) {
 
   const contentRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
-  useScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen && contentRef.current) {
@@ -34,8 +32,6 @@ export function BottomSheet(props: BottomSheetProps) {
   const startDrag = (event: React.PointerEvent) => {
     dragControls.start(event);
   };
-
-  if (!isOpen) return null;
 
   return (
     <m.div className={styles.bottomSheet} role="dialog" aria-modal="true">
