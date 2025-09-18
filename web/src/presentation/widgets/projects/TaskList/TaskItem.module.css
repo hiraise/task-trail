@@ -2,13 +2,14 @@
   display: flex;
   flex-direction: row;
   gap: 8px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 12px;
   border-bottom: 1px;
   background-color: var(--bg-secondary-2);
   border-radius: 12px;
   transition: background-color 0.2s ease;
+  height: 48px;
 }
 
 .taskWrapper:hover {
@@ -27,8 +28,6 @@ p.title {
 }
 
 .avatarWrapper {
-  position: relative;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -13,17 +13,15 @@ interface TaskItemProps {
 export function TaskItem({ task }: TaskItemProps) {
   const { data: assignee } = useGetAssignee(task.assigneeId);
 
-  const showAvatar = task.assigneeId && assignee;
+  const displayText = task.assigneeId && assignee?.username && getUserInitials(assignee?.username);
 
   return (
     <div className={styles.taskWrapper}>
       <span className="body-med">{task.title}</span>
-      {showAvatar && (
+      {task.assigneeId && assignee && (
         <div className={styles.avatarWrapper}>
           {assignee.avatarUrl && <Image src={assignee.avatarUrl} fill alt="User avatar" />}
-          {!assignee.avatarUrl && (
-            <span className="caption-2-reg">{getUserInitials(assignee.username ?? "TT")}</span>
-          )}
+          {!assignee.avatarUrl && <span className="caption-2-reg">{displayText}</span>}
         </div>
       )}
     </div>
