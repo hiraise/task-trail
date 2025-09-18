@@ -1,41 +1,18 @@
-import { useState } from "react";
-
-import { SortItem } from "./SortItem";
 import styles from "./SortItems.module.css";
+import { RadioButton } from "@/presentation/ui/RadioButton";
+import { options, SortItemsProps, SortOption } from "./SortItems.types";
 
-export interface SortOption {
-  value: string;
-  label: string;
-}
-
-export const options = [
-  { value: "updatedAt", label: "По дате последнего обновления" },
-  { value: "createdAt", label: "По дате создания" },
-  { value: "nameAsc", label: "По алфавиту А – Я" },
-  { value: "nameDesc", label: "По алфавиту Я – А" },
-];
-
-interface SortItemsProps {
-  onSelect?: (option: SortOption) => void;
-}
-
-export function SortItems({ onSelect }: SortItemsProps) {
-  const [selectedOption, setSelectedOption] = useState<SortOption | null>(null);
-
-  const handleSelect = (option: SortOption) => {
-    setSelectedOption(option);
-    onSelect?.(option);
-  };
-
+export function SortItems({ selectedOption, onSelect }: SortItemsProps) {
   return (
     <div className={styles.container}>
       <div className={styles.content}>
         {options.map((option) => (
-          <SortItem
+          <RadioButton<SortOption>
             key={option.value}
             option={option}
-            isSelected={selectedOption?.value === option.value}
-            onSelect={handleSelect}
+            checked={selectedOption?.value === option.value}
+            onChange={() => onSelect(option)}
+            name="sortOption"
           />
         ))}
       </div>
