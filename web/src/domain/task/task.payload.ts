@@ -4,3 +4,8 @@ export type TaskPayload = {
   assigneeId?: number;
   projectId: number;
 };
+
+export type ChangeStatusPayload = {
+  id: number;
+  statusId: number;
+};

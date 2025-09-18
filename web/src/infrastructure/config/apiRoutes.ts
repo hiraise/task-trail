@@ -31,6 +31,7 @@ export const API_ROUTES = {
   // TASKS API
   TASKS: TASKS,
   TASKS_BY_ID: (id: number) => `${TASKS}/${id}`,
+  CHANGE_STATUS: (id: number, statusId: number) => `${TASKS}/${id}/status/${statusId}`,
   // USERS API
   CURRENT_USER: USERS_ME,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
