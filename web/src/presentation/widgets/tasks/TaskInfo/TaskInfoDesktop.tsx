@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 import styles from "./TaskInfoDesktop.module.css";
 
 import { Task } from "@/domain/task/task.entity";
@@ -7,20 +9,34 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { ICONS } from "@/infrastructure/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
 import { TaskDetailsDesktop } from "./TaskDetailsDesktop";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 export function TaskInfoDesktop({ task }: { task: Task }) {
-  const { status, assignee, project } = useGetTaskInfo(task.id);
+  const { showChangeStatus, showSelectAssignee, showSelectProject } = useGlobalModals();
+  const { status, projectId, assignee, project } = useGetTaskInfo(task.id);
 
-  const handleChangeStatus = () => {
-    console.log("Change status");
+  const handleChangeStatus = async () => {
+    const result = await showChangeStatus({ currentStatus: status, projectId: projectId });
+    if (!result) return;
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    toast.success(`Change status with: ${result.name}`);
   };
 
-  const handleSelectAssignee = () => {
-    console.log("Select Assignee");
+  const handleSelectProject = async () => {
+    const result = await showSelectProject(task.projectId);
+    if (!result) return;
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    toast.success(`Select project with id: ${result.id}`);
   };
 
-  const handleSelectProject = () => {
-    console.log("Select Project");
+  const handleSelectAssignee = async () => {
+    const result = await showSelectAssignee({
+      userId: task.assigneeId,
+      projectId: task.projectId,
+    });
+    if (!result) return;
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    toast.success(`Select assignee with id: ${task.assigneeId}`);
   };
 
   return (
