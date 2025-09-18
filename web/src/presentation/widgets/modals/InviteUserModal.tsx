@@ -8,7 +8,7 @@ export default function InviteUserModal({ ...props }: BaseModalProps<string[]>) 
   };
 
   return (
-    <BaseModal fullScreen showBackButton title="Добавить участников" {...props}>
+    <BaseModal fullScreen title="Добавить участников" {...props}>
       <AddParticipantForm onSubmit={handleClose} />
     </BaseModal>
   );
