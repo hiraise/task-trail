@@ -3,8 +3,17 @@
   flex-direction: row;
   gap: 8px;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px;
+  background-color: var(--bg-secondary-2);
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.taskWrapper:hover {
+  cursor: pointer;
+  background-color: var(--bg-secondary);
 }
 
 svg.icon {
@@ -15,4 +24,17 @@ p.title {
   font-size: 14px;
   font-weight: 400;
   line-height: 16px;
+}
+
+.avatarWrapper {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }

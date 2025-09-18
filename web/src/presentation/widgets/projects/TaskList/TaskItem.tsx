@@ -1,17 +1,31 @@
+import Image from "next/image";
+
 import styles from "./TaskItem.module.css";
-import { ICONS } from "@/infrastructure/config/icons";
-import { Icon } from "@/presentation/ui/Icon";
+
+import { getUserInitials } from "@/shared/utils/formatters";
+import { Task } from "@/domain/task/task.entity";
+import { useGetAssignee } from "@/application/tasks/hooks/useGetAssignee";
 
 interface TaskItemProps {
-  id?: string;
-  title: string;
+  task: Task;
 }
 
-export function TaskItem({ title }: TaskItemProps) {
+export function TaskItem({ task }: TaskItemProps) {
+  const { data: assignee } = useGetAssignee(task.assigneeId);
+
+  const showAvatar = task.assigneeId && assignee;
+
   return (
     <div className={styles.taskWrapper}>
-      <Icon as={ICONS.task} size="20px" className={styles.icon} />
-      <p className={styles.title}>{title}</p>
+      <span className="body-med">{task.title}</span>
+      {showAvatar && (
+        <div className={styles.avatarWrapper}>
+          {assignee.avatarUrl && <Image src={assignee.avatarUrl} fill alt="User avatar" />}
+          {!assignee.avatarUrl && (
+            <span className="caption-2-reg">{getUserInitials(assignee.username ?? "TT")}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

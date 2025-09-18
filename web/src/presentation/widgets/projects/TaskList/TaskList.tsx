@@ -1,28 +1,23 @@
+import Link from "next/link";
+
 import styles from "./TaskList.module.css";
 
-import { toast } from "sonner";
 import { TaskItem } from "./TaskItem";
-import { tasks as mockTasks } from "./TaskList.mock";
 import { Task } from "@/domain/task/task.entity";
+import { ROUTES } from "@/infrastructure/config/routes";
 
 interface TaskListProps {
-  availableTasks?: Task[];
+  availableTasks: Task[];
 }
 
 export function TaskList({ availableTasks }: TaskListProps) {
-  const tasks = availableTasks || mockTasks;
-
-  const handleOnClick = (id: number) => {
-    toast.info(`Task with ID ${id} clicked`);
-  };
-
   return (
     <div className={styles.container}>
-      {tasks.map((task) => {
+      {availableTasks.map((task) => {
         return (
-          <div key={task.id} className={styles.userWrapper} onClick={() => handleOnClick(task.id)}>
-            <TaskItem title={task.title} />
-          </div>
+          <Link key={task.id} href={ROUTES.task(task.id)}>
+            <TaskItem task={task} />
+          </Link>
         );
       })}
     </div>
