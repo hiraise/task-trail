@@ -1,5 +1,8 @@
 export const TEXTS = {
   back: "Назад",
+  sort: "Сортировка",
+  cancel: "Отменить",
+  apply: "Применить",
   drawer: {
     myProjects: "Мои проекты",
     myBoards: "Мои доски",
