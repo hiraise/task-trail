@@ -13,6 +13,7 @@ export const TEXTS = {
     expand: "Развернуть",
   },
   tasks: {
+    status: "Статус задачи",
     assignee: "Ответственный",
     project: "Проект",
     createButton: "Создать задачу",
