@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import styles from "./DesktopModal.module.css";
+
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
 import { TaskStatus } from "@/domain/task/task.entity";
@@ -10,6 +12,7 @@ import { DeviceBased } from "@/presentation/ui/DeviceBased";
 import { TaskStatusDesktop, TaskStatusMobile } from "../tasks/ChangeTaskStatus";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { ChangeStatusProps } from "@/shared/hooks/useGlobalModals";
+import { DialogButtons } from "../common/DialogButtons";
 
 export default function ChangeTaskStatusModal(props: BaseModalProps<TaskStatus>) {
   const { onClose, ...rest } = props;
@@ -30,12 +33,13 @@ export default function ChangeTaskStatusModal(props: BaseModalProps<TaskStatus>)
     <BaseModal title={TEXTS.tasks.status} onClose={handleClose} {...rest}>
       <DeviceBased
         desktop={
-          <TaskStatusDesktop
-            selectedStatus={status}
-            onSelect={(value) => handleSelect(value, true)}
-            onApply={handleApply}
-            onClose={handleClose}
-          />
+          <div className={styles.desktop}>
+            <TaskStatusDesktop
+              selectedStatus={status}
+              onSelect={(value) => handleSelect(value, true)}
+            />
+            <DialogButtons onClose={handleClose} onApply={handleApply} />
+          </div>
         }
         mobile={
           <TaskStatusMobile

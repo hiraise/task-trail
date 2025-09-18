@@ -12,7 +12,5 @@ export const options = [
 
 export interface SortItemsProps {
   selectedOption: SortOption;
-  onClose?: () => void;
   onSelect: (option: SortOption) => void;
-  onApply?: () => void;
 }

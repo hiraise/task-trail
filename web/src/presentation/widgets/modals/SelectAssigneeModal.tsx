@@ -7,6 +7,9 @@ import { useGetProjectMembers } from "@/application/projects/hooks/useProject";
 import { MembersData } from "@/domain/user/user.entity";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { SelectAssigneeProps } from "@/shared/hooks/useGlobalModals";
+import { TEXTS } from "@/shared/locales/texts";
+import { DeviceBased } from "@/presentation/ui/DeviceBased";
+import { MembersListDesktop } from "../tasks/MembersList";
 
 export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) {
   const { projectId, userId } = useGlobalModalProps<SelectAssigneeProps>() ?? {};
@@ -19,8 +22,13 @@ export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) 
   };
 
   return (
-    <BaseModal {...props} fullScreen title="Ответственный">
-      <MembersList selectedUserId={userId} members={members} onSelect={handleOnSelect} />
+    <BaseModal {...props} fullScreen title={TEXTS.tasks.assignee}>
+      <DeviceBased
+        desktop={
+          <MembersListDesktop selectedUserId={userId} members={members} onSelect={handleOnSelect} />
+        }
+        mobile={<MembersList selectedUserId={userId} members={members} onSelect={handleOnSelect} />}
+      />
     </BaseModal>
   );
 }

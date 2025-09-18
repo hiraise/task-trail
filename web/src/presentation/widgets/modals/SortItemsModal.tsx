@@ -1,11 +1,14 @@
 import { useState } from "react";
 
+import styles from "./DesktopModal.module.css";
+
 import { TEXTS } from "@/shared/locales/texts";
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
 import { options } from "../common/SortItems/SortItems.types";
 import { SortOption, SortItems, SortItemsDesktop } from "../common/SortItems";
+import { DialogButtons } from "../common/DialogButtons";
 
 export default function SortItemsModal(props: BaseModalProps<string>) {
   const [selectedOption, setSelectedOption] = useState<SortOption>(options[0]);
@@ -29,12 +32,10 @@ export default function SortItemsModal(props: BaseModalProps<string>) {
     <BaseModal {...props} title={TEXTS.sort}>
       <DeviceBased
         desktop={
-          <SortItemsDesktop
-            selectedOption={selectedOption}
-            onSelect={handleDesktopSort}
-            onApply={handleApply}
-            onClose={() => props.onClose()}
-          />
+          <div className={styles.desktop}>
+            <SortItemsDesktop selectedOption={selectedOption} onSelect={handleDesktopSort} />
+            <DialogButtons onClose={() => props.onClose()} onApply={handleApply} />
+          </div>
         }
         mobile={<SortItems selectedOption={selectedOption} onSelect={handleMobileSort} />}
       />
