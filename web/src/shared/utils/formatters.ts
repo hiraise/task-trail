@@ -55,6 +55,7 @@ export function getProjectId(str: string): string {
  */
 export function getUserInitials(str: string): string {
   let res: string;
+  if (str.trim().length === 0) return "";
   const words = str.trim().split(/\s+/).filter(Boolean);
   if (words.length === 1) {
     res = words[0].slice(0, 2).toUpperCase();
