@@ -28,6 +28,13 @@ h2 {
   font-family: var(--font-family);
 }
 
+h4 {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  font-family: var(--font-family);
+}
+
 /* Base */
 .body-med {
   font-size: 16px;
