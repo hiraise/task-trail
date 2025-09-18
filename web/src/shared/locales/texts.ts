@@ -3,6 +3,7 @@ export const TEXTS = {
   sort: "Сортировка",
   cancel: "Отменить",
   apply: "Применить",
+  useQueryPlaceholder: "Введите Email или имя пользователя",
   drawer: {
     myProjects: "Мои проекты",
     myBoards: "Мои доски",
