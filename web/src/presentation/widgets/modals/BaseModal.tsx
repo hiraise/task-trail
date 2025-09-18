@@ -1,8 +1,10 @@
-import styles from "./BaseModal.module.css";
-
 import { BaseModalComponentProps } from "./BaseModal.types";
 import { BottomSheet } from "@/presentation/ui/BottomSheet/BottomSheet";
-import { BackButton } from "@/presentation/ui/BackButton/BackButton";
+import { Dialog } from "@/presentation/ui/Dialog";
+import { DeviceBased } from "@/presentation/ui/DeviceBased";
+import { useScrollLock } from "@/shared/hooks/useScrollLock";
+import { DialogTitle } from "@/presentation/ui/Dialog/DialogTitle";
+import { BottomSheetTitle } from "@/presentation/ui/BottomSheet/BottomSheetTitle";
 
 export function BaseModal<T = void>({
   children,
@@ -11,17 +13,37 @@ export function BaseModal<T = void>({
   ...props
 }: BaseModalComponentProps<T>) {
   const { isOpen, onClose, onBack, fullScreen } = props;
+
+  useScrollLock(isOpen);
+
+  if (!isOpen) return null;
+
+  //TODO: refactor passing fullScreen prop
+  // to BottomSheet, it should be handled in the component itself
+
   return (
-    //TODO: refactor passing fullScreen prop
-    // to BottomSheet, it should be handled in the component itself
-    <BottomSheet isOpen={isOpen} onClose={onClose} fullScreen={fullScreen}>
-      <div className={styles.container}>
-        {onBack && showBackButton && (
-          <BackButton className={styles.backButton} onClick={onBack} showLabel={false} />
-        )}
-        {title && <h2 className={styles.title}>{title}</h2>}
-      </div>
-      {children}
-    </BottomSheet>
+    <DeviceBased
+      desktop={
+        <Dialog>
+          {title && (
+            <DialogTitle
+              title={title}
+              onClose={onClose}
+              onBack={onBack}
+              showBackButton={showBackButton}
+            />
+          )}
+          {children}
+        </Dialog>
+      }
+      mobile={
+        <BottomSheet isOpen={isOpen} onClose={onClose} fullScreen={fullScreen}>
+          {title && (
+            <BottomSheetTitle title={title} onBack={onBack} showBackButton={showBackButton} />
+          )}
+          {children}
+        </BottomSheet>
+      }
+    />
   );
 }
