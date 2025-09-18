@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components";
 
-type ButtonVariant = "primary" | "text";
+type ButtonVariant = "primary" | "secondary" | "text";
 
 const variantStyles = {
   primary: css`
@@ -10,6 +10,20 @@ const variantStyles = {
     align-items: center;
     background: var(--bg-primary-contrast);
     color: var(--text-primary-contrast);
+    padding: 12px 16px;
+
+    &:hover {
+      opacity: 0.6;
+    }
+  `,
+
+  secondary: css`
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
     padding: 12px 16px;
 
     &:hover {
