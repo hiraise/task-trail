@@ -1,33 +1,61 @@
 "use client";
 
+import { useState } from "react";
+
+import styles from "./DesktopModal.module.css";
+
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
-import { MembersList } from "../tasks/MembersList/MembersList";
 import { useGetProjectMembers } from "@/application/projects/hooks/useProject";
 import { MembersData } from "@/domain/user/user.entity";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { SelectAssigneeProps } from "@/shared/hooks/useGlobalModals";
 import { TEXTS } from "@/shared/locales/texts";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { MembersListDesktop } from "../tasks/MembersList";
+import { MembersListDesktop, MembersListMobile } from "../tasks/MembersList";
+import { DialogButtons } from "../common/DialogButtons";
 
 export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) {
   const { projectId, userId } = useGlobalModalProps<SelectAssigneeProps>() ?? {};
 
   const { data: members = [] } = useGetProjectMembers(projectId!);
+  const currentUser = members.find((user) => user.id === userId);
+  const [selectedUser, setSelectedUser] = useState<MembersData | undefined>(currentUser);
+
+  const handleMobileSelect = (value: MembersData) => {
+    setSelectedUser(value);
+    props.onClose(value);
+  };
 
   const handleOnSelect = (user: MembersData) => {
     props.onClose(user);
     console.log("Assignee selected:", user.username);
   };
 
+  const handleApply = () => {
+    props.onClose(selectedUser);
+  };
+
   return (
     <BaseModal {...props} fullScreen title={TEXTS.tasks.assignee}>
       <DeviceBased
         desktop={
-          <MembersListDesktop selectedUserId={userId} members={members} onSelect={handleOnSelect} />
+          <div className={styles.desktop}>
+            <MembersListDesktop
+              selectedUserId={userId}
+              members={members}
+              onSelect={handleOnSelect}
+            />
+            <DialogButtons onApply={handleApply} onClose={() => props.onClose()} />
+          </div>
         }
-        mobile={<MembersList selectedUserId={userId} members={members} onSelect={handleOnSelect} />}
+        mobile={
+          <MembersListMobile
+            selectedUserId={userId}
+            members={members}
+            onSelect={handleMobileSelect}
+          />
+        }
       />
     </BaseModal>
   );
