@@ -8,9 +8,17 @@ export const InputLabel = styled.label`
 
 export const Input = styled.input`
   padding: 12px;
-  background-color: var(--grey);
+  background-color: var(--bg-secondary);
   border: none;
   border-radius: 8px;
+
+  &::placeholder {
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: 400;
+    font-family: var(--font-family);
+    color: var(--text-secondary);
+  }
 
   &:focus {
     outline: none;
