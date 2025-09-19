@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 import { MODAL_TYPE, ModalType, useGlobalModalContext } from "@/app/_components/GlobalModalContext";
-import { TaskStatus } from "@/domain/task/task.entity";
+import { Task, TaskStatus } from "@/domain/task/task.entity";
 import { Project } from "@/domain/project/project.entity";
 import { MembersData } from "@/domain/user/user.entity";
 
@@ -13,6 +13,11 @@ export interface ChangeStatusProps {
 export interface SelectAssigneeProps {
   projectId?: number;
   userId?: number;
+}
+
+export interface EditTaskProps {
+  title: string;
+  description?: string;
 }
 
 export const useGlobalModals = () => {
@@ -42,5 +47,7 @@ export const useGlobalModals = () => {
     showCreateTask: () => safeOpen<void>(MODAL_TYPE.CREATE_TASK),
     showCreateProject: () => safeOpen<void>(MODAL_TYPE.CREATE_PROJECT),
     showInviteUser: () => safeOpen<string[]>(MODAL_TYPE.INVITE_USER),
+    showEditTask: (props?: EditTaskProps) =>
+      safeOpen<Partial<Task>>(MODAL_TYPE.EDIT_TASK, { ...props }),
   };
 };
