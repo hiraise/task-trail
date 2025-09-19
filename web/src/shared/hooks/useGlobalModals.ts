@@ -20,6 +20,11 @@ export interface EditTaskProps {
   description?: string;
 }
 
+export interface TaskActionProps {
+  id: number;
+  title: string;
+}
+
 export const useGlobalModals = () => {
   const { open } = useGlobalModalContext();
 
@@ -49,5 +54,9 @@ export const useGlobalModals = () => {
     showInviteUser: () => safeOpen<string[]>(MODAL_TYPE.INVITE_USER),
     showEditTask: (props?: EditTaskProps) =>
       safeOpen<Partial<Task>>(MODAL_TYPE.EDIT_TASK, { ...props }),
+    showMoveToArchive: (props?: TaskActionProps) =>
+      safeOpen<void>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
+    showDeleteTask: (props?: TaskActionProps) =>
+      safeOpen<void>(MODAL_TYPE.DELETE_TASK, { ...props }),
   };
 };
