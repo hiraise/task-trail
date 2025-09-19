@@ -66,10 +66,14 @@ import SearchDesignElement from "../../../public/elements/search.svg";
 import TaskDesignElement from "../../../public/elements/task.svg";
 import PictureDesignElement from "../../../public/elements/picture.svg";
 import LockDesignElement from "../../../public/elements/lock.svg";
+import ArchiveDesignElement from "../../../public/elements/archive.svg";
+import DeleteDesignElement from "../../../public/elements/delete.svg";
 
 export const DESIGN_ELEMENTS = {
   search: SearchDesignElement,
   task: TaskDesignElement,
   picture: PictureDesignElement,
   lock: LockDesignElement,
+  archive: ArchiveDesignElement,
+  delete: DeleteDesignElement,
 };
