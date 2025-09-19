@@ -7,10 +7,16 @@
   flex-shrink: 0;
 }
 
+.small {
+  width: 24px;
+  height: 24px;
+  background-color: var(--bg-tertiary);
+}
+
 .standard {
   width: 32px;
   height: 32px;
-  background-color: var(--avatar-bg);
+  background-color: var(--bg-tertiary);
 }
 
 .large {

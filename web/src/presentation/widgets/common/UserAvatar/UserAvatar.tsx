@@ -5,7 +5,7 @@ import { ICONS } from "@/infrastructure/config/icons";
 import clsx from "clsx";
 
 interface UserAvatarProps {
-  variant?: "standard" | "large";
+  variant?: "small" | "standard" | "large";
 }
 
 export function UserAvatar({ variant = "standard" }: UserAvatarProps) {
