@@ -14,6 +14,9 @@ export const TEXTS = {
     expand: "Развернуть",
   },
   tasks: {
+    edit: "Редактировать задачу",
+    moveToArchive: "Переместить в архив",
+    delete: "Удалить задачу",
     status: "Статус задачи",
     assignee: "Ответственный",
     project: "Проект",
