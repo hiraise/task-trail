@@ -19,12 +19,6 @@ export function TasksMobilePage() {
 
   if (!tasks) return null;
 
-  // TODO: Implement create task logic
-  const handleCreateTask = async () => {
-    const data = await showCreateTask();
-    console.log("Created task data:", data);
-  };
-
   // TODO: Implement sorting logic
   const handleSortTasks = async () => {
     const option = await showSortOptions();
@@ -45,7 +39,7 @@ export function TasksMobilePage() {
         </div>
       )}
       <TaskList tasks={tasks} />
-      <FloatingButton onClick={handleCreateTask} variant="withBottomNav" />
+      <FloatingButton onClick={showCreateTask} variant="withBottomNav" />
       <BottomNavBar />
     </MainContainer>
   );

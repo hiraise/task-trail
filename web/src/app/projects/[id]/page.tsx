@@ -30,12 +30,6 @@ export default function ProjectPage() {
 
   const displayTasks = tasks.slice(0, 4) ?? [];
 
-  // TODO: Implement task creation logic
-  const handleCreateTask = async () => {
-    const data = await showCreateTask();
-    console.log("New task created:", data);
-  };
-
   return (
     <MainContainer>
       <DashboardHeader />
@@ -77,7 +71,7 @@ export default function ProjectPage() {
           </div>
         </div>
       </div>
-      <FloatingButton onClick={handleCreateTask} />
+      <FloatingButton onClick={showCreateTask} />
     </MainContainer>
   );
 }

@@ -26,12 +26,6 @@ export default function ProjectTasksPage() {
     console.log("Selected sort option:", option);
   };
 
-  // TODO: Implement task creation logic
-  const handleCreateTask = async () => {
-    const data = await showCreateTask();
-    console.log("Created task data:", data);
-  };
-
   if (isLoading) return <LoadingScreen />;
 
   if (!tasks) return <h1>Как-будто нет задач, или что-то пошло не так</h1>;
@@ -66,7 +60,7 @@ export default function ProjectTasksPage() {
           <TaskList availableTasks={tasks} />
         </div>
       </div>
-      <FloatingButton onClick={handleCreateTask} />
+      <FloatingButton onClick={showCreateTask} />
     </MainContainer>
   );
 }

@@ -10,22 +10,20 @@ import { useGetTaskListData } from "@/application/tasks/hooks/useGetTaskListData
 import { TasksDesktopTemplate } from "@/presentation/templates";
 import { TopBar } from "@/presentation/widgets/common/TopBar";
 import { TEXTS } from "@/shared/locales/texts";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 export function TasksDesktopPage() {
   const { activeTab } = useTabPanel();
   const { tasks } = useGetTaskListData();
+  const { showCreateTask } = useGlobalModals();
 
   if (!tasks) return null;
-
-  const handleCreateTask = () => {
-    console.log("Create task");
-  };
 
   const topBar = (
     <TopBar
       title={TEXTS.drawer.myTasks}
       buttonText={TEXTS.tasks.createButton}
-      onClick={handleCreateTask}
+      onClick={showCreateTask}
     />
   );
 

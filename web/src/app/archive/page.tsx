@@ -16,12 +16,6 @@ export default function ArchivePage() {
   const { showSortOptions, showCreateTask } = useGlobalModals();
   const tasks = mockTasks;
 
-  // TODO: Implement create task logic
-  const handleCreateTask = async () => {
-    const data = await showCreateTask();
-    console.log("Created task data:", data);
-  };
-
   // TODO: Implement sorting logic
   const handleSortTasks = async () => {
     const option = await showSortOptions();
@@ -43,7 +37,7 @@ export default function ArchivePage() {
           </div>
         )}
         <TaskList tasks={tasks} />
-        <FloatingButton onClick={handleCreateTask} variant="withBottomNav" />
+        <FloatingButton onClick={showCreateTask} variant="withBottomNav" />
         <BottomNavBar />
       </MainContainer>
     </>
