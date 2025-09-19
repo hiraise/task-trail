@@ -3,7 +3,7 @@ import styles from "./TaskInfo.module.css";
 import { Task } from "@/domain/task/task.entity";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
-import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
+import { DropdownMenu } from "@/presentation/widgets/common/DropdownMenu";
 
 export function TaskTitle({ task }: { task: Task }) {
   //TODO: Implement task title menu actions

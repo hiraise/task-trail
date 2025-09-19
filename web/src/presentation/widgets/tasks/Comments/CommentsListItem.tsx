@@ -2,7 +2,7 @@ import styles from "./CommentsList.module.css";
 
 import { TaskComment } from "@/domain/task/task.entity";
 import CommentUserInfo from "./CommentUserInfo";
-import { DropdownMenu } from "../../projects/DropdownMenu";
+import { DropdownMenu } from "../../common/DropdownMenu";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { ICONS } from "@/infrastructure/config/icons";
 

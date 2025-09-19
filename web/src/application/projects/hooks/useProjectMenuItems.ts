@@ -6,12 +6,7 @@ import { ROUTES } from "@/infrastructure/config/routes";
 import { PERMISSIONS } from "@/domain/project/project.entity";
 import { hasPermission } from "@/shared/utils/permissions";
 import { useDeleteProject, useGetById, useLeaveProject } from "./useProject";
-
-export interface MenuItem {
-  label: string;
-  onClick: () => void;
-  isVisible: boolean;
-}
+import { MenuItem } from "@/presentation/widgets/common/DropdownMenu";
 
 export const useProjectMenuItems = (projectId: number) => {
   const router = useRouter();

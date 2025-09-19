@@ -4,7 +4,7 @@ import "./styles.css";
 
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import { BackButton } from "@/presentation/ui/BackButton";
-import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
+import { DropdownMenu } from "@/presentation/widgets/common/DropdownMenu";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { ICONS } from "@/infrastructure/config/icons";
 import { useBoardMenuItems } from "@/application/boards/useBoardMenuItems";

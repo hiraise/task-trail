@@ -3,15 +3,12 @@
 import { useState, useRef } from "react";
 
 import styles from "./DropdownMenu.module.css";
-
-interface DropdownMenuItem {
-  label: string;
-  onClick: () => void;
-}
+import { Icon } from "@/presentation/ui/Icon";
+import { MenuItem } from "./DropdownMenu.types";
 
 interface DropdownMenuProps {
   trigger: React.ReactNode;
-  items: DropdownMenuItem[];
+  items: MenuItem[];
 }
 
 export function DropdownMenu({ trigger, items }: DropdownMenuProps) {
@@ -41,12 +38,16 @@ export function DropdownMenu({ trigger, items }: DropdownMenuProps) {
               <button
                 key={index}
                 className={styles.dropdownItem}
+                style={{ color: item.color ? item.color : undefined }}
                 onClick={(e) => {
                   item.onClick();
                   handleClose(e);
                 }}
               >
-                {item.label}
+                {item.icon && <Icon as={item.icon} size="24px" inheritColor />}
+                <span className="btn-font-s" style={{ color: "inherit" }}>
+                  {item.label}
+                </span>
               </button>
             ))}
           </div>

@@ -10,7 +10,7 @@ import { ProjectMenuButton } from "@/presentation/widgets/projects/ProjectMenuBu
 import { ROUTES } from "@/infrastructure/config/routes";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
-import { DropdownMenu } from "@/presentation/widgets/projects/DropdownMenu";
+import { DropdownMenu } from "@/presentation/widgets/common/DropdownMenu";
 import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";

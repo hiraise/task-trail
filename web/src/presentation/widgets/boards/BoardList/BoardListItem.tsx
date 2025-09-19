@@ -3,7 +3,7 @@ import Link from "next/link";
 import styles from "./BoardListItem.module.css";
 
 import { IconButton } from "@/presentation/ui/IconButton";
-import { DropdownMenu } from "../../projects/DropdownMenu";
+import { DropdownMenu } from "../../common/DropdownMenu";
 import { UserAvatar } from "../../projects/UserAvatar";
 import { BoardTitle } from "./BoardTitle";
 import { ICONS } from "@/infrastructure/config/icons";
