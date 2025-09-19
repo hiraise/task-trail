@@ -5,6 +5,10 @@ export const TEXTS = {
   apply: "Применить",
   save: "Сохранить",
   saving: "Сохранение...",
+  move: "Переместить",
+  moving: "Перемещение...",
+  delete: "Удалить",
+  deletion: "Удаление..",
   useQueryPlaceholder: "Введите Email или имя пользователя",
   drawer: {
     myProjects: "Мои проекты",
@@ -14,6 +18,10 @@ export const TEXTS = {
     search: "Поиск",
     collapse: "Свернуть",
     expand: "Развернуть",
+  },
+  moveToArchive: {
+    title: "Перемещение в архив",
+    task: "Вы действительно хотите переместить задачу «{taskName}» в архив? Отменить это действие будет невозможно.",
   },
   tasks: {
     edit: "Редактировать задачу",
@@ -29,5 +37,8 @@ export const TEXTS = {
     archived: "Архивные",
     titlePlaceholder: "Название задачи",
     descriptionPlaceholder: "Описание задачи",
+    deleteTitle: "Удалить задачу",
+    deleteDescription:
+      "Вы действительно хотите удалить задачу «{taskName}»? Отменить это действие будет невозможно.",
   },
 };
