@@ -12,7 +12,7 @@ import { Task } from "@/domain/task/task.entity";
 export const useTaskMenuItems = (task: Task) => {
   const { data: project } = useGetById(task.projectId);
 
-  const { showEditTask } = useGlobalModals();
+  const { showEditTask, showMoveToArchive, showDeleteTask } = useGlobalModals();
 
   const permissions = useMemo(() => project?.permissions || [], [project]);
 
@@ -28,14 +28,14 @@ export const useTaskMenuItems = (task: Task) => {
       label: TEXTS.tasks.moveToArchive,
       icon: ICONS.archive,
       color: "var(--icon-tertiary)",
-      onClick: () => {},
+      onClick: async () => await showMoveToArchive(task),
       isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_UPDATE_TASK),
     },
     {
       label: TEXTS.tasks.delete,
       icon: ICONS.delete,
       color: "var(--icon-critical)",
-      onClick: () => {},
+      onClick: async () => await showDeleteTask(task),
       isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_DELETE_TASK),
     },
   ];
