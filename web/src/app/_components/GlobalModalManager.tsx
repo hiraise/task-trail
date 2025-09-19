@@ -8,6 +8,7 @@ import ChangeTaskStatusModal from "@/presentation/widgets/modals/ChangeTaskStatu
 import SortItemsModal from "@/presentation/widgets/modals/SortItemsModal";
 import InviteUserModal from "@/presentation/widgets/modals/InviteUserModal";
 import CreateProjectModal from "@/presentation/widgets/modals/CreateProjectModal";
+import EditTaskModal from "@/presentation/widgets/modals/EditTaskModal";
 
 const MODAL_COMPONENTS = {
   [MODAL_TYPE.CREATE_TASK]: CreateTaskModal,
@@ -17,6 +18,7 @@ const MODAL_COMPONENTS = {
   [MODAL_TYPE.SELECT_PROJECT]: SelectProjectModal,
   [MODAL_TYPE.CREATE_PROJECT]: CreateProjectModal,
   [MODAL_TYPE.INVITE_USER]: InviteUserModal,
+  [MODAL_TYPE.EDIT_TASK]: EditTaskModal,
 } as const;
 
 export function GlobalModalManager() {
