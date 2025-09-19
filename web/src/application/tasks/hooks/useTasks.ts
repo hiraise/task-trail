@@ -18,7 +18,7 @@ export const useGetTask = () => {
   const taskId = Number(params.id);
 
   return useQuery({
-    queryKey: [QUERY_KEYS.task(taskId), taskId],
+    queryKey: QUERY_KEYS.task(taskId),
     queryFn: () => taskService.getTask(taskId),
     enabled: !!taskId,
     staleTime: 5 * 60 * 1000,
@@ -42,7 +42,7 @@ export const useCreateTask = () => {
 
 export const useGetTaskInfo = (id: number) => {
   const queryClient = useQueryClient();
-  const task = queryClient.getQueryData<Task>([QUERY_KEYS.task(id), id]);
+  const task = queryClient.getQueryData<Task>(QUERY_KEYS.task(id));
 
   const { data: statuses } = useGetProjectStatuses(task!.projectId);
   const status = statuses?.find((s) => s.id === task?.statusId);
