@@ -3,6 +3,8 @@ export const TEXTS = {
   sort: "Сортировка",
   cancel: "Отменить",
   apply: "Применить",
+  save: "Сохранить",
+  saving: "Сохранение...",
   useQueryPlaceholder: "Введите Email или имя пользователя",
   drawer: {
     myProjects: "Мои проекты",
@@ -25,5 +27,7 @@ export const TEXTS = {
     taskAlt: "Создать новую задачу",
     active: "Активные",
     archived: "Архивные",
+    titlePlaceholder: "Название задачи",
+    descriptionPlaceholder: "Описание задачи",
   },
 };
