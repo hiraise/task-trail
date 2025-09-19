@@ -44,6 +44,7 @@
   /* Borders */
   --border-critical: rgba(255, 50, 50, 1);
   --border-secondary-2: rgba(245, 245, 245, 1);
+  --border-accent: rgba(181, 207, 248, 1);
 }
 
 :root:has(.no-doc-scroll) {
