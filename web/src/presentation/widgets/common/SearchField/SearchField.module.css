@@ -1,0 +1,42 @@
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input {
+  border-radius: 8px;
+  height: 40px;
+  gap: 8px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-right: 6px;
+  padding-left: 44px;
+  background-color: var(--bg-secondary);
+  caret-color: var(--text-accent);
+  border: none;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+  }
+  &:-webkit-autofill {
+    background-color: var(--bg-secondary) !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-secondary) inset;
+    color: inherit;
+  }
+  &:-moz-autofill {
+    background-color: var(--bg-secondary) !important;
+    box-shadow: 0 0 0px 1000px var(--bg-secondary) inset;
+    color: inherit;
+  }
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 12px;
+  top: 8px;
+  color: var(--icon-secondary);
+}
