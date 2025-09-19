@@ -1,19 +1,21 @@
 .container {
   display: flex;
-  padding: 12px 0px;
-  gap: 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  flex-direction: row;
+  padding: 12px;
+  gap: 12px;
+  border-radius: 12px;
+  background-color: var(--bg-secondary-2);
   justify-items: center;
+  justify-content: space-between;
   align-items: center;
+  transition: background-color 0.2s;
 }
 
-.container:last-child {
-  border-bottom: none;
+.container:hover {
+  cursor: pointer;
+  background-color: var(--bg-secondary);
 }
 
-.title {
-  flex: 1;
-  font-size: 14px;
-  line-height: 16px;
-  font-weight: 400;
+.container > span {
+  color: var(--text-primary);
 }

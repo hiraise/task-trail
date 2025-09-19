@@ -17,5 +17,5 @@ export const useGetProjectData = () => {
 
   const { data: tasks } = useGetTasks();
 
-  return { project, owner, projectId, tasks };
+  return { project, owner, projectId, tasks, members };
 };

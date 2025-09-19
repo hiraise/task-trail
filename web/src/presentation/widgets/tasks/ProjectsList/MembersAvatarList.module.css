@@ -7,11 +7,21 @@
 
 .membersList > * {
   outline: 1px solid var(--border-secondary-2);
+}
+
+/* Small variant (default) */
+.membersList.small > *:not(:first-child) {
+  margin-left: -2px;
+}
+
+/* Standard variant */
+.membersList.standard > *:not(:first-child) {
   margin-left: -4px;
 }
 
-.membersList > *:first-child {
-  margin-left: 0;
+/* Large variant */
+.membersList.large > *:not(:first-child) {
+  margin-left: -10px;
 }
 
 .remainingCount {
