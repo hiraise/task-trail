@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 
-import styles from "./DesktopModal.module.css";
-
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
 import { useGetProjectMembers } from "@/application/projects/hooks/useProject";
@@ -40,14 +38,14 @@ export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) 
     <BaseModal {...props} fullScreen title={TEXTS.tasks.assignee}>
       <DeviceBased
         desktop={
-          <div className={styles.desktop}>
+          <>
             <MembersListDesktop
               selectedUserId={userId}
               members={members}
               onSelect={handleOnSelect}
             />
             <DialogButtons onApply={handleApply} onClose={() => props.onClose()} />
-          </div>
+          </>
         }
         mobile={
           <MembersListMobile

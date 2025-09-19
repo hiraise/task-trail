@@ -1,5 +1,3 @@
-import styles from "./DesktopModal.module.css";
-
 import { TEXTS } from "@/shared/locales/texts";
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
@@ -24,11 +22,7 @@ export default function EditTaskModal(props: BaseModalProps<string>) {
   return (
     <BaseModal {...props} title={TEXTS.tasks.edit}>
       <DeviceBased
-        desktop={
-          <div className={styles.desktop}>
-            <EditTaskFormDesktop task={task} submitHandler={submitHandler} />
-          </div>
-        }
+        desktop={<EditTaskFormDesktop task={task} submitHandler={submitHandler} />}
         mobile={<EditTaskFormDesktop task={task} submitHandler={submitHandler} />}
       />
     </BaseModal>

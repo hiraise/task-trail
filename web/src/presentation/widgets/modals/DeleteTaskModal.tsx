@@ -1,5 +1,3 @@
-import styles from "./DesktopModal.module.css";
-
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
@@ -22,13 +20,13 @@ export default function DeleteTaskModal(props: BaseModalProps<string>) {
     <BaseModal {...props} title="">
       <DeviceBased
         desktop={
-          <div className={styles.desktop} style={{ gap: "16px" }}>
+          <div style={{ gap: "16px" }}>
             <DeleteTask taskName={title} />
             <DialogButtons variant="delete" onClose={handleClose} onDelete={handleDelete} />
           </div>
         }
         mobile={
-          <div className={styles.mobile} style={{ gap: "24px" }}>
+          <div style={{ gap: "24px" }}>
             <DeleteTask taskName={title} />
             <DialogButtons variant="delete" onClose={handleClose} onDelete={handleDelete} />
           </div>

@@ -1,7 +1,5 @@
 import { useState } from "react";
 
-import styles from "./DesktopModal.module.css";
-
 import { TEXTS } from "@/shared/locales/texts";
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
@@ -32,10 +30,10 @@ export default function SortItemsModal(props: BaseModalProps<string>) {
     <BaseModal {...props} title={TEXTS.sort}>
       <DeviceBased
         desktop={
-          <div className={styles.desktop}>
+          <>
             <SortItemsDesktop selectedOption={selectedOption} onSelect={handleDesktopSort} />
             <DialogButtons onClose={() => props.onClose()} onApply={handleApply} />
-          </div>
+          </>
         }
         mobile={<SortItems selectedOption={selectedOption} onSelect={handleMobileSort} />}
       />

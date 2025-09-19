@@ -1,3 +1,5 @@
+import styles from "./DesktopModal.module.css";
+
 import { BaseModalComponentProps } from "./BaseModal.types";
 import { BottomSheet } from "@/presentation/ui/BottomSheet/BottomSheet";
 import { Dialog } from "@/presentation/ui/Dialog";
@@ -39,7 +41,7 @@ export function BaseModal<T = void>({
               showBackButton={shouldShowBackButton}
             />
           )}
-          {children}
+          <div className={styles.desktop}>{children}</div>
         </Dialog>
       }
       mobile={
@@ -47,7 +49,7 @@ export function BaseModal<T = void>({
           {title && (
             <BottomSheetTitle title={title} onBack={onBack} showBackButton={shouldShowBackButton} />
           )}
-          {children}
+          <div className={styles.mobile}>{children}</div>
         </BottomSheet>
       }
     />
