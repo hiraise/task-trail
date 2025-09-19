@@ -1,0 +1,25 @@
+.membersList {
+  display: flex;
+  flex-direction: row;
+  overflow-x: hidden;
+  align-items: center;
+}
+
+.membersList > * {
+  outline: 1px solid var(--border-secondary-2);
+  margin-left: -4px;
+}
+
+.membersList > *:first-child {
+  margin-left: 0;
+}
+
+.remainingCount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+}

@@ -1,24 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import clsx from "clsx";
 
 import styles from "./ProjectsList.module.css";
 
 import { Project } from "@/domain/project/project.entity";
-import { projectsTexts } from "@/shared/locales/projects";
-import { Input } from "@/presentation/ui/Input/Input.styled";
 import { ProjectItem } from "./ProjectItem";
-import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
+import { SearchField } from "../../common/SearchField";
+import { TEXTS } from "@/shared/locales/texts";
 
 interface ProjectsListProps {
   projects: Project[];
   onSelect: (project: Project) => void;
+  selectedProjectId?: number;
 }
 
-export function ProjectsList({ projects, onSelect }: ProjectsListProps) {
+export function ProjectsList({ projects, onSelect, selectedProjectId }: ProjectsListProps) {
   const [query, setQuery] = useState("");
-  const { projectId } = useGlobalModalProps<{ projectId?: number }>() || {};
 
   const filteredProjects = projects.filter(
     (project) =>
@@ -28,23 +26,23 @@ export function ProjectsList({ projects, onSelect }: ProjectsListProps) {
 
   return (
     <div className={styles.container}>
-      <Input
+      <SearchField
         id="query"
         type="text"
-        placeholder={projectsTexts.projectNamePlaceholder}
+        placeholder={TEXTS.projects.titlePlaceholder}
         autoComplete="off"
         onChange={(e) => setQuery(e.target.value)}
+        value={query}
       />
+
       <div className={styles.projectList}>
         {filteredProjects.map((project) => (
-          <div
+          <ProjectItem
             key={project.id}
-            className={clsx(styles.projectItem, project.id === projectId && styles.selected)}
-            onClick={() => onSelect(project)}
-            role="button"
-          >
-            <ProjectItem project={project} />
-          </div>
+            project={project}
+            isSelected={project.id === selectedProjectId}
+            onClick={onSelect}
+          />
         ))}
       </div>
     </div>
