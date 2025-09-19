@@ -7,10 +7,13 @@ import { ICONS } from "@/infrastructure/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
 import { TaskDetailsDesktop } from "./TaskDetailsDesktop";
 import { useChangeTaskInfo } from "@/application/tasks/hooks/useChangeTaskInfo";
+import { DropdownMenu } from "../../common/DropdownMenu";
+import { useTaskMenuItems } from "@/application/tasks/hooks/useTaskMenuItems";
 
 export function TaskInfoDesktop({ task }: { task: Task }) {
   const { status, assignee, project, changeStatus, selectProject, selectAssignee } =
     useChangeTaskInfo(task);
+  const { menuItems } = useTaskMenuItems(task);
 
   return (
     <div className={styles.container}>
@@ -22,7 +25,10 @@ export function TaskInfoDesktop({ task }: { task: Task }) {
           <h2>{task.title}</h2>
           <span className="body-reg-2">{task.description}</span>
         </div>
-        <IconButton icon={ICONS.menuHorizontal} size="24px" />
+        <DropdownMenu
+          trigger={<IconButton icon={ICONS.menuHorizontal} size="24px" />}
+          items={menuItems}
+        />
       </div>
       <div className={styles.taskDetails}>
         <TaskDetailsDesktop
