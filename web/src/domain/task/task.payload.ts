@@ -9,3 +9,8 @@ export type ChangeStatusPayload = {
   id: number;
   statusId: number;
 };
+
+export type EditTaskPayload = {
+  name: string;
+  description?: string;
+};

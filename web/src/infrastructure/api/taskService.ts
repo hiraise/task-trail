@@ -64,4 +64,20 @@ export const taskService: TaskService = {
       throw new AppError(AppErrorType.SERVER, "Failed to change task status");
     }
   },
+
+  /**
+   * Updates an existing task with the specified payload.
+   *
+   * @param id - The unique identifier of the task to be edited.
+   * @param payload - The data to update the task with.
+   * @throws {AppError} Throws an AppError of type SERVER if the update fails.
+   */
+  async editTask(id, payload) {
+    try {
+      await axiosClient.patch(API_ROUTES.TASKS_BY_ID(id), payload);
+    } catch (error) {
+      clientLogger.error(`Failed to change task {id: ${id}}`, { error });
+      throw new AppError(AppErrorType.SERVER, "Failed to change task");
+    }
+  },
 };
