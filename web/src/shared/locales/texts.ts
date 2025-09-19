@@ -26,6 +26,8 @@ export const TEXTS = {
   projects: {
     titlePlaceholder: "Название проекта",
     createButton: "Создать проект",
+    empty: "У вас нет ни одного проекта, создайте его прямо сейчас, чтобы начать работу",
+    projectAlt: "Создать новый проект",
   },
   tasks: {
     edit: "Редактировать задачу",

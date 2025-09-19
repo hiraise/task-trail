@@ -8,12 +8,29 @@ import { useGetTaskListData } from "@/application/tasks/hooks/useGetTaskListData
 import { getProjectId, getUserInitials } from "@/shared/utils/formatters";
 import Link from "next/link";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { EmptyListState } from "../../common/EmptyListState/EmptyListState";
+import { ASSETS } from "@/infrastructure/config/assets";
+import { TEXTS } from "@/shared/locales/texts";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 interface TaskListProps {
   tasks: Task[];
 }
 
 export function TaskListDesktop({ tasks }: TaskListProps) {
+  const { showCreateTask } = useGlobalModals();
+
+  if (tasks.length === 0)
+    return (
+      <EmptyListState
+        src={ASSETS.images.task}
+        alt={TEXTS.tasks.taskAlt}
+        text={TEXTS.tasks.empty}
+        btnLabel={TEXTS.tasks.createButton}
+        onClick={showCreateTask}
+      />
+    );
+
   return (
     <div className={styles.container}>
       {tasks.map((t) => (

@@ -15,4 +15,5 @@
   background-color: var(--bg-secondary-2);
   overflow: auto;
   flex: 1;
+  width: 100%;
 }
