@@ -67,7 +67,7 @@ export function useCreateTaskForm(form: UseFormReturn<FormValues>) {
   };
 
   const handleSelectProject = async () => {
-    const result = await showSelectProject();
+    const result = await showSelectProject(state.project?.id);
     if (!result) return;
     state.set({ project: result });
     form.setValue("projectId", result.id, { shouldValidate: true });

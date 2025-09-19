@@ -26,7 +26,7 @@ export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) 
   };
 
   const handleOnSelect = (user: MembersData) => {
-    props.onClose(user);
+    setSelectedUser(user);
     console.log("Assignee selected:", user.username);
   };
 
@@ -40,7 +40,7 @@ export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) 
         desktop={
           <>
             <MembersListDesktop
-              selectedUserId={userId}
+              selectedUserId={selectedUser?.id}
               members={members}
               onSelect={handleOnSelect}
             />

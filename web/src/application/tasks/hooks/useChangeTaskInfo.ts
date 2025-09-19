@@ -37,6 +37,16 @@ export const useChangeTaskInfo = (task: Task) => {
     toast.success(`Select project with id: ${result.id}`);
   };
 
+  /**
+   * Opens a dialog to select a new assignee for the current task.
+   *
+   * This function displays a selection UI for choosing an assignee, pre-selecting the current assignee.
+   * If a new assignee is selected, it waits for 1.5 seconds (simulating an async operation)
+   * and then shows a success toast notification with the selected assignee's ID.
+   *
+   * @async
+   * @returns {Promise<void>} Resolves when the selection and notification are complete.
+   */
   const selectAssignee = async () => {
     const result = await showSelectAssignee({
       userId: task.assigneeId,
