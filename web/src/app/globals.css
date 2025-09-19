@@ -28,6 +28,7 @@
 
   /* Design colors */
   --bg-primary-contrast: rgba(32, 32, 32, 1);
+  --bg-primary-contrast-hover: rgba(72, 72, 72, 1);
   --bg-primary: rgba(251, 251, 251, 1);
   --bg-secondary: rgba(239, 239, 239, 1);
   --bg-secondary-2: rgba(245, 245, 245, 1);

@@ -1,0 +1,42 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 4px 12px 16px;
+  height: 44px;
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 10000px;
+  background-color: var(--bg-primary-contrast);
+
+  &:active {
+    opacity: 0.6;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transition: background-color 0.2s ease;
+      background-color: var(--bg-primary-contrast-hover);
+      cursor: pointer;
+    }
+  }
+}
+
+.container > span {
+  color: var(--text-primary-contrast);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--bg-primary);
+  width: 36px;
+  height: 36px;
+  color: var(--foreground);
+}

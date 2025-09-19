@@ -14,6 +14,7 @@ import { ProjectTask } from "@/presentation/widgets/projects/ProjectTask";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
+import { FloatingButtonDesktop } from "@/presentation/widgets/projects/FloatingButton";
 
 export function ProjectDesktopPage() {
   const { showSortOptions } = useGlobalModals();
@@ -52,6 +53,7 @@ export function ProjectDesktopPage() {
           </div>
         </div>
       </div>
+      <FloatingButtonDesktop />
     </div>
   );
 }

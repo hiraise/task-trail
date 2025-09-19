@@ -3,6 +3,7 @@
   flex-direction: column;
   gap: 12px;
   height: 100%;
+  position: relative;
 }
 
 .contentWrapper {
