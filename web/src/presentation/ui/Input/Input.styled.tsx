@@ -11,12 +11,14 @@ export const Input = styled.input`
   background-color: var(--bg-secondary);
   border: none;
   border-radius: 8px;
+  /* Text styles */
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 400;
+  font-family: var(--font-family);
+  color: var(--text-primary);
 
   &::placeholder {
-    font-size: 14px;
-    line-height: 16px;
-    font-weight: 400;
-    font-family: var(--font-family);
     color: var(--text-secondary);
   }
 
