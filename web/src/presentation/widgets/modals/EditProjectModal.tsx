@@ -8,14 +8,16 @@ import { EditProjectFormDesktop, FormValues } from "../projects/EditProjectForm"
 import { Project } from "@/domain/project/project.entity";
 import { useEditProject } from "@/application/projects/hooks/useProject";
 
-export default function EditProjectModal(props: BaseModalProps<string>) {
+export default function EditProjectModal(props: BaseModalProps<void>) {
   const { name, description } = useGlobalModalProps<EditProjectProps>() ?? {};
   const project: Partial<Project> = { name, description };
 
   const { mutateAsync: editProject } = useEditProject();
 
   const submitHandler = async (data: FormValues) => {
-    await editProject({ name: data.name, description: data.description });
+    if (data.name !== project.name || data.description !== project.description) {
+      await editProject({ name: data.name, description: data.description });
+    }
     props.onClose();
   };
 
