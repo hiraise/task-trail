@@ -12,7 +12,7 @@ import { Task } from "@/domain/task/task.entity";
 export const useTaskMenuItems = (task: Task) => {
   const { data: project } = useGetById(task.projectId);
 
-  const { showEditTask, showMoveToArchive, showDeleteTask } = useGlobalModals();
+  const { showEditTask, showMoveToArchive, showDeleteItem } = useGlobalModals();
 
   const permissions = useMemo(() => project?.permissions || [], [project]);
 
@@ -28,14 +28,26 @@ export const useTaskMenuItems = (task: Task) => {
       label: TEXTS.tasks.moveToArchive,
       icon: ICONS.archive,
       color: "var(--icon-tertiary)",
-      onClick: async () => await showMoveToArchive(task),
+
+      onClick: async () => {
+        const data = { id: task.id, title: task.title };
+        const result = await showMoveToArchive({ type: "task", ...data });
+        //TODO: implement move to archive logic
+        if (result) console.log(`Task id: ${task.id} moved to archive`);
+      },
       isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_UPDATE_TASK),
     },
     {
       label: TEXTS.tasks.delete,
       icon: ICONS.delete,
       color: "var(--icon-critical)",
-      onClick: async () => await showDeleteTask(task),
+      onClick: async () => {
+        if (!project) return;
+        const data = { id: task.id, title: task.title };
+        const result = await showDeleteItem({ type: "task", ...data });
+        //TODO: implement delete logic
+        if (result) console.log(`Task id: ${result} deleted`);
+      },
       isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_DELETE_TASK),
     },
   ];
