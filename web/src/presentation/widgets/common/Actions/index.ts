@@ -1,2 +1,2 @@
 export { MoveToArchive } from "./MoveToArchive";
-export { DeleteTask } from "./DeleteTask";
+export { DeleteItem } from "./DeleteItem";
