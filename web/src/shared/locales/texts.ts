@@ -36,6 +36,7 @@ export const TEXTS = {
     leave: "Покинуть проект",
     delete: "Удалить проект",
     members: "Участники проекта",
+    admins: "Администраторы проекта",
     titlePlaceholder: "Название проекта",
     descriptionPlaceholder: "Описание проекта",
     createButton: "Создать проект",
