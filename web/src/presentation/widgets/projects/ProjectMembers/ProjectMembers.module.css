@@ -1,0 +1,35 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titleWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+}
+
+/* MembersDetailView styles */
+.membersWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-secondary-2);
+  padding-bottom: 8px;
+}
+
+.members {
+  display: grid;
+  grid-auto-rows: 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 20px;
+}

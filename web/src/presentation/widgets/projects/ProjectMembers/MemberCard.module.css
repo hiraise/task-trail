@@ -1,0 +1,33 @@
+.cardWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+}
+
+.cardWrapper.hovered {
+  transition: padding 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+  padding-left: 8px;
+  padding-right: 16px;
+  background-color: var(--bg-secondary-2);
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px 8px 0px;
+}
+
+.name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.email {
+  color: var(--text-secondary);
+}
