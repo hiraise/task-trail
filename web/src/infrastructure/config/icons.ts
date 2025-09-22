@@ -70,6 +70,7 @@ import PictureDesignElement from "../../../public/elements/picture.svg";
 import LockDesignElement from "../../../public/elements/lock.svg";
 import ArchiveDesignElement from "../../../public/elements/archive.svg";
 import DeleteDesignElement from "../../../public/elements/delete.svg";
+import LeaveDesignElement from "../../../public/elements/leave.svg";
 
 export const DESIGN_ELEMENTS = {
   search: SearchDesignElement,
@@ -78,4 +79,5 @@ export const DESIGN_ELEMENTS = {
   lock: LockDesignElement,
   archive: ArchiveDesignElement,
   delete: DeleteDesignElement,
+  leave: LeaveDesignElement,
 };
