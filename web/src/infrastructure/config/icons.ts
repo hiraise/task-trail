@@ -14,7 +14,7 @@ import PlusIcon from "../../../public/icons/PlusIcon.svg";
 import CheckMarkIcon from "../../../public/icons/checkMark.svg";
 import MenuIcon from "../../../public/icons/menu_icon.svg";
 import MenuHorizontalIcon from "../../../public/icons/MenuHorizontalIcon.svg";
-import AddUserIcon from "../../../public/icons/user-add.svg";
+import AddUserIcon from "../../../public/icons/AddUserIcon.svg";
 import DeleteIcon from "../../../public/icons/DeleteIcon.svg";
 import DownArrow from "../../../public/icons/ArrowDown.svg";
 import LogoDesktop from "../../../public/icons/LogoDesktop.svg";
@@ -28,6 +28,7 @@ import ArrowLeft from "../../../public/icons/ArrowLeft.svg";
 import ArrowLeftWithPadding from "../../../public/icons/ArrowLeftWithPadding.svg";
 import ArrowRight from "../../../public/icons/ArrowRight.svg";
 import EditIcon from "../../../public/icons/EditIcon.svg";
+import LeaveIcon from "../../../public/icons/LeaveIcon.svg";
 
 export const ICONS = {
   search: SearchIcon,
@@ -59,6 +60,7 @@ export const ICONS = {
   show: ShowIcon,
   hide: HideIcon,
   edit: EditIcon,
+  leave: LeaveIcon,
 };
 
 // Design elements
