@@ -14,7 +14,7 @@ import { useMemberMenuItems } from "@/application/projects/hooks/useMemberMenuIt
 
 export function MemberCard({ user }: { user: User }) {
   const [isHovered, setIsHovered] = useState(false);
-  const { menuItems } = useMemberMenuItems();
+  const { menuItems } = useMemberMenuItems(user.id);
 
   return (
     <div
