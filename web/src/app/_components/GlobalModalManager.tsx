@@ -12,6 +12,7 @@ import EditTaskModal from "@/presentation/widgets/modals/EditTaskModal";
 import MoveToArchiveModal from "@/presentation/widgets/modals/MoveToArchiveModal";
 import DeleteItemModal from "@/presentation/widgets/modals/DeleteItemModal";
 import EditProjectModal from "@/presentation/widgets/modals/EditProjectModal";
+import LeaveProjectModal from "@/presentation/widgets/modals/LeaveProjectModal";
 
 const MODAL_COMPONENTS = {
   [MODAL_TYPE.CREATE_TASK]: CreateTaskModal,
@@ -25,6 +26,7 @@ const MODAL_COMPONENTS = {
   [MODAL_TYPE.MOVE_TO_ARCHIVE]: MoveToArchiveModal,
   [MODAL_TYPE.DELETE]: DeleteItemModal,
   [MODAL_TYPE.EDIT_PROJECT]: EditProjectModal,
+  [MODAL_TYPE.LEAVE_PROJECT]: LeaveProjectModal,
 } as const;
 
 export function GlobalModalManager() {

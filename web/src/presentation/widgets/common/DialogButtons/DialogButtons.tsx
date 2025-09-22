@@ -8,7 +8,8 @@ interface DialogButtonsProps {
   onApply?: () => void;
   onMove?: () => void;
   onDelete?: () => void;
-  variant?: "apply" | "move" | "delete";
+  onLeave?: () => void;
+  variant?: "apply" | "move" | "delete" | "leave";
 }
 
 export function DialogButtons({
@@ -16,6 +17,7 @@ export function DialogButtons({
   onApply,
   onMove,
   onDelete,
+  onLeave,
   variant = "apply",
 }: DialogButtonsProps) {
   return (
@@ -37,6 +39,11 @@ export function DialogButtons({
       {variant === "delete" && (
         <SubmitButton $variant="primary" onClick={onDelete}>
           {TEXTS.delete}
+        </SubmitButton>
+      )}
+      {variant === "leave" && (
+        <SubmitButton $variant="primary" onClick={onLeave}>
+          {TEXTS.leave}
         </SubmitButton>
       )}
     </div>

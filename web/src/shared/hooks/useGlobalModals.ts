@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 import { MODAL_TYPE, ModalType, useGlobalModalContext } from "@/app/_components/GlobalModalContext";
-import { Task, TaskStatus } from "@/domain/task/task.entity";
+import { TaskStatus } from "@/domain/task/task.entity";
 import { Project } from "@/domain/project/project.entity";
 import { MembersData } from "@/domain/user/user.entity";
 
@@ -23,6 +23,11 @@ export interface EditTaskProps {
 export interface EditProjectProps {
   name: string;
   description?: string;
+}
+
+export interface LeaveProjectProps {
+  id: number;
+  title: string;
 }
 
 export interface ActionProps {
@@ -98,15 +103,16 @@ export const useGlobalModals = () => {
 
     // Common actions
     showMoveToArchive: (props?: ActionProps) =>
-      safeOpen<void>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
-    showDeleteItem: (props?: ActionProps) => safeOpen<void>(MODAL_TYPE.DELETE, { ...props }),
+      safeOpen<number>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
+    showDeleteItem: (props?: ActionProps) => safeOpen<number>(MODAL_TYPE.DELETE, { ...props }),
 
     // Project actions
     showEditProject: (props?: EditProjectProps) =>
-      safeOpen<Partial<Project>>(MODAL_TYPE.EDIT_PROJECT, { ...props }),
+      safeOpen<void>(MODAL_TYPE.EDIT_PROJECT, { ...props }),
+    showLeaveProject: (props: LeaveProjectProps) =>
+      safeOpen<number>(MODAL_TYPE.LEAVE_PROJECT, { ...props }),
 
     // Task actions
-    showEditTask: (props?: EditTaskProps) =>
-      safeOpen<Partial<Task>>(MODAL_TYPE.EDIT_TASK, { ...props }),
+    showEditTask: (props?: EditTaskProps) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { ...props }),
   };
 };
