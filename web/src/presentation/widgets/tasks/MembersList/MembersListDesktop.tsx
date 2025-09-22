@@ -32,7 +32,7 @@ export function MembersListDesktop(props: MembersListProps) {
       <Input
         id="query"
         type="text"
-        placeholder={TEXTS.useQueryPlaceholder}
+        placeholder={TEXTS.userQueryPlaceholder}
         autoComplete="off"
         onChange={(e) => setQuery(e.target.value)}
       />

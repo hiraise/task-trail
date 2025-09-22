@@ -1,22 +1,19 @@
-import { useRouter } from "next/navigation";
-
 import { useMemo } from "react";
 
-import { ROUTES } from "@/infrastructure/config/routes";
 import { PERMISSIONS } from "@/domain/project/project.entity";
 import { hasPermission } from "@/shared/utils/permissions";
-import { useDeleteProject, useGetById, useLeaveProject } from "./useProject";
+import { useAddMember, useDeleteProject, useGetById, useLeaveProject } from "./useProject";
 import { MenuItem } from "@/presentation/widgets/common/DropdownMenu";
 import { ICONS } from "@/infrastructure/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 export const useProjectMenuItems = (projectId: number) => {
-  const router = useRouter();
   const { data: project } = useGetById(projectId);
   const { mutateAsync: leave } = useLeaveProject();
   const { mutateAsync: deleteById } = useDeleteProject();
-  const { showEditProject, showMoveToArchive, showDeleteItem, showLeaveProject } =
+  const { mutateAsync: addMembers } = useAddMember();
+  const { showEditProject, showMoveToArchive, showDeleteItem, showLeaveProject, showInviteUser } =
     useGlobalModals();
 
   const permissions = useMemo(() => project?.permissions || [], [project]);
@@ -36,7 +33,11 @@ export const useProjectMenuItems = (projectId: number) => {
       label: TEXTS.projects.inviteMember,
       icon: ICONS.addUser,
       color: "var(--icon-tertiary)",
-      onClick: () => router.push(ROUTES.editProject(projectId)),
+      onClick: async () => {
+        const emails = await showInviteUser();
+        if (!emails || emails.length === 0) return;
+        await addMembers(emails);
+      },
       isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_INVITE_USERS),
     },
     {

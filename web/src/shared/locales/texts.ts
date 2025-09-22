@@ -10,7 +10,9 @@ export const TEXTS = {
   delete: "Удалить",
   deletion: "Удаление..",
   leave: "Покинуть",
-  useQueryPlaceholder: "Введите Email или имя пользователя",
+  userQueryPlaceholder: "Введите Email или имя пользователя",
+  userInviteDescription:
+    "Если пользователь не использует Tasktrail, то мы вышлем ему приглашение с ссылкой для подключения к проекту",
   drawer: {
     myProjects: "Мои проекты",
     myBoards: "Мои доски",
@@ -44,6 +46,8 @@ export const TEXTS = {
       "Вы действительно хотите удалить проект «{projectName}»? Отменить это действие будет невозможно.",
     leaveDescription:
       "Вы действительно хотите покинуть проект «{projectName}»? Отменить это действие будет невозможно.",
+    addParticipant: "Добавить участников",
+    invite: "Пригласить в проект",
   },
   tasks: {
     edit: "Редактировать задачу",

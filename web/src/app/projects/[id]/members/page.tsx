@@ -1,7 +1,6 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { toast } from "sonner";
 
 import "./styles.css";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
@@ -28,13 +27,7 @@ export default function ProjectMembersPage() {
   const handleAddMembers = async () => {
     const emails = await showInviteUser();
     if (!emails || emails.length === 0) return;
-    try {
-      await addMembers(emails);
-      toast.success("User invited successfully!");
-    } catch (error) {
-      console.error("Failed to invite user:", error);
-      toast.error("Failed to invite user");
-    }
+    await addMembers(emails);
   };
 
   return (

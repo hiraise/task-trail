@@ -12,7 +12,7 @@ import { ProjectCard } from "@/presentation/widgets/projects/ProjectCard";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { ROUTES } from "@/infrastructure/config/routes";
-import { projectsTexts } from "@/shared/locales/projects";
+import { TEXTS } from "@/shared/locales/texts";
 
 export function ProjectsMobilePage() {
   const { showCreateProject, showSortOptions } = useGlobalModals();
@@ -30,7 +30,7 @@ export function ProjectsMobilePage() {
     <MainContainer>
       <DashboardHeader />
       <div className={styles.titleWrapper}>
-        <h1>{projectsTexts.projects.title}</h1>
+        <h1>{TEXTS.drawer.myProjects}</h1>
         <IconButton icon={ICONS.sort} onClick={handleSortProjects} />
       </div>
       <div className={styles.cards}>
