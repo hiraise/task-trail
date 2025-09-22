@@ -25,30 +25,34 @@ export interface EditProjectProps {
   description?: string;
 }
 
-export interface TaskActionProps {
+export interface ActionProps {
   id: number;
   title: string;
+  type: "task" | "project";
 }
 
 /**
- * Custom hook providing a set of functions to open global modal dialogs in the application.
- *
- * Each function opens a specific modal and returns a Promise that resolves with the modal's result,
+ * Custom hook providing a set of functions to open global modals throughout the application.
+ * Each function corresponds to a specific modal type and returns a Promise that resolves with the modal's result,
  * or `undefined` if the modal was closed or an error occurred.
  *
- * @returns An object containing modal-opening functions:
- * - `showSelectAssignee(props?)`: Opens the "Select Assignee" modal.
- * - `showSelectProject(projectId?)`: Opens the "Select Project" modal.
- * - `showChangeStatus(props?)`: Opens the "Change Status" modal.
- * - `showSortOptions()`: Opens the "Sort Options" modal.
- * - `showCreateTask()`: Opens the "Create Task" modal.
- * - `showCreateProject()`: Opens the "Create Project" modal.
- * - `showInviteUser()`: Opens the "Invite User" modal.
- * - `showEditTask(props?)`: Opens the "Edit Task" modal.
- * - `showMoveToArchive(props?)`: Opens the "Move to Archive" modal.
- * - `showDeleteTask(props?)`: Opens the "Delete Task" modal.
+ * @returns An object containing methods to open various global modals:
+ * - `showSelectAssignee(props?)`: Opens the "Select Assignee" modal. Returns selected `MembersData` or `undefined`.
+ * - `showSelectProject(projectId?)`: Opens the "Select Project" modal. Returns selected `Project` or `undefined`.
+ * - `showChangeStatus(props?)`: Opens the "Change Status" modal. Returns selected `TaskStatus` or `undefined`.
+ * - `showSortOptions()`: Opens the "Sort Options" modal. Returns `void` or `undefined`.
+ * - `showCreateTask()`: Opens the "Create Task" modal. Returns `void` or `undefined`.
+ * - `showCreateProject()`: Opens the "Create Project" modal. Returns `void` or `undefined`.
+ * - `showInviteUser()`: Opens the "Invite User" modal. Returns an array of invited user emails (`string[]`) or `undefined`.
+ * - `showMoveToArchive(props?)`: Opens the "Move to Archive" modal. Returns `void` or `undefined`.
+ * - `showDeleteItem(props?)`: Opens the "Delete Item" modal. Returns `void` or `undefined`.
+ * - `showEditProject(props?)`: Opens the "Edit Project" modal. Returns a partial `Project` object or `undefined`.
+ * - `showEditTask(props?)`: Opens the "Edit Task" modal. Returns a partial `Task` object or `undefined`.
+ *
+ * All modal functions are safe to use and will return `undefined` if the modal is dismissed or an error occurs.
  *
  * @example
+ * ```tsx
  * const {
  *   showSelectAssignee,
  *   showCreateTask,
@@ -56,8 +60,11 @@ export interface TaskActionProps {
  *
  * const handleAssign = async () => {
  *   const assignee = await showSelectAssignee();
- *   // handle selected assignee
+ *   if (assignee) {
+ *     // handle selected assignee
+ *   }
  * };
+ * ```
  */
 export const useGlobalModals = () => {
   const { open } = useGlobalModalContext();
@@ -89,6 +96,11 @@ export const useGlobalModals = () => {
     showCreateProject: () => safeOpen<void>(MODAL_TYPE.CREATE_PROJECT),
     showInviteUser: () => safeOpen<string[]>(MODAL_TYPE.INVITE_USER),
 
+    // Common actions
+    showMoveToArchive: (props?: ActionProps) =>
+      safeOpen<void>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
+    showDeleteItem: (props?: ActionProps) => safeOpen<void>(MODAL_TYPE.DELETE, { ...props }),
+
     // Project actions
     showEditProject: (props?: EditProjectProps) =>
       safeOpen<Partial<Project>>(MODAL_TYPE.EDIT_PROJECT, { ...props }),
@@ -96,9 +108,5 @@ export const useGlobalModals = () => {
     // Task actions
     showEditTask: (props?: EditTaskProps) =>
       safeOpen<Partial<Task>>(MODAL_TYPE.EDIT_TASK, { ...props }),
-    showMoveToArchive: (props?: TaskActionProps) =>
-      safeOpen<void>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
-    showDeleteTask: (props?: TaskActionProps) =>
-      safeOpen<void>(MODAL_TYPE.DELETE_TASK, { ...props }),
   };
 };
