@@ -33,6 +33,11 @@
   gap: 8px;
 }
 
+.content.members {
+  overflow-y: auto;
+  min-height: 110px;
+}
+
 .tasks {
   display: flex;
   flex-direction: column;

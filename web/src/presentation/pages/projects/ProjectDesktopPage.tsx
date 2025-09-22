@@ -7,8 +7,6 @@ import { useGetProjectData } from "@/application/projects/hooks/useGetProjectDat
 import { ROUTES } from "@/infrastructure/config/routes";
 import { BackButton } from "@/presentation/ui/BackButton";
 import { ProjectInfo } from "@/presentation/widgets/projects/ProjectInfo";
-import { ProjectMenuButton } from "@/presentation/widgets/projects/ProjectMenuButton";
-import { MembersAvatarList } from "@/presentation/widgets/tasks/ProjectsList/MembersAvatarList";
 import { TEXTS } from "@/shared/locales/texts";
 import { ProjectTask } from "@/presentation/widgets/projects/ProjectTask";
 import { ICONS } from "@/infrastructure/config/icons";
@@ -16,10 +14,10 @@ import { IconButton } from "@/presentation/ui/IconButton";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { FloatingButtonDesktop } from "@/presentation/widgets/projects/FloatingButton";
 import { Task } from "@/domain/task/task.entity";
+import { ProjectMembers } from "@/presentation/widgets/projects/ProjectMembers";
 
 export function ProjectDesktopPage() {
-  const { project, projectId, tasks, members } = useGetProjectData();
-  const memberIds = members?.map((member) => member.id) || [];
+  const { project, tasks, members } = useGetProjectData();
 
   if (!project || !tasks) return null;
 
@@ -31,13 +29,8 @@ export function ProjectDesktopPage() {
           <ProjectInfo project={project} />
         </div>
         <div className={clsx(styles.content, styles.members)}>
-          <ProjectMenuButton
-            href={ROUTES.projectMembers(projectId)}
-            text={TEXTS.projects.members}
-          />
-          <MembersAvatarList memberIds={memberIds} variant="large" />
+          <ProjectMembers members={members ?? []} />
         </div>
-
         <TaskList tasks={tasks} />
       </div>
       <FloatingButtonDesktop />
