@@ -59,3 +59,19 @@
   min-height: 0;
   flex-grow: 1;
 }
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  background-color: var(--bg-secondary-2);
+  flex: 1;
+}
+
+.emptyState > p {
+  text-align: center;
+  max-width: 240px;
+  color: var(--text-secondary);
+}
