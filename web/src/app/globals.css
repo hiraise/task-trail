@@ -34,6 +34,8 @@
   --bg-secondary-2: rgba(245, 245, 245, 1);
   --bg-tertiary: rgba(228, 228, 228, 1);
   --bg-card: rgba(255, 255, 255, 1);
+  --bg-accent-yellow: rgba(255, 237, 205, 1);
+  --bg-accent-blue: rgba(223, 235, 255, 1);
 
   /* Icons */
   --icon-primary: rgba(32, 32, 32, 1);
