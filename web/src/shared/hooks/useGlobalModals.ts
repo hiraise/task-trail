@@ -20,6 +20,11 @@ export interface EditTaskProps {
   description?: string;
 }
 
+export interface EditProjectProps {
+  name: string;
+  description?: string;
+}
+
 export interface TaskActionProps {
   id: number;
   title: string;
@@ -83,6 +88,10 @@ export const useGlobalModals = () => {
     showCreateTask: () => safeOpen<void>(MODAL_TYPE.CREATE_TASK),
     showCreateProject: () => safeOpen<void>(MODAL_TYPE.CREATE_PROJECT),
     showInviteUser: () => safeOpen<string[]>(MODAL_TYPE.INVITE_USER),
+
+    // Project actions
+    showEditProject: (props?: EditProjectProps) =>
+      safeOpen<Partial<Project>>(MODAL_TYPE.EDIT_PROJECT, { ...props }),
 
     // Task actions
     showEditTask: (props?: EditTaskProps) =>

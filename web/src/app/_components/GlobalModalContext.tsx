@@ -12,6 +12,7 @@ export const MODAL_TYPE = {
   EDIT_TASK: "EDIT_TASK",
   MOVE_TO_ARCHIVE: "MOVE_TO_ARCHIVE",
   DELETE_TASK: "DELETE_TASK",
+  EDIT_PROJECT: "EDIT_PROJECT",
 } as const;
 
 export type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];
