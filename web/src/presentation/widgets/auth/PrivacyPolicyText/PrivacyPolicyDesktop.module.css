@@ -6,3 +6,10 @@
   text-align: center;
   vertical-align: middle;
 }
+
+.link {
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: underline;
+  text-decoration-style: solid;
+}

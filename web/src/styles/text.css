@@ -79,10 +79,6 @@ h4 {
   font-weight: 550;
   font-family: var(--font-family);
   color: var(--text-primary);
-  text-align: center;
-  vertical-align: middle;
-  text-decoration: underline;
-  text-decoration-style: solid;
 }
 
 /* Buttons */
