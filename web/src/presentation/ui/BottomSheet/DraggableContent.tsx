@@ -54,9 +54,7 @@ export function DraggableContent({
       <div className={styles.handle} />
 
       {/* Content */}
-      <div className={clsx(styles.contentBody, { [styles.fullScreen]: fullScreen })}>
-        {children}
-      </div>
+      <div className={clsx(styles.body, { [styles.fullScreen]: fullScreen })}>{children}</div>
     </m.div>
   );
 }

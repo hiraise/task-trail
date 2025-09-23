@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { motion as m, AnimatePresence } from "framer-motion";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
@@ -31,12 +31,6 @@ export function BottomSheet(props: BottomSheetProps) {
   });
 
   const sensors = useSensors(touchSensor, pointerSensor);
-
-  useEffect(() => {
-    if (isOpen && contentRef.current) {
-      contentRef.current.focus();
-    }
-  }, [isOpen]);
 
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) onClose();
