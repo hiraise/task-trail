@@ -111,6 +111,7 @@ export const useGlobalModals = () => {
       safeOpen<void>(MODAL_TYPE.EDIT_PROJECT, { ...props }),
     showLeaveProject: (props: LeaveProjectProps) =>
       safeOpen<number>(MODAL_TYPE.LEAVE_PROJECT, { ...props }),
+    showProjectSettings: () => safeOpen<void>(MODAL_TYPE.PROJECT_SETTINGS),
 
     // Task actions
     showEditTask: (props?: EditTaskProps) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { ...props }),

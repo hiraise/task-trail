@@ -1,45 +1,15 @@
-.handle {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 64px;
-  height: 4px;
-  background: var(--handle-grey);
-  border-radius: 2.5px;
-}
-
-.content {
-  position: relative;
-  background: var(--background);
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  width: 100%;
-  padding: 24px 20px;
-  z-index: 1002;
-}
-
-.wrapper {
-  position: absolute;
-  display: flex;
-  align-items: flex-end;
+.bottomSheet {
+  position: fixed;
   inset: 0;
+  z-index: 1002;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
 }
 
 .overlay {
-  position: absolute;
-  background: var(--overlay-bg);
-  z-index: 1001;
-  inset: 0;
-}
-
-.bottomSheet {
   position: fixed;
-  z-index: 9999;
   inset: 0;
-}
-
-.fullScreen {
-  height: 100dvh;
-  max-height: 100dvh;
+  background: rgba(0, 0, 0);
+  z-index: 1001;
 }

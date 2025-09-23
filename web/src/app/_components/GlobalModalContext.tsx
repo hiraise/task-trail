@@ -14,6 +14,7 @@ export const MODAL_TYPE = {
   DELETE: "DELETE",
   EDIT_PROJECT: "EDIT_PROJECT",
   LEAVE_PROJECT: "LEAVE_PROJECT",
+  PROJECT_SETTINGS: "PROJECT_SETTINGS",
 } as const;
 
 export type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];

@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { motion as m, useDragControls } from "framer-motion";
-import clsx from "clsx";
+import { useEffect, useRef, useState } from "react";
+import { motion as m, AnimatePresence } from "framer-motion";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 
 import styles from "./BottomSheet.module.css";
+
+import { DraggableContent } from "./DraggableContent";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -16,8 +19,18 @@ interface BottomSheetProps {
 export function BottomSheet(props: BottomSheetProps) {
   const { isOpen, onClose, children, fullScreen } = props;
 
-  const contentRef = useRef<HTMLDivElement>(null);
-  const dragControls = useDragControls();
+  const [isDragging, setIsDragging] = useState(false);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: { delay: 200, tolerance: 8 },
+  });
+
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: { distance: 8 },
+  });
+
+  const sensors = useSensors(touchSensor, pointerSensor);
 
   useEffect(() => {
     if (isOpen && contentRef.current) {
@@ -29,40 +42,52 @@ export function BottomSheet(props: BottomSheetProps) {
     if (e.target === e.currentTarget) onClose();
   };
 
-  const startDrag = (event: React.PointerEvent) => {
-    dragControls.start(event);
+  const handleDragStart = () => setIsDragging(true);
+
+  const handleDragEnd = (event: { delta: { x: number; y: number } }) => {
+    setIsDragging(false);
+
+    const { delta } = event;
+    if (!delta) return;
+
+    const CLOSE_THRESHOLD = 150;
+    const VELOCITY_THRESHOLD = 500;
+
+    const dragDistance = delta.y;
+    const velocity = Math.abs(dragDistance);
+
+    if (dragDistance > CLOSE_THRESHOLD || velocity > VELOCITY_THRESHOLD) onClose();
   };
 
   return (
-    <m.div className={styles.bottomSheet} role="dialog" aria-modal="true">
-      <m.div className={styles.overlay} exit={{ opacity: 0 }} onClick={handleOverlayClick} />
-      <div className={styles.wrapper}>
-        <m.div
-          ref={contentRef}
-          className={clsx(styles.content, { [styles.fullScreen]: fullScreen })}
-          initial={{ y: "100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "100%" }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          drag="y"
-          dragControls={dragControls}
-          dragListener={false}
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.2}
-          onDragEnd={(_e, { offset, velocity }) => {
-            if (offset.y > 150 || velocity.y > 500) onClose();
-          }}
-          tabIndex={-1}
-          onClick={(e) => e.stopPropagation()}
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <DndContext
+          sensors={sensors}
+          modifiers={[restrictToVerticalAxis]}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
         >
-          <div
-            className={styles.handle}
-            onPointerDown={startDrag}
-            style={{ touchAction: "none" }}
-          />
-          {children}
-        </m.div>
-      </div>
-    </m.div>
+          <div className={styles.bottomSheet} role="dialog" aria-modal="true">
+            <m.div
+              className={styles.overlay}
+              onClick={handleOverlayClick}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isDragging ? 0.2 : 0.32 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            />
+
+            <DraggableContent
+              fullScreen={fullScreen}
+              contentRef={contentRef}
+              isDragging={isDragging}
+            >
+              {children}
+            </DraggableContent>
+          </div>
+        </DndContext>
+      )}
+    </AnimatePresence>
   );
 }

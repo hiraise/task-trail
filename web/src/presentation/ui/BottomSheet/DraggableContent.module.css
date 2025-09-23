@@ -1,0 +1,30 @@
+.handle {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 4px;
+  background: rgba(203, 203, 203, 1);
+  border-radius: 2.5px;
+  cursor: var(--cursor-type, grab);
+  user-select: none;
+  touch-action: none;
+}
+
+.content {
+  touch-action: none;
+  height: auto;
+  width: 100%;
+  position: relative;
+  background: var(--bg-primary);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  padding: 24px 20px;
+  z-index: 1002;
+}
+
+.fullScreen {
+  height: 100dvh;
+  max-height: 100dvh;
+}

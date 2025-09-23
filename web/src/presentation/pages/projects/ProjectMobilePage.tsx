@@ -3,12 +3,10 @@ import Link from "next/link";
 import styles from "./ProjectMobilePage.module.css";
 
 import { useGetProjectData } from "@/application/projects/hooks/useGetProjectData";
-import { useProjectMenuItems } from "@/application/projects/hooks/useProjectMenuItems";
 import { ICONS } from "@/infrastructure/config/icons";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { BackButton } from "@/presentation/ui/BackButton";
 import { IconButton } from "@/presentation/ui/IconButton";
-import { DropdownMenu } from "@/presentation/widgets/common/DropdownMenu";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
@@ -20,8 +18,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 export function ProjectMobilePage() {
   const { project, owner, projectId, tasks, members } = useGetProjectData();
-  const { menuItems } = useProjectMenuItems(projectId);
-  const { showCreateTask } = useGlobalModals();
+  const { showCreateTask, showProjectSettings } = useGlobalModals();
 
   const memberIds = members?.map((member) => member.id) || [];
 
@@ -39,10 +36,7 @@ export function ProjectMobilePage() {
         <div className={styles.titleWrapper}>
           <div className={styles.projectTitle}>
             <h1>{project.name}</h1>
-            <DropdownMenu
-              trigger={<IconButton icon={ICONS.menu} size="24px" />}
-              items={menuItems}
-            />
+            <IconButton icon={ICONS.menu} size="24px" onClick={showProjectSettings} />
           </div>
           <p className="body-reg-2">{project.description}</p>
           <p className="body-reg-2">
