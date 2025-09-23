@@ -1,12 +1,12 @@
 .membersList {
   display: flex;
   flex-direction: row;
-  overflow-x: hidden;
+  overflow-x: visible;
   align-items: center;
 }
 
 .membersList > * {
-  outline: 1px solid var(--border-secondary-2);
+  outline: 1px solid var(--outline-color, var(--border-secondary-2));
 }
 
 /* Small variant (default) */

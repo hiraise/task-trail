@@ -18,12 +18,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   const textColor = isHovered ? "var(--text-primary-contrast)" : "var(--text-primary)";
+  const bgColor = isHovered ? "var(--bg-primary-contrast)" : "var(--bg-secondary-2)";
   const titleStyle = { color: textColor };
   const textStyle = { color: textColor, opacity: isHovered ? 0.6 : 1 };
 
   return (
     <div
       className={styles.cardContainer}
+      style={{ backgroundColor: bgColor }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -34,7 +36,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </p>
       </div>
       <div className={styles.infoWrapper}>
-        {memberIds.length > 0 && <MembersAvatarList memberIds={memberIds} />}
+        {memberIds.length > 0 && (
+          <MembersAvatarList memberIds={memberIds} bgColor={bgColor} variant="standard" />
+        )}
         <span className="caption-reg">{pluralizeTasks(project.totalTasks)}</span>
       </div>
     </div>
