@@ -35,7 +35,9 @@ export function PersonalDataFormDesktop() {
   const [focused, setFocused] = useState(false);
 
   const submitHandler = async (data: FormValues) => {
-    await update.mutateAsync({ username: data.username });
+    if (initialUsername !== data.username) {
+      await update.mutateAsync({ username: data.username });
+    }
     setFocused(false);
   };
 

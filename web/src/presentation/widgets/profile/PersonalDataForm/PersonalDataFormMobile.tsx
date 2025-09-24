@@ -33,6 +33,7 @@ export function PersonalDataFormMobile() {
   }, [initialUsername, reset]);
 
   const submitHandler = async (data: FormValues) => {
+    if (initialUsername === data.username) return;
     await update.mutateAsync({ username: data.username });
   };
 
