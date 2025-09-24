@@ -78,5 +78,6 @@ export const TEXTS = {
     usernamePlaceholder: "Имя пользователя",
     emailLabel: "Почта",
     emailPlaceholder: "Email",
+    heroAlt: "Фоновое изображения профиля",
   },
 };

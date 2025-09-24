@@ -12,6 +12,7 @@ import { User } from "@/domain/user/user.entity";
 import { ProfileAvatar } from "./ProfileAvatar";
 import { useLogout } from "@/application/auth/hooks/useLogout";
 import { Spinner } from "@/presentation/ui/Spinner";
+import { TEXTS } from "@/shared/locales/texts";
 
 export function ProfileHero({ user }: { user: User }) {
   const { mutateAsync: logout, isPending: loading } = useLogout();
@@ -29,7 +30,6 @@ export function ProfileHero({ user }: { user: User }) {
       const rect = avatarRef.current.getBoundingClientRect();
       minTop = Math.min(minTop, rect.top);
       maxBottom = Math.max(maxBottom, rect.bottom);
-      console.log(`Avatar height: minTop {${minTop}}, maxBottom {${maxBottom}} `);
     }
 
     setHeight(maxBottom - minTop);
@@ -38,7 +38,7 @@ export function ProfileHero({ user }: { user: User }) {
   return (
     <div ref={heroRef} style={{ minHeight: height }}>
       <div className={styles.container}>
-        <Image src={ASSETS.images.heo} fill alt="Background design element" />
+        <Image src={ASSETS.images.heo} fill sizes="100vw" alt={TEXTS.profile.heroAlt} priority />
         <button onClick={() => logout()} className={styles.logoutButton}>
           {loading ? <Spinner size={24} /> : <Icon as={ICONS.leave} size="24px" inheritColor />}
         </button>
