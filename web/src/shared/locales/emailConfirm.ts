@@ -7,6 +7,5 @@ export const emailConfirmTexts = {
   resendEmail: "Отправить повторно",
   openEmail: "Перейти в почту",
   imageAltText: "Email Confirmation",
-  resendEmailTimerText: (time: string) =>
-    `Отправить новое письмо можно через ${time}`,
+  resendEmailTimerText: (time: string) => `Отправить новое письмо можно через ${time}`,
 };

@@ -5,5 +5,4 @@ export const sharedTexts = {
   boards: "Доски",
   tasks: "Задачи",
   archive: "Архив",
-  guest: "Гость",
 };
