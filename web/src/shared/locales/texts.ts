@@ -10,6 +10,7 @@ export const TEXTS = {
   delete: "Удалить",
   deletion: "Удаление..",
   leave: "Покинуть",
+  changePassword: "Изменить пароль",
   userQueryPlaceholder: "Введите Email или имя пользователя",
   userInviteDescription:
     "Если пользователь не использует Tasktrail, то мы вышлем ему приглашение с ссылкой для подключения к проекту",
@@ -79,5 +80,9 @@ export const TEXTS = {
     emailLabel: "Почта",
     emailPlaceholder: "Email",
     heroAlt: "Фоновое изображения профиля",
+    oldPasswordLabel: "Старый пароль",
+    newPasswordLabel: "Новый пароль",
+    confirmPasswordLabel: "Повторите новый пароль",
+    passwordPlaceholder: "••••••••",
   },
 };

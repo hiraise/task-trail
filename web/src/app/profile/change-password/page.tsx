@@ -5,8 +5,8 @@ import { BackButton } from "@/presentation/ui/BackButton";
 import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import { Spacer } from "@/presentation/widgets/primitives/Spacer";
-import { ChangePasswordForm } from "@/presentation/widgets/profile/ChangePasswordForm/ChangePasswordForm";
 import { usePasswordChange } from "@/application/auth/hooks/usePasswordChange";
+import { ChangePasswordFormMobile } from "@/presentation/widgets/profile/ChangePasswordForm";
 
 export default function ChangePasswordPage() {
   const { mutateAsync: changePassword, isPending: isLoading } = usePasswordChange();
@@ -17,7 +17,7 @@ export default function ChangePasswordPage() {
       <Spacer size="80px" />
       <BackButton />
       <Spacer size="20px" />
-      <ChangePasswordForm onSubmit={changePassword} isLoading={isLoading} />
+      <ChangePasswordFormMobile onSubmit={changePassword} isLoading={isLoading} />
       <BottomNavBar />
     </MainContainer>
   );

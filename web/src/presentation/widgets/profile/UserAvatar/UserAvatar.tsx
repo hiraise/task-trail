@@ -52,6 +52,7 @@ function AvatarImage({ avatarUrl }: { avatarUrl?: string }) {
       alt="User Avatar"
       fill
       sizes="160px"
+      priority
       onError={() => ICONS.profileLarge}
     />
   ) : (

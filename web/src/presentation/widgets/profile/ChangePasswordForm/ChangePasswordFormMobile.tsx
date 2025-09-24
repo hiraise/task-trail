@@ -1,31 +1,19 @@
 import { useForm } from "react-hook-form";
 
-import styles from "./ChangePasswordForm.module.css";
+import styles from "./ChangePasswordFormMobile.module.css";
 import { Stack } from "../../primitives/Stack";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import {
-  getConfirmPasswordValidator,
-  getNewPasswordValidator,
-  oldPasswordValidator,
-} from "@/shared/utils/validate";
 import { ChangePasswordData, FormValues } from "./ChangePassword.types";
 import { Input, InputLabel } from "@/presentation/ui/Input";
-
-const formTexts = {
-  oldPasswordLabel: "Введите старый пароль",
-  newPasswordLabel: "Введите новый пароль",
-  confirmPasswordLabel: "Повторите новый пароль",
-  changePassword: "Изменить пароль",
-  passwordPlaceholder: "********",
-};
+import { TEXTS } from "@/shared/locales/texts";
 
 interface Props {
   onSubmit: (data: ChangePasswordData) => void | Promise<void>;
   isLoading?: boolean;
 }
 
-export function ChangePasswordForm({ onSubmit, isLoading }: Props) {
+export function ChangePasswordFormMobile({ onSubmit, isLoading }: Props) {
   const {
     register,
     handleSubmit,
@@ -44,61 +32,45 @@ export function ChangePasswordForm({ onSubmit, isLoading }: Props) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(submitHandler)}
-      className={styles["form-flex"]}
-    >
+    <form onSubmit={handleSubmit(submitHandler)} className={styles["form-flex"]}>
       <div className={styles["form-fields-container"]}>
         <Stack gap="4px">
-          <InputLabel htmlFor="oldPassword">
-            {formTexts.oldPasswordLabel}
-          </InputLabel>
+          <InputLabel htmlFor="oldPassword">{TEXTS.profile.oldPasswordLabel}</InputLabel>
           <Input
             id="oldPassword"
             type="password"
-            {...register("oldPassword", oldPasswordValidator)}
+            // {...register("oldPassword", oldPasswordValidator)}
             aria-invalid={!!errors.oldPassword}
             aria-describedby="oldPassword-error"
-            placeholder={formTexts.passwordPlaceholder}
+            placeholder={TEXTS.profile.passwordPlaceholder}
             disabled={isSubmitting}
             autoComplete="off"
           />
-          {errors.oldPassword && (
-            <FormFieldError>{errors.oldPassword.message}</FormFieldError>
-          )}
+          {errors.oldPassword && <FormFieldError>{errors.oldPassword.message}</FormFieldError>}
         </Stack>
         <Stack gap="4px">
-          <InputLabel htmlFor="newPassword">
-            {formTexts.newPasswordLabel}
-          </InputLabel>
+          <InputLabel htmlFor="newPassword">{TEXTS.profile.newPasswordLabel}</InputLabel>
           <Input
             id="newPassword"
             type="password"
-            {...register("newPassword", getNewPasswordValidator(oldPassword))}
+            // {...register("newPassword", getNewPasswordValidator(oldPassword))}
             aria-invalid={!!errors.newPassword}
             aria-describedby="newPassword-error"
-            placeholder={formTexts.passwordPlaceholder}
+            placeholder={TEXTS.profile.passwordPlaceholder}
             disabled={isSubmitting}
             autoComplete="off"
           />
-          {errors.newPassword && (
-            <FormFieldError>{errors.newPassword.message}</FormFieldError>
-          )}
+          {errors.newPassword && <FormFieldError>{errors.newPassword.message}</FormFieldError>}
         </Stack>
         <Stack gap="4px">
-          <InputLabel htmlFor="confirmPassword">
-            {formTexts.confirmPasswordLabel}
-          </InputLabel>
+          <InputLabel htmlFor="confirmPassword">{TEXTS.profile.confirmPasswordLabel}</InputLabel>
           <Input
             id="confirmPassword"
             type="password"
-            {...register(
-              "confirmPassword",
-              getConfirmPasswordValidator(newPassword)
-            )}
+            // {...register("confirmPassword", getConfirmPasswordValidator(newPassword))}
             aria-invalid={!!errors.confirmPassword}
             aria-describedby="confirmPassword-error"
-            placeholder={formTexts.passwordPlaceholder}
+            placeholder={TEXTS.profile.passwordPlaceholder}
             disabled={isSubmitting}
             autoComplete="off"
           />
@@ -113,9 +85,7 @@ export function ChangePasswordForm({ onSubmit, isLoading }: Props) {
           disabled={!isValid || isSubmitting}
           className={styles["change-password-btn"]}
         >
-          {isSubmitting || isLoading
-            ? "Загрузка... "
-            : formTexts.changePassword}
+          {isSubmitting || isLoading ? "Загрузка... " : TEXTS.changePassword}
         </SubmitButton>
       </div>
     </form>

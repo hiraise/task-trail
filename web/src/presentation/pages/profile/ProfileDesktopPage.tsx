@@ -3,11 +3,10 @@
 import styles from "./ProfileDesktopPage.module.css";
 
 import { useGetCurrentUser } from "@/application/user/hooks/useGetCurrentUser";
-import { ROUTES } from "@/infrastructure/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
-import { MenuButton } from "@/presentation/ui/MenuButton";
 import { ProfileHero } from "@/presentation/widgets/profile/ProfileHero";
 import { PersonalDataFormDesktop } from "@/presentation/widgets/profile/PersonalDataForm";
+import { ChangePasswordFormDesktop } from "@/presentation/widgets/profile/ChangePasswordForm";
 
 export function ProfileDesktopPage() {
   const { data: user } = useGetCurrentUser();
@@ -24,8 +23,7 @@ export function ProfileDesktopPage() {
         </div>
         <div className={styles.infoBlock}>
           <h4>{TEXTS.profile.changePassword}</h4>
-          <MenuButton href={ROUTES.profileEditPersonalData} text={TEXTS.profile.editPersonalData} />
-          <MenuButton href={ROUTES.profileChangePassword} text={TEXTS.profile.changePassword} />
+          <ChangePasswordFormDesktop />
         </div>
       </div>
     </div>
