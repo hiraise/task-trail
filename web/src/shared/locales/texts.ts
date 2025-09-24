@@ -68,4 +68,15 @@ export const TEXTS = {
     deleteDescription:
       "Вы действительно хотите удалить задачу «{taskName}»? Отменить это действие будет невозможно.",
   },
+  profile: {
+    title: "Личный кабинет",
+    editPersonalData: "Изменить личные данные",
+    changePassword: "Смена пароля",
+    logoutFromAccount: "Выйти из аккаунта",
+    personalInfo: "Личная информация",
+    usernameLabel: "Username",
+    usernamePlaceholder: "Имя пользователя",
+    emailLabel: "Почта",
+    emailPlaceholder: "Email",
+  },
 };
