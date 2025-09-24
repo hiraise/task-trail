@@ -1,0 +1,35 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.inputFields {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  height: 40px;
+}
+
+.buttons > button {
+  max-width: 164px;
+  width: 100%;
+}
