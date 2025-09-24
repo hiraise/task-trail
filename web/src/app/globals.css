@@ -39,6 +39,7 @@
 
   /* Icons */
   --icon-primary: rgba(32, 32, 32, 1);
+  --icon-primary-contrast: rgba(251, 251, 251, 1);
   --icon-secondary: rgba(126, 126, 126, 1);
   --icon-tertiary: rgba(72, 72, 72, 1);
   --icon-critical: rgba(255, 50, 50, 1);
