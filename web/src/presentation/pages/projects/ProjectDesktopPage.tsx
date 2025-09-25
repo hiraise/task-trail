@@ -60,7 +60,7 @@ function TaskList({ tasks }: { tasks: Task[] }) {
 
       <div className={clsx(styles.content, styles.tasks)}>
         {tasks.map((task) => (
-          <Link key={`${task.id}-${task.title}`} href={ROUTES.task(task.id)}>
+          <Link key={`${task.id}-${task.title}`} href={ROUTES.projectTask(task.projectId, task.id)}>
             <ProjectTask title={task.title} />
           </Link>
         ))}

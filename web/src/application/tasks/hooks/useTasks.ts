@@ -15,7 +15,7 @@ import {
 
 export const useGetTask = () => {
   const params = useParams();
-  const taskId = Number(params.id);
+  const taskId = Number(params.taskId);
 
   return useQuery({
     queryKey: QUERY_KEYS.task(taskId),
