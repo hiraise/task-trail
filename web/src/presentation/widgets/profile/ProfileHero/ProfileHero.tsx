@@ -38,7 +38,7 @@ export function ProfileHero({ user }: { user: User }) {
   return (
     <div ref={heroRef} style={{ minHeight: height }}>
       <div className={styles.container}>
-        <Image src={ASSETS.images.heo} fill sizes="100vw" alt={TEXTS.profile.heroAlt} priority />
+        <Image src={ASSETS.images.hero} fill sizes="100vw" alt={TEXTS.profile.heroAlt} priority />
         <button onClick={() => logout()} className={styles.logoutButton}>
           {loading ? <Spinner size={24} /> : <Icon as={ICONS.leave} size="24px" inheritColor />}
         </button>

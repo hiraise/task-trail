@@ -1,0 +1,7 @@
+.titleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 90px;
+  padding-bottom: 24px;
+}
