@@ -20,6 +20,7 @@ export const ASSETS = {
   images: {
     task: addBasePath("/images/task.png"),
     project: addBasePath("/images/project.png"),
-    heo: addBasePath("/images/hero.png"),
+    board: addBasePath("/images/board.png"),
+    hero: addBasePath("/images/hero.png"),
   },
 };
