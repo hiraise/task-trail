@@ -2,7 +2,7 @@ import z from "zod";
 
 export const schema = z
   .object({
-    currentPassword: z.string().min(1, "Введите текущий пароль"),
+    oldPassword: z.string().min(1, "Введите текущий пароль"),
     newPassword: z
       .string()
       .min(8, "Пароль должен содержать минимум 8 символов")
@@ -15,7 +15,7 @@ export const schema = z
     message: "Пароли не совпадают",
     path: ["confirmPassword"],
   })
-  .refine((data) => data.currentPassword !== data.newPassword, {
+  .refine((data) => data.oldPassword !== data.newPassword, {
     message: "Новый пароль не должен совпадать с текущим",
     path: ["newPassword"],
   });

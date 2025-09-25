@@ -1,34 +1,30 @@
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import styles from "./ChangePasswordFormMobile.module.css";
+
+import { FormValues, schema } from "./schema";
+import { TEXTS } from "@/shared/locales/texts";
 import { Stack } from "../../primitives/Stack";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { ChangePasswordData, FormValues } from "./ChangePassword.types";
 import { Input, InputLabel } from "@/presentation/ui/Input";
-import { TEXTS } from "@/shared/locales/texts";
+import { usePasswordChange } from "@/application/auth/hooks/usePasswordChange";
 
-interface Props {
-  onSubmit: (data: ChangePasswordData) => void | Promise<void>;
-  isLoading?: boolean;
-}
+export function ChangePasswordFormMobile() {
+  const { mutateAsync: changePassword } = usePasswordChange();
 
-export function ChangePasswordFormMobile({ onSubmit, isLoading }: Props) {
+  const form = useForm<FormValues>({ resolver: zodResolver(schema), mode: "onChange" });
+
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting, isValid },
-  } = useForm<FormValues>({ mode: "onBlur" });
+  } = form;
 
-  const newPassword = watch("newPassword");
-  const oldPassword = watch("oldPassword");
-
-  const submitHandler = (data: FormValues) => {
-    return onSubmit({
-      oldPassword: data.oldPassword,
-      newPassword: data.newPassword,
-    });
+  const submitHandler = async (data: FormValues) => {
+    if (!isValid) return;
+    await changePassword({ oldPassword: data.oldPassword, newPassword: data.newPassword });
   };
 
   return (
@@ -39,7 +35,7 @@ export function ChangePasswordFormMobile({ onSubmit, isLoading }: Props) {
           <Input
             id="oldPassword"
             type="password"
-            // {...register("oldPassword", oldPasswordValidator)}
+            {...register("oldPassword")}
             aria-invalid={!!errors.oldPassword}
             aria-describedby="oldPassword-error"
             placeholder={TEXTS.profile.passwordPlaceholder}
@@ -53,7 +49,7 @@ export function ChangePasswordFormMobile({ onSubmit, isLoading }: Props) {
           <Input
             id="newPassword"
             type="password"
-            // {...register("newPassword", getNewPasswordValidator(oldPassword))}
+            {...register("newPassword")}
             aria-invalid={!!errors.newPassword}
             aria-describedby="newPassword-error"
             placeholder={TEXTS.profile.passwordPlaceholder}
@@ -67,7 +63,7 @@ export function ChangePasswordFormMobile({ onSubmit, isLoading }: Props) {
           <Input
             id="confirmPassword"
             type="password"
-            // {...register("confirmPassword", getConfirmPasswordValidator(newPassword))}
+            {...register("confirmPassword")}
             aria-invalid={!!errors.confirmPassword}
             aria-describedby="confirmPassword-error"
             placeholder={TEXTS.profile.passwordPlaceholder}
@@ -85,7 +81,7 @@ export function ChangePasswordFormMobile({ onSubmit, isLoading }: Props) {
           disabled={!isValid || isSubmitting}
           className={styles["change-password-btn"]}
         >
-          {isSubmitting || isLoading ? "Загрузка... " : TEXTS.changePassword}
+          {TEXTS.save}
         </SubmitButton>
       </div>
     </form>

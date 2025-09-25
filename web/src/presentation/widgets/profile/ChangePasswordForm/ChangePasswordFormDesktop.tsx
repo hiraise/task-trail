@@ -16,10 +16,7 @@ import { PasswordInputField } from "./PasswordInputField";
 export function ChangePasswordFormDesktop() {
   const { mutateAsync: changePassword } = usePasswordChange();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    mode: "onChange",
-  });
+  const form = useForm<FormValues>({ resolver: zodResolver(schema), mode: "onChange" });
 
   const {
     register,
@@ -36,7 +33,7 @@ export function ChangePasswordFormDesktop() {
 
   const submitHandler = async (data: FormValues) => {
     if (!isValid) return;
-    await changePassword({ newPassword: data.newPassword, oldPassword: data.currentPassword });
+    await changePassword({ newPassword: data.newPassword, oldPassword: data.oldPassword });
   };
 
   return (
@@ -48,20 +45,18 @@ export function ChangePasswordFormDesktop() {
     >
       <div className={styles.inputFields}>
         <div className={styles.field}>
-          <InputLabel htmlFor="currentPassword">{TEXTS.profile.oldPasswordLabel}</InputLabel>
+          <InputLabel htmlFor="oldPassword">{TEXTS.profile.oldPasswordLabel}</InputLabel>
           <PasswordInputField
-            id="currentPassword"
-            {...register("currentPassword")}
+            id="oldPassword"
+            {...register("oldPassword")}
             placeholder={TEXTS.profile.passwordPlaceholder}
-            aria-invalid={!!errors.currentPassword}
+            aria-invalid={!!errors.oldPassword}
             aria-describedby="currentPassword-error"
             disabled={isSubmitting}
             autoComplete="off"
           />
 
-          {errors.currentPassword && (
-            <FormFieldError>{errors.currentPassword.message}</FormFieldError>
-          )}
+          {errors.oldPassword && <FormFieldError>{errors.oldPassword.message}</FormFieldError>}
         </div>
         <div className={styles.field}>
           <InputLabel htmlFor="newPassword">{TEXTS.profile.newPasswordLabel}</InputLabel>
