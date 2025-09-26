@@ -10,7 +10,7 @@
   --txt-grey: rgba(60, 60, 67, 0.6);
   --icon-grey: rgb(138, 138, 142);
 
-  --bottom-nav-height: 62px;
+  --bottom-nav-height: 64px; /* height: 48px and padding-bottom: 16px */
 
   /* Design element colors */
   --handle-grey: rgb(203, 203, 203);

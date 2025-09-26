@@ -59,6 +59,14 @@ h4 {
   color: var(--text-primary);
 }
 
+.body-med-2 {
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
 .caption-reg {
   font-size: 12px;
   line-height: 16px;
