@@ -1,6 +1,5 @@
 import { createContext, useContext, useState } from "react";
-
-import { TabType } from "./TabPanel";
+import { TabType } from "./TabPanel.types";
 
 interface TabPanelValue {
   activeTab: TabType;

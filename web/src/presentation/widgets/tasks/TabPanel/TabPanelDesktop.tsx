@@ -1,22 +1,13 @@
 import clsx from "clsx";
 
-import styles from "./TabPanel.module.css";
+import styles from "./TabPanelDesktop.module.css";
 
 import { TEXTS } from "@/shared/locales/texts";
 import { SubmitButton } from "../../auth/_components";
 import { useTabPanel } from "./TabPanelContext";
+import { TabItem, TabType } from "./TabPanel.types";
 
-export const enum TabType {
-  ACTIVE,
-  ARCHIVED,
-}
-
-export interface TabItem {
-  id: TabType;
-  label: string;
-}
-
-export function TabPanel() {
+export function TabPanelDesktop() {
   const { activeTab, setActiveTab } = useTabPanel();
 
   const tabs: TabItem[] = [
