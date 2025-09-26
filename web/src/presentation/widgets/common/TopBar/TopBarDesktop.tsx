@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./TopBar.module.css";
+import styles from "./TopBarDesktop.module.css";
 
 import { SubmitButton } from "../../auth/_components";
 import { Icon } from "@/presentation/ui/Icon";
@@ -12,7 +12,7 @@ interface TopBarProps {
   onClick: () => void;
 }
 
-export function TopBar({ title, buttonText, onClick }: TopBarProps) {
+export function TopBarDesktop({ title, buttonText, onClick }: TopBarProps) {
   return (
     <div className={styles.topBar}>
       <h1 className="medium">{title}</h1>
