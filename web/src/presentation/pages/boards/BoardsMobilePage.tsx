@@ -2,32 +2,28 @@
 
 import styles from "./BoardsMobilePage.module.css";
 
+import { TEXTS } from "@/shared/locales/texts";
 import { mockBoards } from "@/domain/board/board.mocks";
 import { BoardList, EmptyBoardListMobile } from "@/presentation/widgets/boards/BoardList";
-import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { boardsTexts } from "@/shared/locales/boards";
-import { IconButton } from "@/presentation/ui/IconButton";
-import { ICONS } from "@/infrastructure/config/icons";
-import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
+import { TopBarMobile } from "@/presentation/widgets/common/TopBar/TopBarMobile";
+import { PagesMobileTemplate } from "@/presentation/templates";
 
 export function BoardsMobilePage() {
   const boards = mockBoards;
-  const handleSort = () => {};
 
+  const handleSort = () => {};
   const handleCreateBoard = () => {};
 
-  return (
-    <MainContainer>
-      <DashboardHeader />
-      <div className={styles.titleContainer}>
-        <h1>{boardsTexts.title}</h1>
-        <IconButton icon={ICONS.sort} onClick={handleSort} />
-      </div>
-      {(!boards || boards.length === 0) && <EmptyBoardListMobile />}
-      {boards.length > 0 && <BoardList boards={boards} />}
+  const topBar = (
+    <TopBarMobile title={TEXTS.drawer.myBoards} onClick={handleCreateBoard} onSort={handleSort} />
+  );
 
-      <FloatingButton onClick={handleCreateBoard} variant="withBottomNav" />
-    </MainContainer>
+  return (
+    <PagesMobileTemplate topBar={topBar}>
+      <div className={styles.container}>
+        {(!boards || boards.length === 0) && <EmptyBoardListMobile />}
+        {boards.length > 0 && <BoardList boards={boards} />}
+      </div>
+    </PagesMobileTemplate>
   );
 }
