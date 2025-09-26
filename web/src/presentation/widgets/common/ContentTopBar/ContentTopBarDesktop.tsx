@@ -1,6 +1,6 @@
 import styles from "./ContentTopBarDesktop.module.css";
 
-import { TabPanel } from "../../tasks/TabPanel";
+import { TabPanelDesktop } from "../../tasks/TabPanel";
 import { Icon } from "@/presentation/ui/Icon";
 import { ICONS } from "@/infrastructure/config/icons";
 
@@ -11,7 +11,7 @@ interface ContentTopBarDesktopProps {
 export function ContentTopBarDesktop({ onClick }: ContentTopBarDesktopProps) {
   return (
     <div className={styles.container}>
-      <TabPanel />
+      <TabPanelDesktop />
       <button onClick={onClick} className={styles.sortButton}>
         <Icon as={ICONS.sort} size="24px" inheritColor />
       </button>

@@ -1,0 +1,16 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.sortButton {
+  border: none;
+  border-radius: 12px;
+  background-color: var(--bg-secondary);
+  width: 40px;
+  height: 40px;
+  color: var(--icon-secondary);
+}
