@@ -3,7 +3,7 @@
 import styles from "./TasksDesktopPage.module.css";
 
 import { useTabPanel } from "@/presentation/widgets/tasks/TabPanel/TabPanelContext";
-import { TaskListDesktop } from "@/presentation/widgets/tasks/TaskList/TaskListDesktop";
+import { TaskListDesktop } from "@/presentation/widgets/tasks/TaskList";
 import { useGetTaskListData } from "@/application/tasks/hooks/useGetTaskListData";
 import { TasksDesktopTemplate } from "@/presentation/templates";
 import { TopBarDesktop } from "@/presentation/widgets/common/TopBar";

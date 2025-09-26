@@ -3,42 +3,33 @@
 import styles from "./TasksMobilePage.module.css";
 
 import { useGetUserTasks } from "@/application/user/hooks/useGetUserTasks";
-import { ICONS } from "@/infrastructure/config/icons";
-import { IconButton } from "@/presentation/ui/IconButton";
-import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { TaskList } from "@/presentation/widgets/tasks/TaskList";
+import { PagesMobileTemplate } from "@/presentation/templates";
+import { ContentTopBarMobile } from "@/presentation/widgets/common/ContentTopBar";
+import { TopBarMobile } from "@/presentation/widgets/common/TopBar/TopBarMobile";
+import { TabType } from "@/presentation/widgets/tasks/TabPanel";
+import { useTabPanel } from "@/presentation/widgets/tasks/TabPanel/TabPanelContext";
+import { TaskListMobile } from "@/presentation/widgets/tasks/TaskList";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
-import { tasksTexts } from "@/shared/locales/tasks";
+import { TEXTS } from "@/shared/locales/texts";
 
 export function TasksMobilePage() {
+  const { activeTab } = useTabPanel();
   const { showSortOptions, showCreateTask } = useGlobalModals();
   const { data: tasks } = useGetUserTasks();
 
   if (!tasks) return null;
 
+  const topBar = <TopBarMobile title={TEXTS.drawer.myTasks} onClick={showCreateTask} />;
+
   // TODO: Implement sorting logic
-  const handleSortTasks = async () => {
-    const option = await showSortOptions();
-    console.log("Selected sort option:", option);
-  };
 
   return (
-    <MainContainer>
-      <DashboardHeader />
-      <div className={styles.titleContainer}>
-        <h1>{tasksTexts.tasks.title}</h1>
-        <IconButton icon={ICONS.sort} onClick={handleSortTasks} />
+    <PagesMobileTemplate topBar={topBar}>
+      <div className={styles.container}>
+        <ContentTopBarMobile onClick={showSortOptions} />
+        {activeTab === TabType.ACTIVE && <TaskListMobile tasks={tasks} />}
+        {activeTab === TabType.ARCHIVED && <h1>Архив</h1>}
       </div>
-      {(!tasks || tasks.length === 0) && (
-        <div className={styles.emptyState}>
-          <h2>{tasksTexts.tasks.noTasks}</h2>
-          <p>{tasksTexts.tasks.createFirstTask}</p>
-        </div>
-      )}
-      <TaskList tasks={tasks} />
-      <FloatingButton onClick={showCreateTask} variant="withBottomNav" />
-    </MainContainer>
+    </PagesMobileTemplate>
   );
 }
