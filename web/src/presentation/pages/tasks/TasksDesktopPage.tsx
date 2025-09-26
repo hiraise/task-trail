@@ -3,14 +3,14 @@
 import styles from "./TasksDesktopPage.module.css";
 
 import { useTabPanel } from "@/presentation/widgets/tasks/TabPanel/TabPanelContext";
-import { TabType } from "@/presentation/widgets/tasks/TabPanel/TabPanel";
 import { TaskListDesktop } from "@/presentation/widgets/tasks/TaskList/TaskListDesktop";
 import { useGetTaskListData } from "@/application/tasks/hooks/useGetTaskListData";
 import { TasksDesktopTemplate } from "@/presentation/templates";
-import { TopBar } from "@/presentation/widgets/common/TopBar";
+import { TopBarDesktop } from "@/presentation/widgets/common/TopBar";
 import { TEXTS } from "@/shared/locales/texts";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { ContentTopBarDesktop } from "@/presentation/widgets/common/ContentTopBar";
+import { TabType } from "@/presentation/widgets/tasks/TabPanel";
 
 export function TasksDesktopPage() {
   const { activeTab } = useTabPanel();
@@ -20,7 +20,7 @@ export function TasksDesktopPage() {
   if (!tasks) return null;
 
   const topBar = (
-    <TopBar
+    <TopBarDesktop
       title={TEXTS.drawer.myTasks}
       buttonText={TEXTS.tasks.createButton}
       onClick={showCreateTask}

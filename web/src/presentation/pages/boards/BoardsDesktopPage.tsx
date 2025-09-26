@@ -4,7 +4,7 @@ import styles from "./BoardsDesktopPage.module.css";
 
 import { mockBoards } from "@/domain/board/board.mocks";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
-import { TopBar } from "@/presentation/widgets/common/TopBar";
+import { TopBarDesktop } from "@/presentation/widgets/common/TopBar";
 import { TEXTS } from "@/shared/locales/texts";
 import { TasksDesktopTemplate } from "@/presentation/templates";
 import { EmptyListState } from "@/presentation/widgets/common/EmptyListState/EmptyListState";
@@ -22,7 +22,7 @@ export function BoardsDesktopPage() {
   const boards = mockBoards;
 
   const topBar = (
-    <TopBar
+    <TopBarDesktop
       title={TEXTS.drawer.myBoards}
       buttonText={TEXTS.boards.createButton}
       onClick={handleCreateBoard}

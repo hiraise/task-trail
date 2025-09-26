@@ -1,14 +1,5 @@
-.titleWrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 90px;
-  padding-bottom: 24px;
-}
-
-.cards {
+.container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 66px;
+  gap: 8px;
 }
