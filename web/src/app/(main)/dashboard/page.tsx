@@ -5,7 +5,6 @@ import styled from "styled-components";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import {
   DashboardCard,
   mockDashboardCardsData,
@@ -36,16 +35,10 @@ export default function DashboardPage() {
       <SectionTitle>{mainPageTexts.title}</SectionTitle>
       <CardsContainer>
         {/* Example of rendering multiple DashboardCards */}
-        {Array.from({ length: mockDashboardCardsData.length }).map(
-          (_, index) => (
-            <DashboardCard
-              key={index}
-              {...(mockDashboardCardsData[index] || {})}
-            />
-          )
-        )}
+        {Array.from({ length: mockDashboardCardsData.length }).map((_, index) => (
+          <DashboardCard key={index} {...(mockDashboardCardsData[index] || {})} />
+        ))}
       </CardsContainer>
-      <BottomNavBar />
     </MainContainer>
   );
 }

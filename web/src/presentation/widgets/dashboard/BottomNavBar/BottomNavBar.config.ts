@@ -1,26 +1,32 @@
 import { ASSETS } from "@/infrastructure/config/assets";
 import { ROUTES } from "@/infrastructure/config/routes";
-import { sharedTexts } from "@/shared/locales/sharedTexts";
+import { TEXTS } from "@/shared/locales/texts";
 
-export const navItems = [
+export interface NavItem {
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  label: string;
+}
+
+export const navItems: NavItem[] = [
   {
     href: ROUTES.projects,
     icon: ASSETS.icons.project,
-    label: sharedTexts.projects,
+    label: TEXTS.navBar.projects,
   },
   {
     href: ROUTES.boards,
     icon: ASSETS.icons.board,
-    label: sharedTexts.boards,
+    label: TEXTS.navBar.boards,
   },
   {
     href: ROUTES.tasks,
     icon: ASSETS.icons.task,
-    label: sharedTexts.tasks,
+    label: TEXTS.navBar.tasks,
   },
   {
-    href: ROUTES.archive,
-    icon: ASSETS.icons.archive,
-    label: sharedTexts.archive,
+    href: ROUTES.profile,
+    icon: ASSETS.icons.profile,
+    label: TEXTS.navBar.profile,
   },
 ];

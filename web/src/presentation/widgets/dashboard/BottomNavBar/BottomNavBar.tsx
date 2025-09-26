@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion as m } from "framer-motion";
-import clsx from "clsx";
+import { AnimatePresence, motion as m, Transition } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
 
 import styles from "./BottomNavBar.module.css";
 
@@ -24,7 +24,11 @@ export function BottomNavBar() {
       <div className={styles.menu}>
         {navItems.map((item) => {
           const isCurrent = normalize(pathName) === normalize(item.href);
-          return <MenuItem key={item.label} {...item} isCurrent={isCurrent} />;
+          return (
+            <AnimatePresence key={item.label} mode="popLayout">
+              <MenuItem {...item} isCurrent={isCurrent} />
+            </AnimatePresence>
+          );
         })}
       </div>
     </div>
@@ -32,6 +36,7 @@ export function BottomNavBar() {
 }
 
 const MotionLink = m.create(Link);
+const INACTIVE_ICON_WIDTH = 48;
 
 interface MenuItemsProps extends NavItem {
   isCurrent: boolean;
@@ -40,29 +45,52 @@ interface MenuItemsProps extends NavItem {
 function MenuItem({ isCurrent, ...props }: MenuItemsProps) {
   const { href, icon, label } = props;
   const iconColor = isCurrent ? "var(--icon-primary)" : "var(--icon-secondary)";
+  const divColor = isCurrent ? "var(--bg-card)" : "rgba(255, 255, 255, 0)";
+  const containerRef = useRef<HTMLAnchorElement>(null);
+  const [measuredWidth, setMeasuredWidth] = useState(INACTIVE_ICON_WIDTH);
+
+  const transition = { duration: 0.3, ease: "circInOut" } as Transition;
+
+  useEffect(() => {
+    // If this menu item is the current one and the ref is set
+    if (isCurrent && containerRef.current) {
+      // Temporarily set width to 'max-content' to measure the full width of the label and icon
+      containerRef.current.style.width = "max-content";
+      // Measure the width of the element
+      const width = containerRef.current.getBoundingClientRect().width;
+      // Store the measured width in state for animation
+      setMeasuredWidth(width);
+      // Reset the width style to allow framer-motion to animate it
+      containerRef.current.style.width = "";
+    }
+  }, [isCurrent, label]);
 
   return (
     <MotionLink
+      ref={containerRef}
       href={href}
-      className={clsx(styles.icon, { [styles.active]: isCurrent })}
-      animate={{ width: isCurrent ? "auto" : 48 }}
-      transition={{ duration: 0.2, ease: "easeInOut" }}
+      className={styles.icon}
+      initial={{ opacity: 0, width: INACTIVE_ICON_WIDTH }}
+      animate={{
+        opacity: 1,
+        width: isCurrent ? measuredWidth : INACTIVE_ICON_WIDTH,
+        backgroundColor: divColor,
+      }}
+      exit={{ opacity: 0, width: INACTIVE_ICON_WIDTH }}
+      transition={transition}
     >
-      <Icon as={icon} size="24px" color={iconColor} />
-      <AnimatePresence mode="wait">
-        {isCurrent && (
-          <m.span
-            key="label"
-            className="caption-med"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-          >
-            {label}
-          </m.span>
-        )}
-      </AnimatePresence>
+      <m.div animate={{ opacity: 1 }} transition={transition}>
+        <Icon as={icon} size="24px" color={iconColor} />
+      </m.div>
+      <m.span
+        className="caption-med"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={transition}
+      >
+        {label}
+      </m.span>
     </MotionLink>
   );
 }

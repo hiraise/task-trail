@@ -10,7 +10,6 @@ import { boardsTexts } from "@/shared/locales/boards";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { ICONS } from "@/infrastructure/config/icons";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 
 export function BoardsMobilePage() {
   const boards = mockBoards;
@@ -29,7 +28,6 @@ export function BoardsMobilePage() {
       {boards.length > 0 && <BoardList boards={boards} />}
 
       <FloatingButton onClick={handleCreateBoard} variant="withBottomNav" />
-      <BottomNavBar />
     </MainContainer>
   );
 }

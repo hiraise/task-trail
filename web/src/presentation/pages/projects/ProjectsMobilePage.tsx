@@ -10,7 +10,6 @@ import { ICONS } from "@/infrastructure/config/icons";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import { ProjectCard } from "@/presentation/widgets/projects/ProjectCard";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
 
@@ -41,7 +40,6 @@ export function ProjectsMobilePage() {
         ))}
       </div>
       <FloatingButton onClick={showCreateProject} variant="withBottomNav" />
-      <BottomNavBar />
     </MainContainer>
   );
 }

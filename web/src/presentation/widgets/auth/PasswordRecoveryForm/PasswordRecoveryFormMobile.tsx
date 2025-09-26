@@ -3,7 +3,6 @@ import styled from "styled-components";
 
 import { Spacer } from "../../primitives/Spacer";
 import { MobileContainer } from "../../primitives/MobileContainer";
-import { sharedTexts } from "@/shared/locales/sharedTexts";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { Stack } from "../../primitives/Stack";
 import { usePasswordRecovery } from "@/application/auth/hooks/usePasswordRecovery";
@@ -12,6 +11,7 @@ import { getEmailValidator } from "@/shared/utils/validate";
 import { Input, InputLabel } from "@/presentation/ui/Input";
 import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
 import { authTexts } from "@/shared/locales/auth";
+import { TEXTS } from "@/shared/locales/texts";
 
 const FormContainer = styled.form`
   display: flex;
@@ -49,7 +49,7 @@ export function PasswordRecoveryFormMobile() {
     <MobileContainer>
       <FormContainer noValidate onSubmit={handleSubmit(onSubmit)}>
         <Stack gap="4px">
-          <InputLabel htmlFor="email">{sharedTexts.emailLabel}</InputLabel>
+          <InputLabel htmlFor="email">{authTexts.emailPlaceholder}</InputLabel>
           <Input
             id="email"
             type="email"
@@ -65,7 +65,7 @@ export function PasswordRecoveryFormMobile() {
         </SubmitButton>
       </FormContainer>
       <Spacer size="8px" />
-      <PrivacyPolicyMobile btnName={sharedTexts.send} />
+      <PrivacyPolicyMobile btnName={TEXTS.send} />
     </MobileContainer>
   );
 }

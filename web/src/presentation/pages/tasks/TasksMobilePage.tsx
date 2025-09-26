@@ -5,7 +5,6 @@ import styles from "./TasksMobilePage.module.css";
 import { useGetUserTasks } from "@/application/user/hooks/useGetUserTasks";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
-import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
@@ -40,7 +39,6 @@ export function TasksMobilePage() {
       )}
       <TaskList tasks={tasks} />
       <FloatingButton onClick={showCreateTask} variant="withBottomNav" />
-      <BottomNavBar />
     </MainContainer>
   );
 }

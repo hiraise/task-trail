@@ -34,3 +34,5 @@ export const protectedRoutes = [
   ROUTES.archive,
   ROUTES.profile,
 ];
+
+export const BOTTOM_NAV_PATHS = [ROUTES.projects, ROUTES.boards, ROUTES.tasks, ROUTES.profile];

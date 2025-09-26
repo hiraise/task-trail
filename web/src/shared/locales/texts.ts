@@ -10,6 +10,8 @@ export const TEXTS = {
   delete: "Удалить",
   deletion: "Удаление..",
   leave: "Покинуть",
+  send: "Отправить",
+  emailPlaceholder: "E-mail",
   changePassword: "Изменить пароль",
   userQueryPlaceholder: "Введите Email или имя пользователя",
   userInviteDescription:
@@ -22,6 +24,12 @@ export const TEXTS = {
     search: "Поиск",
     collapse: "Свернуть",
     expand: "Развернуть",
+  },
+  navBar: {
+    projects: "Проекты",
+    boards: "Доски",
+    tasks: "Задачи",
+    profile: "Профиль",
   },
   moveToArchive: {
     title: "Перемещение в архив",

@@ -12,7 +12,6 @@ import { Spacer } from "@/presentation/widgets/primitives/Spacer";
 import { MenuButton } from "@/presentation/ui/MenuButton";
 import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { Spinner } from "@/presentation/ui/Spinner";
-import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { ProfileAvatar } from "@/presentation/widgets/profile/ProfileHero/ProfileAvatar";
 
 export function ProfileMobilePage() {
@@ -39,7 +38,6 @@ export function ProfileMobilePage() {
           {loading ? <Spinner size={16} /> : TEXTS.profile.logoutFromAccount}
         </SubmitButton>
       </div>
-      <BottomNavBar />
     </MainContainer>
   );
 }

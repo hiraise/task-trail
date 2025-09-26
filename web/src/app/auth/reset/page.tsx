@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
 import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import { Spacer } from "@/presentation/widgets/primitives/Spacer";
 import { usePasswordReset } from "@/application/auth/hooks/usePasswordReset";
@@ -28,7 +27,6 @@ export default function PasswordResetPage() {
       <DashboardHeader />
       <Spacer size="80px" />
       <PasswordResetForm onSubmit={handleSubmit} isLoading={isLoading} />
-      <BottomNavBar />
     </MainContainer>
   );
 }
