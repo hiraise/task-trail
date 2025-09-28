@@ -11,6 +11,7 @@
   --icon-grey: rgb(138, 138, 142);
 
   --bottom-nav-height: 64px; /* height: 48px and padding-bottom: 16px */
+  --navbar-offset: calc(var(--bottom-nav-height) + 16px);
 
   /* Design element colors */
   --handle-grey: rgb(203, 203, 203);
@@ -47,6 +48,7 @@
 
   /* Borders */
   --border-critical: rgba(255, 50, 50, 1);
+  --border-secondary: rgba(251, 251, 251, 1);
   --border-secondary-2: rgba(245, 245, 245, 1);
   --border-accent: rgba(181, 207, 248, 1);
 }

@@ -2,5 +2,5 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: calc(var(--bottom-nav-height) + 16px);
+  margin-bottom: var(--navbar-offset);
 }
