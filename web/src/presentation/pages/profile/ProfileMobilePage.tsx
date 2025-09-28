@@ -6,13 +6,10 @@ import { useLogout } from "@/application/auth/hooks/useLogout";
 import { useGetCurrentUser } from "@/application/user/hooks/useGetCurrentUser";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import { Spacer } from "@/presentation/widgets/primitives/Spacer";
-import { MenuButton } from "@/presentation/ui/MenuButton";
-import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { Spinner } from "@/presentation/ui/Spinner";
-import { ProfileAvatar } from "@/presentation/widgets/profile/ProfileHero/ProfileAvatar";
+import { MenuButton } from "@/presentation/widgets/profile/MenuButton";
+import { ProfileHeroMobile } from "@/presentation/widgets/profile/ProfileHero";
+import { Icon } from "@/presentation/ui/Icon";
+import { ICONS } from "@/infrastructure/config/icons";
 
 export function ProfileMobilePage() {
   const { data: user } = useGetCurrentUser();
@@ -21,23 +18,27 @@ export function ProfileMobilePage() {
   if (!user) return null;
 
   return (
-    <MainContainer>
-      <DashboardHeader />
-      <h4 className={styles.title}>{TEXTS.profile.title}</h4>
-      <Spacer size="24px" />
-      <div className={styles.userInfoWrapper}>
-        <ProfileAvatar user={user} size="mobile" />
-      </div>
-      <Spacer size="20px" />
+    <section id="profile" className={styles.profile}>
+      <ProfileHeroMobile user={user} />
       <div className={styles.buttons}>
-        <MenuButton href={ROUTES.profileEditPersonalData} text={TEXTS.profile.editPersonalData} />
-        <MenuButton href={ROUTES.profileChangePassword} text={TEXTS.profile.changePassword} />
+        <MenuButton
+          href={ROUTES.profileEditPersonalData}
+          text={TEXTS.profile.editPersonalData}
+          icon={ICONS.edit}
+        />
+        <MenuButton
+          href={ROUTES.profileChangePassword}
+          text={TEXTS.profile.changePassword2}
+          icon={ICONS.lock}
+        />
       </div>
-      <div className={styles.logout}>
-        <SubmitButton $variant="secondary" onClick={() => logout()}>
-          {loading ? <Spinner size={16} /> : TEXTS.profile.logoutFromAccount}
-        </SubmitButton>
-      </div>
-    </MainContainer>
+
+      <button className={styles.logout} onClick={() => logout()} disabled={loading}>
+        <Icon as={ICONS.leave} size="32px" inheritColor />
+        <span className="btn-font-s" style={{ color: "inherit" }}>
+          {TEXTS.profile.logoutFromAccount}
+        </span>
+      </button>
+    </section>
   );
 }

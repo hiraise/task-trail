@@ -4,7 +4,7 @@ import styles from "./ProfileDesktopPage.module.css";
 
 import { useGetCurrentUser } from "@/application/user/hooks/useGetCurrentUser";
 import { TEXTS } from "@/shared/locales/texts";
-import { ProfileHero } from "@/presentation/widgets/profile/ProfileHero";
+import { ProfileHeroDesktop } from "@/presentation/widgets/profile/ProfileHero";
 import { PersonalDataFormDesktop } from "@/presentation/widgets/profile/PersonalDataForm";
 import { ChangePasswordFormDesktop } from "@/presentation/widgets/profile/ChangePasswordForm";
 
@@ -15,7 +15,7 @@ export function ProfileDesktopPage() {
 
   return (
     <div className={styles.content}>
-      <ProfileHero user={user} />
+      <ProfileHeroDesktop user={user} />
       <div className={styles.infoWrapper}>
         <div className={styles.infoBlock}>
           <h4>{TEXTS.profile.personalInfo}</h4>

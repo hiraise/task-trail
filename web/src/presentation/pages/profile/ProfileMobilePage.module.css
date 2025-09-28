@@ -1,27 +1,27 @@
-.title {
-  text-align: center;
-  margin-top: 90px;
-}
-
-.userInfoWrapper {
+.profile {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  gap: 24px;
+  flex: 1;
+  height: 100dvh;
 }
 
 .buttons {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  padding: 0px 20px;
 }
 
 .logout {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: transparent;
+  color: var(--icon-critical);
   margin-top: auto;
-  padding-bottom: calc(var(--bottom-nav-height) + 20px);
-}
-
-.logout > button {
-  height: 40px;
-  width: 100%;
+  padding-bottom: var(--navbar-offset);
 }
