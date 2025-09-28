@@ -28,9 +28,9 @@ export function UserAvatar({
       {showIcon && (
         <Icon
           as={ICONS.camera}
-          size="29px"
+          size="24px"
           className={styles.badgeIcon}
-          color="var(--background)"
+          color="var(--icon-secondary)"
         />
       )}
       <input

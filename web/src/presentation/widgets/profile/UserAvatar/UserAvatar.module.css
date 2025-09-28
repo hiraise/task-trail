@@ -12,11 +12,11 @@
 }
 
 .badgeIcon {
-  background: rgba(127, 127, 127, 1);
-  border: 1px solid var(--background);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-secondary);
   border-radius: 50%;
   position: absolute;
   right: 0;
   bottom: 0;
-  padding: 6px;
+  padding: 3.5px;
 }
