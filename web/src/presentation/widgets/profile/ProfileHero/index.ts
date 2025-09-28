@@ -1,1 +1,2 @@
-export { ProfileHero } from "./ProfileHero";
+export { ProfileHeroDesktop } from "./ProfileHeroDesktop";
+export { ProfileHeroMobile } from "./ProfileHeroMobile";

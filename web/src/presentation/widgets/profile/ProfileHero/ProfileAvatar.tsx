@@ -5,7 +5,6 @@ import styles from "./ProfileAvatar.module.css";
 
 import { User } from "@/domain/user/user.entity";
 import { UserAvatar } from "../UserAvatar";
-import { getDisplayName } from "@/shared/utils/getDisplayName";
 import { useUploadAvatar } from "@/application/user/hooks/useUploadAvatar";
 import { ImageCropper } from "../ImageCropper";
 
@@ -13,10 +12,11 @@ interface ProfileAvatarProps {
   size?: "desktop" | "mobile";
   user: User;
   className?: string;
+  children: React.ReactNode;
 }
 
 export const ProfileAvatar = forwardRef<HTMLDivElement, ProfileAvatarProps>(
-  ({ size = "desktop", user, className }, ref) => {
+  ({ size = "desktop", user, className, children }, ref) => {
     // Change avatar logic
     const { mutateAsync: updateAvatar } = useUploadAvatar();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -45,10 +45,7 @@ export const ProfileAvatar = forwardRef<HTMLDivElement, ProfileAvatarProps>(
             onClose={() => setSelectedFile(null)}
           />
         )}
-        <div className={styles.username}>
-          <h3>{getDisplayName(user)}</h3>
-          <span className="body-reg">{user.email}</span>
-        </div>
+        {children}
       </div>
     );
   }

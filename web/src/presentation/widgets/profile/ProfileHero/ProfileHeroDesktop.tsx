@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-import styles from "./ProfileHero.module.css";
+import styles from "./ProfileHeroDesktop.module.css";
 
 import { ASSETS } from "@/infrastructure/config/assets";
 import { ICONS } from "@/infrastructure/config/icons";
@@ -13,8 +13,9 @@ import { ProfileAvatar } from "./ProfileAvatar";
 import { useLogout } from "@/application/auth/hooks/useLogout";
 import { Spinner } from "@/presentation/ui/Spinner";
 import { TEXTS } from "@/shared/locales/texts";
+import { getDisplayName } from "@/shared/utils/getDisplayName";
 
-export function ProfileHero({ user }: { user: User }) {
+export function ProfileHeroDesktop({ user }: { user: User }) {
   const { mutateAsync: logout, isPending: loading } = useLogout();
   const heroRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
@@ -42,7 +43,12 @@ export function ProfileHero({ user }: { user: User }) {
         <button onClick={() => logout()} className={styles.logoutButton}>
           {loading ? <Spinner size={24} /> : <Icon as={ICONS.leave} size="24px" inheritColor />}
         </button>
-        <ProfileAvatar ref={avatarRef} user={user} className={styles.avatar} />
+        <ProfileAvatar ref={avatarRef} user={user} className={styles.avatar}>
+          <div className={styles.username}>
+            <h3>{getDisplayName(user)}</h3>
+            <span className="body-reg">{user.email}</span>
+          </div>
+        </ProfileAvatar>
       </div>
     </div>
   );
