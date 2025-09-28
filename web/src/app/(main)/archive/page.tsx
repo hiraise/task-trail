@@ -7,7 +7,7 @@ import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
 import MainContainer from "@/presentation/widgets/primitives/MainContainer";
 import { ICONS } from "@/infrastructure/config/icons";
 import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { mockTasks, TaskList } from "@/presentation/widgets/tasks/TaskList";
+import { mockTasks, TaskListMobile } from "@/presentation/widgets/tasks/TaskList";
 import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { tasksTexts } from "@/shared/locales/tasks";
 
@@ -35,7 +35,7 @@ export default function ArchivePage() {
             <p>{tasksTexts.tasks.createFirstTask}</p>
           </div>
         )}
-        <TaskList tasks={tasks} />
+        <TaskListMobile tasks={tasks} />
         <FloatingButton onClick={showCreateTask} variant="withBottomNav" />
       </MainContainer>
     </>
