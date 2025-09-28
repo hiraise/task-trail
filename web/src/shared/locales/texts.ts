@@ -84,8 +84,9 @@ export const TEXTS = {
   },
   profile: {
     title: "Личный кабинет",
-    editPersonalData: "Изменить личные данные",
+    editPersonalData: "Редактировать данные",
     changePassword: "Смена пароля",
+    changePassword2: "Сменить пароль",
     logoutFromAccount: "Выйти из аккаунта",
     personalInfo: "Личная информация",
     usernameLabel: "Username",
