@@ -7,7 +7,7 @@ import ArchiveIcon from "../../../public/icons/ArchiveIcon.svg";
 import ProfileLargeIcon from "../../../public/icons/profile-large.svg";
 import CameraIcon from "../../../public/icons/camera.svg";
 import CheckIcon from "../../../public/icons/check.svg";
-import CloseIcon from "../../../public/icons/close.svg";
+import CloseIcon from "../../../public/icons/CloseIcon.svg";
 import SortIcon from "../../../public/icons/SortIcon.svg";
 import AddButtonIcon from "../../../public/icons/iconoir_plus_circle.svg";
 import PlusIcon from "../../../public/icons/PlusIcon.svg";
