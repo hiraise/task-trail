@@ -1,5 +1,32 @@
-.personal-data-form {
+.form {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  margin-top: 12px;
+  height: 100%;
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input > span {
+  color: var(--text-tertiary);
+}
+
+.button {
+  margin-top: auto;
+  margin-bottom: 12px;
+}
+
+.button > button {
+  width: 100%;
 }

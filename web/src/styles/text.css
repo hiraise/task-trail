@@ -59,6 +59,14 @@ h4 {
   color: var(--text-primary);
 }
 
+.body-med {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 550;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
 .body-med-2 {
   font-size: 14px;
   line-height: 16px;

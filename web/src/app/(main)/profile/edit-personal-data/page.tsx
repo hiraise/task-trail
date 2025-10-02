@@ -1,19 +1,16 @@
-"use client";
+import { ROUTES } from "@/infrastructure/config/routes";
+import { DeviceBased } from "@/presentation/ui/DeviceBased";
+import { EditPersonalDataMobilePage } from "@/presentation/pages/profile";
+import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
 
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { BackButton } from "@/presentation/ui/BackButton";
-import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import { Spacer } from "@/presentation/widgets/primitives/Spacer";
-import { PersonalDataFormMobile } from "@/presentation/widgets/profile/PersonalDataForm";
-
+/**
+ * Mobile-only page. Always redirects desktop users to the profile page.
+ */
 export default function EditPersonalDataPage() {
   return (
-    <MainContainer>
-      <DashboardHeader />
-      <Spacer size="80px" />
-      <BackButton />
-      <Spacer size="20px" />
-      <PersonalDataFormMobile />
-    </MainContainer>
+    <DeviceBased
+      desktop={<RedirectScreen href={ROUTES.profile} />}
+      mobile={<EditPersonalDataMobilePage />}
+    />
   );
 }

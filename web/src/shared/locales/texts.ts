@@ -89,6 +89,7 @@ export const TEXTS = {
     changePassword2: "Сменить пароль",
     logoutFromAccount: "Выйти из аккаунта",
     personalInfo: "Личная информация",
+    personalInfoTitle: "Личные данные",
     usernameLabel: "Username",
     usernamePlaceholder: "Имя пользователя",
     emailLabel: "Почта",
@@ -98,5 +99,7 @@ export const TEXTS = {
     newPasswordLabel: "Новый пароль",
     confirmPasswordLabel: "Повторите новый пароль",
     passwordPlaceholder: "••••••••",
+    changeEmailDescription:
+      "Почту пока нельзя изменить. Эта функция появится в следующих обновлениях.",
   },
 };

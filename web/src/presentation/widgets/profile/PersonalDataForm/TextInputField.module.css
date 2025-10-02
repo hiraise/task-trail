@@ -1,0 +1,14 @@
+.container {
+  position: relative;
+}
+
+.container > input {
+  width: 100%;
+}
+
+.showClearButton {
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  bottom: 4px;
+}

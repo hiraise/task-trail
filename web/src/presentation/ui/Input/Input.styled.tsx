@@ -22,6 +22,11 @@ export const Input = styled.input`
     color: var(--text-secondary);
   }
 
+  &:disabled {
+    color: var(--text-secondary);
+    cursor: not-allowed;
+  }
+
   &:focus {
     outline: none;
   }
