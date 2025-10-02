@@ -105,6 +105,7 @@ export const useGlobalModals = () => {
     showMoveToArchive: (props?: ActionProps) =>
       safeOpen<number>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
     showDeleteItem: (props?: ActionProps) => safeOpen<number>(MODAL_TYPE.DELETE, { ...props }),
+    showCropImage: (file?: File) => safeOpen<FormData>(MODAL_TYPE.CROP_IMAGE, { file }),
 
     // Project actions
     showEditProject: (props?: EditProjectProps) =>

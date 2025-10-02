@@ -1,4 +1,4 @@
-import { forwardRef, useState } from "react";
+import { forwardRef } from "react";
 import clsx from "clsx";
 
 import styles from "./ProfileAvatar.module.css";
@@ -6,7 +6,7 @@ import styles from "./ProfileAvatar.module.css";
 import { User } from "@/domain/user/user.entity";
 import { UserAvatar } from "../UserAvatar";
 import { useUploadAvatar } from "@/application/user/hooks/useUploadAvatar";
-import { ImageCropper } from "../ImageCropper";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 
 interface ProfileAvatarProps {
   size?: "desktop" | "mobile";
@@ -17,17 +17,14 @@ interface ProfileAvatarProps {
 
 export const ProfileAvatar = forwardRef<HTMLDivElement, ProfileAvatarProps>(
   ({ size = "desktop", user, className, children }, ref) => {
-    // Change avatar logic
     const { mutateAsync: updateAvatar } = useUploadAvatar();
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const handleImageSelected = (file: File) => setSelectedFile(file);
+    const { showCropImage } = useGlobalModals();
 
-    const handleCropComplete = async (formData: FormData) => {
-      setSelectedFile(null);
-      await updateAvatar(formData);
+    const handleImageSelected = async (file: File) => {
+      const result = await showCropImage(file);
+      if (!result) return;
+      await updateAvatar(result);
     };
-
-    //TODO: show Image cropper in dialog
 
     const showCameraIcon = size === "mobile";
     return (
@@ -38,13 +35,6 @@ export const ProfileAvatar = forwardRef<HTMLDivElement, ProfileAvatarProps>(
           className={styles[size]}
           showIcon={showCameraIcon}
         />
-        {selectedFile && (
-          <ImageCropper
-            file={selectedFile}
-            onCropComplete={handleCropComplete}
-            onClose={() => setSelectedFile(null)}
-          />
-        )}
         {children}
       </div>
     );

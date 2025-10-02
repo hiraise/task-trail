@@ -14,6 +14,7 @@ import DeleteItemModal from "@/presentation/widgets/modals/DeleteItemModal";
 import EditProjectModal from "@/presentation/widgets/modals/EditProjectModal";
 import LeaveProjectModal from "@/presentation/widgets/modals/LeaveProjectModal";
 import ProjectSettingsModal from "@/presentation/widgets/modals/ProjectSettingsModal";
+import CropImageModal from "@/presentation/widgets/modals/CropImageModal";
 
 const MODAL_COMPONENTS = {
   [MODAL_TYPE.CREATE_TASK]: CreateTaskModal,
@@ -29,6 +30,7 @@ const MODAL_COMPONENTS = {
   [MODAL_TYPE.EDIT_PROJECT]: EditProjectModal,
   [MODAL_TYPE.LEAVE_PROJECT]: LeaveProjectModal,
   [MODAL_TYPE.PROJECT_SETTINGS]: ProjectSettingsModal,
+  [MODAL_TYPE.CROP_IMAGE]: CropImageModal,
 } as const;
 
 export function GlobalModalManager() {
