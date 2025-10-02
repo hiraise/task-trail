@@ -1,19 +1,17 @@
-"use client";
+import { DeviceBased } from "@/presentation/ui/DeviceBased";
+import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
+import { ChangePasswordMobilePage } from "@/presentation/pages/profile";
+import { ROUTES } from "@/infrastructure/config/routes";
 
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { BackButton } from "@/presentation/ui/BackButton";
-import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import { Spacer } from "@/presentation/widgets/primitives/Spacer";
-import { ChangePasswordFormMobile } from "@/presentation/widgets/profile/ChangePasswordForm";
+/**
+ * Mobile-only page. Always redirects desktop users to the profile page.
+ */
 
 export default function ChangePasswordPage() {
   return (
-    <MainContainer>
-      <DashboardHeader />
-      <Spacer size="80px" />
-      <BackButton />
-      <Spacer size="20px" />
-      <ChangePasswordFormMobile />
-    </MainContainer>
+    <DeviceBased
+      desktop={<RedirectScreen href={ROUTES.profile} />}
+      mobile={<ChangePasswordMobilePage />}
+    />
   );
 }

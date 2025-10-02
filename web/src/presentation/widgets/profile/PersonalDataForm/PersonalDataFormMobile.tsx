@@ -10,7 +10,7 @@ import { useUpdateUser } from "@/application/user/hooks/useUpdateUser";
 import { getDisplayName } from "@/shared/utils/getDisplayName";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitButton } from "../../auth/_components";
-import { TextInputField } from "./TextInputField";
+import { InputFieldMobile } from "../_components/InputFieldMobile";
 
 export function PersonalDataFormMobile() {
   const { user, update } = useUpdateUser();
@@ -49,7 +49,7 @@ export function PersonalDataFormMobile() {
           {TEXTS.profile.usernameLabel}
         </label>
         <div className={styles.input}>
-          <TextInputField
+          <InputFieldMobile
             id="username"
             {...register("username")}
             placeholder={TEXTS.profile.usernamePlaceholder}
@@ -57,8 +57,9 @@ export function PersonalDataFormMobile() {
             aria-describedby="username-error"
             disabled={isSubmitting}
             autoComplete="off"
+            mode="text"
             hasError={!!errors.username}
-            showCleanButton={(username ?? "").length > 0}
+            showSuffixButton={(username ?? "").length > 0}
             onClean={() => reset({ username: "" })}
           />
           {errors.username && <FormFieldError>{errors.username.message}</FormFieldError>}
@@ -69,7 +70,13 @@ export function PersonalDataFormMobile() {
           {TEXTS.profile.emailLabel}
         </label>
         <div className={styles.input}>
-          <TextInputField id="email" type="email" defaultValue={initialEmail} disabled />
+          <InputFieldMobile
+            id="email"
+            type="email"
+            defaultValue={initialEmail}
+            disabled
+            mode="text"
+          />
           <span className="caption-reg">{TEXTS.profile.changeEmailDescription}</span>
         </div>
       </div>
