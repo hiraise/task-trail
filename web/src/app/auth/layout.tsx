@@ -2,7 +2,7 @@ import { Metadata } from "next";
 
 import { metadataTexts } from "@/shared/locales/metadata";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { AuthDesktopTemplate } from "@/presentation/templates";
+import { AuthDesktopTemplate, AuthMobileTemplate } from "@/presentation/templates";
 
 export const metadata: Metadata = {
   title: metadataTexts.login.title,
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <DeviceBased
-      mobile={children}
+      mobile={<AuthMobileTemplate>{children}</AuthMobileTemplate>}
       desktop={<AuthDesktopTemplate>{children}</AuthDesktopTemplate>}
     />
   );

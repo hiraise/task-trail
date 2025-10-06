@@ -18,6 +18,7 @@ import AddUserIcon from "../../../public/icons/AddUserIcon.svg";
 import DeleteIcon from "../../../public/icons/DeleteIcon.svg";
 import DownArrow from "../../../public/icons/ArrowDown.svg";
 import LogoDesktop from "../../../public/icons/LogoDesktop.svg";
+import LogoMobile from "../../../public/icons/LogoMobile.svg";
 import LogoMedium from "../../../public/icons/LogoMedium.svg";
 import MailIcon from "../../../public/icons/MailIcon.svg";
 import LockIcon from "../../../public/icons/LockIcon.svg";
@@ -54,6 +55,7 @@ export const ICONS = {
   addUser: AddUserIcon,
   delete: DeleteIcon,
   logoDesktop: LogoDesktop,
+  logoMobile: LogoMobile,
   logoMedium: LogoMedium,
   mail: MailIcon,
   lock: LockIcon,
