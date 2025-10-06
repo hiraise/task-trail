@@ -1,50 +1,47 @@
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+"use client";
 
-import { Spacer } from "../../primitives/Spacer";
-import { MobileContainer } from "../../primitives/MobileContainer";
-import { Form } from "./LoginFormMobile.styled";
-import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { TextButton } from "@/presentation/ui/TextButton";
-import { useLogin } from "@/application/auth/hooks/useLogin";
-import { Spinner } from "@/presentation/ui/Spinner";
-import { ROUTES } from "@/infrastructure/config/routes";
-import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
-import { AuthFormFieldsMobile } from "../AuthFormFields";
+import Link from "next/link";
+import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import styles from "./LoginFormMobile.module.css";
+
+import { SubmitButton } from "../_components";
 import { authTexts } from "@/shared/locales/auth";
+import { useLogin } from "@/application/auth/hooks/useLogin";
+import { ROUTES } from "@/infrastructure/config/routes";
+import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
+import { AuthFormFieldsDesktop, schema, type FormData } from "../AuthFormFields";
 
-export const LoginFormMobile = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const router = useRouter();
+export function LoginFormMobile() {
+  const { mutateAsync: login, isPending: isLoading } = useLogin();
+  const form = useForm<FormData>({ mode: "onSubmit", resolver: zodResolver(schema) });
+  const {
+    handleSubmit,
+    formState: { isSubmitting, isValid },
+  } = form;
 
-  const { mutateAsync: login, isPending: loading } = useLogin();
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    await login({ email, password });
+  const submitHandler = async (data: FormData) => {
+    if (!isValid) return;
+    await login({ email: data.email, password: data.password });
   };
 
   return (
-    <MobileContainer>
-      <Form onSubmit={handleSubmit}>
-        <AuthFormFieldsMobile
-          email={email}
-          setEmail={setEmail}
-          password={password}
-          setPassword={setPassword}
-        />
-        <Spacer size="12px" />
-        <TextButton onClick={() => router.push(ROUTES.passwordRecovery)}>
-          {authTexts.login.forgotPassword}
-        </TextButton>
-        <Spacer size="20px" />
-        <SubmitButton type="submit" disabled={loading}>
-          {loading ? <Spinner size={16} /> : authTexts.login.login}
-        </SubmitButton>
-      </Form>
-      <Spacer size="8px" />
-      <PrivacyPolicyMobile btnName={authTexts.login.login} />
-    </MobileContainer>
+    <FormProvider {...form}>
+      <form className={styles.container} onSubmit={handleSubmit(submitHandler)}>
+        <div className={styles.formItems}>
+          <AuthFormFieldsDesktop />
+          <Link href={ROUTES.passwordRecovery} className={styles.forgotPassword}>
+            <span className="btn-font-s"> {authTexts.login.forgotPassword}</span>
+          </Link>
+        </div>
+        <div className={styles.formItems}>
+          <SubmitButton className="btn-font-m" disabled={isLoading || isSubmitting}>
+            {isSubmitting || isLoading ? authTexts.login.loggingIn : authTexts.login.login}
+          </SubmitButton>
+          <PrivacyPolicyDesktop btnName={authTexts.login.login} />
+        </div>
+      </form>
+    </FormProvider>
   );
-};
+}

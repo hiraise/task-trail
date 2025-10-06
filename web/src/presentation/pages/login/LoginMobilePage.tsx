@@ -1,28 +1,29 @@
 "use client";
 
+import Link from "next/link";
+import clsx from "clsx";
+
+import styles from "./LoginMobilePage.module.css";
+
 import { ROUTES } from "@/infrastructure/config/routes";
-import { MobileLogo } from "@/presentation/ui/MobileLogo";
 import { LoginFormMobile } from "@/presentation/widgets/auth/LoginForm/LoginFormMobile";
-import { BottomLinks } from "@/presentation/widgets/common/BottomLinks";
-import { SectionTitle } from "@/presentation/widgets/common/SectionTitle";
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { Spacer } from "@/presentation/widgets/primitives/Spacer";
 import { authTexts } from "@/shared/locales/auth";
+import { BottomContent, TitleWrapper } from "@/presentation/widgets/auth/_components";
 
 export function LoginMobilePage() {
   return (
-    <MainContainer>
-      <MobileLogo />
-      <Spacer size="56px" />
-      <SectionTitle title={authTexts.login.title} subtitle={authTexts.login.description} />
-      <Spacer size="56px" />
+    <div className={styles.container}>
+      <TitleWrapper>
+        <h1>{authTexts.login.title}</h1>
+        <p className="body-reg">{authTexts.login.description}</p>
+      </TitleWrapper>
       <LoginFormMobile />
-      <Spacer size="92px" />
-      <BottomLinks
-        href={ROUTES.signUp}
-        text={authTexts.noAccount}
-        buttonText={authTexts.signup.signup}
-      />
-    </MainContainer>
+      <BottomContent>
+        <span className={clsx(styles.text, "body-reg-2")}>{authTexts.noAccount}</span>
+        <Link href={ROUTES.signUp}>
+          <span className="btn-font-s">{authTexts.signup.signup}</span>
+        </Link>
+      </BottomContent>
+    </div>
   );
 }
