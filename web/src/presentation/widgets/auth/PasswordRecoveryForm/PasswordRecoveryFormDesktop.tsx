@@ -18,20 +18,10 @@ export function PasswordRecoveryFormDesktop() {
     register,
     handleSubmit,
     formState: { errors, isValid, isSubmitting },
-    setError,
-    clearErrors,
   } = useForm<FormData>({ mode: "onChange", resolver: zodResolver(schema) });
 
   const onSubmit = async (data: FormData) => {
-    clearErrors();
-    try {
-      await recover(data.email);
-    } catch {
-      setError("email", {
-        type: "server",
-        message: "Ошибка сервера. Попробуйте ещё раз.",
-      });
-    }
+    await recover(data.email);
   };
 
   return (
