@@ -1,27 +1,24 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import EmailResendTimer from "./EmailResendTimer";
-import EmailResendButton from "./EmailResendButton";
-import styled from "styled-components";
 
-const StyledContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
+import styles from "./ResendEmailButton.module.css";
+
+import { SubmitButton } from "../_components";
+import { authTexts } from "@/shared/locales/auth";
+import { EmailResendTimer } from "./EmailResendTimer";
 
 const RESEND_DELAY = 4 * 60 + 30; // 4:30
 
-interface EmailResendContainerProps {
+interface ResendEmailButtonProps {
   onResend: () => void;
   initialDelay?: number;
 }
 
-export default function EmailResendContainer({
+export function ResendEmailButton({
   onResend,
   initialDelay = RESEND_DELAY,
-}: EmailResendContainerProps) {
+}: ResendEmailButtonProps) {
   const [secondsLeft, setSecondsLeft] = useState(initialDelay);
 
   useEffect(() => {
@@ -38,12 +35,14 @@ export default function EmailResendContainer({
   }, [onResend, initialDelay]);
 
   return (
-    <StyledContainer>
+    <div className={styles.button}>
       {secondsLeft > 0 ? (
         <EmailResendTimer secondsLeft={secondsLeft} />
       ) : (
-        <EmailResendButton onClick={handleResend} />
+        <SubmitButton className="btn-font-m" $variant="text" onClick={handleResend}>
+          {authTexts.resendEmail}
+        </SubmitButton>
       )}
-    </StyledContainer>
+    </div>
   );
 }

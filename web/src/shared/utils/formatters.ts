@@ -11,6 +11,24 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
+ * Formats a given number of seconds into a string in "MM:SS" format.
+ *
+ * @param secondsLeft - The total number of seconds to format.
+ * @returns A string representing the time in minutes and seconds, zero-padded if necessary.
+ *
+ * @example
+ * ```typescript
+ * formatTime(75); // "1:15"
+ * formatTime(5);  // "0:05"
+ * ```
+ */
+export function formatTime(secondsLeft: number) {
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+/**
  * Removes trailing forward slashes from the end of a string.
  *
  * @param str - The input string to normalize.
