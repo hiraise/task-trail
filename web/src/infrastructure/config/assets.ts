@@ -22,5 +22,7 @@ export const ASSETS = {
     project: addBasePath("/images/project.png"),
     board: addBasePath("/images/board.png"),
     hero: addBasePath("/images/hero.png"),
+    passwordRecovery: addBasePath("/images/password-recovery-image.png"),
+    resendVerification: addBasePath("/images/resend-verification-image.png"),
   },
 };
