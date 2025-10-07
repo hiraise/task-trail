@@ -1,39 +1,31 @@
-import { useForm } from "react-hook-form";
-import styled from "styled-components";
+"use client";
 
-import { Spacer } from "../../primitives/Spacer";
-import { MobileContainer } from "../../primitives/MobileContainer";
-import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { Stack } from "../../primitives/Stack";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import styles from "./PasswordRecoveryFormMobile.module.css";
+
 import { usePasswordRecovery } from "@/application/auth/hooks/usePasswordRecovery";
 import { FormFieldError } from "@/presentation/ui/FormFieldError";
-import { getEmailValidator } from "@/shared/utils/validate";
-import { Input, InputLabel } from "@/presentation/ui/Input";
-import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
 import { authTexts } from "@/shared/locales/auth";
-import { TEXTS } from "@/shared/locales/texts";
-
-const FormContainer = styled.form`
-  display: flex;
-  flex-direction: column;
-`;
-
-type FormValues = {
-  email: string;
-};
+import { schema, type FormData } from "./schema";
+import { Input, InputStack, SubmitButton } from "../_components";
+import { ICONS } from "@/infrastructure/config/icons";
+import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
 
 export function PasswordRecoveryFormMobile() {
-  const { mutateAsync: recover, isPending: loading } = usePasswordRecovery();
+  const { mutateAsync: recover, isPending: isLoading } = usePasswordRecovery();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isValid, isSubmitting },
     setError,
     clearErrors,
-  } = useForm<FormValues>({ mode: "onChange" });
+  } = useForm<FormData>({ mode: "onChange", resolver: zodResolver(schema) });
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: FormData) => {
+    if (!isValid) return;
     clearErrors();
     try {
       await recover(data.email);
@@ -46,26 +38,26 @@ export function PasswordRecoveryFormMobile() {
   };
 
   return (
-    <MobileContainer>
-      <FormContainer noValidate onSubmit={handleSubmit(onSubmit)}>
-        <Stack gap="4px">
-          <InputLabel htmlFor="email">{authTexts.emailPlaceholder}</InputLabel>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder={authTexts.emailPlaceholder}
-            {...register("email", getEmailValidator())}
-          />
-          {errors.email && <FormFieldError>{errors.email.message}</FormFieldError>}
-        </Stack>
-        <Spacer size="20px" />
-        <SubmitButton type="submit" disabled={loading || isSubmitting}>
-          {loading ? authTexts.sending : authTexts.send}
+    <form className={styles.container} onSubmit={handleSubmit(onSubmit)}>
+      <InputStack>
+        <Input
+          icon={ICONS.mail}
+          id="email"
+          type="email"
+          {...register("email")}
+          placeholder="Email"
+          label="email"
+          autoComplete="email"
+          hasError={!!errors.email}
+        />
+        {errors.email && <FormFieldError>{errors.email.message as string}</FormFieldError>}
+      </InputStack>
+      <div className={styles.formItems}>
+        <SubmitButton className="btn-font-m" disabled={isLoading || isSubmitting}>
+          {isSubmitting || isLoading ? authTexts.sending : authTexts.send}
         </SubmitButton>
-      </FormContainer>
-      <Spacer size="8px" />
-      <PrivacyPolicyMobile btnName={TEXTS.send} />
-    </MobileContainer>
+        <PrivacyPolicyDesktop btnName={authTexts.send} />
+      </div>
+    </form>
   );
 }
