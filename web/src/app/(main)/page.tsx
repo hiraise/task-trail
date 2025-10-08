@@ -1,7 +1,8 @@
 "use client";
 
-import DashboardPage from "./dashboard/page";
+import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
 
 export default function MainPage() {
-  return <DashboardPage />;
+  // Logic is handled by useInitSession in AuthAndUserInitializer
+  return <LoadingScreen />;
 }
