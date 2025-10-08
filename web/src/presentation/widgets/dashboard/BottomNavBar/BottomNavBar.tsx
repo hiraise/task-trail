@@ -18,7 +18,7 @@ export function BottomNavBar() {
 
   return (
     <div className={styles.container}>
-      <Link className={styles.search} href={ROUTES.dashboard}>
+      <Link className={styles.search} href={ROUTES.search}>
         <Icon as={ICONS.search} size="24px" inheritColor />
       </Link>
       <div className={styles.menu}>

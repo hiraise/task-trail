@@ -5,17 +5,17 @@ const BOARDS = "/boards";
 const AUTH = "/auth";
 
 export const ROUTES = {
+  main: "/",
   login: `${AUTH}`,
   signUp: `${AUTH}/signup`,
   signUpConfirm: (email: string) => `${AUTH}/signup/confirm/?email=${email}`,
   confirm: `${AUTH}/confirm`,
   passwordRecovery: `${AUTH}/password-recovery`,
   passwordRecoveryConfirm: (email: string) => `${AUTH}/password-recovery/confirm/?email=${email}`,
-  dashboard: "/dashboard",
+  search: "/search",
   projects: PROJECTS,
   boards: BOARDS,
   tasks: TASKS,
-  archive: "/archive",
   profile: PROFILE_BASE,
   profileEditPersonalData: `${PROFILE_BASE}/edit-personal-data`,
   profileChangePassword: `${PROFILE_BASE}/change-password`,
@@ -29,11 +29,10 @@ export const ROUTES = {
 };
 
 export const protectedRoutes = [
-  ROUTES.dashboard,
+  ROUTES.search,
   ROUTES.projects,
   ROUTES.boards,
   ROUTES.tasks,
-  ROUTES.archive,
   ROUTES.profile,
 ];
 

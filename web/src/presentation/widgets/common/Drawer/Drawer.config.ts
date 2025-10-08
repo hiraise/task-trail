@@ -31,9 +31,8 @@ export const navItems: NavMenuItem[] = [
   },
 ];
 
-//TODO: replace href with propper one
 export const searchItem = {
-  href: ROUTES.dashboard,
+  href: ROUTES.search,
   icon: ASSETS.icons.search,
   label: TEXTS.drawer.search,
 };

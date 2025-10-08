@@ -13,6 +13,8 @@ export const TEXTS = {
   send: "Отправить",
   emailPlaceholder: "E-mail",
   changePassword: "Изменить пароль",
+  searchPlaceholder: "Проект, доска, задача",
+  emptySearch: "Чтобы что-то нашлось, нужно что-то ввести. Пока что тут пусто",
   userQueryPlaceholder: "Введите Email или имя пользователя",
   userInviteDescription:
     "Если пользователь не использует Tasktrail, то мы вышлем ему приглашение с ссылкой для подключения к проекту",
