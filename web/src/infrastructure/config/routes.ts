@@ -7,8 +7,10 @@ const AUTH = "/auth";
 export const ROUTES = {
   login: `${AUTH}`,
   signUp: `${AUTH}/signup`,
+  signUpConfirm: (email: string) => `${AUTH}/signup/confirm/?email=${email}`,
   confirm: `${AUTH}/confirm`,
   passwordRecovery: `${AUTH}/password-recovery`,
+  passwordRecoveryConfirm: (email: string) => `${AUTH}/password-recovery/confirm/?email=${email}`,
   dashboard: "/dashboard",
   projects: PROJECTS,
   boards: BOARDS,

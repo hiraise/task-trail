@@ -12,7 +12,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 export const useLogin = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get("from") || ROUTES.dashboard;
+  const from = searchParams.get("from") || ROUTES.projects;
 
   const queryClient = useQueryClient();
 

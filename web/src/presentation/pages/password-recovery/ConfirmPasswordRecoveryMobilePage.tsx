@@ -8,13 +8,13 @@ import styles from "./ConfirmPasswordRecoveryMobilePage.module.css";
 import { authTexts } from "@/shared/locales/auth";
 import { openUserInbox } from "@/shared/utils/openUserInbox";
 import { ASSETS } from "@/infrastructure/config/assets";
-import { useResendEmail } from "@/application/auth/hooks/useResendEmail";
 import { ResendEmailButton } from "@/presentation/widgets/auth/ResendEmailButton";
 import { SubmitButton, TitleWrapper } from "@/presentation/widgets/auth/_components";
+import { usePasswordRecovery } from "@/application/auth/hooks/usePasswordRecovery";
 
 export function ConfirmPasswordRecoveryMobilePage() {
   const email = useSearchParams().get("email") || "";
-  const { mutateAsync: resendEmail } = useResendEmail(email);
+  const { mutateAsync: recovery } = usePasswordRecovery();
 
   if (email.length === 0) return null;
 
@@ -35,7 +35,7 @@ export function ConfirmPasswordRecoveryMobilePage() {
         />
       </div>
       <div className={styles.buttons}>
-        <ResendEmailButton initialDelay={10} onResend={() => resendEmail(email)} />
+        <ResendEmailButton initialDelay={10} onResend={() => recovery(email)} />
         <SubmitButton className="btn-font-m" onClick={() => openUserInbox(email)}>
           {authTexts.openEmail}
         </SubmitButton>
