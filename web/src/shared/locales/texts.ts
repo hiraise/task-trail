@@ -18,6 +18,8 @@ export const TEXTS = {
   userQueryPlaceholder: "Введите Email или имя пользователя",
   userInviteDescription:
     "Если пользователь не использует Tasktrail, то мы вышлем ему приглашение с ссылкой для подключения к проекту",
+  showMore: "Показать больше",
+  hide: "Скрыть",
   drawer: {
     myProjects: "Мои проекты",
     myBoards: "Мои доски",
@@ -45,6 +47,7 @@ export const TEXTS = {
     boardAlt: "Создать новую доску",
   },
   projects: {
+    project: "Проект",
     edit: "Редактировать проект",
     inviteMember: "Пригласить участника",
     moveToArchive: "Переместить в архив",

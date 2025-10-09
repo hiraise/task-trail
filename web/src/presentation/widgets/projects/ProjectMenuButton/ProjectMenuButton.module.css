@@ -1,13 +1,8 @@
 .container {
   display: flex;
-  height: 24px;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   height: 32px;
-}
-
-.text {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 18px;
+  flex-shrink: 0;
 }

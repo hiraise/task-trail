@@ -29,6 +29,7 @@
 
 .container > span {
   color: var(--text-primary-contrast);
+  white-space: nowrap;
 }
 
 .icon {
