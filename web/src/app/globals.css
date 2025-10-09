@@ -82,11 +82,22 @@ a {
   text-decoration: none;
 }
 
-.multiline {
+.multiline,
+.multiline-2,
+.multiline-3 {
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
+}
+
+.multiline,
+.multiline-2 {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.multiline-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
