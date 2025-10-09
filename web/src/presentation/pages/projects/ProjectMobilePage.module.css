@@ -11,28 +11,8 @@
   gap: 24px;
 }
 
-.titleWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.projectTitle {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.members {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.taskList {
-  display: flex;
-  flex-direction: column;
+.tasks {
   overflow-y: auto;
-  gap: 8px;
+  height: 100%;
+  padding-bottom: 68px; /* include offset from FAB */
 }

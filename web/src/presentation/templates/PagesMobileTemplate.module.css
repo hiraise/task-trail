@@ -20,11 +20,22 @@
   background-color: var(--bg-primary);
 }
 
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+  flex: 1;
+}
+
 .content {
   padding: 12px 20px 12px 20px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  border-radius: 8px;
   background-color: var(--bg-primary);
-  overflow-y: auto;
+}
+
+.content:last-child {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   flex: 1;
 }
