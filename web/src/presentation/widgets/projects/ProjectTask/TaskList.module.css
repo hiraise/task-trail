@@ -1,6 +1,8 @@
-.container {
+.list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow-y: auto;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }

@@ -7,6 +7,7 @@ interface PagesMobileTemplateProps {
   topBar?: React.ReactNode;
   topBarBackTitle?: string;
   onMenuClick?: () => void;
+  onSortClick?: () => void;
 }
 
 export function PagesMobileTemplate({
@@ -14,13 +15,18 @@ export function PagesMobileTemplate({
   topBar,
   topBarBackTitle,
   onMenuClick,
+  onSortClick,
 }: PagesMobileTemplateProps) {
   return (
     <div className={styles.container}>
       {topBar && <div className={styles.topBar}>{topBar}</div>}
       {topBarBackTitle && (
         <div className={styles.topBarBack}>
-          <TopBarBackMobile title={topBarBackTitle} onMenuClick={onMenuClick} />
+          <TopBarBackMobile
+            title={topBarBackTitle}
+            onMenuClick={onMenuClick}
+            onSortClick={onSortClick}
+          />
         </div>
       )}
 

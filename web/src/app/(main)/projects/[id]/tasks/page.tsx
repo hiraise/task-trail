@@ -1,66 +1,24 @@
 "use client";
 
-import "./styles.css";
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import { BackButton } from "@/presentation/ui/BackButton";
-import { IconButton } from "@/presentation/ui/IconButton";
-import { ICONS } from "@/infrastructure/config/icons";
-import { TaskList } from "@/presentation/widgets/projects/TaskList";
-import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
-import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
-import { useGetTasks } from "@/application/projects/hooks/useProject";
+import { useParams } from "next/navigation";
 
-const texts = {
-  title: "Задачи проекта",
-};
+import { DeviceBased } from "@/presentation/ui/DeviceBased";
+import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
+import { ROUTES } from "@/infrastructure/config/routes";
+import { ProjectTasksMobilePage } from "@/presentation/pages/projects";
+
+/**
+ * Mobile-only page. Always redirects desktop users to the project page.
+ */
 
 export default function ProjectTasksPage() {
-  const { showSortOptions, showCreateTask } = useGlobalModals();
-  const { data: tasks, isLoading } = useGetTasks();
-
-  // TODO: Implement sorting logic
-  const handleSortTasks = async () => {
-    const option = await showSortOptions();
-    console.log("Selected sort option:", option);
-  };
-
-  if (isLoading) return <LoadingScreen />;
-
-  if (!tasks) return <h1>Как-будто нет задач, или что-то пошло не так</h1>;
-
-  if (tasks.length === 0)
-    return (
-      <MainContainer>
-        <DashboardHeader />
-        <div className="container">
-          <BackButton />
-        </div>
-        <div className="content">
-          <h1>Опаньки... Похоже, у вас нет задач. Chill</h1>
-        </div>
-      </MainContainer>
-    );
+  const params = useParams();
+  const projectId = Number(params.id);
 
   return (
-    <MainContainer>
-      <DashboardHeader />
-      <div className="container">
-        <BackButton />
-      </div>
-      <div className="content">
-        <div className="title-wrapper">
-          <div className="tasks-title">
-            <h1>{texts.title}</h1>
-            <IconButton icon={ICONS.sort} size="24px" onClick={handleSortTasks} />
-          </div>
-        </div>
-        <div className="task-list">
-          <TaskList availableTasks={tasks} />
-        </div>
-      </div>
-      <FloatingButton onClick={showCreateTask} />
-    </MainContainer>
+    <DeviceBased
+      desktop={<RedirectScreen href={ROUTES.project(projectId)} />}
+      mobile={<ProjectTasksMobilePage />}
+    />
   );
 }

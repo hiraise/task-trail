@@ -1,14 +1,13 @@
-import Link from "next/link";
-import clsx from "clsx";
 import { memo } from "react";
+import clsx from "clsx";
 
 import styles from "./ProjectTasks.module.css";
 
 import { Task } from "@/domain/task/task.entity";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
-import { ProjectTask } from "./ProjectTask";
 import { ProjectMenuButton } from "../ProjectMenuButton";
+import { TaskList } from "./TaskList";
 
 interface ProjectTasksProps {
   projectId: number;
@@ -33,33 +32,24 @@ export const ProjectTasks = memo(function ProjectTasks({
   tasks,
   className,
 }: ProjectTasksProps) {
-  if (tasks.length === 0) {
-    return (
-      <section className={clsx(styles.container, className)} aria-label="Project tasks">
-        <ProjectMenuButton
-          href={ROUTES.projectTasks(projectId)}
-          text={TEXTS.projects.tasks}
-          showButton={false}
-        />
-        <div className={styles.empty} role="status" aria-live="polite">
-          <p className="caption-reg">{TEXTS.projects.noTasks}</p>
-        </div>
-      </section>
-    );
-  }
+  const hasTask = tasks.length > 0;
 
   return (
     <section className={clsx(styles.container, className)} aria-label="Project tasks">
-      <ProjectMenuButton href={ROUTES.projectTasks(projectId)} text={TEXTS.projects.tasks} />
-      <ul role="list" className={styles.list}>
-        {tasks.map((task) => (
-          <li key={task.id}>
-            <Link href={ROUTES.task(task.id)}>
-              <ProjectTask title={task.title} />
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <ProjectMenuButton
+        href={ROUTES.projectTasks(projectId)}
+        text={TEXTS.projects.tasks}
+        showButton={hasTask}
+      />
+      {hasTask ? <TaskList tasks={tasks} /> : <TasksEmptyState />}
     </section>
   );
 });
+
+function TasksEmptyState() {
+  return (
+    <div className={styles.empty} role="status" aria-live="polite">
+      <p className="caption-reg">{TEXTS.projects.noTasks}</p>
+    </div>
+  );
+}
