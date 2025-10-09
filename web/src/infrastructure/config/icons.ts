@@ -27,6 +27,7 @@ import HideIcon from "../../../public/icons/HideIcon.svg";
 import SearchIcon from "../../../public/icons/SearchIcon.svg";
 import ArrowLeft from "../../../public/icons/ArrowLeft.svg";
 import ArrowLeftWithPadding from "../../../public/icons/ArrowLeftWithPadding.svg";
+import ArrowRightWithPadding from "../../../public/icons/ArrowRightWithPadding.svg";
 import ArrowRight from "../../../public/icons/ArrowRight.svg";
 import EditIcon from "../../../public/icons/EditIcon.svg";
 import LeaveIcon from "../../../public/icons/LeaveIcon.svg";
@@ -43,6 +44,7 @@ export const ICONS = {
   rightArrow: ArrowRight,
   leftArrow: ArrowLeft,
   leftArrowWithPadding: ArrowLeftWithPadding,
+  rightArrowWithPadding: ArrowRightWithPadding,
   downArrow: DownArrow,
   check: CheckIcon,
   close: CloseIcon,
