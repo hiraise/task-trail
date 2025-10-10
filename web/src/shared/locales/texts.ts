@@ -52,6 +52,7 @@ export const TEXTS = {
     inviteMember: "Пригласить участника",
     moveToArchive: "Переместить в архив",
     tasks: "Задачи проекта",
+    task: "Задача",
     leave: "Покинуть проект",
     delete: "Удалить проект",
     members: "Участники проекта",
