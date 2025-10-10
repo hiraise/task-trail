@@ -1199,7 +1199,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/tasks/{id}/assignee/{assigneeId}": {
+        "/v1/tasks/{id}/assignee": {
             "patch": {
                 "security": [
                     {

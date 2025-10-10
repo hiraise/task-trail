@@ -990,7 +990,7 @@ paths:
       summary: edit task
       tags:
       - /v1/tasks
-  /v1/tasks/{id}/assignee/{assigneeId}:
+  /v1/tasks/{id}/assignee:
     patch:
       consumes:
       - application/json

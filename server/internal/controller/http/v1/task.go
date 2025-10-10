@@ -99,7 +99,7 @@ func (r *taskRoutes) changeStatus(c *gin.Context) {
 // @Success 	200 {object} response.taskCreateRes
 // @Failure		401 {object} response.ErrAPI "authentication required"
 // @Failure		404 {object} response.ErrAPI "user or task not found"
-// @Router 		/v1/tasks/{id}/assignee/{assigneeId} [patch]
+// @Router 		/v1/tasks/{id}/assignee [patch]
 func (r *taskRoutes) changeAssignee(c *gin.Context) {
 	userID := utils.Must(r.contextmanager.GetUserID(c))
 	taskID := utils.Must(strconv.Atoi(c.Param("id")))
@@ -153,7 +153,7 @@ func NewTaskRouter(
 ) {
 	r := &taskRoutes{u: u, contextmanager: contextmanager, errHandler: errHandler}
 	g := router.Group("/tasks")
-	g.PATCH(":id/assignee/:assigneeId", authMW, r.changeAssignee)
+	g.PATCH(":id/assignee", authMW, r.changeAssignee)
 	g.PATCH(":id/status/:statusId", authMW, r.changeStatus)
 	g.PATCH(":id", authMW, r.edit)
 	g.GET(":id", authMW, r.getByID)
