@@ -19,9 +19,7 @@ export function TaskInfoDesktop({ task }: { task: Task }) {
     <div className={styles.container}>
       <div className={styles.titleWapper}>
         <div className={styles.title}>
-          <div>
-            <TaskStatus status={status} onClick={changeStatus} />
-          </div>
+          <TaskStatus status={status} onClick={changeStatus} />
           <h2>{task.title}</h2>
           <span className="body-reg-2">{task.description}</span>
         </div>

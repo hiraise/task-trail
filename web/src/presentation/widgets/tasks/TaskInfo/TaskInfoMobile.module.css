@@ -1,12 +1,11 @@
-.container {
+.taskInfo {
   display: flex;
   flex-direction: column;
-  padding-top: 90px;
-  padding-bottom: 24px;
+  gap: 16px;
 }
 
-.content {
+.layout {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 8px;
 }

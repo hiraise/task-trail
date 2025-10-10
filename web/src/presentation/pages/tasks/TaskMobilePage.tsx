@@ -1,29 +1,22 @@
 "use client";
 
-import styles from "./TaskMobilePage.module.css";
-
 import { useGetTask } from "@/application/tasks/hooks/useTasks";
-import { BackButton } from "@/presentation/ui/BackButton";
-import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
+import { PagesMobileTemplate } from "@/presentation/templates";
 import { Comments } from "@/presentation/widgets/tasks/Comments";
-import { TaskInfo } from "@/presentation/widgets/tasks/TaskInfo";
+import { TaskInfoMobile } from "@/presentation/widgets/tasks/TaskInfo";
+import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
+import { TEXTS } from "@/shared/locales/texts";
 
 export function TaskMobilePage() {
+  const { showEditTask } = useGlobalModals();
   const { data: task } = useGetTask();
 
   if (!task) return null;
 
   return (
-    <MainContainer>
-      <DashboardHeader />
-      <div className={styles.container}>
-        <BackButton />
-      </div>
-      <div className={styles.content}>
-        <TaskInfo task={task} />
-        <Comments />
-      </div>
-    </MainContainer>
+    <PagesMobileTemplate topBarBackTitle={TEXTS.projects.task} onMenuClick={showEditTask}>
+      <TaskInfoMobile task={task} />
+      <Comments />
+    </PagesMobileTemplate>
   );
 }
