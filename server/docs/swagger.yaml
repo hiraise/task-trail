@@ -990,6 +990,40 @@ paths:
       summary: edit task
       tags:
       - /v1/tasks
+  /v1/tasks/{id}/assignee/{assigneeId}:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: task id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: assignee id
+        in: query
+        name: assigneeId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.taskCreateRes'
+        "401":
+          description: authentication required
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+        "404":
+          description: user or task not found
+          schema:
+            $ref: '#/definitions/response.ErrAPI'
+      security:
+      - BearerAuth: []
+      summary: change assignee
+      tags:
+      - /v1/tasks
   /v1/tasks/{id}/status/{statusId}:
     patch:
       consumes:

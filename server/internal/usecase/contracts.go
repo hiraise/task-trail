@@ -102,4 +102,5 @@ type Task interface {
 	GetByID(ctx context.Context, userID int, taskID int) (*dto.TaskListRes, error)
 	Edit(ctx context.Context, userID int, taskID int, data *dto.TaskEdit) error
 	ChangeStatus(ctx context.Context, userID int, taskID, statusID int) error
+	ChangeAssignee(ctx context.Context, userID int, taskID int, assigneeID *int) error
 }

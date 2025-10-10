@@ -1190,6 +1190,60 @@
                 }
             }
         },
+        "/v1/tasks/{id}/assignee/{assigneeId}": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/tasks"
+                ],
+                "summary": "change assignee",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "task id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "assignee id",
+                        "name": "assigneeId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.taskCreateRes"
+                        }
+                    },
+                    "401": {
+                        "description": "authentication required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "404": {
+                        "description": "user or task not found",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/tasks/{id}/status/{statusId}": {
             "patch": {
                 "security": [

@@ -25,11 +25,16 @@ type TaskEdit struct {
 	Description *string
 }
 
+type OptInt struct {
+	HasValue bool
+	Value    *int
+}
+
 type TaskUpdate struct {
 	Name        *string
 	Description *string
 	ProjectID   *int
-	AssigneeID  *int
+	AssigneeID  *OptInt
 	StatusID    *int
 }
 

@@ -95,10 +95,7 @@ func (r *PgTaskRepository) UpdateByID(ctx context.Context, taskID int, data *dto
 	}
 
 	if data.AssigneeID != nil {
-		if err := ValidateID(*data.AssigneeID, "assigneeID"); err != nil {
-			return err
-		}
-		kwargs["assignee_id"] = data.AssigneeID
+		kwargs["assignee_id"] = data.AssigneeID.Value
 	}
 
 	if data.ProjectID != nil {

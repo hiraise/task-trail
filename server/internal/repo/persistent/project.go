@@ -464,7 +464,7 @@ func (r *PgProjectRepository) DeleteRoles(ctx context.Context, roleIDs []int) er
 	query := `
 		UPDATE project_roles
 		SET 
-			deleted_at = $1
+			deleted_at = $1,
 			updated_at = $1
 		WHERE id = ANY ($2) AND deleted_at IS NULL;
 	`
