@@ -117,3 +117,18 @@ func (r *PgTaskRepository) UpdateByID(ctx context.Context, taskID int, data *dto
 	kwargs["updated_at"] = time.Now()
 	return r.updateByID(ctx, "tasks", taskID, kwargs)
 }
+
+func (r *PgTaskRepository) Delete(ctx context.Context, taskID int) error {
+	query := `
+		UPDATE tasks
+		SET 
+			deleted_at = $1,
+			updated_at = $1
+		WHERE id = $2 AND deleted_at IS NULL
+	`
+	_, err := r.getDb(ctx).Exec(ctx, query, time.Now(), taskID)
+	if err != nil {
+		return r.handleError(err)
+	}
+	return nil
+}

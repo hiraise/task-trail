@@ -124,7 +124,7 @@ func (r *taskRoutes) changeAssignee(c *gin.Context) {
 // @Produce 	json
 // @Param 		id path int true "task id"
 // @Param 		body body request.taskEditReq true "task data"
-// @Success 	200 {object} response.taskCreateRes
+// @Success 	200
 // @Failure		400 {object} response.ErrAPI "invalid request body"
 // @Failure		401 {object} response.ErrAPI "authentication required"
 // @Failure		404 {object} response.ErrAPI "user or task not found"
@@ -144,6 +144,26 @@ func (r *taskRoutes) edit(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
+// @Summary 	delete task
+// @Security BearerAuth
+// @Tags 		/v1/tasks
+// @Accept 		json
+// @Produce 	json
+// @Param 		id path int true "task id"
+// @Success 	204
+// @Failure		401 {object} response.ErrAPI "authentication required"
+// @Failure		404 {object} response.ErrAPI "task not found"
+// @Router 		/v1/tasks/{id} [delete]
+func (r *taskRoutes) delete(c *gin.Context) {
+	userID := utils.Must(r.contextmanager.GetUserID(c))
+	taskID := utils.Must(strconv.Atoi(c.Param("id")))
+	if err := r.u.Delete(c, userID, taskID); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
+
 func NewTaskRouter(
 	router *gin.RouterGroup,
 	u usecase.Task,
@@ -157,5 +177,6 @@ func NewTaskRouter(
 	g.PATCH(":id/status/:statusId", authMW, r.changeStatus)
 	g.PATCH(":id", authMW, r.edit)
 	g.GET(":id", authMW, r.getByID)
+	g.DELETE(":id", authMW, r.delete)
 	g.POST("", authMW, r.create)
 }

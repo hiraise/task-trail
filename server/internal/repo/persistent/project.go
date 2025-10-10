@@ -489,7 +489,7 @@ func (r *PgProjectRepository) DeleteRolesByProjectID(ctx context.Context, projec
 	query := `
 		UPDATE project_roles
 		SET 
-			deleted_at = $1
+			deleted_at = $1,
 			updated_at = $1
 		WHERE project_id = $2 AND deleted_at IS NULL;
 	`
@@ -623,7 +623,7 @@ func (r *PgProjectRepository) DeleteStatusesByProjectID(ctx context.Context, pro
 	query := `
 		UPDATE task_statuses
 		SET 
-			deleted_at = $1
+			deleted_at = $1,
 			updated_at = $1
 		WHERE project_id = $2 AND deleted_at IS NULL;
 	`
@@ -685,7 +685,7 @@ func (r *PgProjectRepository) DeleteTasksByProjectID(ctx context.Context, projec
 	query := `
 		UPDATE tasks
 		SET 
-			deleted_at = $1
+			deleted_at = $1,
 			updated_at = $1
 		WHERE project_id = $2 AND deleted_at IS NULL
 	`

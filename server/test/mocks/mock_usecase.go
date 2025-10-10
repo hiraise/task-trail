@@ -558,6 +558,20 @@ func (m *MockTask) EXPECT() *MockTaskMockRecorder {
 	return m.recorder
 }
 
+// ChangeAssignee mocks base method.
+func (m *MockTask) ChangeAssignee(ctx context.Context, userID, taskID int, assigneeID *int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeAssignee", ctx, userID, taskID, assigneeID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeAssignee indicates an expected call of ChangeAssignee.
+func (mr *MockTaskMockRecorder) ChangeAssignee(ctx, userID, taskID, assigneeID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeAssignee", reflect.TypeOf((*MockTask)(nil).ChangeAssignee), ctx, userID, taskID, assigneeID)
+}
+
 // ChangeStatus mocks base method.
 func (m *MockTask) ChangeStatus(ctx context.Context, userID, taskID, statusID int) error {
 	m.ctrl.T.Helper()

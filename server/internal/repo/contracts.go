@@ -167,4 +167,5 @@ type TaskRepository interface {
 	Create(ctx context.Context, data *dto.TaskCreate) (int, error)
 	GetByID(ctx context.Context, taskID int) (*dto.TaskListRes, error)
 	UpdateByID(ctx context.Context, taskID int, data *dto.TaskUpdate) error
+	Delete(ctx context.Context, taskID int) error
 }
