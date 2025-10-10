@@ -25,6 +25,21 @@ export const useGetTask = () => {
   });
 };
 
+export const useDeleteTask = (projectId: number) => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, number>({
+    mutationFn: taskService.delete,
+    onSuccess: () => {
+      router.replace(ROUTES.project(projectId));
+      toast.success("Task deleted successfully");
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectTasks(projectId) });
+    },
+    onError: () => toast.error("Failed to delete task"),
+  });
+};
+
 export const useCreateTask = () => {
   const router = useRouter();
   const queryClient = useQueryClient();

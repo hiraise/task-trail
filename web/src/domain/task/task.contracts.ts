@@ -8,6 +8,7 @@ import {
 
 export type TaskService = {
   create: (payload: TaskPayload) => Promise<number>;
+  delete: (id: number) => Promise<void>;
   getTask: (id: number) => Promise<Task>;
   changeStatus: (payload: ChangeStatusPayload) => Promise<void>;
   changeAssignee: (payload: ChangeAssigneePayload) => Promise<void>;

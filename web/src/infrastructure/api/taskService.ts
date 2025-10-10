@@ -28,6 +28,25 @@ export const taskService: TaskService = {
   },
 
   /**
+   * Deletes a task by its unique identifier.
+   *
+   * Sends a DELETE request to the server to remove the specified task.
+   * If the operation fails, logs the error and throws an `AppError` of type `SERVER`.
+   *
+   * @param id - The unique identifier of the task to delete.
+   * @returns A promise that resolves with the server response upon successful deletion.
+   * @throws {AppError} If the deletion fails due to a server error.
+   */
+  async delete(id) {
+    try {
+      return await axiosClient.delete(API_ROUTES.TASKS_BY_ID(id));
+    } catch (error) {
+      clientLogger.error("Failed to delete task", { error });
+      throw new AppError(AppErrorType.SERVER, "Failed to delete task");
+    }
+  },
+
+  /**
    * Retrieves a task by its unique identifier.
    *
    * @param id - The unique identifier of the task to fetch.
