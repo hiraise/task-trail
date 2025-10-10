@@ -7,7 +7,7 @@ export const mockProjects: Project[] = [
     name: "Website Redesign",
     description: "Update the company website with a new look.",
     createdAt: formatDate(new Date("2024-01-10")),
-    totalTasks: 5,
+    tasksCount: 5,
     permissions: [],
   },
   {
@@ -15,7 +15,7 @@ export const mockProjects: Project[] = [
     name: "Mobile App Launch",
     description: "Release the new mobile application.",
     createdAt: formatDate(new Date("2024-01-15")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -23,7 +23,7 @@ export const mockProjects: Project[] = [
     name: "Marketing Campaign",
     description: "Start the summer marketing campaign.",
     createdAt: formatDate(new Date("2024-01-20")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -31,7 +31,7 @@ export const mockProjects: Project[] = [
     name: "Customer Survey",
     description: "Conduct a survey for customer feedback.",
     createdAt: formatDate(new Date("2024-01-25")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -39,7 +39,7 @@ export const mockProjects: Project[] = [
     name: "Backend Refactor",
     description: "Refactor backend services for scalability.",
     createdAt: formatDate(new Date("2024-01-30")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -47,7 +47,7 @@ export const mockProjects: Project[] = [
     name: "Security Audit",
     description: "Perform a security audit of all systems.",
     createdAt: formatDate(new Date("2024-02-01")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -55,7 +55,7 @@ export const mockProjects: Project[] = [
     name: "Data Migration",
     description: "Migrate data to the new database.",
     createdAt: formatDate(new Date("2024-02-05")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -63,7 +63,7 @@ export const mockProjects: Project[] = [
     name: "API Integration",
     description: "Integrate third-party APIs.",
     createdAt: formatDate(new Date("2024-02-10")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -71,7 +71,7 @@ export const mockProjects: Project[] = [
     name: "UI Improvements",
     description: "Enhance user interface components.",
     createdAt: formatDate(new Date("2024-02-15")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -79,7 +79,7 @@ export const mockProjects: Project[] = [
     name: "Performance Testing",
     description: "Test application performance under load.",
     createdAt: formatDate(new Date("2024-02-20")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -87,7 +87,7 @@ export const mockProjects: Project[] = [
     name: "Documentation Update",
     description: "Update project documentation.",
     createdAt: formatDate(new Date("2024-02-25")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -95,7 +95,7 @@ export const mockProjects: Project[] = [
     name: "Feature Rollout",
     description: "Roll out new features to users.",
     createdAt: formatDate(new Date("2024-03-01")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -103,7 +103,7 @@ export const mockProjects: Project[] = [
     name: "Bug Fixes",
     description: "Fix reported bugs from last release.",
     createdAt: formatDate(new Date("2024-03-05")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -111,7 +111,7 @@ export const mockProjects: Project[] = [
     name: "Analytics Setup",
     description: "Set up analytics tracking.",
     createdAt: formatDate(new Date("2024-03-10")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -119,7 +119,7 @@ export const mockProjects: Project[] = [
     name: "Team Training",
     description: "Organize training sessions for the team.",
     createdAt: formatDate(new Date("2024-03-15")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -127,7 +127,7 @@ export const mockProjects: Project[] = [
     name: "DevOps Pipeline",
     description: "Implement CI/CD pipeline.",
     createdAt: formatDate(new Date("2024-03-20")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -135,7 +135,7 @@ export const mockProjects: Project[] = [
     name: "Accessibility Review",
     description: "Review accessibility compliance.",
     createdAt: formatDate(new Date("2024-03-25")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -143,7 +143,7 @@ export const mockProjects: Project[] = [
     name: "Cloud Migration",
     description: "Migrate services to the cloud.",
     createdAt: formatDate(new Date("2024-04-01")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -151,7 +151,7 @@ export const mockProjects: Project[] = [
     name: "User Onboarding",
     description: "Improve user onboarding experience.",
     createdAt: formatDate(new Date("2024-04-05")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
   {
@@ -159,7 +159,7 @@ export const mockProjects: Project[] = [
     name: "Release Planning",
     description: "Plan the next major release.",
     createdAt: formatDate(new Date("2024-04-10")),
-    totalTasks: 0,
+    tasksCount: 0,
     permissions: [],
   },
 ];

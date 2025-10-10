@@ -3,7 +3,7 @@ export interface Project {
   name: string;
   description?: string;
   createdAt: string;
-  totalTasks: number;
+  tasksCount: number;
   permissions: PermissionType[];
 }
 

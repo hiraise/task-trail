@@ -28,7 +28,7 @@ export function ProjectItem({ project, isSelected, onClick }: ProjectItemProps) 
       </div>
       <div className={styles.infoWrapper}>
         {memberIds.length > 0 && <MembersAvatarList memberIds={memberIds} />}
-        <span className="caption-reg">{pluralizeTasks(project.totalTasks)}</span>
+        <span className="caption-reg">{pluralizeTasks(project.tasksCount)}</span>
       </div>
     </button>
   );

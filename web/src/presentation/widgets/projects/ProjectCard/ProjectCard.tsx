@@ -39,7 +39,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         {memberIds.length > 0 && (
           <MembersAvatarList memberIds={memberIds} bgColor={bgColor} variant="standard" />
         )}
-        <span className="caption-reg">{pluralizeTasks(project.totalTasks)}</span>
+        <span className="caption-reg">{pluralizeTasks(project.tasksCount)}</span>
       </div>
     </div>
   );

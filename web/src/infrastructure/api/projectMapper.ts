@@ -16,7 +16,7 @@ export const mapProjectFromApi = (apiProject: ApiProject): Project => {
     name: apiProject.name,
     description: apiProject.description,
     createdAt: formatDate(apiProject.createdAt),
-    totalTasks: apiProject.tasksCount,
+    tasksCount: apiProject.tasksCount,
     permissions: apiProject.permissions,
   };
 };
