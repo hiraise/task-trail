@@ -8,7 +8,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 export const useEditTask = () => {
   const params = useParams();
-  const taskId = Number(params.id);
+  const taskId = Number(params.taskId);
 
   const queryClient = useQueryClient();
   return useMutation<void, Error, EditTaskPayload>({
