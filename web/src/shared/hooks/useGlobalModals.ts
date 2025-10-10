@@ -87,13 +87,8 @@ export const useGlobalModals = () => {
 
   return {
     // Selection modals
-    showSelectAssignee: (props?: SelectAssigneeProps) =>
-      safeOpen<MembersData>(MODAL_TYPE.SELECT_ASSIGNEE, { ...props }),
-
     showSelectProject: (projectId?: number) =>
       safeOpen<Project>(MODAL_TYPE.SELECT_PROJECT, { projectId }),
-    showChangeStatus: (props?: ChangeStatusProps) =>
-      safeOpen<TaskStatus>(MODAL_TYPE.CHANGE_STATUS, { ...props }),
     showSortOptions: () => safeOpen<void>(MODAL_TYPE.SORT_ITEMS),
 
     // Creation modals
@@ -116,5 +111,9 @@ export const useGlobalModals = () => {
 
     // Task actions
     showEditTask: (props?: EditTaskProps) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { ...props }),
+    showChangeStatus: (props?: ChangeStatusProps) =>
+      safeOpen<TaskStatus>(MODAL_TYPE.CHANGE_STATUS, { ...props }),
+    showSelectAssignee: (props?: SelectAssigneeProps) =>
+      safeOpen<MembersData>(MODAL_TYPE.SELECT_ASSIGNEE, { ...props }),
   };
 };

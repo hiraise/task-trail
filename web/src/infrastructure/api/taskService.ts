@@ -66,6 +66,31 @@ export const taskService: TaskService = {
   },
 
   /**
+   * Changes the assignee of a task.
+   *
+   * Sends a PATCH request to update the assignee of the specified task.
+   * If the request fails, logs the error and throws an {@link AppError} of type SERVER.
+   *
+   * @param payload - An object containing the task ID and the new assignee's ID.
+   * @param payload.id - The ID of the task to update.
+   * @param payload.assigneeId - The ID of the new assignee.
+   * @returns A promise resolving to the response from the API.
+   * @throws {AppError} If the server request fails.
+   */
+  async changeAssignee(payload) {
+    const { id, assigneeId } = payload;
+    try {
+      return await axiosClient.patch(API_ROUTES.CHANGE_ASSIGNEE(id, assigneeId));
+    } catch (error) {
+      clientLogger.error(
+        `Failed to change task {id: ${id}} with assignee {assigneeId: ${assigneeId}}`,
+        { error }
+      );
+      throw new AppError(AppErrorType.SERVER, "Failed to change task assignee");
+    }
+  },
+
+  /**
    * Updates an existing task with the specified payload.
    *
    * @param id - The unique identifier of the task to be edited.

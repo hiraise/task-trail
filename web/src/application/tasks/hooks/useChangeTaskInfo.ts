@@ -4,12 +4,14 @@ import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { useGetTaskInfo } from "./useTasks";
 import { Task } from "@/domain/task/task.entity";
 import { useChangeStatus } from "./useChangeStatus";
+import { useChangeAssignee } from "./useChangeAssignee";
 
 export const useChangeTaskInfo = (task: Task) => {
   const { showChangeStatus, showSelectAssignee, showSelectProject } = useGlobalModals();
   const { status, projectId, assignee, project } = useGetTaskInfo(task.id);
 
   const { mutateAsync: mutateStatus } = useChangeStatus();
+  const { mutateAsync: changeAssignee } = useChangeAssignee();
 
   /**
    * Prompts the user to select a new status for the current task.
@@ -52,9 +54,9 @@ export const useChangeTaskInfo = (task: Task) => {
       userId: task.assigneeId,
       projectId: task.projectId,
     });
+    //TODO: Also handle remove assignee case
     if (!result) return;
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    toast.success(`Select assignee with id: ${task.assigneeId}`);
+    await changeAssignee({ id: task.id, assigneeId: result.id });
   };
 
   return { status, assignee, project, changeStatus, selectProject, selectAssignee };

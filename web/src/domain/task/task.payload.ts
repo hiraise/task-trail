@@ -10,6 +10,11 @@ export type ChangeStatusPayload = {
   statusId: number;
 };
 
+export type ChangeAssigneePayload = {
+  id: number;
+  assigneeId: number;
+};
+
 export type EditTaskPayload = {
   name: string;
   description?: string;
