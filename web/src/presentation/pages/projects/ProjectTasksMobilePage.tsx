@@ -15,7 +15,11 @@ export function ProjectTasksMobilePage() {
 
   return (
     <>
-      <PagesMobileTemplate topBarBackTitle={TEXTS.projects.tasks} onSortClick={showSortOptions}>
+      <PagesMobileTemplate
+        topBarBackTitle={TEXTS.projects.tasks}
+        variant="sort"
+        onActionClick={showSortOptions}
+      >
         <TaskList tasks={tasks} />
       </PagesMobileTemplate>
       <FloatingButtonDesktop />

@@ -1,21 +1,21 @@
 import styles from "./PagesMobileTemplate.module.css";
 
-import { TopBarBackMobile } from "../widgets/common/TopBar";
+import { TopBarBackMobile, Variant } from "../widgets/common/TopBar";
 
 interface PagesMobileTemplateProps {
   children: React.ReactNode;
   topBar?: React.ReactNode;
   topBarBackTitle?: string;
-  onMenuClick?: () => void;
-  onSortClick?: () => void;
+  variant?: Variant;
+  onActionClick?: () => void;
 }
 
 export function PagesMobileTemplate({
   children,
   topBar,
   topBarBackTitle,
-  onMenuClick,
-  onSortClick,
+  variant = "none",
+  onActionClick,
 }: PagesMobileTemplateProps) {
   return (
     <div className={styles.container}>
@@ -24,8 +24,8 @@ export function PagesMobileTemplate({
         <div className={styles.topBarBack}>
           <TopBarBackMobile
             title={topBarBackTitle}
-            onMenuClick={onMenuClick}
-            onSortClick={onSortClick}
+            variant={variant}
+            onActionClick={onActionClick}
           />
         </div>
       )}

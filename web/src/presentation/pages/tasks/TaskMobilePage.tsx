@@ -14,7 +14,11 @@ export function TaskMobilePage() {
   if (!task) return null;
 
   return (
-    <PagesMobileTemplate topBarBackTitle={TEXTS.projects.task} onMenuClick={showEditTask}>
+    <PagesMobileTemplate
+      topBarBackTitle={TEXTS.projects.task}
+      variant="menu"
+      onActionClick={showEditTask}
+    >
       <TaskInfoMobile task={task} />
       <Comments />
     </PagesMobileTemplate>

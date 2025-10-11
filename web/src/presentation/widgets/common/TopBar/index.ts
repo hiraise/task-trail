@@ -1,2 +1,2 @@
 export { TopBarDesktop } from "./TopBarDesktop";
-export { TopBarBackMobile } from "./TobBarBackMobile";
+export { TopBarBackMobile, type Variant } from "./TobBarBackMobile";

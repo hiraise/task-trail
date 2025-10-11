@@ -25,7 +25,8 @@ export function ProjectMobilePage() {
     <>
       <PagesMobileTemplate
         topBarBackTitle={TEXTS.projects.project}
-        onMenuClick={showProjectSettings}
+        variant="menu"
+        onActionClick={showProjectSettings}
       >
         <ProjectInfoMobile owner={owner} project={project} />
         <ProjectMembers projectId={projectId} memberIds={memberIds} />
