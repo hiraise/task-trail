@@ -8,7 +8,7 @@ import { useGlobalModals } from "@/shared/hooks/useGlobalModals";
 import { TEXTS } from "@/shared/locales/texts";
 
 export function TaskMobilePage() {
-  const { showEditTask } = useGlobalModals();
+  const { showTaskSettings } = useGlobalModals();
   const { data: task } = useGetTask();
 
   if (!task) return null;
@@ -17,7 +17,7 @@ export function TaskMobilePage() {
     <PagesMobileTemplate
       topBarBackTitle={TEXTS.projects.task}
       variant="menu"
-      onActionClick={showEditTask}
+      onActionClick={() => showTaskSettings(task)}
     >
       <TaskInfoMobile task={task} />
       <Comments />

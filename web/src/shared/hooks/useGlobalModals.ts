@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 import { MODAL_TYPE, ModalType, useGlobalModalContext } from "@/app/_components/GlobalModalContext";
-import { TaskStatus } from "@/domain/task/task.entity";
+import { Task, TaskStatus } from "@/domain/task/task.entity";
 import { Project } from "@/domain/project/project.entity";
 import { MembersData } from "@/domain/user/user.entity";
 
@@ -111,6 +111,7 @@ export const useGlobalModals = () => {
 
     // Task actions
     showEditTask: (props?: EditTaskProps) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { ...props }),
+    showTaskSettings: (task: Task) => safeOpen<void>(MODAL_TYPE.TASK_SETTINGS, { task }),
     showChangeStatus: (props?: ChangeStatusProps) =>
       safeOpen<TaskStatus>(MODAL_TYPE.CHANGE_STATUS, { ...props }),
     showSelectAssignee: (props?: SelectAssigneeProps) =>
