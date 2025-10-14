@@ -7,7 +7,7 @@ import styles from "./TobBarBackMobile.module.css";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { ICONS } from "@/infrastructure/config/icons";
 
-export type Variant = "menu" | "sort" | "none";
+export type Variant = "menu" | "sort" | "none" | "addUser";
 
 interface TopBarBackMobileProps {
   title: string;
@@ -30,6 +30,9 @@ export function TopBarBackMobile({
       break;
     case "sort":
       content = <IconButton icon={ICONS.sort} size="24px" onClick={onActionClick} />;
+      break;
+    case "addUser":
+      content = <IconButton icon={ICONS.addUser} size="24px" onClick={onActionClick} />;
       break;
     case "none":
     default:

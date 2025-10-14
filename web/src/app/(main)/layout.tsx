@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 import { DesktopTemplate } from "@/presentation/templates/DesktopTemplate";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { BottomNavBar } from "@/presentation/widgets/dashboard/BottomNavBar";
+import { BottomNavBar } from "@/presentation/widgets/common/BottomNavBar";
 import { BOTTOM_NAV_PATHS } from "@/infrastructure/config/routes";
 import { normalize } from "@/shared/utils/formatters";
 
