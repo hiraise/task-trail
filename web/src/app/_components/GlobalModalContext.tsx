@@ -17,6 +17,7 @@ export const MODAL_TYPE = {
   PROJECT_SETTINGS: "PROJECT_SETTINGS",
   TASK_SETTINGS: "TASK_SETTINGS",
   CROP_IMAGE: "CROP_IMAGE",
+  MEMBER_ACTIONS: "MEMBER_ACTIONS",
 } as const;
 
 export type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];

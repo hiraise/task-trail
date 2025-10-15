@@ -7,14 +7,12 @@ import { DESIGN_ELEMENTS } from "@/infrastructure/config/icons";
 import { ActionProps } from "./Actions.types";
 
 export function MoveToArchive({ name, type }: ActionProps) {
-  let description: string;
-  switch (type) {
-    case "task":
-      description = interpolate(TEXTS.moveToArchive.task, { taskName: name });
-      break;
-    case "project":
-      description = interpolate(TEXTS.moveToArchive.project, { projectName: name });
-      break;
+  let description: string = "";
+
+  if (type === "task") {
+    description = interpolate(TEXTS.moveToArchive.task, { taskName: name });
+  } else if (type === "project") {
+    description = interpolate(TEXTS.moveToArchive.project, { projectName: name });
   }
 
   return (

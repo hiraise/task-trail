@@ -30,10 +30,17 @@ export interface LeaveProjectProps {
   title: string;
 }
 
+export interface MemberActionsProps {
+  memberId: number;
+  memberDisplayName: string;
+  currentUserId: number;
+  projectId: number;
+}
+
 export interface ActionProps {
   id: number;
   title: string;
-  type: "task" | "project";
+  type: "task" | "project" | "member";
 }
 
 /**
@@ -108,6 +115,8 @@ export const useGlobalModals = () => {
     showLeaveProject: (props: LeaveProjectProps) =>
       safeOpen<number>(MODAL_TYPE.LEAVE_PROJECT, { ...props }),
     showProjectSettings: () => safeOpen<void>(MODAL_TYPE.PROJECT_SETTINGS),
+    showMemberActions: (props: MemberActionsProps) =>
+      safeOpen<void>(MODAL_TYPE.MEMBER_ACTIONS, { ...props }),
 
     // Task actions
     showEditTask: (props?: EditTaskProps) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { ...props }),

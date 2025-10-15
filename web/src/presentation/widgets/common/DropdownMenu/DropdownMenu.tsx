@@ -27,6 +27,8 @@ export function DropdownMenu({ trigger, items }: DropdownMenuProps) {
     setIsOpen(false);
   };
 
+  if (items.length === 0) return null;
+
   return (
     <div className={styles.dropdownMenuContainer} ref={menuRef}>
       <div onClick={handleToggle}>{trigger}</div>

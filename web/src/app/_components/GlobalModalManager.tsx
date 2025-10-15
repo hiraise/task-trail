@@ -1,38 +1,25 @@
 "use client";
 
-import CreateTaskModal from "@/presentation/widgets/modals/CreateTaskModal";
 import { MODAL_TYPE, useGlobalModalContext } from "./GlobalModalContext";
-import SelectAssigneeModal from "@/presentation/widgets/modals/SelectAssigneeModal";
-import SelectProjectModal from "@/presentation/widgets/modals/SelectProjectModal";
-import ChangeTaskStatusModal from "@/presentation/widgets/modals/ChangeTaskStatusModal";
-import SortItemsModal from "@/presentation/widgets/modals/SortItemsModal";
-import InviteUserModal from "@/presentation/widgets/modals/InviteUserModal";
-import CreateProjectModal from "@/presentation/widgets/modals/CreateProjectModal";
-import EditTaskModal from "@/presentation/widgets/modals/EditTaskModal";
-import MoveToArchiveModal from "@/presentation/widgets/modals/MoveToArchiveModal";
-import DeleteItemModal from "@/presentation/widgets/modals/DeleteItemModal";
-import EditProjectModal from "@/presentation/widgets/modals/EditProjectModal";
-import LeaveProjectModal from "@/presentation/widgets/modals/LeaveProjectModal";
-import ProjectSettingsModal from "@/presentation/widgets/modals/ProjectSettingsModal";
-import CropImageModal from "@/presentation/widgets/modals/CropImageModal";
-import TaskSettingsModal from "@/presentation/widgets/modals/TaskSettingsModal";
+import * as m from "@/presentation/widgets/modals/";
 
 const MODAL_COMPONENTS = {
-  [MODAL_TYPE.CREATE_TASK]: CreateTaskModal,
-  [MODAL_TYPE.SORT_ITEMS]: SortItemsModal,
-  [MODAL_TYPE.CHANGE_STATUS]: ChangeTaskStatusModal,
-  [MODAL_TYPE.SELECT_ASSIGNEE]: SelectAssigneeModal,
-  [MODAL_TYPE.SELECT_PROJECT]: SelectProjectModal,
-  [MODAL_TYPE.CREATE_PROJECT]: CreateProjectModal,
-  [MODAL_TYPE.INVITE_USER]: InviteUserModal,
-  [MODAL_TYPE.EDIT_TASK]: EditTaskModal,
-  [MODAL_TYPE.MOVE_TO_ARCHIVE]: MoveToArchiveModal,
-  [MODAL_TYPE.DELETE]: DeleteItemModal,
-  [MODAL_TYPE.EDIT_PROJECT]: EditProjectModal,
-  [MODAL_TYPE.LEAVE_PROJECT]: LeaveProjectModal,
-  [MODAL_TYPE.PROJECT_SETTINGS]: ProjectSettingsModal,
-  [MODAL_TYPE.TASK_SETTINGS]: TaskSettingsModal,
-  [MODAL_TYPE.CROP_IMAGE]: CropImageModal,
+  [MODAL_TYPE.CREATE_TASK]: m.CreateTaskModal,
+  [MODAL_TYPE.SORT_ITEMS]: m.SortItemsModal,
+  [MODAL_TYPE.CHANGE_STATUS]: m.ChangeTaskStatusModal,
+  [MODAL_TYPE.SELECT_ASSIGNEE]: m.SelectAssigneeModal,
+  [MODAL_TYPE.SELECT_PROJECT]: m.SelectProjectModal,
+  [MODAL_TYPE.CREATE_PROJECT]: m.CreateProjectModal,
+  [MODAL_TYPE.INVITE_USER]: m.InviteUserModal,
+  [MODAL_TYPE.EDIT_TASK]: m.EditTaskModal,
+  [MODAL_TYPE.MOVE_TO_ARCHIVE]: m.MoveToArchiveModal,
+  [MODAL_TYPE.DELETE]: m.DeleteItemModal,
+  [MODAL_TYPE.EDIT_PROJECT]: m.EditProjectModal,
+  [MODAL_TYPE.LEAVE_PROJECT]: m.LeaveProjectModal,
+  [MODAL_TYPE.PROJECT_SETTINGS]: m.ProjectSettingsModal,
+  [MODAL_TYPE.TASK_SETTINGS]: m.TaskSettingsModal,
+  [MODAL_TYPE.CROP_IMAGE]: m.CropImageModal,
+  [MODAL_TYPE.MEMBER_ACTIONS]: m.MemberActionsModal,
 } as const;
 
 export function GlobalModalManager() {

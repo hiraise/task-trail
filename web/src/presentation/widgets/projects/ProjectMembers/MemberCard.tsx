@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import clsx from "clsx";
 import { motion as m, AnimatePresence } from "framer-motion";
 
@@ -10,11 +11,21 @@ import { User } from "@/domain/user/user.entity";
 import { ICONS } from "@/infrastructure/config/icons";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "../../common/DropdownMenu";
-import { useMemberMenuItems } from "@/application/projects/hooks/useMemberMenuItems";
+import { useGetCurrentUser } from "@/application/user/hooks/useGetCurrentUser";
+import { useMembersMenuItems } from "@/application/projects/hooks/useMembersMenuItems";
 
 export function MemberCard({ user }: { user: User }) {
   const [isHovered, setIsHovered] = useState(false);
-  const { menuItems } = useMemberMenuItems(user.id);
+
+  const params = useParams();
+  const projectId = Number(params.id);
+  const { data: currentUser } = useGetCurrentUser();
+  const { menuItems } = useMembersMenuItems(
+    user.id,
+    user.username,
+    currentUser?.id ?? -1,
+    projectId
+  );
 
   return (
     <div

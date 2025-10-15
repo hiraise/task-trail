@@ -15,6 +15,10 @@ export function DeleteItem({ name, type }: ActionProps) {
       title = TEXTS.tasks.deleteTitle;
       description = interpolate(TEXTS.tasks.deleteDescription, { taskName: name });
       break;
+    case "member":
+      title = TEXTS.projects.kick;
+      description = interpolate(TEXTS.projects.kickMemberDescription, { displayName: name });
+      break;
     case "project":
       title = TEXTS.projects.delete;
       description = interpolate(TEXTS.projects.deleteDescription, { projectName: name });
