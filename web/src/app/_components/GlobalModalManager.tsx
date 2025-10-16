@@ -1,7 +1,7 @@
 "use client";
 
 import { MODAL_TYPE, useGlobalModalContext } from "./GlobalModalContext";
-import * as m from "@/presentation/widgets/modals/";
+import * as m from "@/presentation/modals";
 
 const MODAL_COMPONENTS = {
   [MODAL_TYPE.CREATE_TASK]: m.CreateTaskModal,

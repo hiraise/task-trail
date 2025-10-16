@@ -10,8 +10,8 @@ import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { SelectAssigneeProps } from "@/shared/hooks/useGlobalModals";
 import { TEXTS } from "@/shared/locales/texts";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { MembersListDesktop, MembersListMobile } from "../tasks/MembersList";
-import { DialogButtons } from "../common/DialogButtons";
+import { MembersListDesktop, MembersListMobile } from "../widgets/tasks/MembersList";
+import { DialogButtons } from "../widgets/common/DialogButtons";
 
 export default function SelectAssigneeModal(props: BaseModalProps<MembersData>) {
   const { projectId, userId } = useGlobalModalProps<SelectAssigneeProps>() ?? {};

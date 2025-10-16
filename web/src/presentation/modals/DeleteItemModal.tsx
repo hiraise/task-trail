@@ -3,18 +3,18 @@ import { BaseModalProps } from "./BaseModal.types";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { ActionProps } from "@/shared/hooks/useGlobalModals";
-import { MoveToArchive } from "../common/Actions";
-import { DialogButtons } from "../common/DialogButtons";
+import { DeleteItem } from "../widgets/common/Actions";
+import { DialogButtons } from "../widgets/common/DialogButtons";
 
-export default function MoveToArchiveModal(props: BaseModalProps<number>) {
+export default function DeleteItemModal(props: BaseModalProps<number>) {
   const { type, id, title } = useGlobalModalProps<ActionProps>() ?? {};
 
   if (!type || !title) return;
 
   const handleClose = () => props.onClose();
 
-  // return item ID for archiving to parent component
-  const handleMove = () => {
+  // return item ID for deleting to parent component
+  const handleDelete = () => {
     if (id) props.onClose(id);
   };
 
@@ -23,14 +23,14 @@ export default function MoveToArchiveModal(props: BaseModalProps<number>) {
       <DeviceBased
         desktop={
           <div style={{ gap: "16px" }}>
-            <MoveToArchive name={title} type={type} />
-            <DialogButtons variant="move" onClose={handleClose} onMove={handleMove} />
+            <DeleteItem type={type} name={title} />
+            <DialogButtons variant="delete" onClose={handleClose} onDelete={handleDelete} />
           </div>
         }
         mobile={
           <div style={{ gap: "24px" }}>
-            <MoveToArchive name={title} type={type} />
-            <DialogButtons variant="move" onClose={handleClose} onMove={handleMove} />
+            <DeleteItem type={type} name={title} />
+            <DialogButtons variant="delete" onClose={handleClose} onDelete={handleDelete} />
           </div>
         }
       />

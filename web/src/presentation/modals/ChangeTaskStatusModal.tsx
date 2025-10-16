@@ -7,10 +7,10 @@ import { BaseModalProps } from "./BaseModal.types";
 import { TaskStatus } from "@/domain/task/task.entity";
 import { TEXTS } from "@/shared/locales/texts";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { TaskStatusDesktop, TaskStatusMobile } from "../tasks/ChangeTaskStatus";
+import { TaskStatusDesktop, TaskStatusMobile } from "../widgets/tasks/ChangeTaskStatus";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { ChangeStatusProps } from "@/shared/hooks/useGlobalModals";
-import { DialogButtons } from "../common/DialogButtons";
+import { DialogButtons } from "../widgets/common/DialogButtons";
 
 export default function ChangeTaskStatusModal(props: BaseModalProps<TaskStatus>) {
   const { onClose, ...rest } = props;

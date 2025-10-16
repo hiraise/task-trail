@@ -4,7 +4,7 @@ import { BaseModalProps } from "./BaseModal.types";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { EditProjectProps } from "@/shared/hooks/useGlobalModals";
-import { EditProjectFormDesktop, FormValues } from "../projects/EditProjectForm";
+import { EditProjectFormDesktop, FormValues } from "../widgets/projects/EditProjectForm";
 import { Project } from "@/domain/project/project.entity";
 import { useEditProject } from "@/application/projects/hooks/useProject";
 

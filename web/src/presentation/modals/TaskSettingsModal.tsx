@@ -3,7 +3,7 @@ import { BaseModalProps } from "./BaseModal.types";
 import { useTaskMenuItems } from "@/application/tasks/hooks/useTaskMenuItems";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { Task } from "@/domain/task/task.entity";
-import { TaskSettings } from "../common/TaskSettings";
+import { TaskSettings } from "../widgets/common/TaskSettings";
 
 export default function TaskSettingsModal(props: BaseModalProps<void>) {
   const { task } = useGlobalModalProps<{ task: Task }>() ?? {};

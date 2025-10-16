@@ -5,9 +5,9 @@ import { useState } from "react";
 import { Project } from "@/domain/project/project.entity";
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
-import { ProjectsList } from "../tasks/ProjectsList";
+import { ProjectsList } from "../widgets/tasks/ProjectsList";
 import { useGet } from "@/application/projects/hooks/useProject";
-import { DialogButtons } from "../common/DialogButtons";
+import { DialogButtons } from "../widgets/common/DialogButtons";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { TEXTS } from "@/shared/locales/texts";
 

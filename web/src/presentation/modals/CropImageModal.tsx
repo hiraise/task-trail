@@ -4,8 +4,8 @@ import { toast } from "sonner";
 
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
-import { ImageCropper } from "../profile/ImageCropper";
-import { DialogButtons } from "../common/DialogButtons";
+import { ImageCropper } from "../widgets/profile/ImageCropper";
+import { DialogButtons } from "../widgets/common/DialogButtons";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { createImageFormData, getCroppedImg as getCroppedImage } from "@/shared/utils/images";

@@ -2,7 +2,7 @@ import { TEXTS } from "@/shared/locales/texts";
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { EditTaskFormDesktop, FormValues } from "../tasks/EditTaskForm";
+import { EditTaskFormDesktop, FormValues } from "../widgets/tasks/EditTaskForm";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { EditTaskProps } from "@/shared/hooks/useGlobalModals";
 import { Task } from "@/domain/task/task.entity";

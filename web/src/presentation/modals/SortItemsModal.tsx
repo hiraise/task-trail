@@ -4,9 +4,9 @@ import { TEXTS } from "@/shared/locales/texts";
 import { BaseModal } from "./BaseModal";
 import { BaseModalProps } from "./BaseModal.types";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { options } from "../common/SortItems/SortItems.types";
-import { SortOption, SortItems, SortItemsDesktop } from "../common/SortItems";
-import { DialogButtons } from "../common/DialogButtons";
+import { options } from "../widgets/common/SortItems/SortItems.types";
+import { SortOption, SortItems, SortItemsDesktop } from "../widgets/common/SortItems";
+import { DialogButtons } from "../widgets/common/DialogButtons";
 
 export default function SortItemsModal(props: BaseModalProps<string>) {
   const [selectedOption, setSelectedOption] = useState<SortOption>(options[0]);

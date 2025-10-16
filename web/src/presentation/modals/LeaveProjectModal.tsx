@@ -3,8 +3,8 @@ import { BaseModalProps } from "./BaseModal.types";
 import { DeviceBased } from "@/presentation/ui/DeviceBased";
 import { useGlobalModalProps } from "@/shared/hooks/useGlobalModalProps";
 import { LeaveProjectProps } from "@/shared/hooks/useGlobalModals";
-import { DialogButtons } from "../common/DialogButtons";
-import { LeaveProject } from "../projects/LeaveProject";
+import { DialogButtons } from "../widgets/common/DialogButtons";
+import { LeaveProject } from "../widgets/projects/LeaveProject";
 
 export default function LeaveProjectModal(props: BaseModalProps<number>) {
   const { id, title } = useGlobalModalProps<LeaveProjectProps>() ?? {};
