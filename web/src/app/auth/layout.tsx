@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: metadataTexts.login.description,
 };
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <DeviceBased
       mobile={<AuthMobileTemplate>{children}</AuthMobileTemplate>}

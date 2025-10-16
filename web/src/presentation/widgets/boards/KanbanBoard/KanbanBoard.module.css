@@ -1,6 +1,7 @@
 .kanbanContainer {
   overflow-x: auto;
   white-space: nowrap;
+  margin: 0px -20px;
 }
 
 .kanbanGrid {

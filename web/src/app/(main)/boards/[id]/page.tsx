@@ -1,30 +1,9 @@
 "use client";
 
-import "./styles.css";
-
-import { DashboardHeader } from "@/presentation/widgets/dashboard/Header";
-import { BackButton } from "@/presentation/ui/BackButton";
-import { DropdownMenu } from "@/presentation/widgets/common/DropdownMenu";
-import { IconButton } from "@/presentation/ui/IconButton";
-import { ICONS } from "@/infrastructure/config/icons";
-import { useBoardMenuItems } from "@/application/boards/useBoardMenuItems";
 import { useParams } from "next/navigation";
 import { mockBoards } from "@/domain/board/board.mocks";
-import { Board } from "@/domain/board/board.entity";
-import { KanbanBoard } from "@/presentation/widgets/boards/KanbanBoard";
-import { FloatingButton } from "@/presentation/widgets/projects/FloatingButton";
-
-function BoardTopBar({ board }: { board: Board }) {
-  const { menuItems } = useBoardMenuItems(board.id);
-
-  return (
-    <div className="topBar">
-      <BackButton />
-      <span className="boardTitle">{board?.name}</span>
-      <DropdownMenu trigger={<IconButton icon={ICONS.menu} size="24px" />} items={menuItems} />
-    </div>
-  );
-}
+import { DeviceBased } from "@/presentation/ui/DeviceBased";
+import { BoardMobilePage } from "@/presentation/pages/boards";
 
 export default function BoardPage() {
   const params = useParams();
@@ -34,16 +13,10 @@ export default function BoardPage() {
 
   if (!board) return null;
 
-  const handleCreateTask = () => {
-    console.log("Create task button");
-  };
-
   return (
-    <main>
-      <DashboardHeader />
-      <BoardTopBar board={board} />
-      <KanbanBoard board={board} />
-      <FloatingButton onClick={handleCreateTask} />
-    </main>
+    <DeviceBased
+      desktop={<BoardMobilePage board={board} />}
+      mobile={<BoardMobilePage board={board} />}
+    />
   );
 }
