@@ -5,11 +5,11 @@ import styles from "./BoardListItem.module.css";
 import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "../../common/DropdownMenu";
 import { UserAvatar } from "../../projects/UserAvatar";
-import { BoardTitle } from "./BoardTitle";
 import { ICONS } from "@/infrastructure/config/icons";
 import { Board } from "@/domain/board/board.entity";
 import { useBoardMenuItems } from "@/application/boards/useBoardMenuItems";
 import { ROUTES } from "@/infrastructure/config/routes";
+import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
 
 export function BoardListItem({ board }: { board: Board }) {
   const displayMembers = board.members.slice(0, 7) ?? board.members;
@@ -17,8 +17,11 @@ export function BoardListItem({ board }: { board: Board }) {
   const { menuItems } = useBoardMenuItems(board.id);
   return (
     <div className={styles.cardWrapper}>
-      <Link href={ROUTES.board(board.id)} className={styles.container}>
-        <BoardTitle title={board.name} taskCount={board.taskCount} />
+      <Link href={ROUTES.board(board.id)} className={styles.card}>
+        <div className={styles.titleWrapper}>
+          <h4 className="multiline-3">{board.name}</h4>
+          <span className="caption-reg">{pluralizeTasks(board.taskCount)}</span>
+        </div>
         {board.members.length > 0 && (
           <div className={styles.members}>
             {displayMembers.map((member) => (
@@ -28,7 +31,10 @@ export function BoardListItem({ board }: { board: Board }) {
         )}
       </Link>
       <div className={styles.menu}>
-        <DropdownMenu trigger={<IconButton icon={ICONS.menu} size="24px" />} items={menuItems} />
+        <DropdownMenu
+          trigger={<IconButton icon={ICONS.menuHorizontal} size="24px" />}
+          items={menuItems}
+        />
       </div>
     </div>
   );
