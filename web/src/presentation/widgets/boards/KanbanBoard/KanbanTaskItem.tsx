@@ -1,7 +1,10 @@
 import { forwardRef } from "react";
+import clsx from "clsx";
 
 import styles from "./KanbanTask.module.css";
+
 import { MockTask } from "./KanbanBoard.mocks";
+import { getProjectId } from "@/shared/utils/formatters";
 
 interface KanbanTaskItemProps {
   task: MockTask;
@@ -17,10 +20,14 @@ export const KanbanTaskItem = forwardRef<HTMLDivElement, KanbanTaskItemProps>(
       opacity: dragging ? 0.5 : 1,
     };
 
+    //TODO: Add project name for taskId
+
     return (
       <div className={styles.container} ref={ref} style={style} {...props}>
-        <div className={styles.handle} />
-        <span>{task.text}</span>
+        <span className={clsx("caption-med", styles.taskId)}>
+          {getProjectId("Project") + task.id}
+        </span>
+        <span className="multiline-3">{task.text}</span>
       </div>
     );
   }

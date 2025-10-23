@@ -97,6 +97,14 @@ h4 {
   color: var(--text-primary);
 }
 
+.caption-2-med {
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
 /* Buttons */
 
 .btn-font-m {

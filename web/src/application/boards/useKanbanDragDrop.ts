@@ -4,6 +4,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 
 import {
   MockTask,
+  TaskStatus,
   boardColumns,
 } from "@/presentation/widgets/boards/KanbanBoard/KanbanBoard.mocks";
 
@@ -22,6 +23,17 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
    */
   const getTasksByUser = useCallback(
     (userId: number) => tasks.filter((task) => task.userId === userId),
+    [tasks]
+  );
+
+  /**
+   * Returns the number of tasks that have the specified status.
+   *
+   * @param status - The status to filter tasks by.
+   * @returns The count of tasks matching the given status.
+   */
+  const countTaskByStatus = useCallback(
+    (status: TaskStatus) => tasks.filter((task) => task.status === status).length,
     [tasks]
   );
 
@@ -118,5 +130,6 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
     activeTask,
     handlers,
     getTasksByUser,
+    countTaskByStatus,
   };
 }

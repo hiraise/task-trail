@@ -8,10 +8,13 @@ import { boardColumns, mockBoardTasks } from "./KanbanBoard.mocks";
 import { useKanbanDragDrop } from "@/application/boards/useKanbanDragDrop";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { KanbanTaskItem } from "./KanbanTaskItem";
+import { KanbanGrid } from "./KanbanGrid";
+import { KanbanHeader } from "./KanbanHeader";
 
 export function KanbanBoard({ board }: { board: Board }) {
   const [collapsedUsers, setCollapsedUsers] = useState<Record<number, boolean>>({});
-  const { activeTask, handlers, getTasksByUser } = useKanbanDragDrop(mockBoardTasks);
+  const { activeTask, handlers, getTasksByUser, countTaskByStatus } =
+    useKanbanDragDrop(mockBoardTasks);
 
   const toggleCollapse = (userId: number) => {
     setCollapsedUsers((prev) => ({
@@ -22,25 +25,23 @@ export function KanbanBoard({ board }: { board: Board }) {
   return (
     <div className={styles.kanbanContainer}>
       <DndContext {...handlers}>
-        <div className={styles.kanbanGrid}>
-          {/* Headers */}
+        {/* Headers */}
+        <KanbanGrid>
           {boardColumns.map((col) => (
-            <div key={col} className={styles.kanbanColumnHeader}>
-              {col}
-            </div>
+            <KanbanHeader key={col} name={col} taskCount={countTaskByStatus(col)} />
           ))}
-          {/* Swimlines */}
-          <div className={styles.swimlineContainer}>
-            {board.members.map((member) => (
-              <Swimline
-                key={member.id}
-                member={member}
-                collapsed={collapsedUsers[member.id]}
-                onToggle={toggleCollapse}
-                tasks={getTasksByUser(member.id)}
-              />
-            ))}
-          </div>
+        </KanbanGrid>
+        {/* Swimlines */}
+        <div className={styles.swimlineContainer}>
+          {board.members.map((member) => (
+            <Swimline
+              key={member.id}
+              member={member}
+              collapsed={collapsedUsers[member.id]}
+              onToggle={toggleCollapse}
+              tasks={getTasksByUser(member.id)}
+            />
+          ))}
         </div>
 
         <DragOverlay dropAnimation={null}>
