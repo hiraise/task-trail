@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import styles from "./KanbanBoard.module.css";
 
 import { Board } from "@/domain/board/board.entity";
@@ -12,16 +10,9 @@ import { KanbanGrid } from "./KanbanGrid";
 import { KanbanHeader } from "./KanbanHeader";
 
 export function KanbanBoard({ board }: { board: Board }) {
-  const [collapsedUsers, setCollapsedUsers] = useState<Record<number, boolean>>({});
   const { activeTask, handlers, getTasksByUser, countTaskByStatus } =
     useKanbanDragDrop(mockBoardTasks);
 
-  const toggleCollapse = (userId: number) => {
-    setCollapsedUsers((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
-  };
   return (
     <div className={styles.kanbanContainer}>
       <DndContext {...handlers}>
@@ -34,13 +25,7 @@ export function KanbanBoard({ board }: { board: Board }) {
         {/* Swimlines */}
         <div className={styles.swimlineContainer}>
           {board.members.map((member) => (
-            <Swimline
-              key={member.id}
-              member={member}
-              collapsed={collapsedUsers[member.id]}
-              onToggle={toggleCollapse}
-              tasks={getTasksByUser(member.id)}
-            />
+            <Swimline key={member.id} member={member} tasks={getTasksByUser(member.id)} />
           ))}
         </div>
 

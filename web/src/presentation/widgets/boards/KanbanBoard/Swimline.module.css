@@ -16,22 +16,3 @@
   min-height: 100px;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.08);
 }
-
-.assigneeButton {
-  display: inline-flex;
-  flex-direction: row;
-  gap: 4px;
-  align-items: center;
-  padding-left: 10px;
-  margin-bottom: 16px;
-}
-
-.assigneeButton > span {
-  font-size: 16px;
-  line-height: 18px;
-  font-weight: 400;
-}
-
-.assigneeButton:hover {
-  cursor: pointer;
-}
