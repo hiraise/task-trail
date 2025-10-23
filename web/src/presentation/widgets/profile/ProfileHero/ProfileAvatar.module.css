@@ -1,0 +1,25 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.desktop {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  outline: 4px solid rgba(255, 255, 255, 1);
+}
+
+.desktop:hover,
+.mobile:hover {
+  cursor: pointer;
+}
+
+.mobile {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  outline: 5px solid rgba(255, 255, 255, 1);
+}

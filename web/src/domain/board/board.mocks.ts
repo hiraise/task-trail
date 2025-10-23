@@ -54,9 +54,18 @@ const mockUsers: User[] = [
   },
 ];
 
-export const mockBoards: Board[] = Array.from({ length: 20 }, (_, i) => ({
+const mockBoards: Board[] = Array.from({ length: 20 }, (_, i) => ({
   id: i + 1,
   name: `Board ${i + 1}`,
   taskCount: Math.floor(Math.random() * 50),
   members: mockUsers,
 }));
+
+mockBoards.push({
+  id: 1001,
+  name: "Супердлинющее название доски аж в три строчки",
+  taskCount: 30,
+  members: mockUsers,
+});
+
+export { mockBoards };

@@ -15,7 +15,7 @@ export const useSignUp = () => {
     mutationFn: authService.signUp,
     onSuccess: (_, payload) => {
       toast.success(successTexts.signUpSuccessCheckEmail);
-      router.push(ROUTES.confirm + `?email=${encodeURIComponent(payload.email)}`);
+      router.push(ROUTES.signUpConfirm(payload.email));
     },
     onError: (error) => {
       clientLogger.error("Failed to signup", { error });

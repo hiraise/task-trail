@@ -1,10 +1,5 @@
+import { MenuItem } from "@/presentation/widgets/common/DropdownMenu";
 import { boardsTexts } from "@/shared/locales/boards";
-
-export interface MenuItem {
-  label: string;
-  onClick: () => void;
-  isVisible: boolean;
-}
 
 export const useBoardMenuItems = (boardId: number) => {
   console.log("Board id: ", boardId);

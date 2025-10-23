@@ -26,6 +26,17 @@ const queryClient = new QueryClient({
   },
 });
 
+// Connect with TanStack Query DevTools
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__: import("@tanstack/query-core").QueryClient;
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.__TANSTACK_QUERY_CLIENT__ = queryClient;
+}
+
 export default function ClientRootLayout({
   children,
 }: Readonly<{

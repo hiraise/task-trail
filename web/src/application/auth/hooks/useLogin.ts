@@ -12,7 +12,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 export const useLogin = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get("from") || ROUTES.dashboard;
+  const from = searchParams.get("from") || ROUTES.projects;
 
   const queryClient = useQueryClient();
 
@@ -21,7 +21,7 @@ export const useLogin = () => {
     onSuccess: () => {
       toast.success(successTexts.loginSuccess);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUser });
       router.replace(from);
     },
     onError: (error) => {

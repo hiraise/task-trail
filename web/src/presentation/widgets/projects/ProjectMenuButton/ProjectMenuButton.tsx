@@ -7,15 +7,18 @@ import { Icon } from "@/presentation/ui/Icon";
 interface ProjectMenuButtonProps {
   href: string;
   text: string;
+  showButton?: boolean;
 }
 
-export function ProjectMenuButton({ href, text }: ProjectMenuButtonProps) {
+export function ProjectMenuButton({ href, text, showButton = true }: ProjectMenuButtonProps) {
   return (
     <div className={styles.container}>
-      <p className={styles.text}>{text}</p>
-      <Link href={href}>
-        <Icon as={ICONS.rightArrow} size="17px" />
-      </Link>
+      <h4>{text}</h4>
+      {showButton && (
+        <Link href={href}>
+          <Icon as={ICONS.rightArrowWithPadding} size="24px" color="var(--icon-secondary)" />
+        </Link>
+      )}
     </div>
   );
 }

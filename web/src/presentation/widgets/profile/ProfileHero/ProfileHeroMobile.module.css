@@ -1,0 +1,32 @@
+.container {
+  position: relative;
+  width: 100%;
+  height: 175px;
+  background-color: var(--bg-primary-contrast);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: visible;
+}
+
+.container > img {
+  object-fit: fill;
+}
+
+.avatar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(100% - 40px);
+}
+
+.username {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+.username > span {
+  color: var(--text-tertiary);
+}

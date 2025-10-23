@@ -1,32 +1,14 @@
 .kanbanContainer {
   overflow-x: auto;
   white-space: nowrap;
-}
-
-.kanbanGrid {
-  display: inline-grid;
-  grid-template-columns: repeat(4, 180px);
-}
-
-.kanbanColumnHeader {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  height: 30px;
-  border-width: 1px 0px 1px 1px;
-  border-style: solid;
-  border-color: rgba(205, 205, 205, 1);
-  font-size: 14px;
-  line-height: 16px;
-  font-weight: 400;
+  margin: -4px -20px;
 }
 
 .swimlineContainer {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 20px;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .dragOverlay {

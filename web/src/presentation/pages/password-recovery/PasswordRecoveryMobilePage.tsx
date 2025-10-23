@@ -1,23 +1,19 @@
 "use client";
 
-import { MobileLogo } from "@/presentation/ui/MobileLogo";
+import styles from "./PasswordRecoveryMobilePage.module.css";
+
+import { TitleWrapper } from "@/presentation/widgets/auth/_components";
 import { PasswordRecoveryFormMobile } from "@/presentation/widgets/auth/PasswordRecoveryForm";
-import { SectionTitle } from "@/presentation/widgets/common/SectionTitle";
-import MainContainer from "@/presentation/widgets/primitives/MainContainer";
-import { Spacer } from "@/presentation/widgets/primitives/Spacer";
 import { authTexts } from "@/shared/locales/auth";
 
 export function PasswordRecoveryMobilePage() {
   return (
-    <MainContainer>
-      <MobileLogo />
-      <Spacer size="56px" />
-      <SectionTitle
-        title={authTexts.passwordRecovery.title}
-        subtitle={authTexts.passwordRecovery.description}
-      />
-      <Spacer size="56px" />
+    <div className={styles.container}>
+      <TitleWrapper>
+        <h1>{authTexts.passwordRecovery.title}</h1>
+        <p className="body-reg">{authTexts.passwordRecovery.description}</p>
+      </TitleWrapper>
       <PasswordRecoveryFormMobile />
-    </MainContainer>
+    </div>
   );
 }

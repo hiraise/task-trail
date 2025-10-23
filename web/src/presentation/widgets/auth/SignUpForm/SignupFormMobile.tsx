@@ -1,43 +1,42 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Spacer } from "../../primitives/Spacer";
-import { MobileContainer } from "../../primitives/MobileContainer";
-import { Form } from "../LoginForm/LoginFormMobile.styled";
-import { SubmitButton } from "@/presentation/ui/SubmitButton";
-import { useSignUp } from "@/application/auth/hooks/useSignUp";
-import { PrivacyPolicyMobile } from "../PrivacyPolicyText";
-import { AuthFormFieldsMobile } from "../AuthFormFields";
+import styles from "./SignupFormMobile.module.css";
+
+import { SubmitButton } from "../_components";
 import { authTexts } from "@/shared/locales/auth";
+import { useSignUp } from "@/application/auth/hooks/useSignUp";
+import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
+import { AuthFormFieldsDesktop, schema, type FormData } from "../AuthFormFields";
 
 export const SignupFormMobile = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const form = useForm<FormData>({ mode: "onSubmit", resolver: zodResolver(schema) });
+  const {
+    handleSubmit,
+    formState: { isSubmitting, isValid },
+  } = form;
+  const { mutateAsync: signUp, isPending: isLoading } = useSignUp();
 
-  const { mutateAsync: signUp, isPending: loading } = useSignUp();
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    await signUp({ email, password });
+  const submitHandler = async (data: FormData) => {
+    if (!isValid) return;
+    await signUp({ email: data.email, password: data.password });
   };
 
   return (
-    <MobileContainer>
-      <Form onSubmit={handleSubmit}>
-        <AuthFormFieldsMobile
-          email={email}
-          setEmail={setEmail}
-          password={password}
-          setPassword={setPassword}
-        />
-        <Spacer size="20px" />
-        <SubmitButton type="submit" disabled={loading}>
-          {loading ? authTexts.signup.signingUp : authTexts.signup.signup}
-        </SubmitButton>
-      </Form>
-      <Spacer size="8px" />
-      <PrivacyPolicyMobile btnName={authTexts.login.login} />
-    </MobileContainer>
+    <FormProvider {...form}>
+      <form className={styles.container} onSubmit={handleSubmit(submitHandler)}>
+        <div className={styles.formItems}>
+          <AuthFormFieldsDesktop />
+        </div>
+        <div className={styles.formItems}>
+          <SubmitButton className="btn-font-m" disabled={isLoading || isSubmitting}>
+            {isSubmitting || isLoading ? authTexts.signup.signingUp : authTexts.signup.signup}
+          </SubmitButton>
+          <PrivacyPolicyDesktop btnName={authTexts.signup.signup} />
+        </div>
+      </form>
+    </FormProvider>
   );
 };

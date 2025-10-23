@@ -1,4 +1,5 @@
 import Link from "next/link";
+import clsx from "clsx";
 
 import styles from "./PrivacyPolicyDesktop.module.css";
 
@@ -16,7 +17,9 @@ export function PrivacyPolicyDesktop({ btnName }: PrivacyPolicyProps) {
         {interpolate(authTexts.privacyPolicy.text, { btnName: btnName })}
       </span>
       <Link href={authTexts.privacyPolicy.buttonLink}>
-        <span className="caption-med">{authTexts.privacyPolicy.buttonText} </span>
+        <span className={clsx("caption-med", styles.link)}>
+          {authTexts.privacyPolicy.buttonText}
+        </span>
       </Link>
     </p>
   );

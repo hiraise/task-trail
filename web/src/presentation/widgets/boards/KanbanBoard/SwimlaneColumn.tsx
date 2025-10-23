@@ -11,10 +11,9 @@ interface SwimlaneColumnProps {
   memberId: number;
   column: string;
   tasks: MockTask[];
-  index: number;
 }
 
-export default function SwimlaneColumn({ memberId, column, tasks, index }: SwimlaneColumnProps) {
+export default function SwimlaneColumn({ memberId, column, tasks }: SwimlaneColumnProps) {
   const { setNodeRef } = useDroppable({
     id: `column-${memberId}-${column}`,
     data: {
@@ -27,13 +26,13 @@ export default function SwimlaneColumn({ memberId, column, tasks, index }: Swiml
   });
 
   return (
-    <div ref={setNodeRef} className={styles.swimlines}>
+    <div ref={setNodeRef} className={styles.swimlineBg}>
       <SortableContext items={tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
         {tasks.map((task) => (
           <SortableKanbanTask key={task.id} task={task} />
         ))}
       </SortableContext>
-      {index === 0 ? <CreateTask variant="default" /> : <CreateTask variant="short" />}
+      {tasks.length > 0 ? <CreateTask variant="short" /> : <CreateTask variant="default" />}
     </div>
   );
 }

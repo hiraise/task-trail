@@ -1,0 +1,10 @@
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.buttons > button {
+  width: 100%;
+}

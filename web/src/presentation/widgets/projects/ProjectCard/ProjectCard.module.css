@@ -1,13 +1,15 @@
 .cardContainer {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 16px;
   padding: 12px;
-  background: #f0f0f0;
-  border-radius: 8px;
+  border-radius: 12px;
+  height: 100%;
+  transition: background-color 0.2s;
 
   &:active {
-    transform: scale(0.98);
+    opacity: 0.6;
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -17,29 +19,18 @@
   }
 }
 
-.cardInfoWrapper {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .cardTextWrapper {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
 
-  h3 {
-    font-size: 17px;
-    font-weight: 500;
-    line-height: 22px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.infoWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 
-  p {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 18px;
-  }
+.infoWrapper > span {
+  color: var(--text-secondary);
 }

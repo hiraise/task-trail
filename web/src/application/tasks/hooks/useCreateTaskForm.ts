@@ -57,14 +57,17 @@ export function useCreateTaskForm(form: UseFormReturn<FormValues>) {
   }, [state, form]);
 
   const handleSelectAssignee = async () => {
-    const result = await showSelectAssignee();
+    const result = await showSelectAssignee({
+      projectId: state.project?.id,
+      userId: state.assignee?.id,
+    });
     if (!result) return;
     state.set({ assignee: result });
     form.setValue("assigneeId", result.id, { shouldValidate: true });
   };
 
   const handleSelectProject = async () => {
-    const result = await showSelectProject();
+    const result = await showSelectProject(state.project?.id);
     if (!result) return;
     state.set({ project: result });
     form.setValue("projectId", result.id, { shouldValidate: true });

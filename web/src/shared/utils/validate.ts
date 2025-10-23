@@ -53,40 +53,6 @@ export const oldPasswordValidator = {
 };
 
 /**
- * Returns a set of validation rules for a new password input.
- *
- * The validator enforces the following rules:
- * - The password is required.
- * - The password must be at least 8 characters long.
- * - The password must contain at least one uppercase letter.
- * - The password must contain at least one lowercase letter.
- * - The password must contain at least one digit.
- * - The new password must not be the same as the old password.
- *
- * @param oldPassword - The user's current password, used to ensure the new password is different.
- * @returns An object containing validation rules compatible with form validation libraries.
- */
-export const getNewPasswordValidator = (oldPassword: string) => ({
-  required: "Введите новый пароль",
-  minLength: { value: 8, message: "Пароль должен быть не короче 8 символов" },
-  validate: (value: string) => {
-    if (!/[A-Z]/.test(value)) {
-      return "Пароль должен содержать хотя бы одну заглавную букву";
-    }
-    if (!/[a-z]/.test(value)) {
-      return "Пароль должен содержать хотя бы одну строчную букву";
-    }
-    if (!/[0-9]/.test(value)) {
-      return "Пароль должен содержать хотя бы одну цифру";
-    }
-    if (oldPassword && value === oldPassword) {
-      return "Новый пароль не должен совпадать со старым";
-    }
-    return true;
-  },
-});
-
-/**
  * Returns a validator object for confirming a password match.
  *
  * @param newPassword - The new password to compare against the confirmation input.

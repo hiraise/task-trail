@@ -3,13 +3,13 @@ import { Controller, useForm } from "react-hook-form";
 
 import styles from "./AddParticipantForm.module.css";
 import { Input } from "@/presentation/ui/Input";
-import { SubmitButton } from "@/presentation/ui/SubmitButton";
 import { UsersList } from "../UsersList";
 import { SelectedUsers } from "../SelectedUsers/SelectedUsers";
-import { projectsTexts } from "@/shared/locales/projects";
 import { useClickOutside } from "@/shared/hooks/useClickOutside";
 import { useCreateProjectForm } from "@/application/projects/hooks/useCreateProjectForm";
 import { BaseUserData, UserData } from "@/domain/user/user.entity";
+import { SubmitButton } from "../../auth/_components";
+import { TEXTS } from "@/shared/locales/texts";
 
 interface FormValues {
   query: string;
@@ -66,7 +66,7 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
               ref={inputRef}
               id="query"
               type="text"
-              placeholder={projectsTexts.inviteMembersPlaceHolder}
+              placeholder={TEXTS.userQueryPlaceholder}
               onFocus={() => setShowDropdown(true)}
               autoComplete="off"
             />
@@ -74,9 +74,7 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
         ></Controller>
       </div>
       {/* Show info message when no dropdown is shown */}
-      {!showDropdown && (
-        <span className={styles.infoMessage}>{projectsTexts.inviteMemberInfo}</span>
-      )}
+      {!showDropdown && <span className="caption-reg">{TEXTS.userInviteDescription}</span>}
 
       {/* Middle section that contains both dropdown and selected users */}
       {showDropdown && (
@@ -98,8 +96,8 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
       )}
 
       <div className={styles.btnContainer}>
-        <SubmitButton type="submit" className={styles.button} disabled={isSubmitting}>
-          {isSubmitting ? projectsTexts.invitingToProject : projectsTexts.inviteToProject}
+        <SubmitButton type="submit" className="btn-font-m" disabled={isSubmitting}>
+          {TEXTS.projects.invite}
         </SubmitButton>
       </div>
     </form>

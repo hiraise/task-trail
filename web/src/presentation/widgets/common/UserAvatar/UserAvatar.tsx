@@ -5,11 +5,27 @@ import { ICONS } from "@/infrastructure/config/icons";
 import clsx from "clsx";
 
 interface UserAvatarProps {
-  variant?: "standard" | "large";
+  variant?: "small" | "standard" | "large";
 }
 
 export function UserAvatar({ variant = "standard" }: UserAvatarProps) {
-  const size = variant === "standard" ? "18px" : "20px";
+  let size: string;
+  switch (variant) {
+    case "small":
+      size = "18px";
+      break;
+    case "standard":
+      size = "20px";
+      break;
+    case "large":
+      size = "24px";
+      break;
+
+    default:
+      size = "20px";
+      break;
+  }
+
   return (
     <div className={clsx(styles.avatar, styles[variant])}>
       <Icon as={ICONS.profile} size={size} />

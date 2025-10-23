@@ -1,0 +1,55 @@
+.container {
+  position: relative;
+  width: 100%;
+  height: 175px;
+  background-color: var(--bg-primary-contrast);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: visible;
+}
+
+.container > img {
+  object-fit: fill;
+}
+
+.logoutButton {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background-color: rgba(57, 57, 57, 1);
+  color: var(--icon-primary-contrast);
+  border-radius: 8px;
+  transition: opacity 0.3s;
+}
+
+.logoutButton:active {
+  opacity: 0.6;
+}
+
+.logoutButton:hover {
+  cursor: pointer;
+}
+
+.avatar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.username {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.username > span {
+  color: var(--text-tertiary);
+}

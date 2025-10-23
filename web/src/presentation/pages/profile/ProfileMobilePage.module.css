@@ -1,0 +1,27 @@
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+  height: 100dvh;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0px 20px;
+}
+
+.logout {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: transparent;
+  color: var(--icon-critical);
+  margin-top: auto;
+  padding-bottom: var(--navbar-offset);
+}

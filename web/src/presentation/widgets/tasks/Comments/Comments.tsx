@@ -7,7 +7,7 @@ import CommentsList from "./CommentsList";
 export function Comments() {
   return (
     <div className={styles.container}>
-      <span className={styles.title}>{tasksTexts.comments.title}</span>
+      <h4>{tasksTexts.comments.title}</h4>
       <CommentInput />
       <CommentsList />
     </div>

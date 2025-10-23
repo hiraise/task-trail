@@ -15,13 +15,28 @@ import {
 
 export const useGetTask = () => {
   const params = useParams();
-  const taskId = Number(params.id);
+  const taskId = Number(params.taskId);
 
   return useQuery({
-    queryKey: [QUERY_KEYS.task(taskId), taskId],
+    queryKey: QUERY_KEYS.task(taskId),
     queryFn: () => taskService.getTask(taskId),
     enabled: !!taskId,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useDeleteTask = (projectId: number) => {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, number>({
+    mutationFn: taskService.delete,
+    onSuccess: () => {
+      router.replace(ROUTES.project(projectId));
+      toast.success("Task deleted successfully");
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectTasks(projectId) });
+    },
+    onError: () => toast.error("Failed to delete task"),
   });
 };
 
@@ -42,7 +57,7 @@ export const useCreateTask = () => {
 
 export const useGetTaskInfo = (id: number) => {
   const queryClient = useQueryClient();
-  const task = queryClient.getQueryData<Task>([QUERY_KEYS.task(id), id]);
+  const task = queryClient.getQueryData<Task>(QUERY_KEYS.task(id));
 
   const { data: statuses } = useGetProjectStatuses(task!.projectId);
   const status = statuses?.find((s) => s.id === task?.statusId);

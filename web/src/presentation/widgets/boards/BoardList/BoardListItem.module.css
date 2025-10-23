@@ -1,14 +1,16 @@
 /* Styles for BoardList */
 .boardList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 8px;
   padding-bottom: calc(var(--bottom-nav-height) + 20px);
 }
 
 /* Styles for BoardListItem */
 .cardWrapper {
   position: relative;
+  min-height: 140px;
 }
 
 .menu {
@@ -17,57 +19,37 @@
   right: 12px;
 }
 
-.container {
+.card {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
-  background-color: rgba(240, 240, 240, 1);
+  background-color: var(--bg-secondary-2);
   border-radius: 8px;
   padding: 12px;
+  height: 100%;
 }
 
-.container:hover {
+.card:hover {
   cursor: pointer;
-  background-color: var(--grey);
+  background-color: var(--bg-secondary);
   transition: background-color 0.2s ease;
 }
 
-.container:active {
-  background-color: rgba(218, 218, 218, 1);
+.card:active {
+  background-color: var(--bg-secondary);
 }
 
-.title {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* Styles for BoardTitle */
 .titleWrapper {
   display: flex;
-  flex-direction: row;
-  gap: 12px;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 80%;
+  word-break: break-word;
 }
 
-.titleContainer {
-  display: flex;
-  flex-direction: row;
-  gap: 4px;
-  align-items: center;
-}
-
-.titleText {
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 20px;
-}
-
-.taskCount {
-  padding-top: 2px;
-  font-size: 10px;
-  font-weight: 400;
-  color: rgba(138, 138, 142, 1);
+.titleWrapper > span {
+  color: var(--text-secondary);
 }
 
 .memberAvatar {

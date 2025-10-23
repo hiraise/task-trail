@@ -3,6 +3,7 @@
   --text-primary: rgba(32, 32, 32, 1);
   --text-primary-contrast: rgba(251, 251, 251, 1);
   --text-secondary: rgba(126, 126, 126, 1);
+  --text-tertiary: rgba(72, 72, 72, 1);
   --text-accent: rgba(64, 111, 213, 1);
 }
 
@@ -13,7 +14,35 @@ h1 {
   font-family: var(--font-family);
 }
 
+h1.medium {
+  font-size: 42px;
+  line-height: 56px;
+  font-weight: 500;
+  font-family: var(--font-family);
+}
+
+h2 {
+  font-size: 26px;
+  line-height: 30px;
+  font-weight: 550;
+  font-family: var(--font-family);
+}
+
+h4 {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  font-family: var(--font-family);
+}
+
 /* Base */
+.body-med {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 550;
+  font-family: var(--font-family);
+}
+
 .body-reg {
   font-size: 16px;
   line-height: 20px;
@@ -30,6 +59,29 @@ h1 {
   color: var(--text-primary);
 }
 
+.body-med {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 550;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
+.body-med-2 {
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
+.caption-reg {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  font-family: var(--font-family);
+}
+
 .caption-2-reg {
   font-size: 10px;
   line-height: 12px;
@@ -43,10 +95,14 @@ h1 {
   font-weight: 550;
   font-family: var(--font-family);
   color: var(--text-primary);
-  text-align: center;
-  vertical-align: middle;
-  text-decoration: underline;
-  text-decoration-style: solid;
+}
+
+.caption-2-med {
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-primary);
 }
 
 /* Buttons */

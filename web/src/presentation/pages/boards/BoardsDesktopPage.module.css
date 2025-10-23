@@ -1,0 +1,28 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  flex: 1;
+  box-shadow: 0px 0px 24px 0px rgba(0, 0, 0, 0.04);
+}
+
+/* SortButton styles */
+
+.sortButton {
+  border: none;
+  border-radius: 8px;
+  background-color: var(--bg-secondary-2);
+  width: 40px;
+  height: 40px;
+  transition: opacity 0.3s;
+  color: var(--icon-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+}
+.sortButton:hover {
+  cursor: pointer;
+  opacity: 0.6;
+}

@@ -45,9 +45,11 @@ export const useAddMember = () => {
 
   return useMutation<void, Error, string[]>({
     mutationFn: (emails) => projectService.addMembers(emails, projectId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectMembers(projectId) }),
-    onError: () => toast.error("Failed to add members"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectMembers(projectId) });
+      toast.success("User invited successfully!");
+    },
+    onError: () => toast.error("Failed to invite user"),
   });
 };
 

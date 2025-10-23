@@ -17,4 +17,13 @@ export const ASSETS = {
   icons: {
     ...ICONS,
   },
+  images: {
+    task: addBasePath("/images/task.png"),
+    project: addBasePath("/images/project.png"),
+    board: addBasePath("/images/board.png"),
+    search: addBasePath("/images/search.png"),
+    hero: addBasePath("/images/hero.png"),
+    passwordRecovery: addBasePath("/images/password-recovery-image.png"),
+    resendVerification: addBasePath("/images/resend-verification-image.png"),
+  },
 };

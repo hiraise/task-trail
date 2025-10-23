@@ -1,14 +1,22 @@
+import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { useMutation } from "@tanstack/react-query";
-import { authService } from "@/infrastructure/api/authService";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
+import { authService } from "@/infrastructure/api/authService";
+import { ROUTES } from "@/infrastructure/config/routes";
 
-export const useResendEmail = (email: string) => {
-  return useMutation<void, Error, string>({
-    mutationFn: authService.resendVerification,
-    onSuccess: () =>
-      toast.success(`Письмо с подтверждением отправлено на ${email}. Проверьте папку "Спам"`),
+export const useResendEmail = () => {
+  const router = useRouter();
+
+  return useMutation<string, Error, string>({
+    mutationFn: async (email) => {
+      await authService.resendVerification(email);
+      return email;
+    },
+    onSuccess: (email) => {
+      router.push(ROUTES.signUpConfirm(email));
+    },
     onError: (error) => {
       clientLogger.error("Failed to resend verification", { error });
       toast.error(error.message ?? "Не удалось отправить письмо с подтверждением");

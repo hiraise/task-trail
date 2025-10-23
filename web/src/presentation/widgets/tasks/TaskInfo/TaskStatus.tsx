@@ -1,4 +1,4 @@
-import styles from "./TaskInfo.module.css";
+import styles from "./TaskStatus.module.css";
 
 import { ICONS } from "@/infrastructure/config/icons";
 import { Icon } from "@/presentation/ui/Icon";
@@ -12,9 +12,9 @@ interface TaskStatusProps {
 export function TaskStatus({ status, onClick }: TaskStatusProps) {
   const isStatusMising = !status;
   return (
-    <button className={styles.statusContainer} onClick={onClick} disabled={isStatusMising}>
-      <span className={styles.statusLabel}>{status?.name || "Статус неопределен"}</span>
-      <Icon as={ICONS.downArrow} size="15px" />
+    <button className={styles.container} onClick={onClick} disabled={isStatusMising}>
+      <span className="caption-med">{status?.name || "Статус неопределен"}</span>
+      <Icon as={ICONS.downArrow} size="16px" inheritColor />
     </button>
   );
 }

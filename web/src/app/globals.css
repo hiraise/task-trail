@@ -10,7 +10,8 @@
   --txt-grey: rgba(60, 60, 67, 0.6);
   --icon-grey: rgb(138, 138, 142);
 
-  --bottom-nav-height: 62px;
+  --bottom-nav-height: 64px; /* height: 48px and padding-bottom: 16px */
+  --navbar-offset: calc(var(--bottom-nav-height) + 16px);
 
   /* Design element colors */
   --handle-grey: rgb(203, 203, 203);
@@ -23,18 +24,33 @@
 
   --border: rgba(0, 0, 0, 0.1);
 
+  /* Shadows */
+  --shade-02: 0px 0px 16px 0px rgba(0, 0, 0, 0.16);
+
   /* Design colors */
   --bg-primary-contrast: rgba(32, 32, 32, 1);
+  --bg-primary-contrast-hover: rgba(72, 72, 72, 1);
   --bg-primary: rgba(251, 251, 251, 1);
   --bg-secondary: rgba(239, 239, 239, 1);
+  --bg-secondary-2: rgba(245, 245, 245, 1);
+  --bg-tertiary: rgba(228, 228, 228, 1);
   --bg-card: rgba(255, 255, 255, 1);
+  --bg-accent-yellow: rgba(255, 237, 205, 1);
+  --bg-accent-blue: rgba(223, 235, 255, 1);
 
   /* Icons */
   --icon-primary: rgba(32, 32, 32, 1);
+  --icon-primary-contrast: rgba(251, 251, 251, 1);
+  --icon-secondary: rgba(126, 126, 126, 1);
+  --icon-tertiary: rgba(72, 72, 72, 1);
   --icon-critical: rgba(255, 50, 50, 1);
+  --icon-accent: rgba(64, 111, 213, 1);
 
   /* Borders */
   --border-critical: rgba(255, 50, 50, 1);
+  --border-secondary: rgba(251, 251, 251, 1);
+  --border-secondary-2: rgba(245, 245, 245, 1);
+  --border-accent: rgba(181, 207, 248, 1);
 }
 
 :root:has(.no-doc-scroll) {
@@ -66,11 +82,22 @@ a {
   text-decoration: none;
 }
 
-.multiline {
+.multiline,
+.multiline-2,
+.multiline-3 {
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
+}
+
+.multiline,
+.multiline-2 {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.multiline-3 {
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
 }

@@ -7,6 +7,7 @@ const PROJECTS = `${API_VERSION}/projects`;
 const TASKS = `${API_VERSION}/tasks`;
 
 export const API_ROUTES = {
+  // AUTH API
   LOGIN: `${AUTH}/login`,
   LOGOUT: `${AUTH}/logout`,
   SIGNUP: `${AUTH}/register`,
@@ -17,8 +18,6 @@ export const API_ROUTES = {
   CHANGE_PASSWORD: `${PASSWORD}/change`,
   FORGOT_PASSWORD: `${PASSWORD}/forgot`,
   RESET_PASSWORD: `${PASSWORD}/reset`,
-  UPLOAD_AVATAR: `${USERS_ME}/avatar`,
-  CURRENT_USER: USERS_ME,
   // PROJECTS API
   PROJECTS: PROJECTS,
   PROJECT_BY_ID: (id: number) => `${PROJECTS}/${id}`,
@@ -32,5 +31,12 @@ export const API_ROUTES = {
   // TASKS API
   TASKS: TASKS,
   TASKS_BY_ID: (id: number) => `${TASKS}/${id}`,
+  CHANGE_STATUS: (id: number, statusId: number) => `${TASKS}/${id}/status/${statusId}`,
+  CHANGE_ASSIGNEE: (id: number, assigneeId?: number) =>
+    `${TASKS}/${id}/assignee${id ? `/?assigneeId=${assigneeId}` : ""}`,
+  // USERS API
+  CURRENT_USER: USERS_ME,
+  UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   USER_TASKS: `${USERS_ME}/tasks`,
+  USER_BY_ID: (id: number) => `${USERS}/${id}`,
 };

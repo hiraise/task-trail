@@ -23,12 +23,3 @@ export function mapUserFromApi(data: ApiUser): User {
     avatarUrl: String(data.avatarUrl ?? ""),
   };
 }
-
-export function mapUserToApi(user: User): ApiUser {
-  return {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    avatarUrl: user.avatarUrl,
-  };
-}

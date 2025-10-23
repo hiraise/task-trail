@@ -1,6 +1,6 @@
 import styles from "./ProjectTask.module.css";
-import { ICONS } from "@/infrastructure/config/icons";
-import { Icon } from "@/presentation/ui/Icon";
+
+import { UserAvatar } from "../../common/UserAvatar";
 
 interface ProjectTaskProps {
   title: string;
@@ -9,8 +9,8 @@ interface ProjectTaskProps {
 export function ProjectTask({ title }: ProjectTaskProps) {
   return (
     <div className={styles.container}>
-      <Icon as={ICONS.task} size="20px" />
-      <p className={styles.title}>{title}</p>
+      <span className="body-reg">{title}</span>
+      <UserAvatar variant="small" />
     </div>
   );
 }

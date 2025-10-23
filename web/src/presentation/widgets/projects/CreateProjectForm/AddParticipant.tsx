@@ -9,12 +9,8 @@ interface AddParticipantProps {
 
 export function AddParticipant({ onClick }: AddParticipantProps) {
   return (
-    <SubmitButton
-      className={styles.container}
-      $variant="text"
-      onClick={onClick}
-    >
-      <Icon as={ICONS.plus} />
+    <SubmitButton className={styles.container} $variant="text" onClick={onClick}>
+      <Icon as={ICONS.plus} size="24px" />
       <span className={styles.buttonText}>Пригласить участника</span>
     </SubmitButton>
   );

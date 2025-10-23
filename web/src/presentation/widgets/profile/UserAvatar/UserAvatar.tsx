@@ -1,46 +1,38 @@
 import Image from "next/image";
+import clsx from "clsx";
 
 import styles from "./UserAvatar.module.css";
 import { useSelectImage } from "@/shared/hooks/useSelectImage";
 import { ICONS } from "@/infrastructure/config/icons";
 import { Icon } from "@/presentation/ui/Icon";
 
-type UserAvatarProps = {
+interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   avatarUrl?: string;
   onImageSelected: (file: File) => void;
-};
-
-function AvatarImage({ avatarUrl }: { avatarUrl?: string }) {
-  return avatarUrl ? (
-    <Image
-      className={styles["user-avatar"]}
-      src={avatarUrl}
-      alt="User Avatar"
-      fill
-      sizes="80px"
-      onError={() => ICONS.profileLarge}
-    />
-  ) : (
-    <Icon as={ICONS.profileLarge} size="40px" />
-  );
+  showIcon?: boolean;
 }
 
-export function UserAvatar({ avatarUrl, onImageSelected }: UserAvatarProps) {
+export function UserAvatar({
+  avatarUrl,
+  onImageSelected,
+  showIcon = true,
+  ...props
+}: UserAvatarProps) {
   const { inputRef, openFileDialog, handleChange } = useSelectImage({
     onSelect: onImageSelected,
   });
 
   return (
-    <>
-      <div className={styles["icon-wrapper"]} onClick={openFileDialog}>
-        <AvatarImage avatarUrl={avatarUrl} />
+    <button className={clsx(styles.container, props.className)} onClick={openFileDialog}>
+      <AvatarImage avatarUrl={avatarUrl} />
+      {showIcon && (
         <Icon
           as={ICONS.camera}
-          size="29px"
-          className={styles["badge-icon"]}
-          color="var(--background)"
+          size="24px"
+          className={styles.badgeIcon}
+          color="var(--icon-secondary)"
         />
-      </div>
+      )}
       <input
         ref={inputRef}
         type="file"
@@ -48,6 +40,22 @@ export function UserAvatar({ avatarUrl, onImageSelected }: UserAvatarProps) {
         style={{ display: "none" }}
         onChange={handleChange}
       />
-    </>
+    </button>
+  );
+}
+
+function AvatarImage({ avatarUrl }: { avatarUrl?: string }) {
+  return avatarUrl ? (
+    <Image
+      className={styles.userAvatar}
+      src={avatarUrl}
+      alt="User Avatar"
+      fill
+      sizes="160px"
+      priority
+      onError={() => ICONS.profileLarge}
+    />
+  ) : (
+    <Icon as={ICONS.profileLarge} size="40px" />
   );
 }
