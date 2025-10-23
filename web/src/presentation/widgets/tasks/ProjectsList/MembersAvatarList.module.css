@@ -1,8 +1,9 @@
 .membersList {
   display: flex;
   flex-direction: row;
-  overflow-x: visible;
+  overflow-x: auto;
   align-items: center;
+  scrollbar-width: none;
 }
 
 .membersList > * {
@@ -32,4 +33,5 @@
   height: 24px;
   border-radius: 50%;
   background-color: var(--bg-tertiary);
+  flex-shrink: 0;
 }

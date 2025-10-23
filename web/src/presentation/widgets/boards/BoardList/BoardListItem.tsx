@@ -4,15 +4,15 @@ import styles from "./BoardListItem.module.css";
 
 import { IconButton } from "@/presentation/ui/IconButton";
 import { DropdownMenu } from "../../common/DropdownMenu";
-import { UserAvatar } from "../../projects/UserAvatar";
 import { ICONS } from "@/infrastructure/config/icons";
 import { Board } from "@/domain/board/board.entity";
 import { useBoardMenuItems } from "@/application/boards/useBoardMenuItems";
 import { ROUTES } from "@/infrastructure/config/routes";
 import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
+import { MembersAvatarList } from "../../tasks/ProjectsList/MembersAvatarList";
 
 export function BoardListItem({ board }: { board: Board }) {
-  const displayMembers = board.members.slice(0, 7) ?? board.members;
+  const memberIds = board.members.map((m) => m.id);
 
   const { menuItems } = useBoardMenuItems(board.id);
   return (
@@ -22,13 +22,8 @@ export function BoardListItem({ board }: { board: Board }) {
           <h4 className="multiline-3">{board.name}</h4>
           <span className="caption-reg">{pluralizeTasks(board.taskCount)}</span>
         </div>
-        {board.members.length > 0 && (
-          <div className={styles.members}>
-            {displayMembers.map((member) => (
-              <UserAvatar key={member.id} className={styles.memberAvatar} />
-            ))}
-          </div>
-        )}
+
+        {board.members.length > 0 && <MembersAvatarList maxVisible={6} memberIds={memberIds} />}
       </Link>
       <div className={styles.menu}>
         <DropdownMenu

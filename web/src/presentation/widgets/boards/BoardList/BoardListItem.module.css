@@ -11,6 +11,7 @@
 .cardWrapper {
   position: relative;
   min-height: 140px;
+  overflow: auto;
 }
 
 .menu {
@@ -50,24 +51,4 @@
 
 .titleWrapper > span {
   color: var(--text-secondary);
-}
-
-.memberAvatar {
-  --avatar-size: 32px;
-  --avatar-bg: rgba(218, 218, 218, 1);
-  --avatar-outline: 2px solid rgba(240, 240, 240, 1);
-}
-
-.members {
-  display: flex;
-  flex-direction: row;
-  overflow-x: hidden;
-}
-
-.members > * {
-  margin-left: -10px;
-}
-
-.members > *:first-child {
-  margin-left: 0;
 }
