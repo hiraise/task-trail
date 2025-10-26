@@ -1,2 +1,0 @@
-ALTER TABLE project_roles
-ADD deleted_at TIMESTAMP WITH TIME ZONE;

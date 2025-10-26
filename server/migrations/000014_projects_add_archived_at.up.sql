@@ -1,2 +1,0 @@
-ALTER TABLE projects
-ADD archived_at TIMESTAMP WITH TIME ZONE;

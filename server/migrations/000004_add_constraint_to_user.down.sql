@@ -1,3 +1,0 @@
-ALTER TABLE users
-DROP CONSTRAINT IF EXISTS non_empty_email,
-DROP CONSTRAINT IF EXISTS non_empty_pwd;

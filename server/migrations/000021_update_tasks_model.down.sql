@@ -1,5 +1,0 @@
-ALTER TABLE tasks 
-DROP COLUMN IF EXISTS status_id,
-DROP COLUMN IF EXISTS assignee_id;
-
-DROP TABLE IF EXISTS task_statuses;
