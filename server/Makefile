@@ -22,6 +22,9 @@ testcov:
 	go test -v -race -covermode atomic -coverprofile=coverage.out ./internal/... --tags=integration
 	go tool cover -html=coverage.out 
 
+migrate-up-force:
+	migrate -database ${PG_CONNECTION_STRING}\?sslmode=disable -path ./migrations force $(V)
+
 migrate-up:
 	migrate -database ${PG_CONNECTION_STRING}\?sslmode=disable -path ./migrations up 
 
