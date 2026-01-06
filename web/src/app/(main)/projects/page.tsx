@@ -1,8 +1,7 @@
 "use client";
 
-import { TabPanelProvider } from "@/presentation/widgets/tasks/TabPanel";
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { ProjectsDesktopPage, ProjectsMobilePage } from "@/presentation/pages/projects";
+import { ProjectsDesktopPage, ProjectsMobilePage } from "@/presentation/features/projects/pages";
+import { DeviceBased, TabPanelProvider } from "@/presentation/shared";
 
 export default function ProjectsPage() {
   return (

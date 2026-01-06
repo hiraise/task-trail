@@ -1,11 +1,10 @@
+import { ConfirmPasswordRecoveryMobilePage } from "@/presentation/features/auth/pages/PasswordRecoveryPage";
+import { DeviceBased, RedirectScreen } from "@/presentation/shared";
+import { ROUTES } from "@/shared/config/routes";
+
 /**
  * Mobile-only page. Always redirects desktop users to the password recovery page.
  */
-
-import { ROUTES } from "@/infrastructure/config/routes";
-import { ConfirmPasswordRecoveryMobilePage } from "@/presentation/pages/password-recovery";
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
 
 export default function ConfirmPasswordRecoveryPage() {
   return (

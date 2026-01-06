@@ -1,7 +1,6 @@
-import { ROUTES } from "@/infrastructure/config/routes";
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { EditPersonalDataMobilePage } from "@/presentation/pages/profile";
-import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
+import { EditPersonalDataMobilePage } from "@/presentation/features/user/pages";
+import { DeviceBased, RedirectScreen } from "@/presentation/shared";
+import { ROUTES } from "@/shared/config/routes";
 
 /**
  * Mobile-only page. Always redirects desktop users to the profile page.

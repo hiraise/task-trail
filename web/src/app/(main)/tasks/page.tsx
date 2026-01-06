@@ -1,8 +1,7 @@
 "use client";
 
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { TasksDesktopPage, TasksMobilePage } from "@/presentation/pages/tasks";
-import { TabPanelProvider } from "@/presentation/widgets/tasks/TabPanel";
+import { TasksDesktopPage, TasksMobilePage } from "@/presentation/features/tasks/pages";
+import { DeviceBased, TabPanelProvider } from "@/presentation/shared";
 
 export default function TasksPage() {
   return (

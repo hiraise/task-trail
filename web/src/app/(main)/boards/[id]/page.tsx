@@ -1,9 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { mockBoards } from "@/domain/board/board.mocks";
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { BoardMobilePage } from "@/presentation/pages/boards";
+
+import { mockBoards } from "@/application/dto/MockBoardDto";
+import { BoardMobilePage } from "@/presentation/features/boards/pages";
+import { DeviceBased } from "@/presentation/shared";
 
 export default function BoardPage() {
   const params = useParams();

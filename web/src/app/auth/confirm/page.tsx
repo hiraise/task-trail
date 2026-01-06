@@ -1,19 +1,19 @@
 "use client";
 
-import { useLayoutEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useLayoutEffect } from "react";
 import { toast } from "sonner";
 
+import { useVerifyEmail } from "@/presentation/features/auth/hooks";
+import { LoadingScreen } from "@/presentation/shared";
+import { ROUTES } from "@/shared/config/routes";
 import { errorTexts } from "@/shared/locales/messages";
-import { ROUTES } from "@/infrastructure/config/routes";
-import { useEmailConfirm } from "@/application/auth/hooks/useEmailConfirm";
-import LoadingScreen from "@/presentation/widgets/common/LoadingScreen";
 
 export default function VerifyEmailPage() {
   const token = useSearchParams().get("token");
   const email = useSearchParams().get("email");
   const router = useRouter();
-  const { mutateAsync: confirm } = useEmailConfirm();
+  const { mutateAsync: confirm } = useVerifyEmail();
 
   if (!token || !email) {
     toast.error(errorTexts.somethingWentWrong);
@@ -21,7 +21,7 @@ export default function VerifyEmailPage() {
   }
 
   useLayoutEffect(() => {
-    if (token) confirm(token);
+    if (token) confirm({ token });
   }, [confirm, token]);
 
   return <LoadingScreen />;

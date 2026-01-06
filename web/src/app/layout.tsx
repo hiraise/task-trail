@@ -1,9 +1,9 @@
-import { Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 
-import "./globals.css";
+import { ClientRootLayout } from "@/presentation/app";
 import { metadataTexts } from "@/shared/locales/metadata";
-import ClientRootLayout from "./_components/ClientRootLayout";
+import "./globals.css";
 
 const manrope = localFont({
   src: [

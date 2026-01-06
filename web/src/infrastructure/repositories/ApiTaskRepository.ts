@@ -1,0 +1,215 @@
+import type { Task } from "@/domain/models/Task";
+import type { TaskRepository } from "@/domain/repositories/TaskRepository";
+import type { ProjectId } from "@/domain/valueobjects/ProjectId";
+import { TaskId } from "@/domain/valueobjects/TaskId";
+import type { UserId } from "@/domain/valueobjects/UserId";
+import { AppError, AppErrorType } from "@/shared/errors/types";
+
+import { API_ROUTES } from "../config/apiRoutes";
+import { clientLogger } from "../config/clientLogger";
+import type { TaskDTO } from "../http/dto/TaskDTO";
+import type { HttpClient } from "../http/HttpClient";
+import { TaskMapper } from "../http/mappers/TaskMapper";
+
+export class ApiTaskRepository implements TaskRepository {
+  constructor(private httpClient: HttpClient) {}
+
+  /**
+   * Changes the assignee of the specified task to the given user.
+   *
+   * @param task - The task whose assignee is to be changed.
+   * @param assigneeId - The user ID of the new assignee.
+   * @returns A promise that resolves to the updated Task object.
+   * @throws Throws an error if the assignee change fails.
+   */
+  async changeAssignee(task: Task, assigneeId: UserId): Promise<Task> {
+    try {
+      const payload = TaskMapper.toChangeAssigneePayload(
+        Number(task.id.value),
+        Number(assigneeId.value),
+      );
+      const responseDto = await this.httpClient.patch<TaskDTO>(
+        API_ROUTES.CHANGE_ASSIGNEE(payload.id, payload.assigneeId),
+        payload,
+      );
+
+      if (responseDto) {
+        return TaskMapper.toDomain(responseDto);
+      }
+
+      return task;
+    } catch (error) {
+      clientLogger.error("Change assignee error", { error });
+      throw this.handleError("Failed to change assignee", error);
+    }
+  }
+
+  /**
+   * Changes the status of the specified task to the given status ID.
+   *
+   * @param task - The task whose status is to be changed.
+   * @param statusId - The ID of the new status to set for the task.
+   * @returns A promise that resolves to the updated Task object.
+   * @throws Will throw an error if the status change fails.
+   */
+  async changeStatus(task: Task, statusId: number): Promise<Task> {
+    try {
+      const payload = TaskMapper.toChangeStatusPayload(Number(task.id.value), statusId);
+      const responseDto = await this.httpClient.patch<TaskDTO>(
+        API_ROUTES.CHANGE_STATUS(payload.id, statusId),
+      );
+      if (responseDto) {
+        return TaskMapper.toDomain(responseDto);
+      }
+      return task;
+    } catch (error) {
+      clientLogger.error("Change status error", { error });
+      throw this.handleError("Failed to change status", error);
+    }
+  }
+
+  /**
+   * Retrieves a list of tasks associated with a specific project by its ID.
+   *
+   * @param projectId - The unique identifier of the project whose tasks are to be fetched.
+   * @returns A promise that resolves to an array of `Task` objects belonging to the specified project.
+   * @throws {AppError} Throws an error if the server response is invalid or if the request fails.
+   */
+  async findByProjectId(projectId: ProjectId): Promise<Task[]> {
+    try {
+      const id = Number(projectId.value);
+      const dtos = await this.httpClient.get<TaskDTO[]>(API_ROUTES.PROJECT_TASKS(id));
+
+      if (!Array.isArray(dtos)) {
+        throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
+      }
+
+      return TaskMapper.toDomainList(dtos);
+    } catch (error) {
+      clientLogger.error("Get tasks error", { error });
+      throw this.handleError("Failed to get tasks", error);
+    }
+  }
+
+  /**
+   * Retrieves a task by its unique identifier.
+   *
+   * @param id - The unique identifier of the task to retrieve.
+   * @returns A promise that resolves to the found {@link Task} domain object.
+   * @throws {AppError} Throws an error of type {@link AppErrorType.SERVER} if the task cannot be fetched.
+   */
+  async findById(id: TaskId): Promise<Task> {
+    try {
+      const dto = await this.httpClient.get(API_ROUTES.TASKS_BY_ID(Number(id.value)));
+      return TaskMapper.toDomain(dto);
+    } catch (error) {
+      clientLogger.error("Get task by ID error", { error, id: id.value });
+      throw new AppError(AppErrorType.SERVER, "Failed to fetch task");
+    }
+  }
+
+  /**
+   * Retrieves all tasks for the current user from the API.
+   *
+   * @returns {Promise<Task[]>} A promise that resolves to an array of Task domain objects.
+   * @throws {AppError} Throws an AppError if the response format is invalid or if the request fails.
+   *
+   * @example
+   * const tasks = await apiTaskRepository.findAll();
+   */
+  async findAll(): Promise<Task[]> {
+    try {
+      const dtos = await this.httpClient.get<TaskDTO[]>(API_ROUTES.USER_TASKS);
+      if (!Array.isArray(dtos)) {
+        throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
+      }
+      return TaskMapper.toDomainList(dtos);
+    } catch (error) {
+      clientLogger.error("Failed to get user tasks", { error });
+      throw new AppError(AppErrorType.UNKNOWN, "Failed to get user tasks");
+    }
+  }
+
+  /**
+   * Creates a new task with the specified data.
+   *
+   * @param data - The data required to create a task, including the task name, optional description, optional assignee ID, and project ID.
+   * @returns A promise that resolves to the unique identifier (`TaskId`) of the newly created task.
+   * @throws Will throw an error if the task creation fails.
+   */
+  async create(data: {
+    name: string;
+    description?: string;
+    assigneeId?: number;
+    projectId: ProjectId;
+  }): Promise<TaskId> {
+    try {
+      const payload = TaskMapper.toCreatePayload(
+        data.name,
+        data.description,
+        data.assigneeId,
+        data.projectId.value,
+      );
+      const responseDto = await this.httpClient.post<{ id: number }>(API_ROUTES.TASKS, payload);
+      return TaskId.create(responseDto.id);
+    } catch (error) {
+      clientLogger.error("Create task error", { error, data });
+      throw this.handleError("Failed to create task", error);
+    }
+  }
+
+  /**
+   * Updates an existing task by sending a PATCH request to the API.
+   *
+   * @param task - The task entity to update.
+   * @returns A promise that resolves to the updated task domain object.
+   * @throws Will throw an error if the update operation fails.
+   */
+  async update(task: Task): Promise<Task> {
+    try {
+      const payload = TaskMapper.toUpdatePayload(task.title, task.description);
+
+      const responseDto = await this.httpClient.patch<TaskDTO>(
+        API_ROUTES.TASKS_BY_ID(Number(task.id)),
+        payload,
+      );
+
+      if (responseDto) {
+        return TaskMapper.toDomain(responseDto);
+      }
+
+      return task;
+    } catch (error) {
+      clientLogger.error("Edit task error", {
+        error,
+        id: task.id.value,
+        task,
+      });
+      throw this.handleError("Failed to edit task", error);
+    }
+  }
+
+  /**
+   * Deletes a task by its unique identifier.
+   *
+   * Sends a DELETE request to the API to remove the specified task.
+   * Logs an error and throws a handled exception if the operation fails.
+   *
+   * @param id - The unique identifier of the task to delete.
+   * @returns A promise that resolves when the task is successfully deleted.
+   * @throws An error if the deletion fails.
+   */
+  async delete(id: TaskId): Promise<void> {
+    try {
+      await this.httpClient.delete(API_ROUTES.TASKS_BY_ID(Number(id.value)));
+    } catch (error) {
+      clientLogger.error("Delete task error", { error, id: id.value });
+      throw this.handleError("Failed to delete task", error);
+    }
+  }
+
+  private handleError(message: string, error: unknown): AppError {
+    if (error instanceof AppError) return error;
+    return new AppError(AppErrorType.SERVER, message);
+  }
+}

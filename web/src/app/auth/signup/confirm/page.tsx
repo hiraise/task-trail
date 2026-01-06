@@ -1,11 +1,10 @@
+import { ConfirmSignupMobilePage } from "@/presentation/features/auth/pages/SignUpPage";
+import { DeviceBased, RedirectScreen } from "@/presentation/shared";
+import { ROUTES } from "@/shared/config/routes";
+
 /**
  * Mobile-only page. Always redirects desktop users to the signup page.
  */
-
-import { ROUTES } from "@/infrastructure/config/routes";
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { ConfirmSignupMobilePage } from "@/presentation/pages/signup";
-import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
 
 export default function ConfirmSignupPage() {
   return (

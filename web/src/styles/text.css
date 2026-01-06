@@ -5,6 +5,7 @@
   --text-secondary: rgba(126, 126, 126, 1);
   --text-tertiary: rgba(72, 72, 72, 1);
   --text-accent: rgba(64, 111, 213, 1);
+  --text-critical: rgba(255, 50, 50, 1);
 }
 
 h1 {

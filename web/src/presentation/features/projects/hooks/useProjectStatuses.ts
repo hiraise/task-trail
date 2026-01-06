@@ -1,0 +1,33 @@
+import type { UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+
+import type { TaskStatusResponseDto } from "@/application/dto/TaskStatusResponseDto";
+import { appContainer } from "@/infrastructure/di/container";
+import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+
+/**
+ * Custom React hook to fetch the list of task statuses for a specific project.
+ *
+ * Utilizes React Query to manage the fetching, caching, and updating of project statuses.
+ * The query is enabled only if a valid `projectId` is provided.
+ *
+ * @param projectId - The unique identifier of the project for which to fetch task statuses.
+ * @returns A React Query result object containing an array of `TaskStatusResponseDto` or an error.
+ *
+ * @example
+ * const { data, isLoading, error } = useProjectStatuses(123);
+ */
+export function useProjectStatuses(
+  projectId: string | number
+): UseQueryResult<TaskStatusResponseDto[], Error> {
+  const { getProjectStatuses } = appContainer.getUsecases().project;
+
+  return useQuery({
+    queryKey: QUERY_KEYS.projectStatuses(Number(projectId)),
+    queryFn: () => getProjectStatuses.execute(projectId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: 2,
+    enabled: !!projectId,
+  });
+}

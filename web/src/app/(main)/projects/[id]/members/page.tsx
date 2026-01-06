@@ -2,10 +2,9 @@
 
 import { useParams } from "next/navigation";
 
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
-import { ROUTES } from "@/infrastructure/config/routes";
-import { ProjectMembersMobilePage } from "@/presentation/pages/projects";
+import { ProjectMembersMobilePage } from "@/presentation/features/projects/pages";
+import { DeviceBased, RedirectScreen } from "@/presentation/shared";
+import { ROUTES } from "@/shared/config/routes";
 
 /**
  * Mobile-only page. Always redirects desktop users to the project page.

@@ -1,21 +1,29 @@
+const EMAIL_PROVIDERS = {
+  "gmail.com": "https://mail.google.com/mail/u/0/#inbox",
+  "yandex.ru": "https://mail.yandex.ru/",
+  "ya.ru": "https://mail.yandex.ru/",
+  "mail.ru": "https://e.mail.ru/inbox/",
+  "inbox.ru": "https://e.mail.ru/inbox/",
+  "list.ru": "https://e.mail.ru/inbox/",
+  "bk.ru": "https://e.mail.ru/inbox/",
+  "outlook.com": "https://outlook.live.com/mail/inbox",
+  "hotmail.com": "https://outlook.live.com/mail/inbox",
+  "live.com": "https://outlook.live.com/mail/inbox",
+} as const;
+
 export const openUserInbox = (email: string): void => {
   const domain = email.split("@")[1]?.toLowerCase();
 
-  if (domain === "gmail.com") {
-    window.open("https://mail.google.com/mail/u/0/#inbox", "_blank");
-  } else if (domain === "yandex.ru" || domain === "ya.ru") {
-    window.open("https://mail.yandex.ru/", "_blank");
-  } else if (
-    domain === "mail.ru" ||
-    domain === "inbox.ru" ||
-    domain === "list.ru" ||
-    domain === "bk.ru"
-  ) {
-    window.open("https://e.mail.ru/inbox/", "_blank");
-  } else if (domain === "outlook.com" || domain === "hotmail.com" || domain === "live.com") {
-    window.open("https://outlook.live.com/mail/inbox", "_blank");
+  if (!domain) {
+    window.location.href = `mailto:${email}`;
+    return;
+  }
+
+  const providerUrl = EMAIL_PROVIDERS[domain as keyof typeof EMAIL_PROVIDERS];
+
+  if (providerUrl) {
+    window.open(providerUrl, "_blank");
   } else {
-    // Fallback for other email providers
     window.location.href = `mailto:${email}`;
   }
 };

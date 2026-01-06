@@ -1,1 +1,0 @@
-export { InputFieldMobile } from "./InputFieldMobile";
