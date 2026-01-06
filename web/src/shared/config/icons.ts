@@ -17,7 +17,6 @@ import DeleteIcon from "../../../public/icons/DeleteIcon.svg";
 import EditIcon from "../../../public/icons/EditIcon.svg";
 import HideIcon from "../../../public/icons/HideIcon.svg";
 import TaskIcon from "../../../public/icons/hugeicons_task-01.svg";
-import AddButtonIcon from "../../../public/icons/iconoir_plus_circle.svg";
 import LeaveIcon from "../../../public/icons/LeaveIcon.svg";
 import LockIcon from "../../../public/icons/LockIcon.svg";
 import LogoDesktop from "../../../public/icons/LogoDesktop.svg";
@@ -51,7 +50,6 @@ export const ICONS = {
   check: CheckIcon,
   close: CloseIcon,
   sort: SortIcon,
-  addButton: AddButtonIcon,
   plus: PlusIcon,
   checkMark: CheckMarkIcon,
   menu: MenuIcon,
