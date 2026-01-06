@@ -4,33 +4,40 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import type { CreateProjectCommand } from "@/application/commands/project/CreateProjectCommand";
 import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { CreateProjectPayload } from "@/application/payloads";
 import { appContainer } from "@/infrastructure/di/container";
 import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook to create a new project using a mutation.
+ * Hook for creating a new project.
  *
- * This hook leverages React Query's `useMutation` to execute the `createProject` use case.
- * On successful creation, it invalidates the projects list query and updates the cache for the newly created project.
- * On error, it logs the error to the console.
+ * @returns {UseMutationResult<ProjectResponseDto, Error, CreateProjectPayload>}
+ * A mutation result object with the following behavior:
+ * - On success: Invalidates the projects query cache, sets the new project in cache,
+ *   navigates to the project detail page, and displays a success toast notification
+ * - On error: Displays an error toast notification
  *
- * @returns {UseMutationResult<ProjectResponseDto, Error, CreateProjectCommand>}
- *   The mutation result object from React Query, including mutation methods and state.
+ * @example
+ * const createProjectMutation = useCreateProject();
+ *
+ * createProjectMutation.mutate({
+ *   name: "My Project",
+ *   description: "Project description"
+ * });
  */
 export function useCreateProject(): UseMutationResult<
   ProjectResponseDto,
   Error,
-  CreateProjectCommand
+  CreateProjectPayload
 > {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { createProject } = appContainer.getUsecases().project;
 
   return useMutation({
-    mutationFn: (command: CreateProjectCommand) => createProject.execute(command),
+    mutationFn: (payload) => createProject.execute(payload),
     onSuccess: (newProject) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
       queryClient.setQueryData(QUERY_KEYS.project(Number(newProject.id)), newProject);

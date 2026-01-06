@@ -1,4 +1,4 @@
-import type { ProjectResponseDto} from "@/application/dto/ProjectResponseDto";
+import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
 import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
