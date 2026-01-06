@@ -1,4 +1,4 @@
-import type { LeaveProjectCommand } from "@/application/commands/projectMember/LeaveProjectCommand";
+import type { LeaveProjectPayload } from "@/application/payloads";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
@@ -6,22 +6,22 @@ import { clientLogger } from "@/infrastructure/config/clientLogger";
 export class LeaveProjectUseCase {
   constructor(private projectMemberRepository: ProjectMemberRepository) {}
 
-  async execute(command: LeaveProjectCommand): Promise<ProjectId> {
+  async execute(payload: LeaveProjectPayload): Promise<ProjectId> {
     try {
       clientLogger.info("LeaveProjectUseCase: leaving project", {
-        projectId: command.projectId,
+        projectId: payload.projectId,
       });
 
-      const projectId = ProjectId.create(command.projectId);
+      const projectId = ProjectId.create(payload.projectId);
       await this.projectMemberRepository.leaveProject(projectId);
 
       clientLogger.info("LeaveProjectUseCase: left project successfully", {
-        projectId: command.projectId,
+        projectId: payload.projectId,
       });
 
       return projectId;
     } catch (error) {
-      clientLogger.error("LeaveProjectUseCase: failed", { error, command });
+      clientLogger.error("LeaveProjectUseCase: failed", { error, command: payload });
       throw error;
     }
   }

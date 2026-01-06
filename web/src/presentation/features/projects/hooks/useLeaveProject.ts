@@ -5,19 +5,35 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import type { LeaveProjectCommand } from "@/application/commands/projectMember/LeaveProjectCommand";
+import type { LeaveProjectPayload } from "@/application/payloads";
 import type { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { appContainer } from "@/infrastructure/di/container";
 import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-export function useLeaveProject(): UseMutationResult<ProjectId, Error, LeaveProjectCommand> {
+/**
+ * Custom hook to handle leaving a project.
+ *
+ * This hook provides a mutation function to leave a project and manages
+ * the associated side effects, such as updating the query cache and
+ * navigating the user to the projects list upon success.
+ *
+ * @returns {UseMutationResult<ProjectId, Error, LeaveProjectPayload>}
+ * An object containing the mutation state and functions to manage the
+ * leave project operation.
+ *
+ * @example
+ * const { mutate: leaveProject } = useLeaveProject();
+ *
+ * leaveProject({ projectId: 123 });
+ */
+export function useLeaveProject(): UseMutationResult<ProjectId, Error, LeaveProjectPayload> {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { leaveProject } = appContainer.getUsecases().projectMember;
 
   return useMutation({
-    mutationFn: (command) => leaveProject.execute(command),
+    mutationFn: (payload) => leaveProject.execute(payload),
     onSuccess: (_, result) => {
       queryClient.removeQueries({ queryKey: QUERY_KEYS.project(Number(result.projectId)) });
       queryClient.removeQueries({ queryKey: QUERY_KEYS.projectDetails(Number(result.projectId)) });

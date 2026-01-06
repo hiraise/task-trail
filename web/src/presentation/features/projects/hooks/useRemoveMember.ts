@@ -2,26 +2,28 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { RemoveProjectMemberCommand } from "@/application/commands/projectMember/RemoveProjectMemberCommand";
+import type { RemoveMemberPayload } from "@/application/payloads";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook to remove (kick) a member from a project.
+ * Custom hook to remove a member from a project.
  *
- * This hook returns a mutation object that can be used to trigger the removal of a project member
- * by executing the `removeMember` use case. Upon successful removal, it invalidates the project members
- * query cache and displays a success toast notification. If the operation fails, an error toast is shown.
+ * This hook utilizes a mutation to execute the removal of a project member.
+ * On successful removal, it invalidates the queries for the project members
+ * and project details to ensure the UI reflects the latest state. It also
+ * displays a success message using a toast notification. In case of an error,
+ * an error message is shown to the user.
  *
- * @param id - The unique identifier of the project whose member is to be removed.
- * @returns A mutation result object from `react-query` for managing the remove member operation.
+ * @returns {UseMutationResult<void, Error, RemoveMemberPayload>} The mutation result
+ * which includes methods and properties to manage the mutation state.
  */
-export function useRemoveMember(): UseMutationResult<void, Error, RemoveProjectMemberCommand> {
+export function useRemoveMember(): UseMutationResult<void, Error, RemoveMemberPayload> {
   const queryClient = useQueryClient();
   const { removeMember } = appContainer.getUsecases().projectMember;
 
   return useMutation({
-    mutationFn: (command) => removeMember.execute(command),
+    mutationFn: (payload) => removeMember.execute(payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.projectMembers(Number(variables.memberId)),

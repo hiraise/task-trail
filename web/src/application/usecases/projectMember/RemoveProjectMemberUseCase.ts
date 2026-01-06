@@ -1,4 +1,4 @@
-import type { RemoveProjectMemberCommand } from "@/application/commands/projectMember/RemoveProjectMemberCommand";
+import type { RemoveMemberPayload } from "@/application/payloads";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
@@ -9,17 +9,17 @@ import { AppError, AppErrorType } from "@/shared/errors/types";
 export class RemoveProjectMemberUseCase {
   constructor(
     private projectMemberRepository: ProjectMemberRepository,
-    private projectRepository: ProjectRepository,
+    private projectRepository: ProjectRepository
   ) {}
 
-  async execute(command: RemoveProjectMemberCommand): Promise<void> {
+  async execute(payload: RemoveMemberPayload): Promise<void> {
     try {
       clientLogger.info("RemoveProjectMemberUseCase: removing member", {
-        projectId: command.projectId,
-        memberId: command.memberId,
+        projectId: payload.projectId,
+        memberId: payload.memberId,
       });
 
-      const projectId = ProjectId.create(command.projectId);
+      const projectId = ProjectId.create(payload.projectId);
       const project = await this.projectRepository.findById(projectId);
 
       if (!project) {
@@ -29,19 +29,19 @@ export class RemoveProjectMemberUseCase {
       if (!project.canUserManageMembers()) {
         throw new AppError(
           AppErrorType.FORBIDDEN,
-          "You do not have permission to remove members from this project",
+          "You do not have permission to remove members from this project"
         );
       }
 
-      const memberId = ProjectMemberId.create(command.memberId);
+      const memberId = ProjectMemberId.create(payload.memberId);
       await this.projectMemberRepository.removeMember(projectId, memberId);
 
       clientLogger.info("RemoveProjectMemberUseCase: member removed successfully", {
-        projectId: command.projectId,
-        memberId: command.memberId,
+        projectId: payload.projectId,
+        memberId: payload.memberId,
       });
     } catch (error) {
-      clientLogger.error("RemoveProjectMemberUseCase: failed", { error, command });
+      clientLogger.error("RemoveProjectMemberUseCase: failed", { error, command: payload });
       throw error;
     }
   }

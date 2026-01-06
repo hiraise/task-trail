@@ -1,4 +1,4 @@
-import type { AddProjectMembersCommand } from "@/application/commands/projectMember/AddProjectMembersCommand";
+import type { AddMembersPayload } from "@/application/payloads";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
@@ -8,17 +8,17 @@ import { AppError, AppErrorType } from "@/shared/errors/types";
 export class AddProjectMembersUseCase {
   constructor(
     private projectMemberRepository: ProjectMemberRepository,
-    private projectRepository: ProjectRepository,
+    private projectRepository: ProjectRepository
   ) {}
 
-  async execute(command: AddProjectMembersCommand): Promise<void> {
+  async execute(payload: AddMembersPayload): Promise<void> {
     try {
       clientLogger.info("Adding members to project", {
-        projectId: command.projectId,
-        emailsCount: command.emails.length,
+        projectId: payload.projectId,
+        emailsCount: payload.emails.length,
       });
 
-      const projectId = ProjectId.create(command.projectId);
+      const projectId = ProjectId.create(payload.projectId);
       const project = await this.projectRepository.findById(projectId);
 
       if (!project) {
@@ -28,35 +28,19 @@ export class AddProjectMembersUseCase {
       if (!project.canUserInviteMembers()) {
         throw new AppError(
           AppErrorType.FORBIDDEN,
-          "You do not have permission to invite members to this project",
+          "You do not have permission to invite members to this project"
         );
       }
 
-      this.validateEmails(command.emails);
-
-      await this.projectMemberRepository.addByEmails(projectId, command.emails);
+      await this.projectMemberRepository.addByEmails(projectId, payload.emails);
 
       clientLogger.info("Members added successfully", {
-        projectId: command.projectId,
-        count: command.emails.length,
+        projectId: payload.projectId,
+        count: payload.emails.length,
       });
     } catch (error) {
-      clientLogger.error("AddProjectMembersUseCase: failed", { error, command });
+      clientLogger.error("AddProjectMembersUseCase: failed", { error, command: payload });
       throw error;
-    }
-  }
-
-  private validateEmails(emails: string[]): void {
-    if (!emails || emails.length === 0) {
-      throw new AppError(AppErrorType.VALIDATION, "At least one email is required");
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    for (const email of emails) {
-      if (!emailRegex.test(email)) {
-        throw new AppError(AppErrorType.VALIDATION, `Invalid email format: ${email}`);
-      }
     }
   }
 }

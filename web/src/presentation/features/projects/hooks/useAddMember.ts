@@ -2,27 +2,27 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { AddProjectMembersCommand } from "@/application/commands/projectMember/AddProjectMembersCommand";
+import type { AddMembersPayload } from "@/application/payloads";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook to add a member to a project using a mutation.
+ * Custom hook to add a member to a project.
  *
- * This hook leverages React Query's `useMutation` to execute the `addMember` use case,
- * which sends an invitation to a user to join a project. Upon successful mutation,
- * it invalidates the project members query cache for the relevant project and displays
- * a success toast notification. If the mutation fails, it displays an error toast notification.
+ * This hook utilizes a mutation to execute the add member operation.
+ * On successful addition of a member, it invalidates the project members query
+ * to ensure the UI reflects the latest data and displays a success toast notification.
+ * In case of an error during the operation, an error toast notification is shown.
  *
- * @returns {UseMutationResult<void, Error, AddProjectMembersCommand>} The mutation result object,
- * allowing you to trigger the add member operation and track its status.
+ * @returns {UseMutationResult<void, Error, AddMembersPayload>} The mutation result object
+ * containing the status and methods to manage the mutation.
  */
-export function useAddMember(): UseMutationResult<void, Error, AddProjectMembersCommand> {
+export function useAddMember(): UseMutationResult<void, Error, AddMembersPayload> {
   const queryClient = useQueryClient();
   const { addMember } = appContainer.getUsecases().projectMember;
 
   return useMutation({
-    mutationFn: (command) => addMember.execute(command),
+    mutationFn: (payload) => addMember.execute(payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.projectMembers(Number(variables.projectId)),
