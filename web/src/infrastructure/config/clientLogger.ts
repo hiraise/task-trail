@@ -36,10 +36,15 @@ class ConsoleLoggerImpl implements ClientLogger {
     const style = CONSOLE_STYLES[type];
     const consoleMethod = this.getConsoleMethod(type);
 
-    consoleMethod(`%c${prefix} %s`, style, message);
+    const hasMetadata =
+      meta &&
+      Object.keys(meta).length > 0 &&
+      Object.values(meta).some((v) => v !== undefined && v !== null);
 
-    if (meta && Object.keys(meta).length > 0) {
-      consoleMethod("%cMetadata:", "font-weight: bold; color: #666;", meta);
+    if (hasMetadata) {
+      consoleMethod(`%c${prefix} %s`, style, message, meta);
+    } else {
+      consoleMethod(`%c${prefix} %s`, style, message);
     }
   }
 
