@@ -1,4 +1,4 @@
-import type { UploadAvatarCommand } from "@/application/commands/user/UploadAvatarCommand";
+import type { UploadAvatarPayload } from "@/application/payloads";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
@@ -13,22 +13,15 @@ import { AppError, AppErrorType } from "@/shared/errors/types";
 export class UploadAvatarUseCase {
   constructor(private readonly userRepository: UserRepository) {}
 
-  /**
-   * Executes the avatar upload process.
-   *
-   * @param command - Command containing the avatar file to upload
-   * @returns {Promise<string | null>} The new avatar URL or null if upload failed
-   * @throws {AppError} If validation fails or upload operation fails
-   */
-  async execute(command: UploadAvatarCommand): Promise<string | null> {
+  async execute(payload: UploadAvatarPayload): Promise<string | null> {
     try {
       clientLogger.info("UploadAvatarUseCase: starting execution");
 
       // Business rule validation
-      this.validateCommand(command);
+      this.validateAvatarFile(payload.avatarFile);
 
       // Convert File to FormData for repository
-      const formData = this.createFormDataFromFile(command.avatarFile);
+      const formData = this.createFormDataFromFile(payload.avatarFile);
 
       // Delegate to repository for technical upload
       const avatarUrl = await this.userRepository.uploadAvatar(formData);
@@ -36,8 +29,8 @@ export class UploadAvatarUseCase {
       if (avatarUrl) {
         clientLogger.info("UploadAvatarUseCase: avatar uploaded successfully", {
           avatarUrl,
-          fileName: command.avatarFile.name,
-          fileSize: command.avatarFile.size,
+          fileName: payload.avatarFile.name,
+          fileSize: payload.avatarFile.size,
         });
       } else {
         clientLogger.warn("UploadAvatarUseCase: upload completed but no URL returned");
@@ -53,31 +46,6 @@ export class UploadAvatarUseCase {
 
       throw new AppError(AppErrorType.UNKNOWN, "Failed to upload avatar");
     }
-  }
-
-  /**
-   * Validates the command according to business rules.
-   *
-   * @private
-   * @param command - Command to validate
-   * @throws {AppError} If validation fails
-   */
-  private validateCommand(command: UploadAvatarCommand): void {
-    if (!command.avatarFile) {
-      throw new AppError(AppErrorType.VALIDATION, "Avatar file is required");
-    }
-
-    if (!(command.avatarFile instanceof File)) {
-      throw new AppError(AppErrorType.VALIDATION, "Invalid file format - must be File");
-    }
-
-    this.validateAvatarFile(command.avatarFile);
-
-    clientLogger.info("UploadAvatarUseCase: command validation passed", {
-      fileName: command.avatarFile.name,
-      fileSize: command.avatarFile.size,
-      fileType: command.avatarFile.type,
-    });
   }
 
   /**
@@ -106,7 +74,7 @@ export class UploadAvatarUseCase {
     if (file.size > MAX_SIZE) {
       throw new AppError(
         AppErrorType.VALIDATION,
-        `File size too large. Maximum size is ${MAX_SIZE / 1024 / 1024}MB`,
+        `File size too large. Maximum size is ${MAX_SIZE / 1024 / 1024}MB`
       );
     }
 
@@ -115,7 +83,7 @@ export class UploadAvatarUseCase {
     if (!allowedTypes.includes(file.type)) {
       throw new AppError(
         AppErrorType.VALIDATION,
-        `Invalid file type. Allowed types: ${allowedTypes.join(", ")}`,
+        `Invalid file type. Allowed types: ${allowedTypes.join(", ")}`
       );
     }
 
