@@ -1,6 +1,6 @@
-import type { ChangeStatusCommand } from "@/application/commands/task/ChangeStatusCommand";
-import type { TaskResponseDto} from "@/application/dto/TaskResponseDto";
+import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
 import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
+import type { ChangeStatusPayload } from "@/application/payloads";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { TaskId } from "@/domain/valueobjects/TaskId";
@@ -10,45 +10,45 @@ import { AppError, AppErrorType } from "@/shared/errors/types";
 export class ChangeStatusUseCase {
   constructor(
     private taskRepository: TaskRepository,
-    private projectRepository: ProjectRepository,
+    private projectRepository: ProjectRepository
   ) {}
 
-  async execute(command: ChangeStatusCommand): Promise<TaskResponseDto> {
+  async execute(payload: ChangeStatusPayload): Promise<TaskResponseDto> {
     try {
       clientLogger.info("ChangeStatusUseCase: Changing status for task", {
-        taskId: command.taskId,
+        taskId: payload.taskId,
       });
 
-      const taskId = TaskId.create(command.taskId);
+      const taskId = TaskId.create(payload.taskId);
       const task = await this.taskRepository.findById(taskId);
 
       if (!task) {
-        throw new AppError(AppErrorType.NOT_FOUND, `Task not found: ${command.taskId}`);
+        throw new AppError(AppErrorType.NOT_FOUND, `Task not found: ${payload.taskId}`);
       }
 
       const statuses = await this.projectRepository.getProjectStatuses(task.projectId);
-      const targetStatus = statuses.find((status) => status.id === command.statusId);
+      const targetStatus = statuses.find((status) => status.id === payload.statusId);
 
       if (!targetStatus) {
         throw new AppError(
           AppErrorType.VALIDATION,
-          `Status with id ${command.statusId} not found in project ${task.projectId.value}`,
+          `Status with id ${payload.statusId} not found in project ${task.projectId.value}`
         );
       }
 
       // TODO: Add check rights to change status
 
       // Saving
-      const updatedTask = await this.taskRepository.changeStatus(task, command.statusId);
+      const updatedTask = await this.taskRepository.changeStatus(task, payload.statusId);
 
       clientLogger.info("ChangeStatusUseCase: Status changed successfully", {
         taskID: updatedTask.id.value,
-        statusID: command.statusId,
+        statusID: payload.statusId,
       });
 
       return TaskResponseMapper.fromDomain(updatedTask);
     } catch (error) {
-      clientLogger.error("ChangeStatusUseCase: failed", { error, command });
+      clientLogger.error("ChangeStatusUseCase: failed", { error, command: payload });
       throw error;
     }
   }

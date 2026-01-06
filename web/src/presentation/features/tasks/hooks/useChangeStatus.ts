@@ -2,27 +2,38 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { ChangeStatusCommand } from "@/application/commands/task/ChangeStatusCommand";
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { ChangeStatusPayload } from "@/application/payloads";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook that provides a mutation for changing the status of a task.
+ * Hook for changing the status of a task.
  *
- * Utilizes React Query's `useMutation` to execute the `changeStatus` use case,
- * and handles cache invalidation for the updated task upon success.
- * Displays toast notifications for both success and error outcomes.
+ * Manages the mutation state for updating a task's status and automatically
+ * invalidates related cache queries upon successful update. Displays success/error
+ * toast notifications to the user.
  *
- * @returns {UseMutationResult<TaskResponseDto, Error, ChangeStatusCommand>}
- *   The mutation result object for changing a task's status.
+ * @returns {UseMutationResult<TaskResponseDto, Error, ChangeStatusPayload>}
+ * A mutation result object with the following properties:
+ * - `mutate`: Function to trigger the status change with a ChangeStatusPayload
+ * - `mutateAsync`: Async version of mutate
+ * - `isPending`: Loading state during mutation
+ * - `isError`: Whether the mutation failed
+ * - `isSuccess`: Whether the mutation succeeded
+ * - `data`: The updated task response
+ * - `error`: Error object if mutation failed
+ *
+ * @example
+ * const changeStatusMutation = useChangeStatus();
+ * changeStatusMutation.mutate({ taskId: '123', status: 'completed' });
  */
-export function useChangeStatus(): UseMutationResult<TaskResponseDto, Error, ChangeStatusCommand> {
+export function useChangeStatus(): UseMutationResult<TaskResponseDto, Error, ChangeStatusPayload> {
   const queryClient = useQueryClient();
   const { changeStatus } = appContainer.getUsecases().tasks;
 
   return useMutation({
-    mutationFn: (command) => changeStatus.execute(command),
+    mutationFn: (payload) => changeStatus.execute(payload),
     onSuccess: (updatedTask) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task(updatedTask.id) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.taskDetails(updatedTask.id) });

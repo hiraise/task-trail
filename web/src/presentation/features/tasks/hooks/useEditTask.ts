@@ -4,30 +4,33 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { EditTaskCommand } from "@/application/commands/task/EditTaskCommand";
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { EditTaskPayload } from "@/application/payloads";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook for editing a task using a mutation.
+ * Custom hook to handle the editing of a task.
  *
- * This hook leverages React Query's `useMutation` to execute the `editTask` use case.
- * On successful mutation, it updates the cached task data and invalidates relevant queries
- * to ensure fresh data is fetched. It also displays toast notifications for success or error.
+ * This hook utilizes the `useMutation` from React Query to perform the task editing operation.
+ * It provides a mutation function that executes the edit task use case and manages the success
+ * and error states of the operation.
  *
- * @returns {UseMutationResult<TaskResponseDto, Error, EditTaskCommand>} The mutation result object for editing a task.
+ * On successful task edit, it updates the query cache with the new task data and invalidates
+ * related queries to ensure that the UI reflects the latest data. A success toast notification
+ * is displayed to inform the user of the successful update.
  *
- * @example
- * const editTaskMutation = useEditTask();
- * editTaskMutation.mutate({ id: 1, title: "New Title" });
+ * On error, an error toast notification is displayed to inform the user of the failure.
+ *
+ * @returns {UseMutationResult<TaskResponseDto, Error, EditTaskPayload>} The mutation result
+ * containing the status and methods to execute the mutation.
  */
-export function useEditTask(): UseMutationResult<TaskResponseDto, Error, EditTaskCommand> {
+export function useEditTask(): UseMutationResult<TaskResponseDto, Error, EditTaskPayload> {
   const queryClient = useQueryClient();
   const { editTask } = appContainer.getUsecases().tasks;
 
   return useMutation({
-    mutationFn: (command: EditTaskCommand) => editTask.execute(command),
+    mutationFn: (payload) => editTask.execute(payload),
     onSuccess: (updatedTask) => {
       queryClient.setQueryData(QUERY_KEYS.task(updatedTask.id), updatedTask);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.taskDetails(updatedTask.id) });

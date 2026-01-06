@@ -2,35 +2,33 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { ChangeAssigneeCommand } from "@/application/commands/task/ChangeAssigneeCommand";
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { ChangeAssigneePayload } from "@/application/payloads";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook to change the assignee of a task using a mutation.
- *
- * This hook leverages React Query's `useMutation` to execute the `changeAssignee` use case.
- * On successful mutation, it updates the cached task data and invalidates the task details query,
- * ensuring UI consistency. It also provides user feedback via toast notifications on success or error.
- *
- * @returns {UseMutationResult<TaskResponseDto, Error, ChangeAssigneeCommand>}
- *   The mutation result object from React Query, including mutation methods and state.
- *
+ * Hook for changing task assignee
+ * @returns A mutation result object for executing the change assignee operation
+ * @returns The mutation accepts a ChangeAssigneePayload and returns an updated TaskResponseDto
+ * @remarks
+ * - Invalidates task queries after successful assignee change
+ * - Shows success toast on successful operation
+ * - Shows error toast on failed operation
  * @example
- * const changeAssignee = useChangeAssignee();
- * changeAssignee.mutate({ taskId: '123', newAssigneeId: '456' });
+ * const changeAssigneeMutation = useChangeAssignee();
+ * changeAssigneeMutation.mutate({ taskId: '123', assigneeId: '456' });
  */
 export function useChangeAssignee(): UseMutationResult<
   TaskResponseDto,
   Error,
-  ChangeAssigneeCommand
+  ChangeAssigneePayload
 > {
   const queryClient = useQueryClient();
   const { changeAssignee } = appContainer.getUsecases().tasks;
 
   return useMutation({
-    mutationFn: (command) => changeAssignee.execute(command),
+    mutationFn: (payload) => changeAssignee.execute(payload),
     onSuccess: (updatedTask) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task(updatedTask.id) });
       queryClient.invalidateQueries({
