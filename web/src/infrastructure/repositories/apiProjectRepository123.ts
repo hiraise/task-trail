@@ -5,16 +5,31 @@ import type { TaskStatus } from "@/domain/valueobjects/TaskStatus";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
-import { clientLogger } from "../config/clientLogger";
+import type { ClientLogger } from "../config/clientLogger";
 import type { CreateProjectPayload, ProjectDTO } from "../http/dto/ProjectDTO";
 import type { TaskStatusDTO } from "../http/dto/TaskDTO";
 import type { HttpClient } from "../http/HttpClient";
 import { ProjectMapper } from "../http/mappers/ProjectMapper";
 import { TaskStatusMapper } from "../http/mappers/TaskStatusMapper";
 
-export class ApiProjectRepository implements ProjectRepository {
-  constructor(private httpClient: HttpClient) {}
+/**
+ * Handles errors by checking if the provided error is already an instance of `AppError`.
+ * If it is, returns the error as is. Otherwise, creates and returns a new `AppError`
+ * with the specified message and a server error type.
+ *
+ * @param message - The error message to use if a new `AppError` is created.
+ * @param error - The error object to handle.
+ * @returns An instance of `AppError` representing the handled error.
+ */
+const handleError = (message: string, error: unknown): AppError => {
+  if (error instanceof AppError) return error;
+  return new AppError(AppErrorType.SERVER, message);
+};
 
+export const createProjectRepository = (
+  httpClient: HttpClient,
+  clientLogger: ClientLogger,
+): ProjectRepository => ({
   /**
    * Retrieves a project by its unique identifier.
    *
@@ -22,15 +37,15 @@ export class ApiProjectRepository implements ProjectRepository {
    * @returns A promise that resolves to the corresponding {@link Project} domain object.
    * @throws Will throw an error if the project cannot be retrieved.
    */
-  async findById(id: ProjectId): Promise<Project> {
+  findById: async (id: ProjectId): Promise<Project> => {
     try {
-      const dto = await this.httpClient.get<ProjectDTO>(API_ROUTES.PROJECT_BY_ID(Number(id.value)));
+      const dto = await httpClient.get<ProjectDTO>(API_ROUTES.PROJECT_BY_ID(Number(id.value)));
       return ProjectMapper.toDomain(dto);
     } catch (error) {
       clientLogger.error("Get project by ID error", { error, id: id.value });
-      throw this.handleError("Failed to get project by ID", error);
+      throw handleError("Failed to get project by ID", error);
     }
-  }
+  },
 
   /**
    * Retrieves all projects from the API.
@@ -41,9 +56,9 @@ export class ApiProjectRepository implements ProjectRepository {
    * @example
    * const projects = await repository.findAll();
    */
-  async findAll(): Promise<Project[]> {
+  findAll: async (): Promise<Project[]> => {
     try {
-      const dtos = await this.httpClient.get<ProjectDTO[]>(API_ROUTES.PROJECTS);
+      const dtos = await httpClient.get<ProjectDTO[]>(API_ROUTES.PROJECTS);
 
       if (!Array.isArray(dtos)) {
         throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
@@ -52,9 +67,9 @@ export class ApiProjectRepository implements ProjectRepository {
       return ProjectMapper.toDomainList(dtos);
     } catch (error) {
       clientLogger.error("Get projects error", { error });
-      throw this.handleError("Failed to get projects", error);
+      throw handleError("Failed to get projects", error);
     }
-  }
+  },
 
   /**
    * Creates a new project using the provided payload.
@@ -63,18 +78,18 @@ export class ApiProjectRepository implements ProjectRepository {
    * @returns A promise that resolves to the created {@link Project} domain object.
    * @throws Will throw an error if the project creation fails.
    */
-  async create(data: CreateProjectPayload): Promise<ProjectId> {
+  create: async (data: CreateProjectPayload): Promise<ProjectId> => {
     try {
       const payload = ProjectMapper.toCreatePayload(data.name, data.description, data.participants);
 
-      const responseDto = await this.httpClient.post<{ id: number }>(API_ROUTES.PROJECTS, payload);
+      const responseDto = await httpClient.post<{ id: number }>(API_ROUTES.PROJECTS, payload);
 
       return ProjectId.create(responseDto.id);
     } catch (error) {
       clientLogger.error("Create project error", { error, data });
-      throw this.handleError("Failed to create project", error);
+      throw handleError("Failed to create project", error);
     }
-  }
+  },
 
   /**
    * Updates an existing project by sending a PATCH request to the API.
@@ -83,11 +98,11 @@ export class ApiProjectRepository implements ProjectRepository {
    * @returns A promise that resolves to the updated project domain object.
    * @throws Will throw an error if the update operation fails.
    */
-  async update(project: Project): Promise<Project> {
+  update: async (project: Project): Promise<Project> => {
     try {
       const payload = ProjectMapper.toUpdatePayload(project.name, project.description);
 
-      const responseDto = await this.httpClient.patch<ProjectDTO>(
+      const responseDto = await httpClient.patch<ProjectDTO>(
         API_ROUTES.PROJECT_BY_ID(Number(project.id)),
         payload,
       );
@@ -103,9 +118,9 @@ export class ApiProjectRepository implements ProjectRepository {
         id: project.id.value,
         project,
       });
-      throw this.handleError("Failed to edit project", error);
+      throw handleError("Failed to edit project", error);
     }
-  }
+  },
 
   /**
    * Deletes a project by its ID.
@@ -117,14 +132,14 @@ export class ApiProjectRepository implements ProjectRepository {
    * @returns A promise that resolves when the project is successfully deleted.
    * @throws Will throw an error if the deletion fails.
    */
-  async delete(id: ProjectId): Promise<void> {
+  delete: async (id: ProjectId): Promise<void> => {
     try {
-      await this.httpClient.delete(API_ROUTES.PROJECT_BY_ID(Number(id.value)));
+      await httpClient.delete(API_ROUTES.PROJECT_BY_ID(Number(id.value)));
     } catch (error) {
       clientLogger.error("Delete project error", { error, id: id.value });
-      throw this.handleError("Failed to delete project", error);
+      throw handleError("Failed to delete project", error);
     }
-  }
+  },
 
   /**
    * Retrieves the list of task statuses for a given project.
@@ -133,12 +148,10 @@ export class ApiProjectRepository implements ProjectRepository {
    * @returns A promise that resolves to an array of `TaskStatus` objects associated with the project.
    * @throws {AppError} Throws an error if the server response is invalid or if the request fails.
    */
-  async getProjectStatuses(id: ProjectId): Promise<TaskStatus[]> {
+  getProjectStatuses: async (id: ProjectId): Promise<TaskStatus[]> => {
     try {
       const projectId = Number(id.value);
-      const dtos = await this.httpClient.get<TaskStatusDTO[]>(
-        API_ROUTES.PROJECT_STATUSES(projectId),
-      );
+      const dtos = await httpClient.get<TaskStatusDTO[]>(API_ROUTES.PROJECT_STATUSES(projectId));
 
       if (!Array.isArray(dtos)) {
         throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
@@ -146,21 +159,7 @@ export class ApiProjectRepository implements ProjectRepository {
       return TaskStatusMapper.toDomainList(dtos);
     } catch (error) {
       clientLogger.error("Get project statuses error", { error });
-      throw this.handleError("Failed to get project statuses", error);
+      throw handleError("Failed to get project statuses", error);
     }
-  }
-
-  /**
-   * Handles errors by checking if the provided error is already an instance of `AppError`.
-   * If it is, returns the error as is. Otherwise, creates and returns a new `AppError`
-   * with the specified message and a server error type.
-   *
-   * @param message - The error message to use if a new `AppError` is created.
-   * @param error - The error object to handle.
-   * @returns An instance of `AppError` representing the handled error.
-   */
-  private handleError(message: string, error: unknown): AppError {
-    if (error instanceof AppError) return error;
-    return new AppError(AppErrorType.SERVER, message);
-  }
-}
+  },
+});
