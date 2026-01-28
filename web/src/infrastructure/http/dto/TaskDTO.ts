@@ -26,31 +26,9 @@ export interface TaskIdDTO {
   id: number;
 }
 
-export interface CreateTaskPayload {
-  name: string;
-  description?: string;
-  assigneeId?: number;
-  projectId: number;
-}
-
 export interface TaskStatusDTO {
   id: number;
   name: string;
   isDefault: boolean;
   isResolved: boolean;
-}
-
-export interface UpdateTaskPayload {
-  name?: string;
-  description?: string;
-}
-
-export interface ChangeAssigneePayload {
-  id: number;
-  assigneeId?: number;
-}
-
-export interface ChangeStatusPayload {
-  id: number;
-  statusId?: number;
 }
