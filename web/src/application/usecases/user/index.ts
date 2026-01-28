@@ -1,3 +1,3 @@
-export { GetCurrentUserUseCase } from "./GetCurrentUserUseCase";
-export { UploadAvatarUseCase } from "./UploadAvatarUseCase";
-export { UpdateUserUseCase } from "./UpdateUserUseCase";
+export * from "./GetCurrentUserUseCase";
+export * from "./UpdateUserUseCase";
+export * from "./UploadAvatarUseCase";

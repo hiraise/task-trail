@@ -1,31 +1,34 @@
-import type { UserResponseDto} from "@/application/dto/UserResponseDto";
+import type { UserResponseDto } from "@/application/dto/UserResponseDto";
 import { UserResponseMapper } from "@/application/dto/UserResponseDto";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-/**
- * Use case for retrieving the current authenticated user.
- *
- * This use case encapsulates the business logic for fetching
- * the current user's information and transforming it to the
- * appropriate DTO format for the presentation layer.
- */
-export class GetCurrentUserUseCase {
-  constructor(private readonly userRepository: UserRepository) {}
+type GetCurrentUserUseCase = () => Promise<UserResponseDto | null>;
 
-  /**
-   * Executes the use case to get the current authenticated user.
-   *
-   * @returns {Promise<UserResponseDto | null>} The current user's data as DTO,
-   * or null if no user is authenticated.
-   * @throws {AppError} If the operation fails due to server or network issues.
-   */
-  async execute(): Promise<UserResponseDto | null> {
+/**
+ * Creates a use case function for retrieving the currently authenticated user.
+ *
+ * @param userRepository - The user repository instance used to fetch user data
+ * @returns An async function that retrieves the current user and returns their data as a DTO,
+ *          or null if no authenticated user is found
+ * @throws {AppError} If the user retrieval fails or an unexpected error occurs
+ *
+ * @example
+ * ```typescript
+ * const getCurrentUser = createGetCurrentUserUseCase(userRepository);
+ * const user = await getCurrentUser();
+ * if (user) {
+ *   console.log(user.email);
+ * }
+ * ```
+ */
+const createGetCurrentUserUseCase =
+  (userRepository: UserRepository) => async (): Promise<UserResponseDto | null> => {
     try {
       clientLogger.info("GetCurrentUserUseCase: starting execution");
 
-      const currentUser = await this.userRepository.getCurrentUser();
+      const currentUser = await userRepository.getCurrentUser();
 
       if (!currentUser) {
         clientLogger.warn("GetCurrentUserUseCase: no authenticated user found");
@@ -47,5 +50,6 @@ export class GetCurrentUserUseCase {
 
       throw new AppError(AppErrorType.UNKNOWN, "Failed to retrieve current user information");
     }
-  }
-}
+  };
+
+export { createGetCurrentUserUseCase, type GetCurrentUserUseCase };

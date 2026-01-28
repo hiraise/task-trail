@@ -5,21 +5,22 @@ import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
+type UpdateUserUseCase = (payload: UpdateUserPayload) => Promise<UserResponseDto>;
+
 /**
  * Use case for updating user profile information.
  *
  * This use case handles the business logic for user profile updates,
  * including validation of update data and coordination with the repository.
  */
-export class UpdateUserUseCase {
-  constructor(private readonly userRepository: UserRepository) {}
-
-  async execute(payload: UpdateUserPayload): Promise<UserResponseDto> {
+const createUpdateUserUseCase =
+  (userRepository: UserRepository): UpdateUserUseCase =>
+  async (payload) => {
     try {
       clientLogger.info("UpdateUserUseCase: starting execution");
 
       // Delegate to repository for the update
-      const updatedUser = await this.userRepository.updateUser(payload.username);
+      const updatedUser = await userRepository.updateUser(payload.username);
 
       clientLogger.info("UpdateUserUseCase: user updated successfully", {
         userId: updatedUser.id.value,
@@ -36,5 +37,6 @@ export class UpdateUserUseCase {
 
       throw new AppError(AppErrorType.UNKNOWN, "Failed to update user profile");
     }
-  }
-}
+  };
+
+export { createUpdateUserUseCase, type UpdateUserUseCase };
