@@ -3,14 +3,15 @@ import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class GetProjectsUseCase {
-  constructor(private projectRepository: ProjectRepository) {}
+type GetProjectsUseCase = () => Promise<ProjectResponseDto[]>;
 
-  async execute(): Promise<ProjectResponseDto[]> {
+const createGetProjectsUseCase =
+  (projectRepository: ProjectRepository): GetProjectsUseCase =>
+  async () => {
     try {
       clientLogger.info("GetProjectsUseCase: fetching all projects");
 
-      const projects = await this.projectRepository.findAll();
+      const projects = await projectRepository.findAll();
 
       clientLogger.info("GetProjectsUseCase: projects fetched successfully", {
         count: projects.length,
@@ -21,5 +22,6 @@ export class GetProjectsUseCase {
       clientLogger.error("GetProjectsUseCase: failed", { error });
       throw error;
     }
-  }
-}
+  };
+
+export { createGetProjectsUseCase, type GetProjectsUseCase };

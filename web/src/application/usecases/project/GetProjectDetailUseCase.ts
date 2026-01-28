@@ -9,23 +9,24 @@ import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class GetProjectDetailUseCase {
-  constructor(
-    private projectRepository: ProjectRepository,
-    private projectMemberRepository: ProjectMemberRepository,
-    private taskRepository: TaskRepository,
-  ) {}
+type GetProjectDetailUseCase = (projectId: string | number) => Promise<ProjectDetailResponseDto>;
 
-  async execute(projectId: string | number): Promise<ProjectDetailResponseDto> {
+const createGetProjectDetailUseCase =
+  (
+    projectRepository: ProjectRepository,
+    projectMemberRepository: ProjectMemberRepository,
+    taskRepository: TaskRepository,
+  ): GetProjectDetailUseCase =>
+  async (projectId) => {
     try {
       clientLogger.info("Fetching project detail", { projectId });
 
       const id = ProjectId.create(projectId);
 
       const [project, members, tasks] = await Promise.all([
-        this.projectRepository.findById(id),
-        this.projectMemberRepository.findByProjectId(id),
-        this.taskRepository.findByProjectId(id),
+        projectRepository.findById(id),
+        projectMemberRepository.findByProjectId(id),
+        taskRepository.findByProjectId(id),
       ]);
 
       if (!project) {
@@ -55,5 +56,6 @@ export class GetProjectDetailUseCase {
       clientLogger.error("GetProjectDetailUseCase: failed", { error, projectId });
       throw error;
     }
-  }
-}
+  };
+
+export { createGetProjectDetailUseCase, type GetProjectDetailUseCase };

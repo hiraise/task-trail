@@ -3,15 +3,16 @@ import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-export class DeleteProjectUseCase {
-  constructor(private projectRepository: ProjectRepository) {}
+type DeleteProjectUseCase = (projectId: string | number) => Promise<void>;
 
-  async execute(projectId: string | number): Promise<void> {
+const createDeleteProjectUseCase =
+  (projectRepository: ProjectRepository): DeleteProjectUseCase =>
+  async (projectId) => {
     try {
       clientLogger.info("DeleteProjectUseCase: deleting project", { projectId });
 
       const id = ProjectId.create(projectId);
-      const project = await this.projectRepository.findById(id);
+      const project = await projectRepository.findById(id);
 
       if (!project) {
         throw new AppError(AppErrorType.NOT_FOUND, `Project not found: ${id}`);
@@ -21,7 +22,7 @@ export class DeleteProjectUseCase {
         throw new AppError(AppErrorType.FORBIDDEN, "Only owner can delete project");
       }
 
-      await this.projectRepository.delete(id);
+      await projectRepository.delete(id);
 
       clientLogger.info("DeleteProjectUseCase: project deleted successfully", {
         projectId,
@@ -30,5 +31,6 @@ export class DeleteProjectUseCase {
       clientLogger.error("DeleteProjectUseCase: failed", { error, projectId });
       throw error;
     }
-  }
-}
+  };
+
+export { createDeleteProjectUseCase, type DeleteProjectUseCase };

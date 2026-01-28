@@ -6,15 +6,16 @@ import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-export class EditProjectUseCase {
-  constructor(private projectRepository: ProjectRepository) {}
+type EditProjectUseCase = (payload: EditProjectPayload) => Promise<ProjectResponseDto>;
 
-  async execute(payload: EditProjectPayload): Promise<ProjectResponseDto> {
+const createEditProjectUseCase =
+  (projectRepository: ProjectRepository): EditProjectUseCase =>
+  async (payload) => {
     try {
       clientLogger.info("Editing project", { projectId: payload.projectId });
 
       const projectId = ProjectId.create(payload.projectId);
-      const project = await this.projectRepository.findById(projectId);
+      const project = await projectRepository.findById(projectId);
 
       if (!project) {
         throw new AppError(AppErrorType.NOT_FOUND, `Project not found: ${projectId}`);
@@ -24,12 +25,12 @@ export class EditProjectUseCase {
       if (!project.canUserEdit()) {
         throw new AppError(
           AppErrorType.FORBIDDEN,
-          "You do not have permission to edit this project"
+          "You do not have permission to edit this project",
         );
       }
 
       // Сохранение
-      const updatedProject = await this.projectRepository.update(project);
+      const updatedProject = await projectRepository.update(project);
 
       clientLogger.info("Project updated successfully", {
         projectId: updatedProject.id.value,
@@ -40,5 +41,6 @@ export class EditProjectUseCase {
       clientLogger.error("EditProjectUseCase: failed", { error, command: payload });
       throw error;
     }
-  }
-}
+  };
+
+export { createEditProjectUseCase, type EditProjectUseCase };

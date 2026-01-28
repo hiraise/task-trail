@@ -4,26 +4,28 @@ import type { CreateProjectPayload } from "@/application/payloads";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class CreateProjectUseCase {
-  constructor(private projectRepository: ProjectRepository) {}
+type CreateProjectUseCase = (payload: CreateProjectPayload) => Promise<ProjectResponseDto>;
 
-  async execute(payload: CreateProjectPayload): Promise<ProjectResponseDto> {
+const createCreateProjectUseCase =
+  (projectRepository: ProjectRepository): CreateProjectUseCase =>
+  async (payload) => {
     try {
       clientLogger.info("Creating new project", { name: payload.name });
 
-      const projectId = await this.projectRepository.create({
+      const projectId = await projectRepository.create({
         name: payload.name,
         description: payload.description,
         participants: payload.participants,
       });
 
       clientLogger.info("Project created successfully", { projectId: projectId.toString() });
-      const createdProject = await this.projectRepository.findById(projectId);
+      const createdProject = await projectRepository.findById(projectId);
 
       return ProjectResponseMapper.fromDomain(createdProject);
     } catch (error) {
       clientLogger.error("CreateProjectUseCase: failed", { error, command: payload });
       throw error;
     }
-  }
-}
+  };
+
+export { createCreateProjectUseCase, type CreateProjectUseCase };

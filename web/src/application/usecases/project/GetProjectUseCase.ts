@@ -1,18 +1,19 @@
-import type { ProjectResponseDto} from "@/application/dto/ProjectResponseDto";
+import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
 import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class GetProjectUseCase {
-  constructor(private projectRepository: ProjectRepository) {}
+type GetProjectUseCase = (projectId: string | number) => Promise<ProjectResponseDto | null>;
 
-  async execute(projectId: string | number): Promise<ProjectResponseDto | null> {
+const createGetProjectUseCase =
+  (projectRepository: ProjectRepository): GetProjectUseCase =>
+  async (projectId) => {
     try {
       clientLogger.info("GetProjectUseCase: fetching project", { projectId });
 
       const id = ProjectId.create(projectId);
-      const project = await this.projectRepository.findById(id);
+      const project = await projectRepository.findById(id);
 
       if (!project) {
         clientLogger.warn("GetProjectUseCase: project not found", { projectId });
@@ -29,5 +30,6 @@ export class GetProjectUseCase {
       clientLogger.error("GetProjectUseCase: failed", { error, projectId });
       throw error;
     }
-  }
-}
+  };
+
+export { createGetProjectUseCase, type GetProjectUseCase };
