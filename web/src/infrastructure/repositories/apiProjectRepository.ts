@@ -5,7 +5,7 @@ import type { TaskStatus } from "@/domain/valueobjects/TaskStatus";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
-import type { ClientLogger } from "../config/clientLogger";
+import { clientLogger } from "../config/clientLogger";
 import type { CreateProjectPayload, ProjectDTO } from "../http/dto/ProjectDTO";
 import type { TaskStatusDTO } from "../http/dto/TaskDTO";
 import type { HttpClient } from "../http/HttpClient";
@@ -26,10 +26,7 @@ const handleError = (message: string, error: unknown): AppError => {
   return new AppError(AppErrorType.SERVER, message);
 };
 
-export const createProjectRepository = (
-  httpClient: HttpClient,
-  clientLogger: ClientLogger,
-): ProjectRepository => ({
+export const createProjectRepository = (httpClient: HttpClient): ProjectRepository => ({
   /**
    * Retrieves a project by its unique identifier.
    *
