@@ -23,59 +23,41 @@ const LOG_PREFIXES = {
   fatal: "[CLIENT][FATAL] 💀",
 } as const;
 
-class ConsoleLoggerImpl implements ClientLogger {
-  private isProduction = process.env.NODE_ENV === "production";
-  private isDevelopment = !this.isProduction;
-
-  private log(type: LogType, message: string, meta?: Record<string, unknown>): void {
-    if (this.isProduction) {
-      return;
-    }
-
-    const prefix = LOG_PREFIXES[type];
-    const style = CONSOLE_STYLES[type];
-    const consoleMethod = this.getConsoleMethod(type);
-
-    const hasMetadata =
-      meta &&
-      Object.keys(meta).length > 0 &&
-      Object.values(meta).some((v) => v !== undefined && v !== null);
-
-    if (hasMetadata) {
-      consoleMethod(`%c${prefix} %s`, style, message, meta);
-    } else {
-      consoleMethod(`%c${prefix} %s`, style, message);
-    }
-  }
-
-  private getConsoleMethod(type: LogType): typeof console.error {
-    switch (type) {
-      case "error":
-      case "fatal":
-        return console.error;
-      case "warn":
-        return console.warn;
-      case "info":
-      default:
-        return console.info;
-    }
-  }
-
-  error(message: string, meta?: Record<string, unknown>): void {
-    this.log("error", message, meta);
-  }
-
-  info(message: string, meta?: Record<string, unknown>): void {
-    this.log("info", message, meta);
-  }
-
-  warn(message: string, meta?: Record<string, unknown>): void {
-    this.log("warn", message, meta);
-  }
-
-  fatal(message: string, meta?: Record<string, unknown>): void {
-    this.log("fatal", message, meta);
+function getConsoleMethod(type: LogType): typeof console.error {
+  switch (type) {
+    case "error":
+    case "fatal":
+      return console.error;
+    case "warn":
+      return console.warn;
+    case "info":
+    default:
+      return console.info;
   }
 }
 
-export const clientLogger: ClientLogger = new ConsoleLoggerImpl();
+const log = (type: LogType, message: string, meta?: Record<string, unknown>): void => {
+  if (process.env.NODE_ENV === "production") return;
+
+  const prefix = LOG_PREFIXES[type];
+  const style = CONSOLE_STYLES[type];
+  const consoleMethod = getConsoleMethod(type);
+
+  const hasMetadata =
+    meta &&
+    Object.keys(meta).length > 0 &&
+    Object.values(meta).some((v) => v !== undefined && v !== null);
+
+  if (hasMetadata) {
+    consoleMethod(`%c${prefix} %s`, style, message, meta);
+  } else {
+    consoleMethod(`%c${prefix} %s`, style, message);
+  }
+};
+
+export const clientLogger: ClientLogger = {
+  error: (message, meta) => log("error", message, meta),
+  info: (message, meta) => log("info", message, meta),
+  warn: (message, meta) => log("warn", message, meta),
+  fatal: (message, meta) => log("fatal", message, meta),
+};
