@@ -25,10 +25,10 @@ export function useChangeAssignee(): UseMutationResult<
   ChangeAssigneePayload
 > {
   const queryClient = useQueryClient();
-  const { changeAssignee } = appContainer.getUsecases().tasks;
+  const { changeAssignee } = appContainer.usecases.tasks;
 
   return useMutation({
-    mutationFn: (payload) => changeAssignee.execute(payload),
+    mutationFn: (payload) => changeAssignee(payload),
     onSuccess: (updatedTask) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task(updatedTask.id) });
       queryClient.invalidateQueries({

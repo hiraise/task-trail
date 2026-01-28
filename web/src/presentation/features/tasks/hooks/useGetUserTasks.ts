@@ -20,11 +20,11 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * const { data, isLoading, error } = useGetUserTasks();
  */
 export function useGetUserTasks(): UseQueryResult<TaskResponseDto[] | null, Error> {
-  const { getCurrentUserTasks } = appContainer.getUsecases().tasks;
+  const { getCurrentUserTasks } = appContainer.usecases.tasks;
 
   return useQuery({
     queryKey: QUERY_KEYS.userTasks,
-    queryFn: () => getCurrentUserTasks.execute(),
+    queryFn: () => getCurrentUserTasks(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,

@@ -30,10 +30,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useChangeStatus(): UseMutationResult<TaskResponseDto, Error, ChangeStatusPayload> {
   const queryClient = useQueryClient();
-  const { changeStatus } = appContainer.getUsecases().tasks;
+  const { changeStatus } = appContainer.usecases.tasks;
 
   return useMutation({
-    mutationFn: (payload) => changeStatus.execute(payload),
+    mutationFn: (payload) => changeStatus(payload),
     onSuccess: (updatedTask) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task(updatedTask.id) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.taskDetails(updatedTask.id) });

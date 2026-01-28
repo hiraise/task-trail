@@ -72,7 +72,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
   setProject: async (project: ProjectResponseDto) => {
     const state = get();
     if (!state.draft) return;
-    const { selectProject } = appContainer.getUsecases().tasks;
+    const { selectProject } = appContainer.usecases.tasks;
     const result = await selectProject.execute(state.draft, project.id, state.assignee?.id ?? null);
 
     if (!result.success) return;

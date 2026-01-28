@@ -30,12 +30,12 @@ export function useGetTaskListDetails(): UseGetTaskListDetailsResult {
   const { data: tasks, isLoading: isLoadingTasks } = useGetUserTasks();
 
   const taskIds = useMemo(() => [...new Set(tasks?.map((task) => task.id))], [tasks]);
-  const { getTaskDetail } = appContainer.getUsecases().tasks;
+  const { getTaskDetail } = appContainer.usecases.tasks;
 
   const results = useQueries({
     queries: taskIds.map((taskId) => ({
       queryKey: QUERY_KEYS.taskDetails(taskId),
-      queryFn: async () => getTaskDetail.execute(taskId),
+      queryFn: async () => getTaskDetail(taskId),
       enabled: !!taskId && !isLoadingTasks,
     })),
     combine: (queries) => {

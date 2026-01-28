@@ -30,10 +30,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 export function useCreateTask(): UseMutationResult<TaskResponseDto, Error, CreateTaskPayload> {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { createTask } = appContainer.getUsecases().tasks;
+  const { createTask } = appContainer.usecases.tasks;
 
   return useMutation({
-    mutationFn: (payload) => createTask.execute(payload),
+    mutationFn: (payload) => createTask(payload),
     onSuccess: (newTask) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectTasks(newTask.projectId) });
       if (newTask) router.push(ROUTES.task(newTask.id));

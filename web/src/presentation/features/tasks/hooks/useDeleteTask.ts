@@ -25,10 +25,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 export function useDeleteTask(projectId: number): UseMutationResult<void, Error, string | number> {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { deleteTask } = appContainer.getUsecases().tasks;
+  const { deleteTask } = appContainer.usecases.tasks;
 
   return useMutation({
-    mutationFn: (taskId: string | number) => deleteTask.execute(taskId),
+    mutationFn: (taskId: string | number) => deleteTask(taskId),
     onSuccess: (_, taskId) => {
       router.replace(ROUTES.project(projectId));
       toast.success("Task deleted successfully");

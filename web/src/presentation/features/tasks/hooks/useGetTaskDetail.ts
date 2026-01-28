@@ -20,15 +20,15 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * const { data, error, isLoading } = useGetTaskDetail(123);
  */
 export function useGetTaskDetail(
-  taskId: number | undefined
+  taskId: number | undefined,
 ): UseQueryResult<TaskDetailResponseDto | null, Error> {
-  const { getTaskDetail } = appContainer.getUsecases().tasks;
+  const { getTaskDetail } = appContainer.usecases.tasks;
 
   return useQuery({
     queryKey: QUERY_KEYS.taskDetails(taskId || -1),
     queryFn: async () => {
       if (!taskId) throw new Error("Task ID is required");
-      return await getTaskDetail.execute(taskId);
+      return await getTaskDetail(taskId);
     },
     enabled: !!taskId,
   });

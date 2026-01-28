@@ -27,10 +27,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useEditTask(): UseMutationResult<TaskResponseDto, Error, EditTaskPayload> {
   const queryClient = useQueryClient();
-  const { editTask } = appContainer.getUsecases().tasks;
+  const { editTask } = appContainer.usecases.tasks;
 
   return useMutation({
-    mutationFn: (payload) => editTask.execute(payload),
+    mutationFn: (payload) => editTask(payload),
     onSuccess: (updatedTask) => {
       queryClient.setQueryData(QUERY_KEYS.task(updatedTask.id), updatedTask);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.taskDetails(updatedTask.id) });

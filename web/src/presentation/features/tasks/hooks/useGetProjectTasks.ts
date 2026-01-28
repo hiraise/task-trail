@@ -18,15 +18,15 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * - The query will retry up to 2 times on failure.
  */
 export function useGetProjectTasks(
-  projectId: string | number
+  projectId: string | number,
 ): UseQueryResult<TaskResponseDto[] | null, Error> {
-  const { getProjectTasks } = appContainer.getUsecases().tasks;
+  const { getProjectTasks } = appContainer.usecases.tasks;
 
   return useQuery({
     queryKey: QUERY_KEYS.projectTasks(Number(projectId)),
     queryFn: async () => {
       if (!projectId) return null;
-      return await getProjectTasks.execute(projectId);
+      return await getProjectTasks(projectId);
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
