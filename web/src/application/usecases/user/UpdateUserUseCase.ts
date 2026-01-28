@@ -1,5 +1,5 @@
 import type { UserResponseDto } from "@/application/dto/UserResponseDto";
-import { UserResponseMapper } from "@/application/dto/UserResponseDto";
+import { mapUserToResponse } from "@/application/dto/UserResponseDto";
 import type { UpdateUserPayload } from "@/application/payloads";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
@@ -27,7 +27,7 @@ const createUpdateUserUseCase =
         updatedFields: Object.keys(payload),
       });
 
-      return UserResponseMapper.fromDomain(updatedUser);
+      return mapUserToResponse(updatedUser);
     } catch (error) {
       clientLogger.error("UpdateUserUseCase: execution failed", { error });
 

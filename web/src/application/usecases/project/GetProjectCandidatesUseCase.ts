@@ -1,5 +1,5 @@
 import type { UserResponseDto } from "@/application/dto/UserResponseDto";
-import { UserResponseMapper } from "@/application/dto/UserResponseDto";
+import { mapUsersToResponse } from "@/application/dto/UserResponseDto";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
@@ -19,7 +19,7 @@ const createGetProjectCandidatesUseCase =
         count: candidates.length,
       });
 
-      return UserResponseMapper.fromDomainList(candidates);
+      return mapUsersToResponse(candidates);
     } catch (error) {
       clientLogger.error("GetProjectCandidatesUseCase: failed", { error, projectId });
       throw error;

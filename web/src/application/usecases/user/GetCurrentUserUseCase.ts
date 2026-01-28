@@ -1,5 +1,5 @@
 import type { UserResponseDto } from "@/application/dto/UserResponseDto";
-import { UserResponseMapper } from "@/application/dto/UserResponseDto";
+import { mapUserToResponse } from "@/application/dto/UserResponseDto";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
@@ -40,7 +40,7 @@ const createGetCurrentUserUseCase =
         email: currentUser.email,
       });
 
-      return UserResponseMapper.fromDomain(currentUser);
+      return mapUserToResponse(currentUser);
     } catch (error) {
       clientLogger.error("GetCurrentUserUseCase: execution failed", { error });
 

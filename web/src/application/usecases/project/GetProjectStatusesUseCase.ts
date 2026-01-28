@@ -1,5 +1,5 @@
 import type { TaskStatusResponseDto } from "@/application/dto/TaskStatusResponseDto";
-import { TaskStatusResponseMapper } from "@/application/dto/TaskStatusResponseDto";
+import { mapTaskStatusesToResponse } from "@/application/dto/TaskStatusResponseDto";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
@@ -19,7 +19,7 @@ const createGetProjectStatusesUseCase =
         count: statuses.length,
       });
 
-      return TaskStatusResponseMapper.fromDomainList(statuses);
+      return mapTaskStatusesToResponse(statuses);
     } catch (error) {
       clientLogger.error("GetProjectStatusesUseCase: failed", { error });
       throw error;

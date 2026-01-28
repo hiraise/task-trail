@@ -1,5 +1,5 @@
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
+import { mapTaskToResponse } from "@/application/dto/TaskResponseDto";
 import type { ChangeAssigneePayload } from "@/application/payloads";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
@@ -38,7 +38,7 @@ const createChangeAssigneeUseCase =
         assigneeID: assigneeId.value,
       });
 
-      return TaskResponseMapper.fromDomain(updatedTask);
+      return mapTaskToResponse(updatedTask);
     } catch (error) {
       clientLogger.error("ChangeAssigneeUseCase: failed", { error, command: payload });
       throw error;

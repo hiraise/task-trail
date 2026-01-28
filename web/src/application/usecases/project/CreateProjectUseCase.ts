@@ -1,5 +1,5 @@
 import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
-import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
+import { mapProjectToResponse } from "@/application/dto/ProjectResponseDto";
 import type { CreateProjectPayload } from "@/application/payloads";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
@@ -21,7 +21,7 @@ const createCreateProjectUseCase =
       clientLogger.info("Project created successfully", { projectId: projectId.toString() });
       const createdProject = await projectRepository.findById(projectId);
 
-      return ProjectResponseMapper.fromDomain(createdProject);
+      return mapProjectToResponse(createdProject);
     } catch (error) {
       clientLogger.error("CreateProjectUseCase: failed", { error, command: payload });
       throw error;

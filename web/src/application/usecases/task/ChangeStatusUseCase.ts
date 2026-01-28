@@ -1,5 +1,5 @@
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
+import { mapTaskToResponse } from "@/application/dto/TaskResponseDto";
 import type { ChangeStatusPayload } from "@/application/payloads";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
@@ -44,7 +44,7 @@ const createChangeStatusUseCase =
         statusID: payload.statusId,
       });
 
-      return TaskResponseMapper.fromDomain(updatedTask);
+      return mapTaskToResponse(updatedTask);
     } catch (error) {
       clientLogger.error("ChangeStatusUseCase: failed", { error, command: payload });
       throw error;

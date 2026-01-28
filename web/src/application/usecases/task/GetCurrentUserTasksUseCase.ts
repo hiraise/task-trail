@@ -1,5 +1,5 @@
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
+import { mapTasksToResponse } from "@/application/dto/TaskResponseDto";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
@@ -22,7 +22,7 @@ const createGetCurrentUserTasksUseCase =
         tasksCount: tasks.length,
       });
 
-      return TaskResponseMapper.fromDomainList(tasks);
+      return mapTasksToResponse(tasks);
     } catch (error) {
       clientLogger.error("GetCurrentUserTasksUseCase: failed", { error });
       throw error;

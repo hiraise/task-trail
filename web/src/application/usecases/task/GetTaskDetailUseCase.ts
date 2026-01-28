@@ -1,8 +1,8 @@
-import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
+import { mapProjectToResponse } from "@/application/dto/ProjectResponseDto";
 import type { TaskDetailResponseDto } from "@/application/dto/TaskDetailResponseDto";
-import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
-import { TaskStatusResponseMapper } from "@/application/dto/TaskStatusResponseDto";
-import { UserResponseMapper } from "@/application/dto/UserResponseDto";
+import { mapTaskToResponse } from "@/application/dto/TaskResponseDto";
+import { mapTaskStatusToResponse } from "@/application/dto/TaskStatusResponseDto";
+import { mapUserToResponse } from "@/application/dto/UserResponseDto";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
@@ -44,10 +44,10 @@ const createGetTaskDetailUseCase =
       clientLogger.info("GetTaskDetailUseCase: Task detail fetched", { taskId });
 
       const response: TaskDetailResponseDto = {
-        task: TaskResponseMapper.fromDomain(task),
-        project: ProjectResponseMapper.fromDomain(project),
-        assignee: UserResponseMapper.fromDomain(assignee),
-        status: TaskStatusResponseMapper.fromDomain(status),
+        task: mapTaskToResponse(task),
+        project: mapProjectToResponse(project),
+        assignee: mapUserToResponse(assignee),
+        status: mapTaskStatusToResponse(status),
       };
 
       return response;

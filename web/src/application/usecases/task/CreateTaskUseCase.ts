@@ -1,5 +1,5 @@
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
+import { mapTaskToResponse } from "@/application/dto/TaskResponseDto";
 import type { CreateTaskPayload } from "@/application/payloads";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
@@ -23,7 +23,7 @@ const createCreateTaskUseCase =
       clientLogger.info("Task created successfully", { taskId: taskId.toString() });
       const createdTask = await taskRepository.findById(taskId);
 
-      return TaskResponseMapper.fromDomain(createdTask);
+      return mapTaskToResponse(createdTask);
     } catch (error) {
       clientLogger.error("CreateProjectUseCase: failed", { error, command: payload });
       throw error;

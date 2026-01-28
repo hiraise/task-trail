@@ -1,5 +1,5 @@
 import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
-import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
+import { mapProjectToResponse } from "@/application/dto/ProjectResponseDto";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
@@ -25,7 +25,7 @@ const createGetProjectUseCase =
         name: project.name,
       });
 
-      return ProjectResponseMapper.fromDomain(project);
+      return mapProjectToResponse(project);
     } catch (error) {
       clientLogger.error("GetProjectUseCase: failed", { error, projectId });
       throw error;

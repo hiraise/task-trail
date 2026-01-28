@@ -1,5 +1,5 @@
 import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
-import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
+import { mapProjectToResponse } from "@/application/dto/ProjectResponseDto";
 import type { EditProjectPayload } from "@/application/payloads";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
@@ -36,7 +36,7 @@ const createEditProjectUseCase =
         projectId: updatedProject.id.value,
       });
 
-      return ProjectResponseMapper.fromDomain(updatedProject);
+      return mapProjectToResponse(updatedProject);
     } catch (error) {
       clientLogger.error("EditProjectUseCase: failed", { error, command: payload });
       throw error;

@@ -1,5 +1,5 @@
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
+import { mapTaskToResponse } from "@/application/dto/TaskResponseDto";
 import type { EditTaskPayload } from "@/application/payloads";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { TaskId } from "@/domain/valueobjects/TaskId";
@@ -28,7 +28,7 @@ const createEditTaskUseCase =
 
       clientLogger.info("Task updated successfully", { taskID: updatedTask.id.value });
 
-      return TaskResponseMapper.fromDomain(updatedTask);
+      return mapTaskToResponse(updatedTask);
     } catch (error) {
       clientLogger.error("EditTaskUseCase: failed", { error, command: payload });
       throw error;

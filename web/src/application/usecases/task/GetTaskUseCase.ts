@@ -1,5 +1,5 @@
 import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
+import { mapTaskToResponse } from "@/application/dto/TaskResponseDto";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { TaskId } from "@/domain/valueobjects/TaskId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
@@ -25,7 +25,7 @@ const createGetTaskUseCase =
         name: task.title,
       });
 
-      return TaskResponseMapper.fromDomain(task);
+      return mapTaskToResponse(task);
     } catch (error) {
       clientLogger.error("GetTaskUseCase: failed", { error, taskId });
       throw error;

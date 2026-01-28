@@ -1,8 +1,8 @@
 import type { ProjectDetailResponseDto } from "@/application/dto/ProjectDetailResponseDto";
 import { mapProjectMembersToResponse } from "@/application/dto/ProjectMemberResponseDto";
-import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
-import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
-import { UserResponseMapper } from "@/application/dto/UserResponseDto";
+import { mapProjectToResponse } from "@/application/dto/ProjectResponseDto";
+import { mapTasksToResponse } from "@/application/dto/TaskResponseDto";
+import { mapProjectMemberToResponse } from "@/application/dto/UserResponseDto";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
@@ -39,10 +39,10 @@ const createGetProjectDetailUseCase =
       }
 
       const response: ProjectDetailResponseDto = {
-        project: ProjectResponseMapper.fromDomain(project),
+        project: mapProjectToResponse(project),
         members: mapProjectMembersToResponse(members),
-        owner: UserResponseMapper.fromProjectMember(ownerMember),
-        tasks: TaskResponseMapper.fromDomainList(tasks),
+        owner: mapProjectMemberToResponse(ownerMember),
+        tasks: mapTasksToResponse(tasks),
       };
 
       clientLogger.info("Project detail fetched successfully", {
