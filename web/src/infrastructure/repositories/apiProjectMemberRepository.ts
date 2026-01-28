@@ -10,6 +10,8 @@ import type { AddMembersPayload, ProjectMemberDTO } from "../http/dto/ProjectMem
 import type { HttpClient } from "../http/HttpClient";
 import { ProjectMemberMapper } from "../http/mappers/ProjectMemberMapper";
 
+type ApiProjectMemberRepository = ProjectMemberRepository;
+
 /**
  * Handles errors by checking if the provided error is already an instance of `AppError`.
  * If it is, returns the error as is. Otherwise, creates and returns a new `AppError`
@@ -24,7 +26,7 @@ const handleError = (message: string, error: unknown): AppError => {
   return new AppError(AppErrorType.SERVER, message);
 };
 
-export const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRepository => ({
+const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRepository => ({
   /**
    * Retrieves a project member by their unique identifier.
    *
@@ -143,3 +145,5 @@ export const createProjectMemberRepository = (httpClient: HttpClient): ProjectMe
     }
   },
 });
+
+export { createProjectMemberRepository, type ApiProjectMemberRepository };

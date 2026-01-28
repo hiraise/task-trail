@@ -12,6 +12,8 @@ import type { HttpClient } from "../http/HttpClient";
 import { ProjectMapper } from "../http/mappers/ProjectMapper";
 import { TaskStatusMapper } from "../http/mappers/TaskStatusMapper";
 
+type ApiProjectRepository = ProjectRepository;
+
 /**
  * Handles errors by checking if the provided error is already an instance of `AppError`.
  * If it is, returns the error as is. Otherwise, creates and returns a new `AppError`
@@ -26,7 +28,7 @@ const handleError = (message: string, error: unknown): AppError => {
   return new AppError(AppErrorType.SERVER, message);
 };
 
-export const createProjectRepository = (httpClient: HttpClient): ProjectRepository => ({
+const createProjectRepository = (httpClient: HttpClient): ProjectRepository => ({
   /**
    * Retrieves a project by its unique identifier.
    *
@@ -160,3 +162,5 @@ export const createProjectRepository = (httpClient: HttpClient): ProjectReposito
     }
   },
 });
+
+export { createProjectRepository, type ApiProjectRepository };

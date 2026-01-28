@@ -11,12 +11,14 @@ import type { TaskDTO } from "../http/dto/TaskDTO";
 import type { HttpClient } from "../http/HttpClient";
 import { TaskMapper } from "../http/mappers/TaskMapper";
 
+type ApiTaskRepository = TaskRepository;
+
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
   return new AppError(AppErrorType.SERVER, message);
 };
 
-export const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
+const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
   /**
    * Changes the assignee of the specified task to the given user.
    *
@@ -211,3 +213,5 @@ export const createTaskRepository = (httpClient: HttpClient): TaskRepository => 
     }
   },
 });
+
+export { createTaskRepository, type ApiTaskRepository };

@@ -6,13 +6,15 @@ import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
 import type { HttpClient } from "../http/HttpClient";
 
+type ApiAuthRepository = AuthRepository;
+
 //TODO: add propper error handler
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
   return new AppError(AppErrorType.SERVER, message);
 };
 
-export const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
+const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
   /**
    * Attempts to log in a user with the provided email and password.
    *
@@ -176,3 +178,5 @@ export const createAuthRepository = (httpClient: HttpClient): AuthRepository => 
     }
   },
 });
+
+export { createAuthRepository, type ApiAuthRepository };

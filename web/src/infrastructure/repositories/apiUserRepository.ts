@@ -10,6 +10,8 @@ import type { UserDTO } from "../http/dto/UserDTO";
 import type { HttpClient } from "../http/HttpClient";
 import { UserMapper } from "../http/mappers/UserMapper";
 
+type ApiUserRepository = UserRepository;
+
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
   return new AppError(AppErrorType.SERVER, message);
@@ -35,7 +37,7 @@ const extractAvatarUrl = (responseData: unknown): string | null => {
   return null;
 };
 
-export const createUserRepository = (httpClient: HttpClient): UserRepository => ({
+const createUserRepository = (httpClient: HttpClient): UserRepository => ({
   /**
    * Retrieves the current authenticated user from the API.
    *
@@ -146,3 +148,5 @@ export const createUserRepository = (httpClient: HttpClient): UserRepository => 
     }
   },
 });
+
+export { createUserRepository, type ApiUserRepository };
