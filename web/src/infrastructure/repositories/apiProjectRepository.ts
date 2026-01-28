@@ -6,10 +6,14 @@ import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
-import type { CreateProjectPayload, ProjectDTO } from "../http/dto/ProjectDTO";
+import type {
+  CreateProjectPayload,
+  ProjectDTO,
+  UpdateProjectPayload,
+} from "../http/dto/ProjectDTO";
 import type { TaskStatusDTO } from "../http/dto/TaskDTO";
 import type { HttpClient } from "../http/HttpClient";
-import { ProjectMapper } from "../http/mappers/ProjectMapper";
+import { mapApiProjectsToDomain, mapApiProjectToDomain } from "../http/mappers/project.mapper";
 import { TaskStatusMapper } from "../http/mappers/TaskStatusMapper";
 
 type ApiProjectRepository = ProjectRepository;
@@ -28,6 +32,25 @@ const handleError = (message: string, error: unknown): AppError => {
   return new AppError(AppErrorType.SERVER, message);
 };
 
+const createCreateProjectPayload = (
+  name: string,
+  description?: string,
+  participants?: string[],
+): CreateProjectPayload => {
+  return {
+    name,
+    description,
+    participants,
+  };
+};
+
+const createUpdatePayload = (name?: string, description?: string): UpdateProjectPayload => {
+  return {
+    name,
+    description,
+  };
+};
+
 const createProjectRepository = (httpClient: HttpClient): ProjectRepository => ({
   /**
    * Retrieves a project by its unique identifier.
@@ -39,7 +62,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
   findById: async (id: ProjectId): Promise<Project> => {
     try {
       const dto = await httpClient.get<ProjectDTO>(API_ROUTES.PROJECT_BY_ID(Number(id.value)));
-      return ProjectMapper.toDomain(dto);
+      return mapApiProjectToDomain(dto);
     } catch (error) {
       clientLogger.error("Get project by ID error", { error, id: id.value });
       throw handleError("Failed to get project by ID", error);
@@ -63,7 +86,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
         throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
       }
 
-      return ProjectMapper.toDomainList(dtos);
+      return mapApiProjectsToDomain(dtos);
     } catch (error) {
       clientLogger.error("Get projects error", { error });
       throw handleError("Failed to get projects", error);
@@ -79,7 +102,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
    */
   create: async (data: CreateProjectPayload): Promise<ProjectId> => {
     try {
-      const payload = ProjectMapper.toCreatePayload(data.name, data.description, data.participants);
+      const payload = createCreateProjectPayload(data.name, data.description, data.participants);
 
       const responseDto = await httpClient.post<{ id: number }>(API_ROUTES.PROJECTS, payload);
 
@@ -99,7 +122,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
    */
   update: async (project: Project): Promise<Project> => {
     try {
-      const payload = ProjectMapper.toUpdatePayload(project.name, project.description);
+      const payload = createUpdatePayload(project.name, project.description);
 
       const responseDto = await httpClient.patch<ProjectDTO>(
         API_ROUTES.PROJECT_BY_ID(Number(project.id)),
@@ -107,7 +130,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
       );
 
       if (responseDto) {
-        return ProjectMapper.toDomain(responseDto);
+        return mapApiProjectToDomain(responseDto);
       }
 
       return project;
