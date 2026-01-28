@@ -16,11 +16,11 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useGetCurrentUser(): UseQueryResult<UserResponseDto | null, Error> {
   const { isAuthenticated, authInitializing } = useCheckAuthStatus();
-  const { getCurrentUser } = appContainer.getUsecases().user;
+  const { getCurrentUser } = appContainer.usecases.user;
 
   return useQuery({
     queryKey: QUERY_KEYS.currentUser,
-    queryFn: () => getCurrentUser.execute(),
+    queryFn: () => getCurrentUser(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,

@@ -9,10 +9,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 export function useUploadAvatar(): UseMutationResult<string | null, Error, UploadAvatarPayload> {
   const queryClient = useQueryClient();
-  const { uploadAvatar } = appContainer.getUsecases().user;
+  const { uploadAvatar } = appContainer.usecases.user;
 
   return useMutation({
-    mutationFn: (payload) => uploadAvatar.execute(payload),
+    mutationFn: (payload) => uploadAvatar(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUser });
       toast.success("Avatar updated successfully!");

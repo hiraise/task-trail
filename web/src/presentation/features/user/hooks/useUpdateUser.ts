@@ -10,10 +10,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 export function useUpdateUser(): UseMutationResult<UserResponseDto, Error, UpdateUserPayload> {
   const queryClient = useQueryClient();
-  const { updateUser } = appContainer.getUsecases().user;
+  const { updateUser } = appContainer.usecases.user;
 
   return useMutation({
-    mutationFn: (payload) => updateUser.execute(payload),
+    mutationFn: (payload) => updateUser(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUser });
       toast.success("User updated successfully");
