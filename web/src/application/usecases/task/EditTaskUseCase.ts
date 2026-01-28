@@ -6,15 +6,16 @@ import { TaskId } from "@/domain/valueobjects/TaskId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-export class EditTaskUseCase {
-  constructor(private taskRepository: TaskRepository) {}
+type EditTaskUseCase = (payload: EditTaskPayload) => Promise<TaskResponseDto>;
 
-  async execute(payload: EditTaskPayload): Promise<TaskResponseDto> {
+const createEditTaskUseCase =
+  (taskRepository: TaskRepository): EditTaskUseCase =>
+  async (payload) => {
     try {
       clientLogger.info("Editing task", { taskId: payload.taskId });
 
       const taskId = TaskId.create(payload.taskId);
-      const task = await this.taskRepository.findById(taskId);
+      const task = await taskRepository.findById(taskId);
 
       if (!taskId) {
         throw new AppError(AppErrorType.NOT_FOUND, `Task not found: ${taskId}`);
@@ -23,7 +24,7 @@ export class EditTaskUseCase {
       // TODO: Add check rights to edit task
 
       // Saving
-      const updatedTask = await this.taskRepository.update(task);
+      const updatedTask = await taskRepository.update(task);
 
       clientLogger.info("Task updated successfully", { taskID: updatedTask.id.value });
 
@@ -32,5 +33,6 @@ export class EditTaskUseCase {
       clientLogger.error("EditTaskUseCase: failed", { error, command: payload });
       throw error;
     }
-  }
-}
+  };
+
+export { createEditTaskUseCase, type EditTaskUseCase };

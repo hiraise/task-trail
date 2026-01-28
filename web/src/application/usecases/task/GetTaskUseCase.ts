@@ -1,18 +1,19 @@
-import type { TaskResponseDto} from "@/application/dto/TaskResponseDto";
+import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
 import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { TaskId } from "@/domain/valueobjects/TaskId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class GetTaskUseCase {
-  constructor(private taskRepository: TaskRepository) {}
+type GetTaskUseCase = (taskId: string | number) => Promise<TaskResponseDto | null>;
 
-  async execute(taskId: string | number): Promise<TaskResponseDto | null> {
+const createGetTaskUseCase =
+  (taskRepository: TaskRepository): GetTaskUseCase =>
+  async (taskId) => {
     try {
       clientLogger.info("GetTaskUseCase: fetching task", { taskId });
 
       const id = TaskId.create(taskId);
-      const task = await this.taskRepository.findById(id);
+      const task = await taskRepository.findById(id);
 
       if (!task) {
         clientLogger.warn("GetTaskUseCase: task not found", { taskId });
@@ -29,5 +30,6 @@ export class GetTaskUseCase {
       clientLogger.error("GetTaskUseCase: failed", { error, taskId });
       throw error;
     }
-  }
-}
+  };
+
+export { createGetTaskUseCase, type GetTaskUseCase };

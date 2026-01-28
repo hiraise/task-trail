@@ -3,15 +3,16 @@ import { TaskId } from "@/domain/valueobjects/TaskId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-export class DeleteTaskUseCase {
-  constructor(private taskRepository: TaskRepository) {}
+type DeleteTaskUseCase = (taskId: string | number) => Promise<void>;
 
-  async execute(taskId: string | number): Promise<void> {
+const createDeleteTaskUseCase =
+  (taskRepository: TaskRepository): DeleteTaskUseCase =>
+  async (taskId) => {
     try {
       clientLogger.info("DeleteTaskUseCase: deleting task", { taskId });
 
       const id = TaskId.create(taskId);
-      const task = await this.taskRepository.findById(id);
+      const task = await taskRepository.findById(id);
 
       if (!task) {
         throw new AppError(AppErrorType.NOT_FOUND, `Task not found: ${id}`);
@@ -19,12 +20,13 @@ export class DeleteTaskUseCase {
 
       // TODO: add check rights to delete task
 
-      await this.taskRepository.delete(id);
+      await taskRepository.delete(id);
 
       clientLogger.info("DeleteTaskUseCase: task deleted successfully", { taskId });
     } catch (error) {
       clientLogger.error("DeleteTaskUseCase: failed", { error, taskId });
       throw error;
     }
-  }
-}
+  };
+
+export { createDeleteTaskUseCase, type DeleteTaskUseCase };

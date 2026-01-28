@@ -8,17 +8,18 @@ import { UserId } from "@/domain/valueobjects/UserId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-export class ChangeAssigneeUseCase {
-  constructor(private taskRepository: TaskRepository, private userRepository: UserRepository) {}
+type ChangeAssigneeUseCase = (payload: ChangeAssigneePayload) => Promise<TaskResponseDto>;
 
-  async execute(payload: ChangeAssigneePayload): Promise<TaskResponseDto> {
+const createChangeAssigneeUseCase =
+  (taskRepository: TaskRepository, userRepository: UserRepository): ChangeAssigneeUseCase =>
+  async (payload) => {
     try {
       clientLogger.info("ChangeAssigneeUseCase: Changing assignee for task", {
         taskId: payload.taskId,
       });
 
       const taskId = TaskId.create(payload.taskId);
-      const task = await this.taskRepository.findById(taskId);
+      const task = await taskRepository.findById(taskId);
 
       if (!taskId) {
         throw new AppError(AppErrorType.NOT_FOUND, `Task not found: ${taskId}`);
@@ -30,7 +31,7 @@ export class ChangeAssigneeUseCase {
       // TODO: Add check user existance
 
       // Saving
-      const updatedTask = await this.taskRepository.changeAssignee(task, assigneeId);
+      const updatedTask = await taskRepository.changeAssignee(task, assigneeId);
 
       clientLogger.info("ChangeAssigneeUseCase: Assignee changed successfully", {
         taskID: updatedTask.id.value,
@@ -42,5 +43,6 @@ export class ChangeAssigneeUseCase {
       clientLogger.error("ChangeAssigneeUseCase: failed", { error, command: payload });
       throw error;
     }
-  }
-}
+  };
+
+export { createChangeAssigneeUseCase, type ChangeAssigneeUseCase };

@@ -10,28 +10,29 @@ import { TaskId } from "@/domain/valueobjects/TaskId";
 import { UserId } from "@/domain/valueobjects/UserId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class GetTaskDetailUseCase {
-  constructor(
-    private taskRepository: TaskRepository,
-    private userRepository: UserRepository,
-    private projectRepository: ProjectRepository,
-  ) {}
+type GetTaskDetailUseCase = (taskId: string | number) => Promise<TaskDetailResponseDto>;
 
-  async execute(taskId: string | number): Promise<TaskDetailResponseDto> {
+const createGetTaskDetailUseCase =
+  (
+    taskRepository: TaskRepository,
+    userRepository: UserRepository,
+    projectRepository: ProjectRepository,
+  ): GetTaskDetailUseCase =>
+  async (taskId) => {
     try {
       clientLogger.info("GetTaskDetailUseCase: Fetching task details", { taskId });
 
       const id = TaskId.create(taskId);
-      const task = await this.taskRepository.findById(id);
+      const task = await taskRepository.findById(id);
 
       if (!task) throw new Error(`Task with id ${taskId} not found`);
 
       const assigneeId = UserId.create(task.assigneeId ?? -1);
 
       const [project, assignee, statuses] = await Promise.all([
-        this.projectRepository.findById(task.projectId),
-        task.assigneeId ? this.userRepository.findById(assigneeId) : null,
-        this.projectRepository.getProjectStatuses(task.projectId),
+        projectRepository.findById(task.projectId),
+        task.assigneeId ? userRepository.findById(assigneeId) : null,
+        projectRepository.getProjectStatuses(task.projectId),
       ]);
 
       const status = statuses.find((status) => status.id === task.statusId);
@@ -54,5 +55,6 @@ export class GetTaskDetailUseCase {
       clientLogger.error("GetTaskDetailUseCase: failed", { error, taskId });
       throw error;
     }
-  }
-}
+  };
+
+export { createGetTaskDetailUseCase, type GetTaskDetailUseCase };

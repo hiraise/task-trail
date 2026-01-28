@@ -1,16 +1,17 @@
-import type { TaskResponseDto} from "@/application/dto/TaskResponseDto";
+import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
 import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class GetCurrentUserTasksUseCase {
-  constructor(private taskRepository: TaskRepository) {}
+type GetCurrentUserTasksUseCase = () => Promise<TaskResponseDto[]>;
 
-  async execute(): Promise<TaskResponseDto[]> {
+const createGetCurrentUserTasksUseCase =
+  (taskRepository: TaskRepository): GetCurrentUserTasksUseCase =>
+  async () => {
     try {
       clientLogger.info("GetCurrentUserTasksUseCase: fetching tasks");
 
-      const tasks = await this.taskRepository.findAll();
+      const tasks = await taskRepository.findAll();
 
       if (tasks.length === 0) {
         clientLogger.warn("GetCurrentUserTasksUseCase: current user has no tasks");
@@ -26,5 +27,6 @@ export class GetCurrentUserTasksUseCase {
       clientLogger.error("GetCurrentUserTasksUseCase: failed", { error });
       throw error;
     }
-  }
-}
+  };
+
+export { createGetCurrentUserTasksUseCase, type GetCurrentUserTasksUseCase };

@@ -4,17 +4,18 @@ import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { ProjectMemberId } from "@/domain/valueobjects/ProjectMemberId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class SelectProjectForTaskUseCase {
-  constructor(private projectMemberRepository: ProjectMemberRepository) {}
+type SelectProjectForTaskUseCase = (
+  draft: TaskCreationDraft,
+  projectId: string | number,
+  currentAssigneeId: string | number | null,
+) => Promise<{ success: boolean; assigneeCleared: boolean }>;
 
-  async execute(
-    draft: TaskCreationDraft,
-    projectId: string | number,
-    currentAssigneeId: string | number | null
-  ): Promise<{ success: boolean; assigneeCleared: boolean }> {
+const createSelectProjectForTaskUseCase =
+  (projectMemberRepository: ProjectMemberRepository): SelectProjectForTaskUseCase =>
+  async (draft, projectId, currentAssigneeId) => {
     try {
       const id = ProjectId.create(projectId);
-      const projectMembers = await this.projectMemberRepository.findByProjectId(id);
+      const projectMembers = await projectMemberRepository.findByProjectId(id);
 
       let assigneeCleared = false;
 
@@ -36,5 +37,6 @@ export class SelectProjectForTaskUseCase {
       clientLogger.error("SelectProjectForTaskUseCase failed:", { errorMessage });
       return { success: false, assigneeCleared: false };
     }
-  }
-}
+  };
+
+export { createSelectProjectForTaskUseCase, type SelectProjectForTaskUseCase };
