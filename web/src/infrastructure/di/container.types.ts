@@ -6,6 +6,11 @@ import type * as userUC from "@/application/usecases/user";
 import type { HttpClient } from "@/infrastructure/http/HttpClient";
 import type * as repo from "@/infrastructure/repositories/";
 
+export interface DIContainer {
+  repositories: RepositoriesContainer;
+  usecases: UseCasesContainer;
+}
+
 export interface RepositoriesContainer {
   project: repo.ApiProjectRepository;
   projectMember: repo.ApiProjectMemberRepository;
