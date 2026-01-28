@@ -2,18 +2,20 @@ import type { ChangePasswordPayload } from "@/application/payloads";
 import type { AuthRepository } from "@/domain/repositories/AuthRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class ChangePasswordUseCase {
-  constructor(private authRepository: AuthRepository) {}
+type ChangePasswordUseCase = (payload: ChangePasswordPayload) => Promise<void>;
 
-  async execute(payload: ChangePasswordPayload): Promise<void> {
+const createChangePasswordUseCase =
+  (authRepository: AuthRepository): ChangePasswordUseCase =>
+  async (payload) => {
     try {
       clientLogger.info("ChangePasswordUseCase: executing");
 
-      await this.authRepository.changePassword(payload.oldPassword, payload.newPassword);
+      await authRepository.changePassword(payload.oldPassword, payload.newPassword);
       clientLogger.info("Password changed successfully");
     } catch (error) {
       clientLogger.error("ChangePasswordUseCase: failed", { error, payload });
       throw error;
     }
-  }
-}
+  };
+
+export { createChangePasswordUseCase, type ChangePasswordUseCase };

@@ -3,15 +3,16 @@ import type { AuthRepository } from "@/domain/repositories/AuthRepository";
 import { Email } from "@/domain/valueobjects/Email";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class LoginUseCase {
-  constructor(private authRepository: AuthRepository) {}
+type LoginUseCase = (payload: AuthPayload) => Promise<void>;
 
-  async execute(payload: AuthPayload): Promise<void> {
+const createLoginUseCase =
+  (authRepository: AuthRepository): LoginUseCase =>
+  async (payload) => {
     try {
       clientLogger.info("LoginUseCase: executing", { email: payload.email });
 
       const email = Email.create(payload.email);
-      await this.authRepository.login(email, payload.password);
+      await authRepository.login(email, payload.password);
 
       clientLogger.info("LoginUseCase: completed successfully", {
         email: payload.email,
@@ -23,5 +24,6 @@ export class LoginUseCase {
       });
       throw error;
     }
-  }
-}
+  };
+
+export { createLoginUseCase, type LoginUseCase };

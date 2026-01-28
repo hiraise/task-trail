@@ -1,23 +1,19 @@
 import type { AuthStatusDto } from "@/application/dto/AuthStatusDto";
-import { GetCurrentUserUseCase } from "@/application/usecases/user/GetCurrentUserUseCase";
 import type { AuthRepository } from "@/domain/repositories/AuthRepository";
-import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class CheckAuthStatusUseCase {
-  private readonly getCurrentUserUseCase: GetCurrentUserUseCase;
+import type { GetCurrentUserUseCase } from "../user";
 
-  constructor(private readonly authRepository: AuthRepository, userRepository: UserRepository) {
-    this.getCurrentUserUseCase = new GetCurrentUserUseCase(userRepository);
-  }
+type CheckAuthStatusUseCase = () => Promise<AuthStatusDto>;
 
-  async execute(): Promise<AuthStatusDto> {
+const createCheckAuthStatusUseCase =
+  (authRepository: AuthRepository, getCurrentUserUseCase: GetCurrentUserUseCase) => async () => {
     try {
       clientLogger.info("CheckAuthStatusUseCase: execution");
-      await this.authRepository.checkAuthStatus();
+      await authRepository.checkAuthStatus();
 
       // Get current user information
-      const currentUser = await this.getCurrentUserUseCase.execute();
+      const currentUser = await getCurrentUserUseCase();
       clientLogger.info("CheckAuthStatusUseCase: completed successfully");
 
       return {
@@ -31,5 +27,6 @@ export class CheckAuthStatusUseCase {
         user: null,
       };
     }
-  }
-}
+  };
+
+export { createCheckAuthStatusUseCase, type CheckAuthStatusUseCase };
