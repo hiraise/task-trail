@@ -34,10 +34,10 @@ export function useLogin(): UseMutationResult<void, Error, AuthPayload> {
   const from = searchParams.get("from") || ROUTES.projects;
 
   const queryClient = useQueryClient();
-  const { login } = appContainer.getUsecases().auth;
+  const { login } = appContainer.usecases.auth;
 
   return useMutation({
-    mutationFn: (payload) => login.execute(payload),
+    mutationFn: (payload) => login(payload),
     onSuccess: () => {
       toast.success(successTexts.loginSuccess);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth });

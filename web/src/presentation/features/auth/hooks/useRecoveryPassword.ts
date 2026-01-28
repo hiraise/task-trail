@@ -21,10 +21,10 @@ import { ROUTES } from "@/shared/config/routes";
  */
 export function useRecoveryPassword(): UseMutationResult<string, Error, EmailPayload> {
   const router = useRouter();
-  const { recoveryPassword } = appContainer.getUsecases().auth;
+  const { recoveryPassword } = appContainer.usecases.auth;
 
   return useMutation({
-    mutationFn: (email) => recoveryPassword.execute(email),
+    mutationFn: (email) => recoveryPassword(email),
     onSuccess: (email) => router.push(ROUTES.passwordRecoveryConfirm(email)),
     onError: (error) => {
       clientLogger.error("Password recovery error", { error });

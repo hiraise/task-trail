@@ -14,11 +14,11 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * - `authInitializing`: A boolean indicating if the authentication status is currently being loaded.
  */
 export const useCheckAuthStatus = () => {
-  const { checkAuthStatus } = appContainer.getUsecases().auth;
+  const { checkAuthStatus } = appContainer.usecases.auth;
 
   const query = useQuery({
     queryKey: QUERY_KEYS.auth,
-    queryFn: () => checkAuthStatus.execute(),
+    queryFn: () => checkAuthStatus(),
     retry: false,
     refetchOnWindowFocus: false,
   });

@@ -24,10 +24,10 @@ import { errorTexts, successTexts } from "@/shared/locales/messages";
  */
 export function useSignUp(): UseMutationResult<void, Error, AuthPayload> {
   const router = useRouter();
-  const { signUp } = appContainer.getUsecases().auth;
+  const { signUp } = appContainer.usecases.auth;
 
   return useMutation({
-    mutationFn: (payload) => signUp.execute(payload),
+    mutationFn: (payload) => signUp(payload),
     onSuccess: (_, payload) => {
       toast.success(successTexts.signUpSuccessCheckEmail);
       router.push(ROUTES.signUpConfirm(payload.email));

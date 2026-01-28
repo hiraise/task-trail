@@ -23,10 +23,10 @@ import { ROUTES } from "@/shared/config/routes";
  */
 export function useResetPassword(): UseMutationResult<void, Error, ResetPasswordPayload> {
   const router = useRouter();
-  const { resetPassword } = appContainer.getUsecases().auth;
+  const { resetPassword } = appContainer.usecases.auth;
 
   return useMutation({
-    mutationFn: (payload) => resetPassword.execute(payload),
+    mutationFn: (payload) => resetPassword(payload),
     onSuccess: () => {
       toast.success("Пароль успешно изменен");
       router.replace(ROUTES.login);

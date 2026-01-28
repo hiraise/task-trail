@@ -20,10 +20,10 @@ import { appContainer } from "@/infrastructure/di/container";
  */
 export function useChangePassword(): UseMutationResult<void, Error, ChangePasswordPayload> {
   const router = useRouter();
-  const { changePassword } = appContainer.getUsecases().auth;
+  const { changePassword } = appContainer.usecases.auth;
 
   return useMutation({
-    mutationFn: (payload) => changePassword.execute(payload),
+    mutationFn: (payload) => changePassword(payload),
     onSuccess: () => {
       router.back();
       toast.success("Пароль успешно изменен");

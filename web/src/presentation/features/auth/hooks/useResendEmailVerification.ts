@@ -22,10 +22,10 @@ import { ROUTES } from "@/shared/config/routes";
  */
 export function useResendEmailVerification(): UseMutationResult<string, Error, EmailPayload> {
   const router = useRouter();
-  const { resendEmailVerification } = appContainer.getUsecases().auth;
+  const { resendEmailVerification } = appContainer.usecases.auth;
 
   return useMutation({
-    mutationFn: (payload) => resendEmailVerification.execute(payload),
+    mutationFn: (payload) => resendEmailVerification(payload),
     onSuccess: (email) => router.push(ROUTES.signUpConfirm(email)),
     onError: (error) => {
       clientLogger.error("Failed to resend verification", { error });

@@ -22,10 +22,10 @@ import { ROUTES } from "@/shared/config/routes";
  */
 export function useVerifyEmail(): UseMutationResult<void, Error, VerifyEmailPayload> {
   const router = useRouter();
-  const { verifyEmail } = appContainer.getUsecases().auth;
+  const { verifyEmail } = appContainer.usecases.auth;
 
   return useMutation({
-    mutationFn: (payload) => verifyEmail.execute(payload),
+    mutationFn: (payload) => verifyEmail(payload),
     onSuccess: () => {
       router.push(ROUTES.login);
       toast.success("Email успешно подтвержден. Теперь вы можете войти в систему");

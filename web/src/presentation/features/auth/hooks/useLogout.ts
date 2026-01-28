@@ -23,7 +23,7 @@ import { successTexts } from "@/shared/locales/messages";
 export function useLogout(): UseMutationResult<void, Error, void> {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { logout } = appContainer.getRepositories().auth;
+  const { logout } = appContainer.repositories.auth;
 
   return useMutation({
     mutationFn: () => logout(),
