@@ -8,7 +8,7 @@ import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
 import type { AddMembersPayload, ProjectMemberDTO } from "../http/dto/ProjectMemberDTO";
 import type { HttpClient } from "../http/HttpClient";
-import { ProjectMemberMapper } from "../http/mappers/ProjectMemberMapper";
+import { mapApiProjectMembersToDomain } from "../http/mappers/projectMember.mapper";
 
 type ApiProjectMemberRepository = ProjectMemberRepository;
 
@@ -67,7 +67,7 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
         throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
       }
 
-      return ProjectMemberMapper.toDomainList(dtos, projectId);
+      return mapApiProjectMembersToDomain(dtos, projectId);
     } catch (error) {
       clientLogger.error("Get project members error", {
         error,
