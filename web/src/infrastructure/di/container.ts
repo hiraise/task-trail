@@ -1,8 +1,4 @@
-import * as authUC from "@/application/usecases/auth/";
-import * as projectUC from "@/application/usecases/project/";
-import * as projectMemberUC from "@/application/usecases/projectMember";
-import * as taskUC from "@/application/usecases/task/";
-import * as userUC from "@/application/usecases/user";
+import * as uc from "@/application/usecases/";
 import type { HttpClient } from "@/infrastructure/http/HttpClient";
 import * as repo from "@/infrastructure/repositories/";
 
@@ -10,6 +6,7 @@ import { validateEnvironment } from "../config/environment";
 import axiosClient from "../http/axiosClient";
 
 import type {
+  DIContainer,
   DIContainerConfig,
   RepositoriesContainer,
   UseCasesContainer,
@@ -17,119 +14,88 @@ import type {
 
 validateEnvironment();
 
-export class DIContainer {
-  private readonly repositories: RepositoriesContainer;
-  private readonly usecases: UseCasesContainer;
-  private readonly http: { client: HttpClient };
+export const createAppContainer = (config?: DIContainerConfig): DIContainer => {
+  const httpClient: HttpClient = config?.httpClient ?? axiosClient;
 
-  constructor(config?: DIContainerConfig) {
-    const httpClient: HttpClient = config?.httpClient ?? axiosClient;
+  // === Repositories ===
+  const defaultRepositories = {
+    project: repo.createProjectRepository(httpClient),
+    projectMember: repo.createProjectMemberRepository(httpClient),
+    task: repo.createTaskRepository(httpClient),
+    user: repo.createUserRepository(httpClient),
+    auth: repo.createAuthRepository(httpClient),
+  };
 
-    // Initialize repositories
-    this.repositories = config?.repositories
-      ? { ...this.createDefaultRepositories(httpClient), ...config.repositories }
-      : this.createDefaultRepositories(httpClient);
+  const repositories: RepositoriesContainer = config?.repositories
+    ? { ...defaultRepositories, ...config.repositories }
+    : defaultRepositories;
 
-    // Initialize use cases
-    this.usecases = this.createUseCases();
+  // === Use Cases  ===
+  const getCurrentUser = uc.createGetCurrentUserUseCase(repositories.user);
 
-    // Configuration
-    this.http = { client: httpClient };
-  }
+  const usecases: UseCasesContainer = {
+    project: {
+      getProjects: uc.createGetProjectsUseCase(repositories.project),
+      getProject: uc.createGetProjectUseCase(repositories.project),
+      createProject: uc.createCreateProjectUseCase(repositories.project),
+      editProject: uc.createEditProjectUseCase(repositories.project),
+      deleteProject: uc.createDeleteProjectUseCase(repositories.project),
+      getProjectStatuses: uc.createGetProjectStatusesUseCase(repositories.project),
+      getCandidates: uc.createGetProjectCandidatesUseCase(repositories.user),
+      getProjectDetail: uc.createGetProjectDetailUseCase(
+        repositories.project,
+        repositories.projectMember,
+        repositories.task,
+      ),
+    },
+    projectMember: {
+      getProjectMembers: uc.createGetProjectMembersUseCase(repositories.projectMember),
+      leaveProject: uc.createLeaveProjectUseCase(repositories.projectMember),
+      removeMember: uc.createRemoveProjectMemberUseCase(
+        repositories.projectMember,
+        repositories.project,
+      ),
+      addMember: uc.createAddProjectMembersUseCase(
+        repositories.projectMember,
+        repositories.project,
+      ),
+    },
+    tasks: {
+      getProjectTasks: uc.createGetProjectTasksUseCase(repositories.task),
+      getCurrentUserTasks: uc.createGetCurrentUserTasksUseCase(repositories.task),
+      getTaskDetail: uc.createGetTaskDetailUseCase(
+        repositories.task,
+        repositories.user,
+        repositories.project,
+      ),
+      getTask: uc.createGetTaskUseCase(repositories.task),
+      createTask: uc.createCreateTaskUseCase(repositories.task),
+      selectProject: uc.createSelectProjectForTaskUseCase(repositories.projectMember),
+      editTask: uc.createEditTaskUseCase(repositories.task),
+      deleteTask: uc.createDeleteTaskUseCase(repositories.task),
+      changeAssignee: uc.createChangeAssigneeUseCase(repositories.task, repositories.user),
+      changeStatus: uc.createChangeStatusUseCase(repositories.task, repositories.project),
+    },
+    auth: {
+      login: uc.createLoginUseCase(repositories.auth),
+      signUp: uc.createSignUpUseCase(repositories.auth),
+      checkAuthStatus: uc.createCheckAuthStatusUseCase(repositories.auth, getCurrentUser),
+      changePassword: uc.createChangePasswordUseCase(repositories.auth),
+      recoveryPassword: uc.createRecoveryPasswordUseCase(repositories.auth),
+      resetPassword: uc.createResetPasswordUseCase(repositories.auth),
+      resendEmailVerification: uc.createResendEmailVerificationUseCase(repositories.auth),
+      verifyEmail: uc.createVerifyEmailUseCase(repositories.auth),
+    },
+    user: {
+      getCurrentUser: getCurrentUser,
+      uploadAvatar: uc.createUploadAvatarUseCase(repositories.user),
+      updateUser: uc.createUpdateUserUseCase(repositories.user),
+    },
+  };
+  return {
+    repositories,
+    usecases,
+  };
+};
 
-  private createDefaultRepositories(httpClient: HttpClient): RepositoriesContainer {
-    return {
-      project: new repo.ApiProjectRepository(httpClient),
-      projectMember: new repo.ApiProjectMemberRepository(httpClient),
-      task: new repo.ApiTaskRepository(httpClient),
-      user: new repo.ApiUserRepository(httpClient),
-      auth: repo.createAuthRepository(axiosClient),
-    };
-  }
-
-  private createUseCases(): UseCasesContainer {
-    const { project, projectMember, task, user, auth } = this.repositories;
-
-    return {
-      project: {
-        getProjects: new projectUC.GetProjectsUseCase(project),
-        getProject: new projectUC.GetProjectUseCase(project),
-        createProject: new projectUC.CreateProjectUseCase(project),
-        editProject: new projectUC.EditProjectUseCase(project),
-        deleteProject: new projectUC.DeleteProjectUseCase(project),
-        getProjectStatuses: new projectUC.GetProjectStatusesUseCase(project),
-        getCandidates: new projectUC.GetProjectCandidatesUseCase(user),
-        getProjectDetail: new projectUC.GetProjectDetailUseCase(project, projectMember, task),
-      },
-      projectMember: {
-        getProjectMembers: new projectMemberUC.GetProjectMembersUseCase(projectMember),
-        leaveProject: new projectMemberUC.LeaveProjectUseCase(projectMember),
-        removeMember: new projectMemberUC.RemoveProjectMemberUseCase(projectMember, project),
-        addMember: new projectMemberUC.AddProjectMembersUseCase(projectMember, project),
-      },
-      tasks: {
-        getProjectTasks: new taskUC.GetProjectTasksUseCase(task),
-        getCurrentUserTasks: new taskUC.GetCurrentUserTasksUseCase(task),
-        getTaskDetail: new taskUC.GetTaskDetailUseCase(task, user, project),
-        getTask: new taskUC.GetTaskUseCase(task),
-        createTask: new taskUC.CreateTaskUseCase(task),
-        selectProject: new taskUC.SelectProjectForTaskUseCase(projectMember),
-        editTask: new taskUC.EditTaskUseCase(task),
-        deleteTask: new taskUC.DeleteTaskUseCase(task),
-        changeAssignee: new taskUC.ChangeAssigneeUseCase(task, user),
-        changeStatus: new taskUC.ChangeStatusUseCase(task, project),
-      },
-      auth: {
-        login: new authUC.LoginUseCase(auth),
-        signUp: new authUC.SignUpUseCase(auth),
-        checkAuthStatus: new authUC.CheckAuthStatusUseCase(auth, user),
-        changePassword: new authUC.ChangePasswordUseCase(auth),
-        recoveryPassword: new authUC.RecoveryPasswordUseCase(auth),
-        resetPassword: new authUC.ResetPasswordUseCase(auth),
-        resendEmailVerification: new authUC.ResendEmailVerificationUseCase(auth),
-        verifyEmail: new authUC.VerifyEmailUseCase(auth),
-      },
-      user: {
-        getCurrentUser: new userUC.GetCurrentUserUseCase(user),
-        uploadAvatar: new userUC.UploadAvatarUseCase(user),
-        updateUser: new userUC.UpdateUserUseCase(user),
-      },
-    };
-  }
-
-  getUsecases(): UseCasesContainer {
-    return this.usecases;
-  }
-
-  getRepositories(): RepositoriesContainer {
-    return this.repositories;
-  }
-
-  // getConfig() {
-  //   return this.config;
-  // }
-
-  // getHttp() {
-  //   return this.http;
-  // }
-
-  /**
-   * Factory method for creating container with default configuration
-   */
-  static create(config?: DIContainerConfig): DIContainer {
-    return new DIContainer(config);
-  }
-
-  /**
-   * Factory method for creating test container with mock overrides
-   */
-  static testing(overrides?: Partial<DIContainerConfig>): DIContainer {
-    return new DIContainer(overrides);
-  }
-}
-
-// ========================
-// Export
-// ========================
-
-export const appContainer = DIContainer.create();
+export const appContainer = createAppContainer();
