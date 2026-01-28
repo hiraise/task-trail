@@ -8,7 +8,7 @@ import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
 import type { UserDTO } from "../http/dto/UserDTO";
 import type { HttpClient } from "../http/HttpClient";
-import { UserMapper } from "../http/mappers/UserMapper";
+import { mapApiUsersToDomain, mapApiUserToDomain } from "../http/mappers/user.mapper";
 
 type ApiUserRepository = UserRepository;
 
@@ -48,7 +48,7 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
   getCurrentUser: async (): Promise<User | null> => {
     try {
       const dto = await httpClient.get<UserDTO>(API_ROUTES.CURRENT_USER);
-      return UserMapper.toDomain(dto);
+      return mapApiUserToDomain(dto);
     } catch (error) {
       clientLogger.error("Get current user error", { error: error });
       throw handleError("Failed to get current user", error);
@@ -99,7 +99,7 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
   updateUser: async (username?: string): Promise<User> => {
     try {
       const dto = await httpClient.patch<UserDTO>(API_ROUTES.CURRENT_USER, { username });
-      const updatedUser = UserMapper.toDomain(dto);
+      const updatedUser = mapApiUserToDomain(dto);
 
       clientLogger.info("Repository: user updated successfully", { userId: updatedUser.id.value });
       return updatedUser;
@@ -119,7 +119,7 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
   findById: async (id: UserId): Promise<User> => {
     try {
       const dto = await httpClient.get<UserDTO>(API_ROUTES.USER_BY_ID(Number(id.value)));
-      return UserMapper.toDomain(dto);
+      return mapApiUserToDomain(dto);
     } catch (error) {
       clientLogger.error("Get user by ID error", { error, id: id.value });
       throw handleError("Failed to get user by ID", error);
@@ -141,7 +141,7 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
       if (!Array.isArray(dtos)) {
         throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
       }
-      return UserMapper.toDomainList(dtos);
+      return mapApiUsersToDomain(dtos);
     } catch (error) {
       clientLogger.error("Get project candidates error", { error });
       throw new AppError(AppErrorType.SERVER, "Failed to get project candidates");
