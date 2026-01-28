@@ -18,13 +18,13 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * const { data, isLoading, error } = useProjectStatuses(123);
  */
 export function useProjectStatuses(
-  projectId: string | number
+  projectId: string | number,
 ): UseQueryResult<TaskStatusResponseDto[], Error> {
-  const { getProjectStatuses } = appContainer.getUsecases().project;
+  const { getProjectStatuses } = appContainer.usecases.project;
 
   return useQuery({
     queryKey: QUERY_KEYS.projectStatuses(Number(projectId)),
-    queryFn: () => getProjectStatuses.execute(projectId),
+    queryFn: () => getProjectStatuses(projectId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,

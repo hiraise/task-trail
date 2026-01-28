@@ -19,10 +19,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useAddMember(): UseMutationResult<void, Error, AddMembersPayload> {
   const queryClient = useQueryClient();
-  const { addMember } = appContainer.getUsecases().projectMember;
+  const { addMember } = appContainer.usecases.projectMember;
 
   return useMutation({
-    mutationFn: (payload) => addMember.execute(payload),
+    mutationFn: (payload) => addMember(payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.projectMembers(Number(variables.projectId)),

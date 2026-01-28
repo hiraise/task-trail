@@ -20,10 +20,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useRemoveMember(): UseMutationResult<void, Error, RemoveMemberPayload> {
   const queryClient = useQueryClient();
-  const { removeMember } = appContainer.getUsecases().projectMember;
+  const { removeMember } = appContainer.usecases.projectMember;
 
   return useMutation({
-    mutationFn: (payload) => removeMember.execute(payload),
+    mutationFn: (payload) => removeMember(payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.projectMembers(Number(variables.memberId)),

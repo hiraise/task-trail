@@ -30,10 +30,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 export function useLeaveProject(): UseMutationResult<ProjectId, Error, LeaveProjectPayload> {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { leaveProject } = appContainer.getUsecases().projectMember;
+  const { leaveProject } = appContainer.usecases.projectMember;
 
   return useMutation({
-    mutationFn: (payload) => leaveProject.execute(payload),
+    mutationFn: (payload) => leaveProject(payload),
     onSuccess: (_, result) => {
       queryClient.removeQueries({ queryKey: QUERY_KEYS.project(Number(result.projectId)) });
       queryClient.removeQueries({ queryKey: QUERY_KEYS.projectDetails(Number(result.projectId)) });

@@ -17,11 +17,11 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * const { data, isLoading, error } = useProjects();
  */
 export function useProjects(): UseQueryResult<ProjectResponseDto[], Error> {
-  const { getProjects } = appContainer.getUsecases().project;
+  const { getProjects } = appContainer.usecases.project;
 
   return useQuery({
     queryKey: QUERY_KEYS.projects,
-    queryFn: () => getProjects.execute(),
+    queryFn: () => getProjects(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,

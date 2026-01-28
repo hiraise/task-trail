@@ -25,10 +25,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useEditProject(): UseMutationResult<ProjectResponseDto, Error, EditProjectPayload> {
   const queryClient = useQueryClient();
-  const { editProject } = appContainer.getUsecases().project;
+  const { editProject } = appContainer.usecases.project;
 
   return useMutation({
-    mutationFn: (payload) => editProject.execute(payload),
+    mutationFn: (payload) => editProject(payload),
     onSuccess: (updatedProject) => {
       queryClient.setQueryData(QUERY_KEYS.project(Number(updatedProject.id)), updatedProject);
       queryClient.invalidateQueries({

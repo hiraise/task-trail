@@ -34,10 +34,10 @@ export function useCreateProject(): UseMutationResult<
 > {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { createProject } = appContainer.getUsecases().project;
+  const { createProject } = appContainer.usecases.project;
 
   return useMutation({
-    mutationFn: (payload) => createProject.execute(payload),
+    mutationFn: (payload) => createProject(payload),
     onSuccess: (newProject) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
       queryClient.setQueryData(QUERY_KEYS.project(Number(newProject.id)), newProject);

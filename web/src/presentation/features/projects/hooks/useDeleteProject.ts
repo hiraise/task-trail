@@ -22,10 +22,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 export function useDeleteProject(): UseMutationResult<void, Error, string | number> {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { deleteProject } = appContainer.getUsecases().project;
+  const { deleteProject } = appContainer.usecases.project;
 
   return useMutation({
-    mutationFn: (projectId: string | number) => deleteProject.execute(projectId),
+    mutationFn: (projectId: string | number) => deleteProject(projectId),
     onSuccess: (_, projectId) => {
       router.replace(ROUTES.projects);
       toast.success("Project deleted successfully");

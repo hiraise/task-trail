@@ -14,13 +14,13 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * @returns The result of the React Query, including project data, loading, and error states.
  */
 export function useProjectDetail(projectId: number | undefined) {
-  const { getProjectDetail } = appContainer.getUsecases().project;
+  const { getProjectDetail } = appContainer.usecases.project;
 
   return useQuery({
     queryKey: QUERY_KEYS.projectDetails(projectId || 0),
     queryFn: async () => {
       if (!projectId) throw new Error("Project ID is required");
-      return await getProjectDetail.execute(projectId);
+      return await getProjectDetail(projectId);
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

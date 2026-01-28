@@ -19,15 +19,15 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * - If `projectId` is not provided, the query returns `null`.
  */
 export function useProject(
-  projectId: string | number | null | undefined
+  projectId: string | number | null | undefined,
 ): UseQueryResult<ProjectResponseDto | null, Error> {
-  const { getProject } = appContainer.getUsecases().project;
+  const { getProject } = appContainer.usecases.project;
 
   return useQuery({
     queryKey: QUERY_KEYS.project(Number(projectId) || 0),
     queryFn: async () => {
       if (!projectId) return null;
-      return await getProject.execute(projectId);
+      return await getProject(projectId);
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

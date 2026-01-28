@@ -18,13 +18,13 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * const { data, isLoading, error } = useProjectMembers(123);
  */
 export function useProjectMembers(
-  projectId: string | number
+  projectId: string | number,
 ): UseQueryResult<ProjectMemberResponseDto[], Error> {
-  const { getProjectMembers } = appContainer.getUsecases().projectMember;
+  const { getProjectMembers } = appContainer.usecases.projectMember;
 
   return useQuery({
     queryKey: QUERY_KEYS.projectMembers(Number(projectId) || -1),
-    queryFn: () => getProjectMembers.execute(projectId),
+    queryFn: () => getProjectMembers(projectId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,
