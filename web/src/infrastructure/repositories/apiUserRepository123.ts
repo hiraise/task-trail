@@ -10,9 +10,32 @@ import type { UserDTO } from "../http/dto/UserDTO";
 import type { HttpClient } from "../http/HttpClient";
 import { UserMapper } from "../http/mappers/UserMapper";
 
-export class ApiUserRepository implements UserRepository {
-  constructor(private httpClient: HttpClient) {}
+const handleError = (message: string, error: unknown): AppError => {
+  if (error instanceof AppError) return error;
+  return new AppError(AppErrorType.SERVER, message);
+};
 
+/**
+ * Extracts avatar URL from API response
+ *
+ * @private
+ * @param responseData - Response data from API
+ * @returns {string | null} Avatar URL or null
+ */
+const extractAvatarUrl = (responseData: unknown): string | null => {
+  if (typeof responseData === "string") {
+    return responseData;
+  }
+
+  if (responseData && typeof responseData === "object") {
+    const data = responseData as Record<string, unknown>;
+    return (data.avatarUrl as string) || null;
+  }
+
+  return null;
+};
+
+export const createUserRepository = (httpClient: HttpClient): UserRepository => ({
   /**
    * Retrieves the current authenticated user from the API.
    *
@@ -20,15 +43,15 @@ export class ApiUserRepository implements UserRepository {
    * or `null` if no user is authenticated.
    * @throws Will log and rethrow an error if the request fails.
    */
-  async getCurrentUser(): Promise<User | null> {
+  getCurrentUser: async (): Promise<User | null> => {
     try {
-      const dto = await this.httpClient.get<UserDTO>(API_ROUTES.CURRENT_USER);
+      const dto = await httpClient.get<UserDTO>(API_ROUTES.CURRENT_USER);
       return UserMapper.toDomain(dto);
     } catch (error) {
       clientLogger.error("Get current user error", { error: error });
-      throw this.handleError("Failed to get current user", error);
+      throw handleError("Failed to get current user", error);
     }
-  }
+  },
 
   /**
    * Uploads a new avatar for the current user.
@@ -41,13 +64,13 @@ export class ApiUserRepository implements UserRepository {
    * @throws {AppError} If the HTTP request fails
    */
 
-  async uploadAvatar(data: FormData): Promise<string | null> {
+  uploadAvatar: async (data: FormData): Promise<string | null> => {
     try {
-      const response = await this.httpClient.patch(API_ROUTES.UPLOAD_AVATAR, data, {
+      const response = await httpClient.patch(API_ROUTES.UPLOAD_AVATAR, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const avatarUrl = this.extractAvatarUrl(response.data);
+      const avatarUrl = extractAvatarUrl(response.data);
 
       if (avatarUrl) {
         clientLogger.info("Repository: avatar uploaded successfully", { avatarUrl });
@@ -56,29 +79,9 @@ export class ApiUserRepository implements UserRepository {
       return avatarUrl;
     } catch (error) {
       clientLogger.error("Repository: upload avatar error", { error });
-      throw this.handleError("Failed to upload avatar", error);
+      throw handleError("Failed to upload avatar", error);
     }
-  }
-
-  /**
-   * Extracts avatar URL from API response
-   *
-   * @private
-   * @param responseData - Response data from API
-   * @returns {string | null} Avatar URL or null
-   */
-  private extractAvatarUrl(responseData: unknown): string | null {
-    if (typeof responseData === "string") {
-      return responseData;
-    }
-
-    if (responseData && typeof responseData === "object") {
-      const data = responseData as Record<string, unknown>;
-      return (data.avatarUrl as string) || null;
-    }
-
-    return null;
-  }
+  },
 
   /**
    * Updates the current user's information with the provided username.
@@ -91,18 +94,18 @@ export class ApiUserRepository implements UserRepository {
    * @returns A promise that resolves to the updated {@link User} object.
    * @throws Throws an error if the update operation fails.
    */
-  async updateUser(username?: string): Promise<User> {
+  updateUser: async (username?: string): Promise<User> => {
     try {
-      const dto = await this.httpClient.patch<UserDTO>(API_ROUTES.CURRENT_USER, { username });
+      const dto = await httpClient.patch<UserDTO>(API_ROUTES.CURRENT_USER, { username });
       const updatedUser = UserMapper.toDomain(dto);
 
       clientLogger.info("Repository: user updated successfully", { userId: updatedUser.id.value });
       return updatedUser;
     } catch (error) {
       clientLogger.error("Repository: update user error", { error });
-      throw this.handleError("Failed to update user", error);
+      throw handleError("Failed to update user", error);
     }
-  }
+  },
 
   /**
    * Retrieves a user by their unique identifier.
@@ -111,15 +114,15 @@ export class ApiUserRepository implements UserRepository {
    * @returns A promise that resolves to the corresponding {@link User} domain object.
    * @throws Will throw an error if the user cannot be retrieved.
    */
-  async findById(id: UserId): Promise<User> {
+  findById: async (id: UserId): Promise<User> => {
     try {
-      const dto = await this.httpClient.get<UserDTO>(API_ROUTES.USER_BY_ID(Number(id.value)));
+      const dto = await httpClient.get<UserDTO>(API_ROUTES.USER_BY_ID(Number(id.value)));
       return UserMapper.toDomain(dto);
     } catch (error) {
       clientLogger.error("Get user by ID error", { error, id: id.value });
-      throw this.handleError("Failed to get user by ID", error);
+      throw handleError("Failed to get user by ID", error);
     }
-  }
+  },
 
   /**
    * Retrieves a list of candidate users for a given project.
@@ -128,10 +131,10 @@ export class ApiUserRepository implements UserRepository {
    * @returns A promise that resolves to an array of `User` domain objects.
    * @throws {AppError} If the server response is invalid or the request fails.
    */
-  async findCandidatesForProject(projectId?: ProjectId): Promise<User[]> {
+  findCandidatesForProject: async (projectId?: ProjectId): Promise<User[]> => {
     try {
       const id = Number(projectId?.value);
-      const dtos = await this.httpClient.get<UserDTO[]>(API_ROUTES.GET_CANDIDATES(id));
+      const dtos = await httpClient.get<UserDTO[]>(API_ROUTES.GET_CANDIDATES(id));
 
       if (!Array.isArray(dtos)) {
         throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
@@ -141,10 +144,5 @@ export class ApiUserRepository implements UserRepository {
       clientLogger.error("Get project candidates error", { error });
       throw new AppError(AppErrorType.SERVER, "Failed to get project candidates");
     }
-  }
-
-  private handleError(message: string, error: unknown): AppError {
-    if (error instanceof AppError) return error;
-    return new AppError(AppErrorType.SERVER, message);
-  }
-}
+  },
+});
