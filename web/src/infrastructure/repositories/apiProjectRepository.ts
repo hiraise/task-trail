@@ -14,7 +14,7 @@ import type {
 import type { TaskStatusDTO } from "../http/dto/TaskDTO";
 import type { HttpClient } from "../http/HttpClient";
 import { mapApiProjectsToDomain, mapApiProjectToDomain } from "../http/mappers/project.mapper";
-import { TaskStatusMapper } from "../http/mappers/TaskStatusMapper";
+import { mapApiTaskStatusesToDomain } from "../http/mappers/taskStatus.mapper";
 
 type ApiProjectRepository = ProjectRepository;
 
@@ -178,7 +178,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
       if (!Array.isArray(dtos)) {
         throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
       }
-      return TaskStatusMapper.toDomainList(dtos);
+      return mapApiTaskStatusesToDomain(dtos);
     } catch (error) {
       clientLogger.error("Get project statuses error", { error });
       throw handleError("Failed to get project statuses", error);
