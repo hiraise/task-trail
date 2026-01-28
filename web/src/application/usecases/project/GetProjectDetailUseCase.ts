@@ -1,5 +1,5 @@
 import type { ProjectDetailResponseDto } from "@/application/dto/ProjectDetailResponseDto";
-import { ProjectMemberResponseMapper } from "@/application/dto/ProjectMemberResponseDto";
+import { mapProjectMembersToResponse } from "@/application/dto/ProjectMemberResponseDto";
 import { ProjectResponseMapper } from "@/application/dto/ProjectResponseDto";
 import { TaskResponseMapper } from "@/application/dto/TaskResponseDto";
 import { UserResponseMapper } from "@/application/dto/UserResponseDto";
@@ -40,7 +40,7 @@ const createGetProjectDetailUseCase =
 
       const response: ProjectDetailResponseDto = {
         project: ProjectResponseMapper.fromDomain(project),
-        members: ProjectMemberResponseMapper.fromDomainList(members),
+        members: mapProjectMembersToResponse(members),
         owner: UserResponseMapper.fromProjectMember(ownerMember),
         tasks: TaskResponseMapper.fromDomainList(tasks),
       };

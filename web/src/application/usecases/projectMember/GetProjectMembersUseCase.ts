@@ -1,5 +1,5 @@
 import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
-import { ProjectMemberResponseMapper } from "@/application/dto/ProjectMemberResponseDto";
+import { mapProjectMembersToResponse } from "@/application/dto/ProjectMemberResponseDto";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
@@ -22,7 +22,7 @@ const createGetProjectMembersUseCase =
         count: members.length,
       });
 
-      return ProjectMemberResponseMapper.fromDomainList(members);
+      return mapProjectMembersToResponse(members);
     } catch (error) {
       clientLogger.error("GetProjectMembersUseCase: failed", { error, projectId });
       throw error;
