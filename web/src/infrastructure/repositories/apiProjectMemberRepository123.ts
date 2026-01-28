@@ -10,17 +10,39 @@ import type { AddMembersPayload, ProjectMemberDTO } from "../http/dto/ProjectMem
 import type { HttpClient } from "../http/HttpClient";
 import { ProjectMemberMapper } from "../http/mappers/ProjectMemberMapper";
 
-export class ApiProjectMemberRepository implements ProjectMemberRepository {
-  constructor(private httpClient: HttpClient) {}
+/**
+ * Handles errors by checking if the provided error is already an instance of `AppError`.
+ * If it is, returns the error as is. Otherwise, creates and returns a new `AppError`
+ * with the specified message and a server error type.
+ *
+ * @param message - The error message to use if a new `AppError` is created.
+ * @param error - The error object to handle.
+ * @returns An instance of `AppError` representing the handled error.
+ */
+const handleError = (message: string, error: unknown): AppError => {
+  if (error instanceof AppError) return error;
+  return new AppError(AppErrorType.SERVER, message);
+};
 
-  async findById(id: ProjectMemberId): Promise<ProjectMember | null> {
+export const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRepository => ({
+  /**
+   * Retrieves a project member by their unique identifier.
+   *
+   * Sends a GET request to the API endpoint to fetch the project member with the specified ID.
+   * If the member is not found, returns null. Logs and handles errors that may occur during the request.
+   *
+   * @param id - The unique identifier of the project member to retrieve.
+   * @returns A promise that resolves to a {@link ProjectMember} object if found, or null if not found.
+   * @throws {AppError} If an error occurs during the request.
+   */
+  findById: async (id: ProjectMemberId): Promise<ProjectMember | null> => {
     try {
       return null;
     } catch (error) {
       clientLogger.error("Get project member error", { error, id: id.value });
-      throw this.handleError("Failed to get project member", error);
+      throw handleError("Failed to get project member", error);
     }
-  }
+  },
 
   /**
    * Retrieves the list of project members for a given project ID.
@@ -33,9 +55,9 @@ export class ApiProjectMemberRepository implements ProjectMemberRepository {
    * @returns A promise that resolves to an array of {@link ProjectMember} objects.
    * @throws {AppError} If the response format is invalid or if an error occurs during the request.
    */
-  async findByProjectId(projectId: ProjectId): Promise<ProjectMember[]> {
+  findByProjectId: async (projectId: ProjectId): Promise<ProjectMember[]> => {
     try {
-      const dtos = await this.httpClient.get<ProjectMemberDTO[]>(
+      const dtos = await httpClient.get<ProjectMemberDTO[]>(
         API_ROUTES.PROJECT_MEMBERS(Number(projectId.value)),
       );
 
@@ -49,9 +71,9 @@ export class ApiProjectMemberRepository implements ProjectMemberRepository {
         error,
         projectId: projectId.value,
       });
-      throw this.handleError("Failed to get project members", error);
+      throw handleError("Failed to get project members", error);
     }
-  }
+  },
 
   /**
    * Adds members to a project by their email addresses.
@@ -64,20 +86,19 @@ export class ApiProjectMemberRepository implements ProjectMemberRepository {
    * @returns A promise that resolves when the operation is complete.
    * @throws Will throw an error if the HTTP request fails.
    */
-  async addByEmails(projectId: ProjectId, emails: string[]): Promise<void> {
+  addByEmails: async (projectId: ProjectId, emails: string[]): Promise<void> => {
     try {
       const payload: AddMembersPayload = { emails };
-
-      await this.httpClient.post(API_ROUTES.PROJECT_MEMBERS(Number(projectId.value)), payload);
+      await httpClient.post(API_ROUTES.PROJECT_MEMBERS(Number(projectId.value)), payload);
     } catch (error) {
       clientLogger.error("Add members error", {
         error,
         projectId: projectId.value,
         emails,
       });
-      throw this.handleError("Failed to add members to project", error);
+      throw handleError("Failed to add members to project", error);
     }
-  }
+  },
 
   /**
    * Removes a member from a project by sending a DELETE request to the backend API.
@@ -87,18 +108,18 @@ export class ApiProjectMemberRepository implements ProjectMemberRepository {
    * @returns A promise that resolves when the member has been successfully removed.
    * @throws Throws an error if the removal operation fails.
    */
-  async removeMember(projectId: ProjectId, memberId: ProjectMemberId): Promise<void> {
+  removeMember: async (projectId: ProjectId, memberId: ProjectMemberId): Promise<void> => {
     try {
-      await this.httpClient.delete(API_ROUTES.KICK_MEMBER(Number(projectId.value), memberId.value));
+      await httpClient.delete(API_ROUTES.KICK_MEMBER(Number(projectId.value), memberId.value));
     } catch (error) {
       clientLogger.error("Kick member error", {
         error,
         projectId: projectId.value,
         memberId: memberId.value,
       });
-      throw this.handleError("Failed to kick member from project", error);
+      throw handleError("Failed to kick member from project", error);
     }
-  }
+  },
 
   /**
    * Leaves the project with the specified project ID.
@@ -110,29 +131,15 @@ export class ApiProjectMemberRepository implements ProjectMemberRepository {
    * @returns A promise that resolves when the operation is complete.
    * @throws An error if the request to leave the project fails.
    */
-  async leaveProject(projectId: ProjectId): Promise<void> {
+  leaveProject: async (projectId: ProjectId): Promise<void> => {
     try {
-      await this.httpClient.delete(API_ROUTES.LEAVE_PROJECT(Number(projectId.value)));
+      await httpClient.delete(API_ROUTES.LEAVE_PROJECT(Number(projectId.value)));
     } catch (error) {
       clientLogger.error("Leave project error", {
         error,
         projectId: projectId.value,
       });
-      throw this.handleError("Failed to leave project", error);
+      throw handleError("Failed to leave project", error);
     }
-  }
-
-  /**
-   * Handles errors by checking if the provided error is already an instance of `AppError`.
-   * If it is, returns the error as is. Otherwise, creates and returns a new `AppError`
-   * with the specified message and a server error type.
-   *
-   * @param message - The error message to use if a new `AppError` is created.
-   * @param error - The error object to handle.
-   * @returns An instance of `AppError` representing the handled error.
-   */
-  private handleError(message: string, error: unknown): AppError {
-    if (error instanceof AppError) return error;
-    return new AppError(AppErrorType.SERVER, message);
-  }
-}
+  },
+});

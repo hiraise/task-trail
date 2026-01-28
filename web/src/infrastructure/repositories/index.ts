@@ -1,5 +1,5 @@
 export { createAuthRepository } from "./apiAuthRepository";
-export { ApiProjectMemberRepository } from "./ApiProjectMemberRepository";
+export { createProjectMemberRepository } from "./apiProjectMemberRepository123";
 export { ApiProjectRepository } from "./ApiProjectRepository";
 export { ApiTaskRepository } from "./ApiTaskRepository";
 export { ApiUserRepository } from "./ApiUserRepository";

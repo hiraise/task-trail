@@ -43,7 +43,7 @@ export class DIContainer {
       projectMember: new repo.ApiProjectMemberRepository(httpClient),
       task: new repo.ApiTaskRepository(httpClient),
       user: new repo.ApiUserRepository(httpClient),
-      auth: new repo.ApiAuthRepository(httpClient),
+      auth: repo.createAuthRepository(axiosClient),
     };
   }
 
