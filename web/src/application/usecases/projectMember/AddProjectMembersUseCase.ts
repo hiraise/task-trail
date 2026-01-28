@@ -5,13 +5,14 @@ import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-export class AddProjectMembersUseCase {
-  constructor(
-    private projectMemberRepository: ProjectMemberRepository,
-    private projectRepository: ProjectRepository
-  ) {}
+type AddProjectMembersUseCase = (payload: AddMembersPayload) => Promise<void>;
 
-  async execute(payload: AddMembersPayload): Promise<void> {
+const createAddProjectMembersUseCase =
+  (
+    projectMemberRepository: ProjectMemberRepository,
+    projectRepository: ProjectRepository,
+  ): AddProjectMembersUseCase =>
+  async (payload) => {
     try {
       clientLogger.info("Adding members to project", {
         projectId: payload.projectId,
@@ -19,7 +20,7 @@ export class AddProjectMembersUseCase {
       });
 
       const projectId = ProjectId.create(payload.projectId);
-      const project = await this.projectRepository.findById(projectId);
+      const project = await projectRepository.findById(projectId);
 
       if (!project) {
         throw new AppError(AppErrorType.NOT_FOUND, `Project not found: ${projectId}`);
@@ -28,11 +29,11 @@ export class AddProjectMembersUseCase {
       if (!project.canUserInviteMembers()) {
         throw new AppError(
           AppErrorType.FORBIDDEN,
-          "You do not have permission to invite members to this project"
+          "You do not have permission to invite members to this project",
         );
       }
 
-      await this.projectMemberRepository.addByEmails(projectId, payload.emails);
+      await projectMemberRepository.addByEmails(projectId, payload.emails);
 
       clientLogger.info("Members added successfully", {
         projectId: payload.projectId,
@@ -42,5 +43,6 @@ export class AddProjectMembersUseCase {
       clientLogger.error("AddProjectMembersUseCase: failed", { error, command: payload });
       throw error;
     }
-  }
-}
+  };
+
+export { createAddProjectMembersUseCase, type AddProjectMembersUseCase };

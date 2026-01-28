@@ -1,23 +1,21 @@
-import type {
-  ProjectMemberResponseDto} from "@/application/dto/ProjectMemberResponseDto";
-import {
-  ProjectMemberResponseMapper,
-} from "@/application/dto/ProjectMemberResponseDto";
+import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
+import { ProjectMemberResponseMapper } from "@/application/dto/ProjectMemberResponseDto";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
 import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-export class GetProjectMembersUseCase {
-  constructor(private projectMemberRepository: ProjectMemberRepository) {}
+type GetProjectMembersUseCase = (projectId: string | number) => Promise<ProjectMemberResponseDto[]>;
 
-  async execute(projectId: string | number): Promise<ProjectMemberResponseDto[]> {
+const createGetProjectMembersUseCase =
+  (projectMemberRepository: ProjectMemberRepository): GetProjectMembersUseCase =>
+  async (projectId) => {
     try {
       clientLogger.info("GetProjectMembersUseCase: fetching members", {
         projectId,
       });
 
       const id = ProjectId.create(projectId);
-      const members = await this.projectMemberRepository.findByProjectId(id);
+      const members = await projectMemberRepository.findByProjectId(id);
 
       clientLogger.info("GetProjectMembersUseCase: members fetched successfully", {
         projectId,
@@ -29,5 +27,6 @@ export class GetProjectMembersUseCase {
       clientLogger.error("GetProjectMembersUseCase: failed", { error, projectId });
       throw error;
     }
-  }
-}
+  };
+
+export { createGetProjectMembersUseCase, type GetProjectMembersUseCase };
