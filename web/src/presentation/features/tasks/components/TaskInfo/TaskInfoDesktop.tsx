@@ -1,4 +1,4 @@
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
 import { useChangeTaskInfo } from "@/presentation/features/tasks/hooks";
 import { useTaskMenuItems } from "@/presentation/features/tasks/hooks/useTaskMenuItems";
 import { DropdownMenu, IconButton } from "@/presentation/shared";
@@ -9,7 +9,7 @@ import { TaskDetailsDesktop } from "./TaskDetailsDesktop";
 import styles from "./TaskInfoDesktop.module.css";
 import { TaskStatus } from "./TaskStatus";
 
-export function TaskInfoDesktop({ task }: { task: TaskResponseDto }) {
+export function TaskInfoDesktop({ task }: { task: Task }) {
   const { data, changeStatus, selectProject, selectAssignee } = useChangeTaskInfo(task);
   const { menuItems } = useTaskMenuItems(task);
 
@@ -20,7 +20,7 @@ export function TaskInfoDesktop({ task }: { task: TaskResponseDto }) {
       <div className={styles.titleWapper}>
         <div className={styles.title}>
           <TaskStatus status={data.status} onClick={changeStatus} />
-          <h2>{task.title}</h2>
+          <h2>{task.name}</h2>
           <span className="body-reg-2">{task.description}</span>
         </div>
         <DropdownMenu
@@ -32,7 +32,10 @@ export function TaskInfoDesktop({ task }: { task: TaskResponseDto }) {
         <TaskDetailsDesktop
           icon={ICONS.profile}
           label={TEXTS.tasks.assignee}
-          text={data.assignee.username || data.assignee.username}
+          text={
+            (data.assignee && (data.assignee.username || data.assignee.email)) ||
+            TEXTS.tasks.assignee
+          }
           onClick={selectAssignee}
         />
         <TaskDetailsDesktop

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
+import type { ProjectMember } from "@/domain/models/ProjectMember";
+import type { UserId } from "@/domain/types";
 import { Icon } from "@/presentation/shared";
 import { UserItem } from "@/presentation/shared/components/UserItem/UserItem";
 import { Input } from "@/presentation/shared/ui/Input";
@@ -12,9 +13,9 @@ import { TEXTS } from "@/shared/locales/texts";
 import styles from "./MembersListDesktop.module.css";
 
 interface MembersListProps {
-  selectedUserId?: number;
-  members: ProjectMemberResponseDto[];
-  onSelect: (user: ProjectMemberResponseDto) => void;
+  selectedUserId?: UserId;
+  members: ProjectMember[];
+  onSelect: (user: ProjectMember) => void;
 }
 
 export function MembersListDesktop(props: MembersListProps) {
@@ -24,7 +25,7 @@ export function MembersListDesktop(props: MembersListProps) {
   const filteredMembers = members.filter(
     (user) =>
       (user.username && user.username.toLowerCase().includes(query.toLowerCase())) ||
-      user.email.toLowerCase().includes(query.toLowerCase())
+      user.email.toLowerCase().includes(query.toLowerCase()),
   );
 
   return (

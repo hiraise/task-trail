@@ -1,108 +1,83 @@
-import type { Permission } from "../valueobjects/Permission";
-import { ProjectId } from "../valueobjects/ProjectId";
-import { Timestamp } from "../valueobjects/Timestamp";
-import { UserRole } from "../valueobjects/UserRole";
+import z from "zod";
 
-export class Project {
-  private constructor(
-    public readonly id: ProjectId,
-    public name: string,
-    public description: string | undefined,
-    public readonly createdAt: Timestamp,
-    public readonly userRole: UserRole,
-    public readonly tasksCount: number = 0,
-  ) {}
+import type { UserRole } from "@/shared/utils/userRole";
+import {
+  canArchiveProject,
+  canDeleteProject,
+  canEditProject,
+  canInviteUsers,
+  canManageMembers,
+  getUserRole,
+  isOwner,
+} from "@/shared/utils/userRole";
 
-  static fromBackendData(
-    id: string | number,
-    name: string,
-    description: string | undefined,
-    createdAt: string,
-    permissions: Permission[],
-    tasksCount: number = 0,
-  ): Project {
-    return new Project(
-      ProjectId.create(id),
-      name,
-      description,
-      Timestamp.fromString(createdAt),
-      UserRole.fromPermissions(permissions),
-      tasksCount,
-    );
-  }
+import type { ProjectId } from "../types";
+import { PermissionSchema } from "../types";
 
-  canUserEdit(): boolean {
-    return this.userRole.canEditProject();
-  }
+export const ProjectIdSchema = z
+  .union([z.string(), z.number()])
+  .transform(String) as z.ZodType<ProjectId>;
 
-  canUserDelete(): boolean {
-    return this.userRole.canDeleteProject();
-  }
+// Base Project schema definition
+export const ProjectSchema = z.object({
+  id: ProjectIdSchema,
+  name: z.string(),
+  description: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((v) => v ?? undefined),
+  createdAt: z.iso.datetime(),
+  tasksCount: z.number().default(0),
+});
 
-  canUserArchive(): boolean {
-    return this.userRole.canArchiveProject();
-  }
+export type Project = z.infer<typeof ProjectSchema>;
 
-  canUserManageMembers(): boolean {
-    return this.userRole.canManageMembers();
-  }
+export const createProjectListItem = (raw: unknown): Project => {
+  return ProjectSchema.parse(raw);
+};
 
-  canUserInviteMembers(): boolean {
-    return this.userRole.canInviteUsers();
-  }
+// Full Project schema definition
+export const ProjectDetailsSchema = ProjectSchema.extend({
+  permissions: z.array(PermissionSchema),
+});
 
-  canUserKickMembers(): boolean {
-    return this.userRole.canKickUsers();
-  }
+export type ProjectDetails = z.infer<typeof ProjectDetailsSchema> & {
+  userRole: UserRole;
+};
 
-  canUserDeleteTask(): boolean {
-    return this.userRole.canDeleteTask();
-  }
+export const createProjectDetails = (raw: unknown): ProjectDetails => {
+  const parsed = ProjectDetailsSchema.parse(raw);
+  return {
+    ...parsed,
+    userRole: getUserRole(parsed.permissions),
+  };
+};
 
-  canUserUpdateTask(): boolean {
-    return this.userRole.canUpdateTask();
-  }
+export const canUserEditProject = (project: ProjectDetails): boolean =>
+  canEditProject(project.permissions);
 
-  canUserViewProject(): boolean {
-    return this.userRole.isViewer();
-  }
+export const canUserDeleteProject = (project: ProjectDetails): boolean =>
+  canDeleteProject(project.permissions);
 
-  isOwner(): boolean {
-    return this.userRole.isOwner();
-  }
+export const canUserArchiveProject = (project: ProjectDetails): boolean =>
+  canArchiveProject(project.permissions);
 
-  isAdmin(): boolean {
-    return this.userRole.isAdmin();
-  }
+export const canUserManageMembers = (project: ProjectDetails): boolean =>
+  canManageMembers(project.permissions);
 
-  hasPermission(permission: Permission): boolean {
-    return this.userRole.toPermissions().includes(permission);
-  }
+export const canUserInviteMembers = (project: ProjectDetails): boolean =>
+  canInviteUsers(project.permissions);
 
-  getUserRoleLabel(): string {
-    return this.userRole.toString();
-  }
+export const isProjectOwner = (project: ProjectDetails): boolean => isOwner(project.permissions);
 
-  getUserRoleLabelLocalized(): string {
-    const labels: Record<string, string> = {
-      OWNER: "Владелец",
-      ADMIN: "Администратор",
-      EDITOR: "Редактор",
-      VIEWER: "Просмотр",
-      NONE: "Нет доступа",
-    };
-    return labels[this.getUserRoleLabel()] || "Неизвестная роль";
-  }
-
-  getPermissions(): Permission[] {
-    return this.userRole.toPermissions();
-  }
-
-  equals(other: Project): boolean {
-    return this.id.equals(other.id);
-  }
-
-  toString(): string {
-    return `Project(id=${this.id}, name=${this.name}, role=${this.getUserRoleLabel()})`;
-  }
-}
+export const getUserRoleLabelLocalized = (project: ProjectDetails): string => {
+  const labels: Record<UserRole, string> = {
+    OWNER: "Владелец",
+    ADMIN: "Администратор",
+    EDITOR: "Редактор",
+    VIEWER: "Просмотр",
+    NONE: "Нет доступа",
+  };
+  return labels[project.userRole] || "Неизвестная роль";
+};

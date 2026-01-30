@@ -4,8 +4,8 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
 import type { EditTaskPayload } from "@/application/payloads";
+import type { Task } from "@/domain/models/Task";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
@@ -22,10 +22,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  *
  * On error, an error toast notification is displayed to inform the user of the failure.
  *
- * @returns {UseMutationResult<TaskResponseDto, Error, EditTaskPayload>} The mutation result
+ * @returns {UseMutationResult<Task, Error, EditTaskPayload>} The mutation result
  * containing the status and methods to execute the mutation.
  */
-export function useEditTask(): UseMutationResult<TaskResponseDto, Error, EditTaskPayload> {
+export function useEditTask(): UseMutationResult<Task, Error, EditTaskPayload> {
   const queryClient = useQueryClient();
   const { editTask } = appContainer.usecases.tasks;
 

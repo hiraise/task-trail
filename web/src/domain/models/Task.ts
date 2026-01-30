@@ -1,41 +1,32 @@
-import { ProjectId } from "../valueobjects/ProjectId";
-import { TaskId } from "../valueobjects/TaskId";
-import { Timestamp } from "../valueobjects/Timestamp";
+import { z } from "zod";
 
-export class Task {
-  private constructor(
-    public readonly id: TaskId,
-    public title: string,
-    public description: string | undefined,
-    public readonly statusId: number,
-    public readonly createdAt: Timestamp,
-    public readonly updatedAt: Timestamp,
-    public readonly projectId: ProjectId,
-    public readonly authorId: number,
-    public readonly assigneeId?: number,
-  ) {}
+import type { TaskId, UserId } from "../types";
 
-  static fromBackendData(
-    id: string | number,
-    title: string,
-    description: string | undefined,
-    statusId: number,
-    createdAt: string,
-    updatedAt: string,
-    projectId: string | number,
-    authorId: number,
-    assigneeId: number | undefined,
-  ): Task {
-    return new Task(
-      TaskId.create(id),
-      title,
-      description,
-      statusId,
-      Timestamp.fromString(createdAt),
-      Timestamp.fromString(updatedAt),
-      ProjectId.create(projectId),
-      authorId,
-      assigneeId,
-    );
-  }
-}
+import { ProjectIdSchema } from "./Project";
+import { TaskStatusIdSchema } from "./TaskStatus";
+import { UserIdSchema } from "./User";
+
+export const TaskSchema = z.object({
+  id: z.union([z.string(), z.number()]).transform(String) as z.ZodType<TaskId>,
+  name: z.string(),
+  description: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? undefined),
+  statusId: TaskStatusIdSchema,
+  createdAt: z.iso.datetime(), // ISO 8601 строка
+  updatedAt: z.iso.datetime(), // ISO 8601 строка
+  projectId: ProjectIdSchema,
+  authorId: UserIdSchema,
+  assigneeId: z
+    .union([z.string(), z.number(), z.null()])
+    .transform((v) => (v === null ? undefined : String(v)))
+    .optional() as z.ZodType<UserId | undefined>,
+});
+
+export type Task = z.infer<typeof TaskSchema>;
+
+export const createTask = (raw: unknown): Task => {
+  return TaskSchema.parse(raw);
+};

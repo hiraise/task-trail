@@ -1,27 +1,24 @@
 import type { TaskCreationDraft } from "@/domain/models/TaskCreationDraft";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
-import { ProjectId } from "@/domain/valueobjects/ProjectId";
-import { ProjectMemberId } from "@/domain/valueobjects/ProjectMemberId";
+import type { ProjectId, UserId } from "@/domain/types";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
 type SelectProjectForTaskUseCase = (
   draft: TaskCreationDraft,
-  projectId: string | number,
-  currentAssigneeId: string | number | null,
+  projectId: ProjectId,
+  currentAssigneeId?: UserId | null,
 ) => Promise<{ success: boolean; assigneeCleared: boolean }>;
 
 const createSelectProjectForTaskUseCase =
   (projectMemberRepository: ProjectMemberRepository): SelectProjectForTaskUseCase =>
   async (draft, projectId, currentAssigneeId) => {
     try {
-      const id = ProjectId.create(projectId);
-      const projectMembers = await projectMemberRepository.findByProjectId(id);
+      const projectMembers = await projectMemberRepository.findByProjectId(projectId);
 
       let assigneeCleared = false;
 
       if (currentAssigneeId) {
-        const memberId = ProjectMemberId.create(currentAssigneeId);
-        const isMember = projectMembers.some((member) => member.id.equals(memberId));
+        const isMember = projectMembers.some((member) => member.id === currentAssigneeId);
 
         if (!isMember) {
           draft.setAssigneeId(null);

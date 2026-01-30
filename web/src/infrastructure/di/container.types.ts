@@ -21,17 +21,14 @@ export interface RepositoriesContainer {
 
 export interface UseCasesContainer {
   project: {
-    getProjects: projectUC.GetProjectsUseCase;
     getProject: projectUC.GetProjectUseCase;
     createProject: projectUC.CreateProjectUseCase;
     editProject: projectUC.EditProjectUseCase;
     deleteProject: projectUC.DeleteProjectUseCase;
     getProjectStatuses: projectUC.GetProjectStatusesUseCase;
-    getCandidates: projectUC.GetProjectCandidatesUseCase;
     getProjectDetail: projectUC.GetProjectDetailUseCase;
   };
   projectMember: {
-    getProjectMembers: projectMemberUC.GetProjectMembersUseCase;
     leaveProject: projectMemberUC.LeaveProjectUseCase;
     removeMember: projectMemberUC.RemoveProjectMemberUseCase;
     addMember: projectMemberUC.AddProjectMembersUseCase;

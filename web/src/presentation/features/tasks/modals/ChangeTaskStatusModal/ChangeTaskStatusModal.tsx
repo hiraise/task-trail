@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import type { TaskStatusResponseDto } from "@/application/dto/TaskStatusResponseDto";
+import type { TaskStatus } from "@/domain/models/TaskStatus";
 import { DeviceBased, DialogButtons } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
 import type { ChangeStatusProps } from "@/presentation/shared/hooks/useGlobalModals";
@@ -12,7 +12,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { TaskStatusDesktop, TaskStatusMobile } from "../../components";
 
-export default function ChangeTaskStatusModal(props: BaseModalProps<TaskStatusResponseDto>) {
+export default function ChangeTaskStatusModal(props: BaseModalProps<TaskStatus>) {
   const { onClose, ...rest } = props;
 
   const { currentStatus } = useGlobalModalProps<ChangeStatusProps>() ?? {};
@@ -21,7 +21,7 @@ export default function ChangeTaskStatusModal(props: BaseModalProps<TaskStatusRe
   const handleApply = () => onClose(status);
   const handleClose = () => onClose(undefined);
 
-  const handleSelect = (value: TaskStatusResponseDto, isDesktop?: boolean) => {
+  const handleSelect = (value: TaskStatus, isDesktop?: boolean) => {
     setStatus(value);
     // Close modal immediately only on mobile devices
     if (!isDesktop) onClose(value);

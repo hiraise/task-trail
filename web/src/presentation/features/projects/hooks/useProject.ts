@@ -1,15 +1,16 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { ProjectDetails } from "@/domain/models/Project";
+import type { ProjectId } from "@/domain/types";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
  * Custom React hook to fetch and cache a single project by its ID using React Query.
  *
- * @param projectId - The unique identifier of the project to fetch. Can be a string, number, null, or undefined.
- * @returns The result of the query, including the project data (`ProjectResponseDto | null`), loading and error states.
+ * @param projectId - The unique identifier of the project to fetch. Can be a ProjectId or undefined.
+ * @returns The result of the query, including the project data (`ProjectDetails | null`), loading and error states.
  *
  * @remarks
  * - The query is enabled only if `projectId` is truthy.
@@ -18,13 +19,11 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * - The query will retry up to 2 times on failure.
  * - If `projectId` is not provided, the query returns `null`.
  */
-export function useProject(
-  projectId: string | number | null | undefined,
-): UseQueryResult<ProjectResponseDto | null, Error> {
+export function useProject(projectId?: ProjectId): UseQueryResult<ProjectDetails | null, Error> {
   const { getProject } = appContainer.usecases.project;
 
   return useQuery({
-    queryKey: QUERY_KEYS.project(Number(projectId) || 0),
+    queryKey: QUERY_KEYS.project(projectId || ""),
     queryFn: async () => {
       if (!projectId) return null;
       return await getProject(projectId);

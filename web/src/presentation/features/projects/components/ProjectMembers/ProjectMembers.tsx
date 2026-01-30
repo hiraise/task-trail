@@ -1,7 +1,11 @@
 import { AnimatePresence, motion as m } from "framer-motion";
 import { useState } from "react";
 
-import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
+import {
+  isProjectMemberAdmin,
+  isProjectMemberOwner,
+  type ProjectMember,
+} from "@/domain/models/ProjectMember";
 import { IconButton, MembersAvatarList } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
@@ -10,8 +14,8 @@ import { MemberCard } from "./MemberCard";
 import { MemberTag } from "./MemberTag";
 import styles from "./ProjectMembers.module.css";
 
-export function ProjectMembers({ members }: { members: ProjectMemberResponseDto[] }) {
-  const memberIds = members.map((member) => Number(member.id)) || [];
+export function ProjectMembers({ members }: { members: ProjectMember[] }) {
+  const memberIds = members.map((member) => member.id) || [];
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toogleExpanded = () => setIsExpanded((prev) => !prev);
@@ -50,9 +54,11 @@ export function ProjectMembers({ members }: { members: ProjectMemberResponseDto[
   );
 }
 
-function MembersDetailView({ members }: { members: ProjectMemberResponseDto[] }) {
-  const admins = members.filter((m) => m.isAdmin || m.isOwner);
-  const displayMembers = members.filter((m) => !m.isAdmin && !m.isOwner);
+function MembersDetailView({ members }: { members: ProjectMember[] }) {
+  const admins = members.filter((m) => isProjectMemberAdmin(m) || isProjectMemberOwner(m));
+  const displayMembers = members.filter(
+    (m) => !isProjectMemberAdmin(m) && !isProjectMemberOwner(m),
+  );
 
   return (
     <div className={styles.membersWrapper}>

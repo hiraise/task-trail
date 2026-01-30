@@ -1,9 +1,11 @@
+import type { ProjectId, TaskId, UserId } from "@/domain/types";
+
 import { DeleteItem, DeviceBased, DialogButtons } from "../../components";
 import { useGlobalModalProps, useGlobalModals } from "../../hooks";
 import type { ActionProps } from "../../hooks/useGlobalModals";
 import { BaseModal, type BaseModalProps } from "../BaseModal";
 
-export default function DeleteItemModal(props: BaseModalProps<number>) {
+export default function DeleteItemModal(props: BaseModalProps<TaskId | ProjectId | UserId>) {
   const { type, id, title } = useGlobalModalProps<ActionProps>() ?? {};
   const { closeAllModals } = useGlobalModals();
 

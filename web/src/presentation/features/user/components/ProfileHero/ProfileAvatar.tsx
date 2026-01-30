@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { forwardRef } from "react";
 
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
 import { useUploadAvatar } from "@/presentation/features/user/hooks";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 
@@ -11,7 +11,7 @@ import styles from "./ProfileAvatar.module.css";
 
 interface ProfileAvatarProps {
   size?: "desktop" | "mobile";
-  user: UserResponseDto;
+  user: User;
   className?: string;
   children: React.ReactNode;
 }
@@ -39,7 +39,7 @@ export const ProfileAvatar = forwardRef<HTMLDivElement, ProfileAvatarProps>(
         {children}
       </div>
     );
-  }
+  },
 );
 
 ProfileAvatar.displayName = "ProfileAvatar";

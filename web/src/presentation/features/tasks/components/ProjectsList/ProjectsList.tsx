@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
+import type { ProjectId } from "@/domain/types";
 import { SearchField } from "@/presentation/shared";
 import { TEXTS } from "@/shared/locales/texts";
 
@@ -10,9 +11,9 @@ import { ProjectItem } from "./ProjectItem";
 import styles from "./ProjectsList.module.css";
 
 interface ProjectsListProps {
-  projects: ProjectResponseDto[];
-  onSelect: (project: ProjectResponseDto) => void;
-  selectedProjectId?: number;
+  projects: Project[];
+  onSelect: (project: Project) => void;
+  selectedProjectId?: ProjectId;
 }
 
 export function ProjectsList({ projects, onSelect, selectedProjectId }: ProjectsListProps) {
@@ -21,7 +22,7 @@ export function ProjectsList({ projects, onSelect, selectedProjectId }: Projects
   const filteredProjects = projects.filter(
     (project) =>
       project.name.toLowerCase().includes(query.toLowerCase()) ||
-      (project.description && project.description.toLowerCase().includes(query.toLowerCase()))
+      (project.description && project.description.toLowerCase().includes(query.toLowerCase())),
   );
 
   return (

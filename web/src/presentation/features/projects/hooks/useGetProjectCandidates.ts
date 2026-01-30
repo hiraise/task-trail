@@ -1,17 +1,16 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
+import type { ProjectId } from "@/domain/types";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-export function useGetProjectCandidates(
-  projectId?: string | number,
-): UseQueryResult<UserResponseDto[], Error> {
-  const { getCandidates } = appContainer.usecases.project;
+export function useGetProjectCandidates(projectId?: ProjectId): UseQueryResult<User[], Error> {
+  const { findCandidatesForProject } = appContainer.repositories.user;
 
   return useQuery({
-    queryKey: QUERY_KEYS.projectCandidates(Number(projectId)),
-    queryFn: async () => getCandidates(projectId),
+    queryKey: QUERY_KEYS.projectCandidates(projectId),
+    queryFn: async () => findCandidatesForProject(projectId),
   });
 }

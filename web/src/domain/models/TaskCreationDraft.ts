@@ -1,20 +1,19 @@
-import type { ProjectId } from "../valueobjects/ProjectId";
-import { TaskId } from "../valueobjects/TaskId";
+import type { ProjectId, TaskId } from "../types";
 
 export class TaskCreationDraft {
   private id: TaskId;
   private name: string = "";
   private description: string = "";
-  private projectId: string | null = null;
+  private projectId: ProjectId | null = null;
   private assigneeId: string | null = null;
 
   constructor(id?: string) {
-    this.id = TaskId.create(id || Math.random().toString(36));
+    this.id = id || "";
   }
 
   // ===== Getters =====
 
-  getId(): ProjectId {
+  getId(): TaskId {
     return this.id;
   }
 
@@ -26,7 +25,7 @@ export class TaskCreationDraft {
     return this.description;
   }
 
-  getProjectId(): string | null {
+  getProjectId(): ProjectId | null {
     return this.projectId;
   }
 
@@ -91,8 +90,8 @@ export class TaskCreationDraft {
     return {
       name: this.name,
       description: this.description,
-      projectId: this.projectId ? Number(this.projectId) : 0,
-      assigneeId: this.assigneeId ? Number(this.assigneeId) : undefined,
+      projectId: this.projectId ? this.projectId : "",
+      assigneeId: this.assigneeId ? this.assigneeId : undefined,
     };
   }
 

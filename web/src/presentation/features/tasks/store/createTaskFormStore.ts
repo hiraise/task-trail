@@ -1,17 +1,18 @@
 import { create } from "zustand";
 
-import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
+import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { TaskCreationDraft } from "@/domain/models/TaskCreationDraft";
+import type { ProjectId, UserId } from "@/domain/types";
 import { appContainer } from "@/infrastructure/di/container";
 
 export interface ProjectData {
-  id: number | string;
+  id: ProjectId;
   name: string;
 }
 
 export interface AssigneeData {
-  id: number | string;
+  id: UserId;
   name: string;
   email: string;
 }
@@ -23,8 +24,8 @@ interface CreateTaskFormState {
   initialize: () => void;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
-  setAssignee: (projectMember: ProjectMemberResponseDto | null) => void;
-  setProject: (project: ProjectResponseDto) => Promise<void>;
+  setAssignee: (projectMember: ProjectMember | null) => void;
+  setProject: (project: Project) => Promise<void>;
   reset: () => void;
 }
 
@@ -56,7 +57,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
     });
   },
 
-  setAssignee: (projectMember: ProjectMemberResponseDto | null) => {
+  setAssignee: (projectMember: ProjectMember | null) => {
     set((state) => {
       if (!state.draft || !projectMember) return state;
       const data: AssigneeData = {
@@ -69,11 +70,11 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
     });
   },
 
-  setProject: async (project: ProjectResponseDto) => {
+  setProject: async (project: Project) => {
     const state = get();
     if (!state.draft) return;
     const { selectProject } = appContainer.usecases.tasks;
-    const result = await selectProject.execute(state.draft, project.id, state.assignee?.id ?? null);
+    const result = await selectProject(state.draft, project.id, state.assignee?.id || null);
 
     if (!result.success) return;
 

@@ -1,16 +1,12 @@
 import Link from "next/link";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
 import { ROUTES } from "@/shared/config/routes";
 
 import TaskItem from "./TaskItem";
 import styles from "./TaskListMobile.module.css";
 
-interface TaskListProps {
-  tasks: TaskResponseDto[];
-}
-
-export function TaskListMobile({ tasks }: TaskListProps) {
+export function TaskListMobile({ tasks }: { tasks: Task[] }) {
   return (
     <div className={styles.taskContainer}>
       {tasks?.map((task) => (

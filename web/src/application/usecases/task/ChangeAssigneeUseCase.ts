@@ -1,14 +1,11 @@
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { mapTaskToResponse } from "@/application/dto/TaskResponseDto";
 import type { ChangeAssigneePayload } from "@/application/payloads";
+import type { Task } from "@/domain/models/Task";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
-import { TaskId } from "@/domain/valueobjects/TaskId";
-import { UserId } from "@/domain/valueobjects/UserId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-type ChangeAssigneeUseCase = (payload: ChangeAssigneePayload) => Promise<TaskResponseDto>;
+type ChangeAssigneeUseCase = (payload: ChangeAssigneePayload) => Promise<Task>;
 
 const createChangeAssigneeUseCase =
   (taskRepository: TaskRepository, userRepository: UserRepository): ChangeAssigneeUseCase =>
@@ -18,14 +15,13 @@ const createChangeAssigneeUseCase =
         taskId: payload.taskId,
       });
 
-      const taskId = TaskId.create(payload.taskId);
-      const task = await taskRepository.findById(taskId);
+      const task = await taskRepository.findById(payload.taskId);
 
-      if (!taskId) {
-        throw new AppError(AppErrorType.NOT_FOUND, `Task not found: ${taskId}`);
+      if (!task) {
+        throw new AppError(AppErrorType.NOT_FOUND, `Task not found: ${payload.taskId}`);
       }
 
-      const assigneeId = UserId.create(payload.assigneeId);
+      const assigneeId = payload.assigneeId ?? "";
 
       // TODO: Add check rights to change assignee
       // TODO: Add check user existance
@@ -34,11 +30,11 @@ const createChangeAssigneeUseCase =
       const updatedTask = await taskRepository.changeAssignee(task, assigneeId);
 
       clientLogger.info("ChangeAssigneeUseCase: Assignee changed successfully", {
-        taskID: updatedTask.id.value,
-        assigneeID: assigneeId.value,
+        taskID: updatedTask.id,
+        assigneeID: assigneeId,
       });
 
-      return mapTaskToResponse(updatedTask);
+      return updatedTask;
     } catch (error) {
       clientLogger.error("ChangeAssigneeUseCase: failed", { error, command: payload });
       throw error;

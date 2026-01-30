@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import { canUserEditProject } from "@/domain/models/Project";
+import type { Task } from "@/domain/models/Task";
 import { useProject } from "@/presentation/features/projects/hooks";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
@@ -9,14 +10,11 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { useDeleteTask } from "./useDeleteTask";
 
-export const useTaskMenuItems = (task: TaskResponseDto) => {
-  // const { data: project } = useGetById(task.projectId);
+export const useTaskMenuItems = (task: Task) => {
   const { data: project } = useProject(task.projectId);
   const { mutateAsync: deleteTask } = useDeleteTask(task.projectId);
 
   const { showEditTask, showMoveToArchive, showDeleteItem } = useGlobalModals();
-
-  // const permissions = useMemo(() => project?.permissions || [], [project]);
 
   const menuItems: MenuItem[] = [
     {
@@ -26,11 +24,10 @@ export const useTaskMenuItems = (task: TaskResponseDto) => {
       onClick: async () =>
         await showEditTask({
           taskId: task.id,
-          title: task.title,
+          title: task.name,
           description: task.description,
         }),
-      // isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_UPDATE_TASK),
-      isVisible: project?.canEdit ?? false,
+      isVisible: project ? canUserEditProject(project) : false,
     },
     {
       label: TEXTS.tasks.moveToArchive,
@@ -38,13 +35,12 @@ export const useTaskMenuItems = (task: TaskResponseDto) => {
       color: "var(--icon-tertiary)",
 
       onClick: async () => {
-        const data = { id: task.id, title: task.title };
+        const data = { id: task.id, title: task.name };
         const result = await showMoveToArchive({ type: "task", ...data });
         //TODO: implement move to archive logic
         if (result) toast.warning(`Task id: ${task.id} moved to archive`);
       },
-      // isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_UPDATE_TASK),
-      isVisible: project?.canEdit ?? false,
+      isVisible: project ? canUserEditProject(project) : false,
     },
     {
       label: TEXTS.tasks.delete,
@@ -52,12 +48,11 @@ export const useTaskMenuItems = (task: TaskResponseDto) => {
       color: "var(--icon-critical)",
       onClick: async () => {
         if (!project) return;
-        const data = { id: task.id, title: task.title };
+        const data = { id: task.id, title: task.name };
         const result = await showDeleteItem({ type: "task", ...data }); //return taskId
         if (result) await deleteTask(result);
       },
-      // isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_DELETE_TASK),
-      isVisible: project?.canEdit ?? false,
+      isVisible: project ? canUserEditProject(project) : false,
     },
   ];
 

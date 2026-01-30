@@ -2,6 +2,7 @@ import type { DragOverEvent, DragStartEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useCallback, useMemo, useState } from "react";
 
+import type { UserId } from "@/domain/types";
 import type {
   MockTask,
   TaskStatus,
@@ -9,7 +10,7 @@ import type {
 } from "@/presentation/features/boards/components/KanbanBoard/KanbanBoard.mocks";
 
 export interface KanbanContainer {
-  userId: number;
+  userId: UserId;
   column: (typeof boardColumns)[number];
 }
 
@@ -22,8 +23,8 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
    * @param {number} userId - The user's ID.
    */
   const getTasksByUser = useCallback(
-    (userId: number) => tasks.filter((task) => task.userId === userId),
-    [tasks]
+    (userId: UserId) => tasks.filter((task) => task.userId === userId),
+    [tasks],
   );
 
   /**
@@ -34,7 +35,7 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
    */
   const countTaskByStatus = useCallback(
     (status: TaskStatus) => tasks.filter((task) => task.status === status).length,
-    [tasks]
+    [tasks],
   );
 
   /**
@@ -122,7 +123,7 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
       onDragOver: handleDragOver,
       onDragEnd: handleDragEnd,
     }),
-    [handleDragStart, handleDragOver, handleDragEnd]
+    [handleDragStart, handleDragOver, handleDragEnd],
   );
 
   return {

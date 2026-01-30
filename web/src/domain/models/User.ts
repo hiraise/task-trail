@@ -1,33 +1,24 @@
-import { UserId } from "../valueobjects/UserId";
+import { z } from "zod";
 
-export class User {
-  private constructor(
-    public readonly id: UserId,
-    public readonly avatarUrl: string | undefined,
-    public readonly username: string | undefined,
-    public readonly email: string
-  ) {}
+import type { UserId } from "../types";
 
-  static fromBackendData(
-    id: string | number,
-    avatarUrl: string | undefined,
-    username: string | undefined,
-    email: string
-  ): User {
-    return new User(UserId.create(id), avatarUrl, username, email);
-  }
+export const UserIdSchema = z
+  .union([z.string(), z.number()])
+  .transform(String) as z.ZodType<UserId>;
 
-  getDisplayName(): string {
-    if (this.username && this.username.trim()) return this.username;
-    if (this.email) return this.email.split("@")[0];
-    return "";
-  }
+export const UserSchema = z.object({
+  id: UserIdSchema,
+  email: z.email(),
+  username: z.string().optional(),
+  avatarUrl: z.url().optional(),
+});
 
-  equals(other: User): boolean {
-    return this.id.equals(other.id);
-  }
+export type User = z.infer<typeof UserSchema>;
 
-  toString(): string {
-    return `User(id=${this.id.value}, email=${this.email}, username=${this.username})`;
-  }
-}
+export const createUser = (data: unknown): User => {
+  return UserSchema.parse(data);
+};
+
+export const getUserDisplayName = (user: User): string => {
+  return user.username?.trim() || user.email.split("@")[0] || "";
+};

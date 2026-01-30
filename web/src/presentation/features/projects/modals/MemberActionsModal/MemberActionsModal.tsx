@@ -13,10 +13,10 @@ export function MemberActionsModal(props: BaseModalProps<void>) {
 
   const { memberId, memberDisplayName, currentUserId, projectId } = modalProps || {};
   const { menuItems } = useMembersMenuItems(
-    memberId ?? -1,
+    memberId ?? "-1",
     memberDisplayName ?? "No name",
-    currentUserId ?? -1,
-    projectId ?? -1
+    currentUserId ?? "-1",
+    projectId ?? "-1",
   );
 
   if (menuItems.length === 0) return null;

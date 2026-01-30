@@ -26,10 +26,10 @@ export function useRemoveMember(): UseMutationResult<void, Error, RemoveMemberPa
     mutationFn: (payload) => removeMember(payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectMembers(Number(variables.memberId)),
+        queryKey: QUERY_KEYS.projectMembers(variables.memberId),
       });
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectDetails(Number(variables.projectId)),
+        queryKey: QUERY_KEYS.projectDetails(variables.projectId),
       });
       toast.success("Member kicked successfully");
     },

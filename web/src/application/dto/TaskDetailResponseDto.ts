@@ -1,11 +1,11 @@
-import type { ProjectResponseDto } from "./ProjectResponseDto";
-import type { TaskResponseDto } from "./TaskResponseDto";
-import type { TaskStatusResponseDto } from "./TaskStatusResponseDto";
-import type { UserResponseDto } from "./UserResponseDto";
+import type { Project } from "@/domain/models/Project";
+import type { Task } from "@/domain/models/Task";
+import type { TaskStatus } from "@/domain/models/TaskStatus";
+import type { User } from "@/domain/models/User";
 
 export interface TaskDetailResponseDto {
-  task: TaskResponseDto;
-  project: ProjectResponseDto;
-  assignee: UserResponseDto;
-  status: TaskStatusResponseDto;
+  task: Task;
+  project: Project;
+  assignee: User | null;
+  status: TaskStatus;
 }

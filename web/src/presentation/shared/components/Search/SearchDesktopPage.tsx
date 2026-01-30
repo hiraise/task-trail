@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import { ProjectCard } from "@/presentation/features/projects/components/ProjectCard";
 import { ASSETS } from "@/shared/config/assets";
 import { ICONS } from "@/shared/config/icons";
@@ -13,7 +13,7 @@ import { Icon, Input } from "../../ui";
 import styles from "./SearchDesktopPage.module.css";
 
 export function SearchDesktopPage() {
-  const projects: ProjectResponseDto[] = [];
+  const projects: Project[] = [];
 
   return (
     <div className={styles.container}>

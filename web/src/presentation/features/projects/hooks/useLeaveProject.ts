@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { LeaveProjectPayload } from "@/application/payloads";
-import type { ProjectId } from "@/domain/valueobjects/ProjectId";
+import type { ProjectId } from "@/domain/types";
 import { appContainer } from "@/infrastructure/di/container";
 import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
@@ -35,8 +35,8 @@ export function useLeaveProject(): UseMutationResult<ProjectId, Error, LeaveProj
   return useMutation({
     mutationFn: (payload) => leaveProject(payload),
     onSuccess: (_, result) => {
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.project(Number(result.projectId)) });
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.projectDetails(Number(result.projectId)) });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.project(result.projectId) });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.projectDetails(result.projectId) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
       router.replace(ROUTES.projects);
       toast.success("You have left the project");

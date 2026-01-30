@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import { MembersAvatarList } from "@/presentation/shared";
 import { useProjectMembers } from "@/presentation/shared/hooks";
 import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
@@ -8,12 +8,12 @@ import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
 import styles from "./ProjectCard.module.css";
 
 interface ProjectCardProps {
-  project: ProjectResponseDto;
+  project: Project;
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const { data: members } = useProjectMembers(Number(project.id));
-  const memberIds = members?.map((member) => Number(member.id)) || [];
+  const { data: members } = useProjectMembers(project.id);
+  const memberIds = members?.map((member) => member.id) || [];
 
   const [isHovered, setIsHovered] = useState(false);
 

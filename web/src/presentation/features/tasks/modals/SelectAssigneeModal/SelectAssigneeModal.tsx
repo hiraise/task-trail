@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
+import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { BaseModalProps } from "@/presentation/shared";
 import { BaseModal, DeviceBased, DialogButtons } from "@/presentation/shared";
 import { useGlobalModalProps, useProjectMembers } from "@/presentation/shared/hooks";
@@ -11,21 +11,19 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { MembersListDesktop, MembersListMobile } from "../../components/MembersList";
 
-export default function SelectAssigneeModal(props: BaseModalProps<ProjectMemberResponseDto>) {
+export default function SelectAssigneeModal(props: BaseModalProps<ProjectMember>) {
   const { projectId, userId } = useGlobalModalProps<SelectAssigneeProps>() ?? {};
 
   const { data: members = [] } = useProjectMembers(projectId!);
   const currentUser = members.find((user) => user.id === userId);
-  const [selectedUser, setSelectedUser] = useState<ProjectMemberResponseDto | undefined>(
-    currentUser
-  );
+  const [selectedUser, setSelectedUser] = useState<ProjectMember | undefined>(currentUser);
 
-  const handleMobileSelect = (value: ProjectMemberResponseDto) => {
+  const handleMobileSelect = (value: ProjectMember) => {
     setSelectedUser(value);
     props.onClose(value);
   };
 
-  const handleOnSelect = (user: ProjectMemberResponseDto) => {
+  const handleOnSelect = (user: ProjectMember) => {
     setSelectedUser(user);
   };
 
@@ -39,7 +37,7 @@ export default function SelectAssigneeModal(props: BaseModalProps<ProjectMemberR
         desktop={
           <>
             <MembersListDesktop
-              selectedUserId={Number(selectedUser?.id)}
+              selectedUserId={selectedUser?.id}
               members={members}
               onSelect={handleOnSelect}
             />
@@ -48,7 +46,7 @@ export default function SelectAssigneeModal(props: BaseModalProps<ProjectMemberR
         }
         mobile={
           <MembersListMobile
-            selectedUserId={Number(userId)}
+            selectedUserId={userId}
             members={members}
             onSelect={handleMobileSelect}
           />

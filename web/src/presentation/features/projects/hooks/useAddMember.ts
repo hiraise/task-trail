@@ -25,7 +25,7 @@ export function useAddMember(): UseMutationResult<void, Error, AddMembersPayload
     mutationFn: (payload) => addMember(payload),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectMembers(Number(variables.projectId)),
+        queryKey: QUERY_KEYS.projectMembers(variables.projectId),
       });
       toast.success("User invited successfully!");
     },

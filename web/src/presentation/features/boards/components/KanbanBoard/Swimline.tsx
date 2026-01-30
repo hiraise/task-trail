@@ -1,7 +1,7 @@
-import { motion as m, AnimatePresence } from "framer-motion";
-import { useState, useMemo, useCallback } from "react";
+import { AnimatePresence, motion as m } from "framer-motion";
+import { useCallback, useMemo, useState } from "react";
 
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
 
 import { AssigneeButton } from "./AssigneeButton";
 import type { MockTask } from "./KanbanBoard.mocks";
@@ -10,15 +10,13 @@ import { KanbanGrid } from "./KanbanGrid";
 import SwimlaneColumn from "./SwimlaneColumn";
 import styles from "./Swimline.module.css";
 
-
-
 /**
  * Swimlane component represents a row in the Kanban board for a specific team member.
  * Each swimlane contains columns (task statuses) with the member's tasks.
  * The swimlane can be collapsed/expanded using the AssigneeButton.
  */
 interface SwimlineProps {
-  member: UserResponseDto;
+  member: User;
   tasks: MockTask[];
 }
 
@@ -28,10 +26,13 @@ export default function Swimline({ member, tasks }: SwimlineProps) {
   const toggleCollapse = useCallback(() => setIsCollapsed((prev) => !prev), []);
 
   const tasksByColumn = useMemo(() => {
-    return boardColumns.reduce((acc, col) => {
-      acc[col] = tasks.filter((task) => task.status === col);
-      return acc;
-    }, {} as Record<string, MockTask[]>);
+    return boardColumns.reduce(
+      (acc, col) => {
+        acc[col] = tasks.filter((task) => task.status === col);
+        return acc;
+      },
+      {} as Record<string, MockTask[]>,
+    );
   }, [tasks]);
 
   return (

@@ -1,25 +1,31 @@
+import type { ProjectId, UserId } from "@/domain/types";
+
 export interface CreateProjectPayload {
   name: string;
   description?: string;
   participants?: string[]; //emails
 }
 
-export interface EditProjectPayload {
-  projectId: string | number;
+export type EditProjectPayload = {
+  /**
+   * Project ID is used for routing (endpoint URL),
+   * NOT included in request body
+   */
+  projectId: ProjectId;
   name?: string;
   description?: string;
-}
+};
 
 export interface AddMembersPayload {
-  projectId: string | number;
+  projectId: ProjectId;
   emails: string[];
 }
 
 export interface RemoveMemberPayload {
-  projectId: string | number;
-  memberId: string | number;
+  projectId: ProjectId;
+  memberId: UserId;
 }
 
 export interface LeaveProjectPayload {
-  projectId: string | number;
+  projectId: ProjectId;
 }

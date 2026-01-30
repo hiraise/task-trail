@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import type { ProjectId } from "@/domain/types";
 import { appContainer } from "@/infrastructure/di/container";
 import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
@@ -17,19 +18,19 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * the deleted project's query from the cache, and invalidates the projects list query.
  * On error, it displays an error toast notification.
  *
- * @returns {UseMutationResult<void, Error, string | number>} A mutation object for deleting a project.
+ * @returns {UseMutationResult<void, Error, ProjectId>} A mutation object for deleting a project.
  */
-export function useDeleteProject(): UseMutationResult<void, Error, string | number> {
+export function useDeleteProject(): UseMutationResult<void, Error, ProjectId> {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { deleteProject } = appContainer.usecases.project;
 
   return useMutation({
-    mutationFn: (projectId: string | number) => deleteProject(projectId),
+    mutationFn: (projectId: ProjectId) => deleteProject(projectId),
     onSuccess: (_, projectId) => {
       router.replace(ROUTES.projects);
       toast.success("Project deleted successfully");
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.project(Number(projectId)) });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.project(projectId) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
     },
     onError: () => toast.error("Failed to delete project. Please try again."),

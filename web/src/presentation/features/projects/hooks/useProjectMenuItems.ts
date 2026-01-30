@@ -1,5 +1,13 @@
 import { toast } from "sonner";
 
+import {
+  canUserArchiveProject,
+  canUserDeleteProject,
+  canUserEditProject,
+  canUserManageMembers,
+  isProjectOwner,
+} from "@/domain/models/Project";
+import type { ProjectId } from "@/domain/types";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
@@ -10,7 +18,7 @@ import { useAddMember, useLeaveProject } from "../../projects/hooks";
 import { useDeleteProject } from "./useDeleteProject";
 import { useProject } from "./useProject";
 
-export const useProjectMenuItems = (projectId: string | number) => {
+export const useProjectMenuItems = (projectId: ProjectId) => {
   const { data: project } = useProject(projectId);
   const { mutateAsync: leave } = useLeaveProject();
   const { mutateAsync: deleteById } = useDeleteProject();
@@ -31,8 +39,7 @@ export const useProjectMenuItems = (projectId: string | number) => {
           description: project.description,
         });
       },
-      // isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_EDIT),
-      isVisible: project?.canEdit ?? false,
+      isVisible: project ? canUserEditProject(project) : false,
     },
     {
       label: TEXTS.projects.inviteMember,
@@ -43,8 +50,7 @@ export const useProjectMenuItems = (projectId: string | number) => {
         if (!emails || emails.length === 0) return;
         await addMembers({ projectId, emails });
       },
-      // isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_INVITE_USERS),
-      isVisible: project?.canManageMembers ?? false,
+      isVisible: project ? canUserManageMembers(project) : false,
     },
     {
       label: TEXTS.projects.moveToArchive,
@@ -52,13 +58,12 @@ export const useProjectMenuItems = (projectId: string | number) => {
       color: "var(--icon-tertiary)",
       onClick: async () => {
         if (!project) return;
-        const data = { id: Number(project.id), title: project.name };
+        const data = { id: project.id, title: project.name };
         const result = await showMoveToArchive({ type: "project", ...data });
         //TODO: implement move to archive logic
         if (result) toast.warning(`Project id: ${result} moved to archive`);
       },
-      // isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_ARCHIVE),
-      isVisible: project?.canArchiveProject ?? false,
+      isVisible: project ? canUserArchiveProject(project) : false,
     },
     {
       label: TEXTS.projects.leave,
@@ -66,11 +71,10 @@ export const useProjectMenuItems = (projectId: string | number) => {
       color: "var(--icon-tertiary)",
       onClick: async () => {
         if (!project) return;
-        const result = await showLeaveProject({ id: Number(project.id), title: project.name });
+        const result = await showLeaveProject({ id: project.id, title: project.name });
         if (result) await leave({ projectId: result });
       },
-      // isVisible: !hasPermission(permissions, PERMISSIONS.PROJECT_OWNER),
-      isVisible: !project?.isOwner,
+      isVisible: project ? !isProjectOwner(project) : false,
     },
     {
       label: TEXTS.projects.delete,
@@ -78,12 +82,11 @@ export const useProjectMenuItems = (projectId: string | number) => {
       color: "var(--icon-critical)",
       onClick: async () => {
         if (!project) return;
-        const data = { id: Number(project.id), title: project.name };
+        const data = { id: project.id, title: project.name };
         const result = await showDeleteItem({ type: "project", ...data });
         if (result) await deleteById(projectId);
       },
-      // isVisible: hasPermission(permissions, PERMISSIONS.PROJECT_DELETE),
-      isVisible: project?.canDelete ?? false,
+      isVisible: project ? canUserDeleteProject(project) : false,
     },
   ];
 

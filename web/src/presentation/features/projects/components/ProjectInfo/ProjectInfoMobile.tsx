@@ -1,13 +1,13 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import { TEXTS } from "@/shared/locales/texts";
 
 import styles from "./ProjectInfoMobile.module.css";
 
 interface ProjectInfoMobileProps {
-  project: ProjectResponseDto;
+  project: Project;
   owner: string;
 }
 

@@ -1,10 +1,9 @@
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { mapTaskToResponse } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
-import { TaskId } from "@/domain/valueobjects/TaskId";
+import type { TaskId } from "@/domain/types";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-type GetTaskUseCase = (taskId: string | number) => Promise<TaskResponseDto | null>;
+type GetTaskUseCase = (taskId: TaskId) => Promise<Task | null>;
 
 const createGetTaskUseCase =
   (taskRepository: TaskRepository): GetTaskUseCase =>
@@ -12,8 +11,7 @@ const createGetTaskUseCase =
     try {
       clientLogger.info("GetTaskUseCase: fetching task", { taskId });
 
-      const id = TaskId.create(taskId);
-      const task = await taskRepository.findById(id);
+      const task = await taskRepository.findById(taskId);
 
       if (!task) {
         clientLogger.warn("GetTaskUseCase: task not found", { taskId });
@@ -22,10 +20,10 @@ const createGetTaskUseCase =
 
       clientLogger.info("GetTaskUseCase: task fetched successfully", {
         taskId,
-        name: task.title,
+        name: task.name,
       });
 
-      return mapTaskToResponse(task);
+      return task;
     } catch (error) {
       clientLogger.error("GetTaskUseCase: failed", { error, taskId });
       throw error;

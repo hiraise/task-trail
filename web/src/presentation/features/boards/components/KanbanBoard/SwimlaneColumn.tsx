@@ -1,6 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
+import type { UserId } from "@/domain/types";
 
 import { CreateTask } from "./CreateTask";
 import type { MockTask } from "./KanbanBoard.mocks";
@@ -8,7 +9,7 @@ import { SortableKanbanTask } from "./SortableKanbanTask";
 import styles from "./Swimline.module.css";
 
 interface SwimlaneColumnProps {
-  memberId: number;
+  memberId: UserId;
   column: string;
   tasks: MockTask[];
 }

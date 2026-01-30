@@ -1,5 +1,6 @@
 import { useParams } from "next/navigation";
 
+import type { ProjectId, UserId } from "@/domain/types";
 import { MembersAvatarList } from "@/presentation/shared";
 import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
@@ -18,13 +19,13 @@ import styles from "./ProjectMobilePage.module.css";
 
 export function ProjectMobilePage() {
   const params = useParams();
-  const projectId = Number(params.id);
+  const projectId = params.id as ProjectId;
   const { data } = useProjectDetail(projectId);
   const { showProjectSettings } = useGlobalModals();
 
   if (!data) return null;
 
-  const memberIds = data.members.map((member) => Number(member.id)) || [];
+  const memberIds = data.members.map((member) => member.id) || [];
 
   //TODO: Optimize members and tasks
 
@@ -35,7 +36,7 @@ export function ProjectMobilePage() {
         variant="menu"
         onActionClick={showProjectSettings}
       >
-        <ProjectInfoMobile owner={data.owner.username} project={data.project} />
+        <ProjectInfoMobile owner={data.owner.username ?? ""} project={data.project} />
         <ProjectMembers projectId={projectId} memberIds={memberIds} />
         <ProjectTasks projectId={projectId} tasks={data.tasks} className={styles.tasks} />
       </PagesMobileTemplate>
@@ -45,8 +46,8 @@ export function ProjectMobilePage() {
 }
 
 interface ProjectMembersProps {
-  projectId: number;
-  memberIds: number[];
+  projectId: ProjectId;
+  memberIds: UserId[];
 }
 
 function ProjectMembers({ projectId, memberIds }: ProjectMembersProps) {

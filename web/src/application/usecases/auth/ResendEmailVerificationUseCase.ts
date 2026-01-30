@@ -1,6 +1,5 @@
 import type { EmailPayload } from "@/application/payloads";
 import type { AuthRepository } from "@/domain/repositories/AuthRepository";
-import { Email } from "@/domain/valueobjects/Email";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
 type ResendEmailVerificationUseCase = (payload: EmailPayload) => Promise<string>;
@@ -10,8 +9,7 @@ const createResendEmailVerificationUseCase =
   async (payload) => {
     try {
       clientLogger.info("ResendEmailVerificationUseCase: executing");
-      const email = Email.create(payload.email);
-      await authRepository.resendEmailVerification(email);
+      await authRepository.resendEmailVerification(payload.email);
       clientLogger.info("ResendEmailVerificationUseCase: End successfully");
       return payload.email;
     } catch (error) {

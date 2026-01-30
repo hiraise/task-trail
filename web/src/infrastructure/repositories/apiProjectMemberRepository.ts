@@ -1,14 +1,11 @@
-import type { ProjectMember } from "@/domain/models/ProjectMember";
+import { createProjectMember, type ProjectMember } from "@/domain/models/ProjectMember";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
-import type { ProjectId } from "@/domain/valueobjects/ProjectId";
-import type { ProjectMemberId } from "@/domain/valueobjects/ProjectMemberId";
+import type { ProjectId, UserId } from "@/domain/types";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
-import type { AddMembersPayload, ProjectMemberDTO } from "../http/dto/ProjectMemberDTO";
 import type { HttpClient } from "../http/HttpClient";
-import { mapApiProjectMembersToDomain } from "../http/mappers/projectMember.mapper";
 
 type ApiProjectMemberRepository = ProjectMemberRepository;
 
@@ -37,11 +34,11 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
    * @returns A promise that resolves to a {@link ProjectMember} object if found, or null if not found.
    * @throws {AppError} If an error occurs during the request.
    */
-  findById: async (id: ProjectMemberId): Promise<ProjectMember | null> => {
+  findById: async (id: UserId): Promise<ProjectMember | null> => {
     try {
       return null;
     } catch (error) {
-      clientLogger.error("Get project member error", { error, id: id.value });
+      clientLogger.error("Get project member error", { error, id });
       throw handleError("Failed to get project member", error);
     }
   },
@@ -59,19 +56,12 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
    */
   findByProjectId: async (projectId: ProjectId): Promise<ProjectMember[]> => {
     try {
-      const dtos = await httpClient.get<ProjectMemberDTO[]>(
-        API_ROUTES.PROJECT_MEMBERS(Number(projectId.value)),
-      );
-
-      if (!Array.isArray(dtos)) {
-        throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
-      }
-
-      return mapApiProjectMembersToDomain(dtos, projectId);
+      const dtos = await httpClient.get(API_ROUTES.PROJECT_MEMBERS(projectId));
+      return dtos.map(createProjectMember);
     } catch (error) {
       clientLogger.error("Get project members error", {
         error,
-        projectId: projectId.value,
+        projectId,
       });
       throw handleError("Failed to get project members", error);
     }
@@ -90,12 +80,11 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
    */
   addByEmails: async (projectId: ProjectId, emails: string[]): Promise<void> => {
     try {
-      const payload: AddMembersPayload = { emails };
-      await httpClient.post(API_ROUTES.PROJECT_MEMBERS(Number(projectId.value)), payload);
+      await httpClient.post(API_ROUTES.PROJECT_MEMBERS(projectId), emails);
     } catch (error) {
       clientLogger.error("Add members error", {
         error,
-        projectId: projectId.value,
+        projectId,
         emails,
       });
       throw handleError("Failed to add members to project", error);
@@ -110,14 +99,14 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
    * @returns A promise that resolves when the member has been successfully removed.
    * @throws Throws an error if the removal operation fails.
    */
-  removeMember: async (projectId: ProjectId, memberId: ProjectMemberId): Promise<void> => {
+  removeMember: async (projectId: ProjectId, memberId: UserId): Promise<void> => {
     try {
-      await httpClient.delete(API_ROUTES.KICK_MEMBER(Number(projectId.value), memberId.value));
+      await httpClient.delete(API_ROUTES.KICK_MEMBER(projectId, memberId));
     } catch (error) {
       clientLogger.error("Kick member error", {
         error,
-        projectId: projectId.value,
-        memberId: memberId.value,
+        projectId,
+        memberId: memberId,
       });
       throw handleError("Failed to kick member from project", error);
     }
@@ -135,11 +124,11 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
    */
   leaveProject: async (projectId: ProjectId): Promise<void> => {
     try {
-      await httpClient.delete(API_ROUTES.LEAVE_PROJECT(Number(projectId.value)));
+      await httpClient.delete(API_ROUTES.LEAVE_PROJECT(projectId));
     } catch (error) {
       clientLogger.error("Leave project error", {
         error,
-        projectId: projectId.value,
+        projectId,
       });
       throw handleError("Failed to leave project", error);
     }

@@ -1,14 +1,11 @@
-import type { User } from "@/domain/models/User";
+import { createUser, type User } from "@/domain/models/User";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
-import type { ProjectId } from "@/domain/valueobjects/ProjectId";
-import type { UserId } from "@/domain/valueobjects/UserId";
+import type { ProjectId, UserId } from "@/domain/types";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
-import type { UserDTO } from "../http/dto/UserDTO";
 import type { HttpClient } from "../http/HttpClient";
-import { mapApiUsersToDomain, mapApiUserToDomain } from "../http/mappers/user.mapper";
 
 type ApiUserRepository = UserRepository;
 
@@ -47,8 +44,8 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
    */
   getCurrentUser: async (): Promise<User | null> => {
     try {
-      const dto = await httpClient.get<UserDTO>(API_ROUTES.CURRENT_USER);
-      return mapApiUserToDomain(dto);
+      const dto = await httpClient.get(API_ROUTES.CURRENT_USER);
+      return createUser(dto);
     } catch (error) {
       clientLogger.error("Get current user error", { error: error });
       throw handleError("Failed to get current user", error);
@@ -98,10 +95,10 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
    */
   updateUser: async (username?: string): Promise<User> => {
     try {
-      const dto = await httpClient.patch<UserDTO>(API_ROUTES.CURRENT_USER, { username });
-      const updatedUser = mapApiUserToDomain(dto);
+      const dto = await httpClient.patch(API_ROUTES.CURRENT_USER, { username });
+      const updatedUser = createUser(dto);
 
-      clientLogger.info("Repository: user updated successfully", { userId: updatedUser.id.value });
+      clientLogger.info("Repository: user updated successfully", { userId: updatedUser.id });
       return updatedUser;
     } catch (error) {
       clientLogger.error("Repository: update user error", { error });
@@ -113,15 +110,15 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
    * Retrieves a user by their unique identifier.
    *
    * @param id - The unique identifier of the user to retrieve.
-   * @returns A promise that resolves to the corresponding {@link User} domain object.
+   * @returns A promise that resolves to the corresponding {@link User}.
    * @throws Will throw an error if the user cannot be retrieved.
    */
   findById: async (id: UserId): Promise<User> => {
     try {
-      const dto = await httpClient.get<UserDTO>(API_ROUTES.USER_BY_ID(Number(id.value)));
-      return mapApiUserToDomain(dto);
+      const dto = await httpClient.get(API_ROUTES.USER_BY_ID(id));
+      return createUser(dto);
     } catch (error) {
-      clientLogger.error("Get user by ID error", { error, id: id.value });
+      clientLogger.error("Get user by ID error", { error, id });
       throw handleError("Failed to get user by ID", error);
     }
   },
@@ -135,13 +132,8 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
    */
   findCandidatesForProject: async (projectId?: ProjectId): Promise<User[]> => {
     try {
-      const id = Number(projectId?.value);
-      const dtos = await httpClient.get<UserDTO[]>(API_ROUTES.GET_CANDIDATES(id));
-
-      if (!Array.isArray(dtos)) {
-        throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
-      }
-      return mapApiUsersToDomain(dtos);
+      const dtos = await httpClient.get(API_ROUTES.GET_CANDIDATES(projectId));
+      return dtos.map(createUser);
     } catch (error) {
       clientLogger.error("Get project candidates error", { error });
       throw new AppError(AppErrorType.SERVER, "Failed to get project candidates");

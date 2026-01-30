@@ -1,11 +1,11 @@
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
-import { mapUserToResponse } from "@/application/dto/UserResponseDto";
 import type { UpdateUserPayload } from "@/application/payloads";
+import type { User } from "@/domain/models/User";
+import { createUser } from "@/domain/models/User";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-type UpdateUserUseCase = (payload: UpdateUserPayload) => Promise<UserResponseDto>;
+type UpdateUserUseCase = (payload: UpdateUserPayload) => Promise<User>;
 
 /**
  * Use case for updating user profile information.
@@ -23,11 +23,11 @@ const createUpdateUserUseCase =
       const updatedUser = await userRepository.updateUser(payload.username);
 
       clientLogger.info("UpdateUserUseCase: user updated successfully", {
-        userId: updatedUser.id.value,
+        userId: updatedUser.id,
         updatedFields: Object.keys(payload),
       });
 
-      return mapUserToResponse(updatedUser);
+      return createUser(updatedUser);
     } catch (error) {
       clientLogger.error("UpdateUserUseCase: execution failed", { error });
 

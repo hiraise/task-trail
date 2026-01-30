@@ -1,4 +1,4 @@
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
 import { EditTaskFormDesktop, type FormValues } from "@/presentation/features/tasks/components";
 import { DeviceBased } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks";
@@ -11,14 +11,14 @@ import { useEditTask } from "../../hooks";
 
 export default function EditTaskModal(props: BaseModalProps<string>) {
   const { taskId, title, description } = useGlobalModalProps<EditTaskProps>() ?? {};
-  const task: Partial<TaskResponseDto> = { title, description };
+  const task: Partial<Task> = { name: title, description };
 
   const { mutateAsync: editTask } = useEditTask();
 
   if (!taskId) return;
 
   const submitHandler = async (data: FormValues) => {
-    if (data.title !== task.title || data.description !== task.description) {
+    if (data.title !== task.name || data.description !== task.description) {
       await editTask({ taskId: taskId, title: data.title, description: data.description });
     }
     props.onClose();

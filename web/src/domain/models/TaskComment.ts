@@ -1,21 +1,15 @@
-import type { TaskCommentId } from "../valueobjects/TaskCommentId";
-import type { UserId } from "../valueobjects/UserId";
+import z from "zod";
 
-import type { User } from "./User";
+import type { CommentId } from "../types";
 
-export class TaskComment {
-  constructor(
-    public readonly id: TaskCommentId,
-    public readonly author: User,
-    public readonly createdAt: Date,
-    public text: string,
-    public readonly updatedAt?: Date,
-  ) {}
+import { UserSchema } from "./User";
 
-  updateText(newText: string, updatedBy: UserId): void {
-    if (!this.author.id.equals(updatedBy)) {
-      throw new Error("Only author can edit comment");
-    }
-    this.text = newText;
-  }
-}
+export const TaskCommentSchema = z.object({
+  id: z.union([z.string(), z.number()]).transform(String).pipe(z.string()) as z.ZodType<CommentId>,
+  author: UserSchema,
+  createdAt: z.iso.datetime(),
+  text: z.string(),
+  updatedAt: z.iso.datetime().optional(),
+});
+
+export type TaskComment = z.infer<typeof TaskCommentSchema>;

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
 import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
 import { TEXTS } from "@/shared/locales/texts";
 
@@ -10,7 +10,7 @@ import type { FormValues } from "./schema";
 import { schema } from "./schema";
 
 interface EditTaskFormDesktop {
-  task?: Partial<TaskResponseDto>;
+  task?: Partial<Task>;
   submitHandler: (data: FormValues) => Promise<void>;
 }
 
@@ -19,7 +19,7 @@ export function EditTaskFormDesktop({ task, submitHandler }: EditTaskFormDesktop
     mode: "onChange",
     resolver: zodResolver(schema),
     defaultValues: {
-      title: task?.title || "",
+      title: task?.name || "",
       description: task?.description || "",
     },
   });

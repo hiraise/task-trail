@@ -1,4 +1,4 @@
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import type { BaseModalProps } from "@/presentation/shared";
 import { BaseModal, DeviceBased } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
@@ -11,7 +11,7 @@ import { useEditProject } from "../../hooks";
 
 export function EditProjectModal(props: BaseModalProps<void>) {
   const { projectId, name, description } = useGlobalModalProps<EditProjectProps>() ?? {};
-  const project: Partial<ProjectResponseDto> = { id: projectId, name, description };
+  const project: Partial<Project> = { id: projectId, name, description };
 
   const { mutateAsync: editProject } = useEditProject();
 

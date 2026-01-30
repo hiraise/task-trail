@@ -1,9 +1,10 @@
+import { canUserDeleteProject } from "@/domain/models/Project";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
-import { ProjectId } from "@/domain/valueobjects/ProjectId";
+import type { ProjectId } from "@/domain/types";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-type DeleteProjectUseCase = (projectId: string | number) => Promise<void>;
+type DeleteProjectUseCase = (projectId: ProjectId) => Promise<void>;
 
 const createDeleteProjectUseCase =
   (projectRepository: ProjectRepository): DeleteProjectUseCase =>
@@ -11,22 +12,19 @@ const createDeleteProjectUseCase =
     try {
       clientLogger.info("DeleteProjectUseCase: deleting project", { projectId });
 
-      const id = ProjectId.create(projectId);
-      const project = await projectRepository.findById(id);
+      const project = await projectRepository.findById(projectId);
 
       if (!project) {
-        throw new AppError(AppErrorType.NOT_FOUND, `Project not found: ${id}`);
+        throw new AppError(AppErrorType.NOT_FOUND, `Project not found: ${projectId}`);
       }
 
-      if (!project.canUserDelete()) {
+      if (!canUserDeleteProject(project)) {
         throw new AppError(AppErrorType.FORBIDDEN, "Only owner can delete project");
       }
 
-      await projectRepository.delete(id);
+      await projectRepository.delete(projectId);
 
-      clientLogger.info("DeleteProjectUseCase: project deleted successfully", {
-        projectId,
-      });
+      clientLogger.info("DeleteProjectUseCase: project deleted successfully", { projectId });
     } catch (error) {
       clientLogger.error("DeleteProjectUseCase: failed", { error, projectId });
       throw error;

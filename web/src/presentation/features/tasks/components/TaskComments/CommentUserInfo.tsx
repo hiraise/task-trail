@@ -1,10 +1,10 @@
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
 import { UserAvatar } from "@/presentation/shared";
 
 import styles from "./CommentUserInfo.module.css";
 
 interface CommentUserInfoProps {
-  user: UserResponseDto;
+  user: User;
   createdAt: string;
   updatedAt?: string;
 }

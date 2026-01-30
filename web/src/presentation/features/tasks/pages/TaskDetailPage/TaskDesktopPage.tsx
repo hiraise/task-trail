@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { useParams } from "next/navigation";
 
+import type { TaskId } from "@/domain/types";
 import { BackButton } from "@/presentation/shared";
 import { tasksTexts } from "@/shared/locales/tasks";
 
@@ -13,7 +14,7 @@ import styles from "./TaskDesktopPage.module.css";
 
 export function TaskDesktopPage() {
   const params = useParams();
-  const { data: task } = useGetTask(params.taskId?.toString());
+  const { data: task } = useGetTask(params.taskId as TaskId);
 
   if (!task) return null;
 

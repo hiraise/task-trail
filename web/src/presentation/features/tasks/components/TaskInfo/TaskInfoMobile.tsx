@@ -1,4 +1,4 @@
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
 import { useChangeTaskInfo } from "@/presentation/features/tasks/hooks";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
@@ -7,7 +7,7 @@ import { TaskDetailsMobile } from "./TaskDetailsMobile";
 import styles from "./TaskInfoMobile.module.css";
 import { TaskStatus } from "./TaskStatus";
 
-export function TaskInfoMobile({ task }: { task: TaskResponseDto }) {
+export function TaskInfoMobile({ task }: { task: Task }) {
   const { data, changeStatus, selectProject, selectAssignee } = useChangeTaskInfo(task);
 
   if (!data) return null;
@@ -16,13 +16,13 @@ export function TaskInfoMobile({ task }: { task: TaskResponseDto }) {
     <div className={styles.taskInfo}>
       <div className={styles.layout}>
         <TaskStatus status={data.status} onClick={changeStatus} />
-        <h2 className="multiline">{task.title}</h2>
+        <h2 className="multiline">{task.name}</h2>
         <p className="body-reg-2">{task.description}</p>
       </div>
       <div className={styles.layout}>
         <TaskDetailsMobile
           icon={ICONS.profile}
-          label={data.assignee.username || data.assignee.username}
+          label={data.assignee ? data.assignee.username || data.assignee.username : undefined}
           onClick={selectAssignee}
           placeholder={TEXTS.tasks.assignee}
         />

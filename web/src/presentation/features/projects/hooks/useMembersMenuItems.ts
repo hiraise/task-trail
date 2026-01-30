@@ -1,5 +1,7 @@
 import { toast } from "sonner";
 
+import { canUserManageMembers } from "@/domain/models/Project";
+import type { ProjectId, UserId } from "@/domain/types";
 import { useProject } from "@/presentation/features/projects/hooks";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
@@ -9,10 +11,10 @@ import { TEXTS } from "@/shared/locales/texts";
 import { useRemoveMember } from "./useRemoveMember";
 
 export const useMembersMenuItems = (
-  memberId: number,
+  memberId: UserId,
   memberDisplayName: string,
-  currentUserId: number,
-  projectId: number
+  currentUserId: UserId,
+  projectId: ProjectId,
 ) => {
   const { data: project } = useProject(projectId);
   const { mutateAsync: removeMember } = useRemoveMember();
@@ -21,7 +23,7 @@ export const useMembersMenuItems = (
 
   const menuItems: MenuItem[] = [];
 
-  if (project?.canManageMembers) {
+  if (project && canUserManageMembers(project)) {
     menuItems.push({
       label: TEXTS.projects.makeAdmin,
       icon: ICONS.profile,
@@ -31,7 +33,7 @@ export const useMembersMenuItems = (
     });
   }
 
-  if (project?.canManageMembers) {
+  if (project && canUserManageMembers(project)) {
     menuItems.push({
       label: TEXTS.projects.kick,
       icon: ICONS.delete,

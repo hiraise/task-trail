@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import { DropdownMenu, IconButton } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 
@@ -9,8 +9,8 @@ import { useProjectMenuItems } from "../../hooks/useProjectMenuItems";
 
 import styles from "./ProjectInfoDesktop.module.css";
 
-export function ProjectInfoDesktop({ project }: { project: ProjectResponseDto }) {
-  const { data } = useProjectDetail(Number(project.id));
+export function ProjectInfoDesktop({ project }: { project: Project }) {
+  const { data } = useProjectDetail(project.id);
   const { menuItems } = useProjectMenuItems(project.id);
 
   if (!data) return null;

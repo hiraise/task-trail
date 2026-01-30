@@ -2,7 +2,8 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
+import type { ProjectId } from "@/domain/types";
 import { BackButton, IconButton } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { ICONS } from "@/shared/config/icons";
@@ -21,7 +22,7 @@ import styles from "./ProjectDesktopPage.module.css";
 
 export function ProjectDesktopPage() {
   const params = useParams();
-  const projectId = Number(params.id);
+  const projectId = params.id as ProjectId;
   const { data } = useProjectDetail(projectId);
 
   if (!data) return null;
@@ -43,7 +44,7 @@ export function ProjectDesktopPage() {
   );
 }
 
-function TaskList({ tasks }: { tasks: TaskResponseDto[] }) {
+function TaskList({ tasks }: { tasks: Task[] }) {
   const { showSortOptions } = useGlobalModals();
 
   if (tasks.length === 0)
@@ -65,8 +66,8 @@ function TaskList({ tasks }: { tasks: TaskResponseDto[] }) {
 
       <div className={clsx(styles.content, styles.tasks)}>
         {tasks.map((task) => (
-          <Link key={`${task.id}-${task.title}`} href={ROUTES.projectTask(task.projectId, task.id)}>
-            <ProjectTask title={task.title} />
+          <Link key={`${task.id}-${task.name}`} href={ROUTES.projectTask(task.projectId, task.id)}>
+            <ProjectTask title={task.name} />
           </Link>
         ))}
       </div>

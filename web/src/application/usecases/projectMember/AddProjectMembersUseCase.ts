@@ -1,7 +1,7 @@
 import type { AddMembersPayload } from "@/application/payloads";
+import { canUserInviteMembers } from "@/domain/models/Project";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
-import { ProjectId } from "@/domain/valueobjects/ProjectId";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
@@ -19,21 +19,20 @@ const createAddProjectMembersUseCase =
         emailsCount: payload.emails.length,
       });
 
-      const projectId = ProjectId.create(payload.projectId);
-      const project = await projectRepository.findById(projectId);
+      const project = await projectRepository.findById(payload.projectId);
 
       if (!project) {
-        throw new AppError(AppErrorType.NOT_FOUND, `Project not found: ${projectId}`);
+        throw new AppError(AppErrorType.NOT_FOUND, `Project not found: ${payload.projectId}`);
       }
 
-      if (!project.canUserInviteMembers()) {
+      if (!canUserInviteMembers(project)) {
         throw new AppError(
           AppErrorType.FORBIDDEN,
           "You do not have permission to invite members to this project",
         );
       }
 
-      await projectMemberRepository.addByEmails(projectId, payload.emails);
+      await projectMemberRepository.addByEmails(payload.projectId, payload.emails);
 
       clientLogger.info("Members added successfully", {
         projectId: payload.projectId,

@@ -1,5 +1,4 @@
 import type { AuthRepository } from "@/domain/repositories/AuthRepository";
-import type { Email } from "@/domain/valueobjects/Email";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
@@ -25,10 +24,9 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
    * @param password - The user's password.
    * @throws Will throw an error if the login request fails.
    */
-  login: async (email: Email, password: string): Promise<void> => {
+  login: async (email: string, password: string): Promise<void> => {
     try {
-      const payload = { email: email.toString(), password };
-      await httpClient.post(API_ROUTES.LOGIN, payload);
+      await httpClient.post(API_ROUTES.LOGIN, { email, password });
     } catch (error) {
       clientLogger.error("Login error", { error });
       throw handleError("Failed to login", error);
@@ -58,10 +56,9 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
    * @returns A promise that resolves when the sign-up process is complete.
    * @throws Will throw an error if the sign-up request fails.
    */
-  signUp: async (email: Email, password: string): Promise<void> => {
+  signUp: async (email: string, password: string): Promise<void> => {
     try {
-      const payload = { email: email.toString(), password };
-      await httpClient.post(API_ROUTES.SIGNUP, payload);
+      await httpClient.post(API_ROUTES.SIGNUP, { email, password });
     } catch (error) {
       clientLogger.error("SignUp error", { error });
       throw handleError("Failed to signup", error);
@@ -111,7 +108,7 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
    * @returns A promise that resolves when the request is complete.
    * @throws Will throw an error if the request fails.
    */
-  forgotPassword: async (email: Email): Promise<void> => {
+  forgotPassword: async (email: string): Promise<void> => {
     try {
       await httpClient.post(API_ROUTES.FORGOT_PASSWORD, { email });
     } catch (error) {
@@ -151,7 +148,7 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
    * @returns A promise that resolves when the request is complete.
    * @throws Will throw an error if the resend verification request fails.
    */
-  resendEmailVerification: async (email: Email): Promise<void> => {
+  resendEmailVerification: async (email: string): Promise<void> => {
     try {
       await httpClient.post(API_ROUTES.RESEND_VERIFICATION, { email });
     } catch (error) {

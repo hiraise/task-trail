@@ -3,14 +3,14 @@
 import Image from "next/image";
 import { useLayoutEffect, useRef, useState } from "react";
 
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
 import { ASSETS } from "@/shared/config/assets";
 import { TEXTS } from "@/shared/locales/texts";
 
 import { ProfileAvatar } from "./ProfileAvatar";
 import styles from "./ProfileHeroMobile.module.css";
 
-export function ProfileHeroMobile({ user }: { user: UserResponseDto }) {
+export function ProfileHeroMobile({ user }: { user: User }) {
   const heroRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);

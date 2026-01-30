@@ -1,4 +1,4 @@
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
 import { useTaskMenuItems } from "@/presentation/features/tasks/hooks/useTaskMenuItems";
 
 import { useGlobalModalProps } from "../../hooks";
@@ -7,8 +7,8 @@ import { BaseModal, type BaseModalProps } from "../BaseModal";
 import { TaskSettings } from "./TaskSettings";
 
 export default function TaskSettingsModal(props: BaseModalProps<void>) {
-  const { task } = useGlobalModalProps<{ task: TaskResponseDto }>() ?? {};
-  const { menuItems } = useTaskMenuItems(task ?? ({} as TaskResponseDto));
+  const { task } = useGlobalModalProps<{ task: Task }>() ?? {};
+  const { menuItems } = useTaskMenuItems(task ?? ({} as Task));
 
   if (!task) return null;
 

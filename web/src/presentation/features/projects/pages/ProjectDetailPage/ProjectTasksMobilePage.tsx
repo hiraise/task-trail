@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 
+import type { ProjectId } from "@/domain/types";
 import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
 import { useGetProjectTasks } from "@/presentation/shared/hooks";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
@@ -11,7 +12,7 @@ import { FloatingButtonDesktop, TaskList } from "../../components";
 
 export function ProjectTasksMobilePage() {
   const params = useParams();
-  const projectId = Number(params.id);
+  const projectId = params.id as ProjectId;
 
   const { showSortOptions } = useGlobalModals();
   const { data: tasks } = useGetProjectTasks(projectId);

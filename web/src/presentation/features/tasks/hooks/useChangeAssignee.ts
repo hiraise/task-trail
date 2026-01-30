@@ -2,15 +2,15 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
 import type { ChangeAssigneePayload } from "@/application/payloads";
+import type { Task } from "@/domain/models/Task";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
  * Hook for changing task assignee
  * @returns A mutation result object for executing the change assignee operation
- * @returns The mutation accepts a ChangeAssigneePayload and returns an updated TaskResponseDto
+ * @returns The mutation accepts a ChangeAssigneePayload and returns an updated Task
  * @remarks
  * - Invalidates task queries after successful assignee change
  * - Shows success toast on successful operation
@@ -19,11 +19,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * const changeAssigneeMutation = useChangeAssignee();
  * changeAssigneeMutation.mutate({ taskId: '123', assigneeId: '456' });
  */
-export function useChangeAssignee(): UseMutationResult<
-  TaskResponseDto,
-  Error,
-  ChangeAssigneePayload
-> {
+export function useChangeAssignee(): UseMutationResult<Task, Error, ChangeAssigneePayload> {
   const queryClient = useQueryClient();
   const { changeAssignee } = appContainer.usecases.tasks;
 

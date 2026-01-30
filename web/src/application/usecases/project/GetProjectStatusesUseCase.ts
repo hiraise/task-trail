@@ -1,10 +1,9 @@
-import type { TaskStatusResponseDto } from "@/application/dto/TaskStatusResponseDto";
-import { mapTaskStatusesToResponse } from "@/application/dto/TaskStatusResponseDto";
+import type { TaskStatus } from "@/domain/models/TaskStatus";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
-import { ProjectId } from "@/domain/valueobjects/ProjectId";
+import type { ProjectId } from "@/domain/types";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-type GetProjectStatusesUseCase = (projectId: string | number) => Promise<TaskStatusResponseDto[]>;
+type GetProjectStatusesUseCase = (projectId: ProjectId) => Promise<TaskStatus[]>;
 
 const createGetProjectStatusesUseCase =
   (projectRepository: ProjectRepository): GetProjectStatusesUseCase =>
@@ -12,14 +11,13 @@ const createGetProjectStatusesUseCase =
     try {
       clientLogger.info("GetProjectStatusesUseCase: fetching all project statuses");
 
-      const id = ProjectId.create(projectId);
-      const statuses = await projectRepository.getProjectStatuses(id);
+      const statuses = await projectRepository.getProjectStatuses(projectId);
 
       clientLogger.info("GetProjectStatusesUseCase: project statuses fetched successfully", {
         count: statuses.length,
       });
 
-      return mapTaskStatusesToResponse(statuses);
+      return statuses;
     } catch (error) {
       clientLogger.error("GetProjectStatusesUseCase: failed", { error });
       throw error;

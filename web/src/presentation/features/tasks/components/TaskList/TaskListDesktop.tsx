@@ -50,13 +50,13 @@ function TaskItemDesktop({ data }: { data: TaskDetailResponseDto }) {
         <span className={clsx(styles.taskId, "caption-med")}>
           {getProjectId(project.name) + task.id}
         </span>
-        <span className="body-med">{task.title}</span>
+        <span className="body-med">{task.name}</span>
       </div>
       {assignee && (
         <div className={styles.avatarWrapper}>
           {assignee.avatarUrl && <Image src={assignee.avatarUrl} fill alt="User avatar" />}
           {!assignee.avatarUrl && (
-            <span className="caption-2-reg">{getUserInitials(assignee.username)}</span>
+            <span className="caption-2-reg">{getUserInitials(assignee.username ?? "ХХ")}</span>
           )}
         </div>
       )}

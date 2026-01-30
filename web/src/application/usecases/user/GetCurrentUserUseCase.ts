@@ -1,10 +1,10 @@
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
-import { mapUserToResponse } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
+import { createUser } from "@/domain/models/User";
 import type { UserRepository } from "@/domain/repositories/UserRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-type GetCurrentUserUseCase = () => Promise<UserResponseDto | null>;
+type GetCurrentUserUseCase = () => Promise<User | null>;
 
 /**
  * Creates a use case function for retrieving the currently authenticated user.
@@ -24,7 +24,7 @@ type GetCurrentUserUseCase = () => Promise<UserResponseDto | null>;
  * ```
  */
 const createGetCurrentUserUseCase =
-  (userRepository: UserRepository) => async (): Promise<UserResponseDto | null> => {
+  (userRepository: UserRepository) => async (): Promise<User | null> => {
     try {
       clientLogger.info("GetCurrentUserUseCase: starting execution");
 
@@ -36,11 +36,11 @@ const createGetCurrentUserUseCase =
       }
 
       clientLogger.info("GetCurrentUserUseCase: user retrieved successfully", {
-        userId: currentUser.id.value,
+        userId: currentUser.id,
         email: currentUser.email,
       });
 
-      return mapUserToResponse(currentUser);
+      return createUser(currentUser);
     } catch (error) {
       clientLogger.error("GetCurrentUserUseCase: execution failed", { error });
 

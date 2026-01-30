@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
 import { TEXTS } from "@/shared/locales/texts";
 
@@ -10,7 +10,7 @@ import type { FormValues } from "./schema";
 import { schema } from "./schema";
 
 interface EditProjectFormDesktop {
-  project?: Partial<ProjectResponseDto>;
+  project?: Partial<Project>;
   submitHandler: (data: FormValues) => Promise<void>;
 }
 

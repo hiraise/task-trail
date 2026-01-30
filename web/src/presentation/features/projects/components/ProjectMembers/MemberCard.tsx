@@ -3,7 +3,8 @@ import { AnimatePresence, motion as m } from "framer-motion";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
-import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
+import { getProjectMemberDisplayName, type ProjectMember } from "@/domain/models/ProjectMember";
+import type { ProjectId } from "@/domain/types";
 import { DropdownMenu, IconButton, UserAvatar } from "@/presentation/shared";
 import { useGetCurrentUser } from "@/presentation/shared/hooks";
 import { ICONS } from "@/shared/config/icons";
@@ -12,17 +13,17 @@ import { useMembersMenuItems } from "../../hooks/useMembersMenuItems";
 
 import styles from "./MemberCard.module.css";
 
-export function MemberCard({ user }: { user: ProjectMemberResponseDto }) {
+export function MemberCard({ user }: { user: ProjectMember }) {
   const [isHovered, setIsHovered] = useState(false);
 
   const params = useParams();
-  const projectId = Number(params.id);
+  const projectId = params.id as ProjectId;
   const { data: currentUser } = useGetCurrentUser();
   const { menuItems } = useMembersMenuItems(
-    Number(user.id),
+    user.id,
     user.username,
-    currentUser?.id ?? -1,
-    projectId
+    currentUser?.id ?? "",
+    projectId,
   );
 
   return (
@@ -34,7 +35,7 @@ export function MemberCard({ user }: { user: ProjectMemberResponseDto }) {
       <div className={styles.container}>
         <UserAvatar variant="large" />
         <div className={styles.name}>
-          <span className="body-med">{user.displayName}</span>
+          <span className="body-med">{getProjectMemberDisplayName(user)}</span>
           <span className={clsx("body-reg-2", styles.email)}>{user.email}</span>
         </div>
       </div>

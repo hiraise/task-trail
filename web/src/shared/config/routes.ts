@@ -1,3 +1,5 @@
+import type { BoardId, ProjectId, TaskId } from "../../domain/types";
+
 const PROFILE_BASE = "/profile";
 const PROJECTS = "/projects";
 const TASKS = "/tasks";
@@ -19,13 +21,12 @@ export const ROUTES = {
   profile: PROFILE_BASE,
   profileEditPersonalData: `${PROFILE_BASE}/edit-personal-data`,
   profileChangePassword: `${PROFILE_BASE}/change-password`,
-  project: (id: number) => `${PROJECTS}/${id}`,
-  projectMembers: (id: number) => `${PROJECTS}/${id}/members`,
-  projectTasks: (id: number) => `${PROJECTS}/${id}/tasks`,
-  projectTask: (id: number, taskId: number) => `${PROJECTS}/${id}/tasks/${taskId}`,
-  editProject: (id: number) => `${PROJECTS}/${id}/edit-project`,
-  task: (id: number) => `${TASKS}/${id}`,
-  board: (id: number) => `${BOARDS}/${id}`,
+  project: (id: ProjectId) => `${PROJECTS}/${id}`,
+  projectMembers: (id: ProjectId) => `${PROJECTS}/${id}/members`,
+  projectTasks: (id: ProjectId) => `${PROJECTS}/${id}/tasks`,
+  projectTask: (id: ProjectId, taskId: TaskId) => `${PROJECTS}/${id}/tasks/${taskId}`,
+  task: (id: TaskId) => `${TASKS}/${id}`,
+  board: (id: BoardId) => `${BOARDS}/${id}`,
 };
 
 export const protectedRoutes = [

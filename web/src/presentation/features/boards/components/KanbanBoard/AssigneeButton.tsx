@@ -1,13 +1,13 @@
 import { motion as m } from "framer-motion";
 
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
 import { IconButton, UserAvatar } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 
 import styles from "./AssigneeButton.module.css";
 
 interface AssigneeButtonProps {
-  user: UserResponseDto;
+  user: User;
   isCollapsed: boolean;
   toggleCollapse: () => void;
 }

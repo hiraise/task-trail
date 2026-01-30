@@ -1,93 +1,53 @@
 import { useCallback } from "react";
 
-import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import type { TaskStatusResponseDto } from "@/application/dto/TaskStatusResponseDto";
+import type { Project } from "@/domain/models/Project";
+import type { ProjectMember } from "@/domain/models/ProjectMember";
+import type { Task } from "@/domain/models/Task";
+import type { TaskStatus } from "@/domain/models/TaskStatus";
+import type { ProjectId, TaskId, UserId } from "@/domain/types";
 import type { ModalType } from "@/presentation/app";
 import { MODAL_TYPE, useGlobalModalContext } from "@/presentation/app";
 
 export interface ChangeStatusProps {
-  currentStatus?: TaskStatusResponseDto;
-  projectId?: number;
+  currentStatus?: TaskStatus;
+  projectId?: ProjectId;
 }
 
 export interface SelectAssigneeProps {
-  projectId?: string | number;
-  userId?: string | number;
+  projectId?: ProjectId;
+  userId?: UserId;
 }
 
 export interface EditTaskProps {
-  taskId: string | number;
+  taskId: TaskId;
   title: string;
   description?: string;
 }
 
 export interface EditProjectProps {
-  projectId: string | number;
+  projectId: ProjectId;
   name: string;
   description?: string;
 }
 
 export interface LeaveProjectProps {
-  id: number;
+  id: ProjectId;
   title: string;
 }
 
 export interface MemberActionsProps {
-  memberId: number;
+  memberId: UserId;
   memberDisplayName: string;
-  currentUserId: number;
-  projectId: number;
+  currentUserId: UserId;
+  projectId: ProjectId;
 }
 
 export interface ActionProps {
-  id: number;
+  id: TaskId | ProjectId | UserId;
   title: string;
   type: "task" | "project" | "member";
 }
 
-/**
- * Custom hook providing a set of functions to open global modals throughout the application.
- * Each function corresponds to a specific modal type and returns a Promise that resolves with the modal's result,
- * or `undefined` if the modal was closed or an error occurred.
- *
- * @returns An object containing methods to open various global modals:
- * - `closeAllModals()`: Closes all modals in the stack at once.
- * - `showSelectAssignee(props?)`: Opens the "Select Assignee" modal. Returns selected `MembersData` or `undefined`.
- * - `showSelectProject(projectId?)`: Opens the "Select Project" modal. Returns selected `Project` or `undefined`.
- * - `showChangeStatus(props?)`: Opens the "Change Status" modal. Returns selected `TaskStatus` or `undefined`.
- * - `showSortOptions()`: Opens the "Sort Options" modal. Returns `void` or `undefined`.
- * - `showCreateTask()`: Opens the "Create Task" modal. Returns `void` or `undefined`.
- * - `showCreateProject()`: Opens the "Create Project" modal. Returns `void` or `undefined`.
- * - `showInviteUser()`: Opens the "Invite User" modal. Returns an array of invited user emails (`string[]`) or `undefined`.
- * - `showMoveToArchive(props?)`: Opens the "Move to Archive" modal. Returns `void` or `undefined`.
- * - `showDeleteItem(props?)`: Opens the "Delete Item" modal. Returns `void` or `undefined`.
- * - `showEditProject(props?)`: Opens the "Edit Project" modal. Returns a partial `Project` object or `undefined`.
- * - `showEditTask(props?)`: Opens the "Edit Task" modal. Returns a partial `Task` object or `undefined`.
- *
- * All modal functions are safe to use and will return `undefined` if the modal is dismissed or an error occurs.
- *
- * @example
- * ```tsx
- * const {
- *   showSelectAssignee,
- *   showCreateTask,
- *   closeAllModals,
- * } = useGlobalModals();
- *
- * const handleAssign = async () => {
- *   const assignee = await showSelectAssignee();
- *   if (assignee) {
- *     // handle selected assignee
- *   }
- * };
- *
- * const handleCloseAll = () => {
- *   closeAllModals(); // Closes all open modals
- * };
- * ```
- */
 export const useGlobalModals = () => {
   const { open, closeAll } = useGlobalModalContext();
 
@@ -99,7 +59,7 @@ export const useGlobalModals = () => {
         return undefined;
       }
     },
-    [open]
+    [open],
   );
 
   return {
@@ -108,7 +68,7 @@ export const useGlobalModals = () => {
 
     // Selection modals
     showSelectProject: (projectId?: string | number) =>
-      safeOpen<ProjectResponseDto>(MODAL_TYPE.SELECT_PROJECT, { projectId }),
+      safeOpen<Project>(MODAL_TYPE.SELECT_PROJECT, { projectId }),
     showSortOptions: () => safeOpen<void>(MODAL_TYPE.SORT_ITEMS),
 
     // Creation modals
@@ -119,24 +79,25 @@ export const useGlobalModals = () => {
     // Common actions
     showMoveToArchive: (props?: ActionProps) =>
       safeOpen<number>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
-    showDeleteItem: (props?: ActionProps) => safeOpen<number>(MODAL_TYPE.DELETE, { ...props }),
+    showDeleteItem: (props?: ActionProps) =>
+      safeOpen<TaskId | ProjectId | UserId>(MODAL_TYPE.DELETE, { ...props }),
     showCropImage: (file?: File) => safeOpen<File>(MODAL_TYPE.CROP_IMAGE, { file }),
 
     // Project actions
     showEditProject: (props?: EditProjectProps) =>
       safeOpen<void>(MODAL_TYPE.EDIT_PROJECT, { ...props }),
     showLeaveProject: (props: LeaveProjectProps) =>
-      safeOpen<number>(MODAL_TYPE.LEAVE_PROJECT, { ...props }),
+      safeOpen<ProjectId | null>(MODAL_TYPE.LEAVE_PROJECT, { ...props }),
     showProjectSettings: () => safeOpen<void>(MODAL_TYPE.PROJECT_SETTINGS),
     showMemberActions: (props: MemberActionsProps) =>
       safeOpen<void>(MODAL_TYPE.MEMBER_ACTIONS, { ...props }),
 
     // Task actions
     showEditTask: (props?: EditTaskProps) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { ...props }),
-    showTaskSettings: (task: TaskResponseDto) => safeOpen<void>(MODAL_TYPE.TASK_SETTINGS, { task }),
+    showTaskSettings: (task: Task) => safeOpen<void>(MODAL_TYPE.TASK_SETTINGS, { task }),
     showChangeStatus: (props?: ChangeStatusProps) =>
-      safeOpen<TaskStatusResponseDto>(MODAL_TYPE.CHANGE_STATUS, { ...props }),
+      safeOpen<TaskStatus>(MODAL_TYPE.CHANGE_STATUS, { ...props }),
     showSelectAssignee: (props?: SelectAssigneeProps) =>
-      safeOpen<ProjectMemberResponseDto>(MODAL_TYPE.SELECT_ASSIGNEE, { ...props }),
+      safeOpen<ProjectMember>(MODAL_TYPE.SELECT_ASSIGNEE, { ...props }),
   };
 };

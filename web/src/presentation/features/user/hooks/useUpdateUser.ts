@@ -2,13 +2,13 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
 import type { UpdateUserPayload } from "@/application/payloads";
+import type { User } from "@/domain/models/User";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-export function useUpdateUser(): UseMutationResult<UserResponseDto, Error, UpdateUserPayload> {
+export function useUpdateUser(): UseMutationResult<User, Error, UpdateUserPayload> {
   const queryClient = useQueryClient();
   const { updateUser } = appContainer.usecases.user;
 

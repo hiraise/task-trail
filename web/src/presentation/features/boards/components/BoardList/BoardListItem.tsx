@@ -12,7 +12,7 @@ import { MembersAvatarList } from "../../../../shared/components/MembersAvatarLi
 import styles from "./BoardListItem.module.css";
 
 export function BoardListItem({ board }: { board: MockBoardDto }) {
-  const memberIds = board.members.map((m) => Number(m.id));
+  const memberIds = board.members.map((m) => m.id);
 
   const { menuItems } = useBoardMenuItems(board.id);
   return (

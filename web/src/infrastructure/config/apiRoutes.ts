@@ -1,3 +1,5 @@
+import type { ProjectId, TaskId, TaskStatusId, UserId } from "@/domain/types";
+
 const API_VERSION = "/v1";
 const AUTH = `${API_VERSION}/auth`;
 const PASSWORD = `${AUTH}/password`;
@@ -20,23 +22,23 @@ export const API_ROUTES = {
   RESET_PASSWORD: `${PASSWORD}/reset`,
   // PROJECTS API
   PROJECTS: PROJECTS,
-  PROJECT_BY_ID: (id: number) => `${PROJECTS}/${id}`,
-  PROJECT_MEMBERS: (id?: number) => `${PROJECTS}${id ? `/${id}` : ""}/members`,
-  GET_CANDIDATES: (id?: number) => `${PROJECTS}/candidates${id ? `/?id=${id}` : ""}`,
-  KICK_MEMBER: (projectId: number, memberId: number) =>
+  PROJECT_BY_ID: (id: ProjectId) => `${PROJECTS}/${id}`,
+  PROJECT_MEMBERS: (id?: ProjectId) => `${PROJECTS}${id ? `/${id}` : ""}/members`,
+  GET_CANDIDATES: (id?: ProjectId) => `${PROJECTS}/candidates${id ? `/?id=${id}` : ""}`,
+  KICK_MEMBER: (projectId: ProjectId, memberId: UserId) =>
     `${PROJECTS}/${projectId}/members/${memberId}`,
-  LEAVE_PROJECT: (id: number) => `${PROJECTS}/${id}/leave`,
-  PROJECT_TASKS: (id: number) => `${PROJECTS}/${id}/tasks`,
-  PROJECT_STATUSES: (id: number) => `${PROJECTS}/${id}/tasks/statuses`,
+  LEAVE_PROJECT: (id: ProjectId) => `${PROJECTS}/${id}/leave`,
+  PROJECT_TASKS: (id: ProjectId) => `${PROJECTS}/${id}/tasks`,
+  PROJECT_STATUSES: (id: ProjectId) => `${PROJECTS}/${id}/tasks/statuses`,
   // TASKS API
   TASKS: TASKS,
-  TASKS_BY_ID: (id: number) => `${TASKS}/${id}`,
-  CHANGE_STATUS: (id: number, statusId: number) => `${TASKS}/${id}/status/${statusId}`,
-  CHANGE_ASSIGNEE: (id: number, assigneeId?: number) =>
+  TASKS_BY_ID: (id: TaskId) => `${TASKS}/${id}`,
+  CHANGE_STATUS: (id: TaskId, statusId: TaskStatusId) => `${TASKS}/${id}/status/${statusId}`,
+  CHANGE_ASSIGNEE: (id: TaskId, assigneeId?: UserId) =>
     `${TASKS}/${id}/assignee${id ? `/?assigneeId=${assigneeId}` : ""}`,
   // USERS API
   CURRENT_USER: USERS_ME,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   USER_TASKS: `${USERS_ME}/tasks`,
-  USER_BY_ID: (id: number) => `${USERS}/${id}`,
+  USER_BY_ID: (id: UserId) => `${USERS}/${id}`,
 };

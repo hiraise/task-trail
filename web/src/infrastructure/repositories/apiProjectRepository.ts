@@ -1,20 +1,14 @@
-import type { Project } from "@/domain/models/Project";
+import type { CreateProjectPayload, EditProjectPayload } from "@/application/payloads";
+import type { Project, ProjectDetails } from "@/domain/models/Project";
+import { createProjectDetails, createProjectListItem } from "@/domain/models/Project";
+import { createTaskStatus, type TaskStatus } from "@/domain/models/TaskStatus";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
-import { ProjectId } from "@/domain/valueobjects/ProjectId";
-import type { TaskStatus } from "@/domain/valueobjects/TaskStatus";
+import type { ProjectId } from "@/domain/types";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
 import { clientLogger } from "../config/clientLogger";
-import type {
-  CreateProjectPayload,
-  ProjectDTO,
-  UpdateProjectPayload,
-} from "../http/dto/ProjectDTO";
-import type { TaskStatusDTO } from "../http/dto/TaskDTO";
 import type { HttpClient } from "../http/HttpClient";
-import { mapApiProjectsToDomain, mapApiProjectToDomain } from "../http/mappers/project.mapper";
-import { mapApiTaskStatusesToDomain } from "../http/mappers/taskStatus.mapper";
 
 type ApiProjectRepository = ProjectRepository;
 
@@ -32,39 +26,20 @@ const handleError = (message: string, error: unknown): AppError => {
   return new AppError(AppErrorType.SERVER, message);
 };
 
-const createCreateProjectPayload = (
-  name: string,
-  description?: string,
-  participants?: string[],
-): CreateProjectPayload => {
-  return {
-    name,
-    description,
-    participants,
-  };
-};
-
-const createUpdatePayload = (name?: string, description?: string): UpdateProjectPayload => {
-  return {
-    name,
-    description,
-  };
-};
-
 const createProjectRepository = (httpClient: HttpClient): ProjectRepository => ({
   /**
    * Retrieves a project by its unique identifier.
    *
    * @param id - The unique identifier of the project to retrieve.
-   * @returns A promise that resolves to the corresponding {@link Project} domain object.
+   * @returns A promise that resolves to the corresponding {@link ProjectDetails} domain object.
    * @throws Will throw an error if the project cannot be retrieved.
    */
-  findById: async (id: ProjectId): Promise<Project> => {
+  findById: async (id: ProjectId): Promise<ProjectDetails> => {
     try {
-      const dto = await httpClient.get<ProjectDTO>(API_ROUTES.PROJECT_BY_ID(Number(id.value)));
-      return mapApiProjectToDomain(dto);
+      const dto = await httpClient.get(API_ROUTES.PROJECT_BY_ID(id));
+      return createProjectDetails(dto);
     } catch (error) {
-      clientLogger.error("Get project by ID error", { error, id: id.value });
+      clientLogger.error("Get project by ID error", { error, id: id });
       throw handleError("Failed to get project by ID", error);
     }
   },
@@ -72,7 +47,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
   /**
    * Retrieves all projects from the API.
    *
-   * @returns {Promise<Project[]>} A promise that resolves to an array of `Project` domain objects.
+   * @returns {Promise<ProjectDetails[]>} A promise that resolves to an array of `Project` domain objects.
    * @throws {AppError} Throws an `AppError` if the response format is invalid or if the request fails.
    *
    * @example
@@ -80,13 +55,8 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
    */
   findAll: async (): Promise<Project[]> => {
     try {
-      const dtos = await httpClient.get<ProjectDTO[]>(API_ROUTES.PROJECTS);
-
-      if (!Array.isArray(dtos)) {
-        throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
-      }
-
-      return mapApiProjectsToDomain(dtos);
+      const dtos = await httpClient.get(API_ROUTES.PROJECTS);
+      return dtos.map(createProjectListItem);
     } catch (error) {
       clientLogger.error("Get projects error", { error });
       throw handleError("Failed to get projects", error);
@@ -97,18 +67,16 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
    * Creates a new project using the provided payload.
    *
    * @param data - The payload containing project details such as name, description, and participants.
-   * @returns A promise that resolves to the created {@link Project} domain object.
+   * @returns A promise that resolves to the created {@link ProjectDetails} domain object.
    * @throws Will throw an error if the project creation fails.
    */
-  create: async (data: CreateProjectPayload): Promise<ProjectId> => {
+  create: async (payload: CreateProjectPayload): Promise<ProjectId> => {
     try {
-      const payload = createCreateProjectPayload(data.name, data.description, data.participants);
-
       const responseDto = await httpClient.post<{ id: number }>(API_ROUTES.PROJECTS, payload);
 
-      return ProjectId.create(responseDto.id);
+      return String(responseDto.id);
     } catch (error) {
-      clientLogger.error("Create project error", { error, data });
+      clientLogger.error("Create project error", { error, payload });
       throw handleError("Failed to create project", error);
     }
   },
@@ -120,26 +88,13 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
    * @returns A promise that resolves to the updated project domain object.
    * @throws Will throw an error if the update operation fails.
    */
-  update: async (project: Project): Promise<Project> => {
+  update: async (payload: EditProjectPayload): Promise<ProjectDetails> => {
     try {
-      const payload = createUpdatePayload(project.name, project.description);
-
-      const responseDto = await httpClient.patch<ProjectDTO>(
-        API_ROUTES.PROJECT_BY_ID(Number(project.id)),
-        payload,
-      );
-
-      if (responseDto) {
-        return mapApiProjectToDomain(responseDto);
-      }
-
-      return project;
+      const { projectId, ...apiPayload } = payload;
+      const responseDto = await httpClient.patch(API_ROUTES.PROJECT_BY_ID(projectId), apiPayload);
+      return createProjectDetails(responseDto);
     } catch (error) {
-      clientLogger.error("Edit project error", {
-        error,
-        id: project.id.value,
-        project,
-      });
+      clientLogger.error("Edit project error", { error, id: payload.projectId });
       throw handleError("Failed to edit project", error);
     }
   },
@@ -156,9 +111,9 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
    */
   delete: async (id: ProjectId): Promise<void> => {
     try {
-      await httpClient.delete(API_ROUTES.PROJECT_BY_ID(Number(id.value)));
+      await httpClient.delete(API_ROUTES.PROJECT_BY_ID(id));
     } catch (error) {
-      clientLogger.error("Delete project error", { error, id: id.value });
+      clientLogger.error("Delete project error", { error, id: id });
       throw handleError("Failed to delete project", error);
     }
   },
@@ -172,13 +127,10 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
    */
   getProjectStatuses: async (id: ProjectId): Promise<TaskStatus[]> => {
     try {
-      const projectId = Number(id.value);
-      const dtos = await httpClient.get<TaskStatusDTO[]>(API_ROUTES.PROJECT_STATUSES(projectId));
+      const projectId = id as ProjectId;
+      const dtos = await httpClient.get(API_ROUTES.PROJECT_STATUSES(projectId));
 
-      if (!Array.isArray(dtos)) {
-        throw new AppError(AppErrorType.SERVER, "Invalid response format: expected array");
-      }
-      return mapApiTaskStatusesToDomain(dtos);
+      return dtos.map(createTaskStatus);
     } catch (error) {
       clientLogger.error("Get project statuses error", { error });
       throw handleError("Failed to get project statuses", error);

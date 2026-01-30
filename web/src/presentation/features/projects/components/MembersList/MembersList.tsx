@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import { useParams } from "next/navigation";
 
-import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
+import { isProjectMemberOwner, type ProjectMember } from "@/domain/models/ProjectMember";
+import type { ProjectId } from "@/domain/types";
 import { UserItem } from "@/presentation/shared";
 import { useGetCurrentUser } from "@/presentation/shared/hooks";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
@@ -11,19 +12,19 @@ import styles from "./MembersList.module.css";
 
 interface MembersListProps {
   group: "admins" | "members";
-  members: ProjectMemberResponseDto[];
+  members: ProjectMember[];
 }
 
 export function MembersList({ group, members }: MembersListProps) {
-  const projectId = Number(useParams().id);
+  const projectId = useParams().id as ProjectId;
   const { data: currentUser } = useGetCurrentUser();
   const { showMemberActions } = useGlobalModals();
 
   if (!currentUser) return null;
 
-  const handleOnClick = async (user: ProjectMemberResponseDto) => {
+  const handleOnClick = async (user: ProjectMember) => {
     const data = {
-      memberId: Number(user.id),
+      memberId: user.id,
       memberDisplayName: user.username,
       currentUserId: currentUser?.id ?? -1,
       projectId: projectId,
@@ -53,7 +54,7 @@ export function MembersList({ group, members }: MembersListProps) {
           <li key={user.id} className={styles.userWrapper} onClick={() => handleOnClick(user)}>
             <UserItem
               username={user.username}
-              email={user.isOwner ? "Владелец проекта" : user.email}
+              email={isProjectMemberOwner(user) ? "Владелец проекта" : user.email}
             />
           </li>
         ))}

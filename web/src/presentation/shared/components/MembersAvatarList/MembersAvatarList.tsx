@@ -1,11 +1,13 @@
 import clsx from "clsx";
 
+import type { UserId } from "@/domain/types";
+
 import { UserAvatar } from "../UserAvatar";
 
 import styles from "./MembersAvatarList.module.css";
 
 interface MembersAvatarListProps {
-  memberIds: number[];
+  memberIds: UserId[];
   maxVisible?: number;
   variant?: "small" | "standard" | "large";
   bgColor?: string;

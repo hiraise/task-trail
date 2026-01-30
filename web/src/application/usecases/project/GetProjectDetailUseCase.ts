@@ -1,15 +1,13 @@
 import type { ProjectDetailResponseDto } from "@/application/dto/ProjectDetailResponseDto";
-import { mapProjectMembersToResponse } from "@/application/dto/ProjectMemberResponseDto";
-import { mapProjectToResponse } from "@/application/dto/ProjectResponseDto";
-import { mapTasksToResponse } from "@/application/dto/TaskResponseDto";
-import { mapProjectMemberToResponse } from "@/application/dto/UserResponseDto";
+import { createProjectMember, isProjectMemberOwner } from "@/domain/models/ProjectMember";
+import { createUser } from "@/domain/models/User";
 import type { ProjectMemberRepository } from "@/domain/repositories/ProjectMemberRepository";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
-import { ProjectId } from "@/domain/valueobjects/ProjectId";
+import type { ProjectId } from "@/domain/types";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-type GetProjectDetailUseCase = (projectId: string | number) => Promise<ProjectDetailResponseDto>;
+type GetProjectDetailUseCase = (projectId: ProjectId) => Promise<ProjectDetailResponseDto>;
 
 const createGetProjectDetailUseCase =
   (
@@ -21,28 +19,26 @@ const createGetProjectDetailUseCase =
     try {
       clientLogger.info("Fetching project detail", { projectId });
 
-      const id = ProjectId.create(projectId);
-
       const [project, members, tasks] = await Promise.all([
-        projectRepository.findById(id),
-        projectMemberRepository.findByProjectId(id),
-        taskRepository.findByProjectId(id),
+        projectRepository.findById(projectId),
+        projectMemberRepository.findByProjectId(projectId),
+        taskRepository.findByProjectId(projectId),
       ]);
 
       if (!project) {
         throw new Error(`Project not found: ${projectId}`);
       }
 
-      const ownerMember = members.find((m) => m.isOwner());
+      const ownerMember = members.find(isProjectMemberOwner);
       if (!ownerMember) {
         throw new Error(`Project owner not found: ${projectId}`);
       }
 
       const response: ProjectDetailResponseDto = {
-        project: mapProjectToResponse(project),
-        members: mapProjectMembersToResponse(members),
-        owner: mapProjectMemberToResponse(ownerMember),
-        tasks: mapTasksToResponse(tasks),
+        project: project,
+        members: members.map(createProjectMember),
+        owner: createUser(ownerMember),
+        tasks: tasks,
       };
 
       clientLogger.info("Project detail fetched successfully", {

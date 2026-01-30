@@ -1,7 +1,8 @@
 import clsx from "clsx";
 import { memo } from "react";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
+import type { ProjectId } from "@/domain/types";
 import { ProjectMenuButton } from "@/presentation/features/projects/components/ProjectMenuButton";
 import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
@@ -10,8 +11,8 @@ import styles from "./ProjectTasks.module.css";
 import { TaskList } from "./TaskList";
 
 interface ProjectTasksProps {
-  projectId: number;
-  tasks: TaskResponseDto[];
+  projectId: ProjectId;
+  tasks: Task[];
   className?: string;
 }
 

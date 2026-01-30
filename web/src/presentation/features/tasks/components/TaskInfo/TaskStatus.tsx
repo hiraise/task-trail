@@ -1,11 +1,11 @@
-import type { TaskStatusResponseDto } from "@/application/dto/TaskStatusResponseDto";
+import { type TaskStatus as TaskStatusModel } from "@/domain/models/TaskStatus";
 import { Icon } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 
 import styles from "./TaskStatus.module.css";
 
 interface TaskStatusProps {
-  status?: TaskStatusResponseDto;
+  status?: TaskStatusModel;
   onClick: () => void;
 }
 

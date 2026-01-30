@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import { EmptyListState } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { ASSETS } from "@/shared/config/assets";
@@ -11,7 +11,7 @@ import { ProjectCard } from "../ProjectCard";
 
 import styles from "./ProjectsListMobile.module.css";
 
-export function ProjectsListMobile({ projects }: { projects: ProjectResponseDto[] }) {
+export function ProjectsListMobile({ projects }: { projects: Project[] }) {
   const { showCreateProject } = useGlobalModals();
 
   if (projects.length === 0)
@@ -28,7 +28,7 @@ export function ProjectsListMobile({ projects }: { projects: ProjectResponseDto[
   return (
     <div className={styles.cards}>
       {projects?.map((project) => (
-        <Link key={project.id} href={ROUTES.project(Number(project.id))}>
+        <Link key={project.id} href={ROUTES.project(project.id)}>
           <ProjectCard project={project} />
         </Link>
       ))}

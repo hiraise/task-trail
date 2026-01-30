@@ -1,6 +1,8 @@
 import { useParams } from "next/navigation";
 import styled from "styled-components";
 
+import type { ProjectId } from "@/domain/types";
+
 import { Icon } from "../../../../shared";
 import { BaseModal } from "../../../../shared/modals/BaseModal/BaseModal";
 import type { BaseModalProps } from "../../../../shared/modals/BaseModal/BaseModal.types";
@@ -36,7 +38,7 @@ const MenuButton = styled.button`
 
 export function ProjectSettingsModal(props: BaseModalProps<void>) {
   const params = useParams();
-  const projectId = Number(params.id);
+  const projectId = params.id as ProjectId;
   const { menuItems } = useProjectMenuItems(projectId);
 
   return (

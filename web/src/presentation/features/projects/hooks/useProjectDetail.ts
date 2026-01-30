@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
+import type { ProjectId } from "@/domain/types";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
@@ -13,11 +14,11 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * @param projectId - The unique identifier of the project to fetch details for.
  * @returns The result of the React Query, including project data, loading, and error states.
  */
-export function useProjectDetail(projectId: number | undefined) {
+export function useProjectDetail(projectId: ProjectId) {
   const { getProjectDetail } = appContainer.usecases.project;
 
   return useQuery({
-    queryKey: QUERY_KEYS.projectDetails(projectId || 0),
+    queryKey: QUERY_KEYS.projectDetails(projectId || ""),
     queryFn: async () => {
       if (!projectId) throw new Error("Project ID is required");
       return await getProjectDetail(projectId);

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useLayoutEffect, useRef, useState } from "react";
 
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
 import { useLogout } from "@/presentation/features/auth/hooks";
 import { Icon, Spinner } from "@/presentation/shared";
 import { ASSETS } from "@/shared/config/assets";
@@ -13,7 +13,7 @@ import { TEXTS } from "@/shared/locales/texts";
 import { ProfileAvatar } from "./ProfileAvatar";
 import styles from "./ProfileHeroDesktop.module.css";
 
-export function ProfileHeroDesktop({ user }: { user: UserResponseDto }) {
+export function ProfileHeroDesktop({ user }: { user: User }) {
   const { mutateAsync: logout, isPending: loading } = useLogout();
   const heroRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);

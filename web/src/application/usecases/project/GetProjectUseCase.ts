@@ -1,10 +1,9 @@
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
-import { mapProjectToResponse } from "@/application/dto/ProjectResponseDto";
+import type { ProjectDetails } from "@/domain/models/Project";
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
-import { ProjectId } from "@/domain/valueobjects/ProjectId";
+import type { ProjectId } from "@/domain/types";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-type GetProjectUseCase = (projectId: string | number) => Promise<ProjectResponseDto | null>;
+type GetProjectUseCase = (projectId: ProjectId) => Promise<ProjectDetails | null>;
 
 const createGetProjectUseCase =
   (projectRepository: ProjectRepository): GetProjectUseCase =>
@@ -12,8 +11,7 @@ const createGetProjectUseCase =
     try {
       clientLogger.info("GetProjectUseCase: fetching project", { projectId });
 
-      const id = ProjectId.create(projectId);
-      const project = await projectRepository.findById(id);
+      const project = await projectRepository.findById(projectId);
 
       if (!project) {
         clientLogger.warn("GetProjectUseCase: project not found", { projectId });
@@ -25,7 +23,7 @@ const createGetProjectUseCase =
         name: project.name,
       });
 
-      return mapProjectToResponse(project);
+      return project;
     } catch (error) {
       clientLogger.error("GetProjectUseCase: failed", { error, projectId });
       throw error;

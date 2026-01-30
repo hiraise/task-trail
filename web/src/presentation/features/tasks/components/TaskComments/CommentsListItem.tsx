@@ -1,4 +1,4 @@
-import type { TaskCommentResponseDto } from "@/application/dto/TaskCommentResponseDto";
+import type { TaskComment } from "@/domain/models/TaskComment";
 import { DropdownMenu, IconButton } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 import { formatDate } from "@/shared/utils/formatters";
@@ -6,11 +6,7 @@ import { formatDate } from "@/shared/utils/formatters";
 import styles from "./CommentsList.module.css";
 import CommentUserInfo from "./CommentUserInfo";
 
-interface CommentsListItemProps {
-  comment: TaskCommentResponseDto;
-}
-
-export default function CommentsListItem({ comment }: CommentsListItemProps) {
+export default function CommentsListItem({ comment }: { comment: TaskComment }) {
   //TODO: implement menu items
 
   return (

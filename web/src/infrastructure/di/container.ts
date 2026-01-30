@@ -35,13 +35,11 @@ export const createAppContainer = (config?: DIContainerConfig): DIContainer => {
 
   const usecases: UseCasesContainer = {
     project: {
-      getProjects: uc.createGetProjectsUseCase(repositories.project),
       getProject: uc.createGetProjectUseCase(repositories.project),
       createProject: uc.createCreateProjectUseCase(repositories.project),
       editProject: uc.createEditProjectUseCase(repositories.project),
       deleteProject: uc.createDeleteProjectUseCase(repositories.project),
       getProjectStatuses: uc.createGetProjectStatusesUseCase(repositories.project),
-      getCandidates: uc.createGetProjectCandidatesUseCase(repositories.user),
       getProjectDetail: uc.createGetProjectDetailUseCase(
         repositories.project,
         repositories.projectMember,
@@ -49,7 +47,6 @@ export const createAppContainer = (config?: DIContainerConfig): DIContainer => {
       ),
     },
     projectMember: {
-      getProjectMembers: uc.createGetProjectMembersUseCase(repositories.projectMember),
       leaveProject: uc.createLeaveProjectUseCase(repositories.projectMember),
       removeMember: uc.createRemoveProjectMemberUseCase(
         repositories.projectMember,

@@ -1,11 +1,10 @@
 import type { ProjectMember } from "../models/ProjectMember";
-import type { ProjectId } from "../valueobjects/ProjectId";
-import type { ProjectMemberId } from "../valueobjects/ProjectMemberId";
+import type { ProjectId, UserId } from "../types";
 
 export interface ProjectMemberRepository {
-  findById(id: ProjectMemberId): Promise<ProjectMember | null>;
+  findById(id: UserId): Promise<ProjectMember | null>;
   findByProjectId(projectId: ProjectId): Promise<ProjectMember[]>;
   addByEmails(projectId: ProjectId, emails: string[]): Promise<void>;
-  removeMember(projectId: ProjectId, memberId: ProjectMemberId): Promise<void>;
+  removeMember(projectId: ProjectId, memberId: UserId): Promise<void>;
   leaveProject(projectId: ProjectId): Promise<void>;
 }

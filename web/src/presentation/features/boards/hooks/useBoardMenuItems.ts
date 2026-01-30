@@ -1,7 +1,8 @@
+import type { BoardId } from "@/domain/types";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { boardsTexts } from "@/shared/locales/boards";
 
-export const useBoardMenuItems = (boardId: number) => {
+export const useBoardMenuItems = (boardId: BoardId) => {
   console.log("Board id: ", boardId);
   const menuItems: MenuItem[] = [
     {

@@ -1,3 +1,4 @@
+import type { ProjectId } from "@/domain/types";
 import type { BaseModalProps } from "@/presentation/shared";
 import { BaseModal, DeviceBased, DialogButtons } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
@@ -5,7 +6,7 @@ import type { LeaveProjectProps } from "@/presentation/shared/hooks/useGlobalMod
 
 import { LeaveProject } from "../../components";
 
-export function LeaveProjectModal(props: BaseModalProps<number>) {
+export function LeaveProjectModal(props: BaseModalProps<ProjectId>) {
   const { id, title } = useGlobalModalProps<LeaveProjectProps>() ?? {};
 
   if (!title) return;

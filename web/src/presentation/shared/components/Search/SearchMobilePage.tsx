@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import { ProjectCard } from "@/presentation/features/projects/components";
 import { TEXTS } from "@/shared/locales/texts";
 
@@ -13,7 +13,7 @@ import styles from "./SearchMobilePage.module.css";
 
 export function SearchMobilePage() {
   const router = useRouter();
-  const mockProjects: ProjectResponseDto[] = [];
+  const mockProjects: Project[] = [];
 
   return (
     <div className={styles.container}>

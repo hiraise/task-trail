@@ -2,33 +2,20 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
 import type { ChangeStatusPayload } from "@/application/payloads";
+import type { Task } from "@/domain/models/Task";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Hook for changing the status of a task.
+ * React Query mutation hook that updates a task's status.
  *
- * Manages the mutation state for updating a task's status and automatically
- * invalidates related cache queries upon successful update. Displays success/error
- * toast notifications to the user.
+ * On success, invalidates task-related queries (task, taskDetails, and task-id scoped queries)
+ * and shows a success toast. On failure, shows an error toast.
  *
- * @returns {UseMutationResult<TaskResponseDto, Error, ChangeStatusPayload>}
- * A mutation result object with the following properties:
- * - `mutate`: Function to trigger the status change with a ChangeStatusPayload
- * - `mutateAsync`: Async version of mutate
- * - `isPending`: Loading state during mutation
- * - `isError`: Whether the mutation failed
- * - `isSuccess`: Whether the mutation succeeded
- * - `data`: The updated task response
- * - `error`: Error object if mutation failed
- *
- * @example
- * const changeStatusMutation = useChangeStatus();
- * changeStatusMutation.mutate({ taskId: '123', status: 'completed' });
+ * @returns A React Query mutation result for updating task status.
  */
-export function useChangeStatus(): UseMutationResult<TaskResponseDto, Error, ChangeStatusPayload> {
+export function useChangeStatus(): UseMutationResult<Task, Error, ChangeStatusPayload> {
   const queryClient = useQueryClient();
   const { changeStatus } = appContainer.usecases.tasks;
 

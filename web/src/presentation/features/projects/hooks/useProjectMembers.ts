@@ -1,7 +1,8 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
-import type { ProjectMemberResponseDto } from "@/application/dto/ProjectMemberResponseDto";
+import type { ProjectMember } from "@/domain/models/ProjectMember";
+import type { ProjectId } from "@/domain/types";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
@@ -17,14 +18,12 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * @example
  * const { data, isLoading, error } = useProjectMembers(123);
  */
-export function useProjectMembers(
-  projectId: string | number,
-): UseQueryResult<ProjectMemberResponseDto[], Error> {
-  const { getProjectMembers } = appContainer.usecases.projectMember;
+export function useProjectMembers(projectId: ProjectId): UseQueryResult<ProjectMember[], Error> {
+  const { findByProjectId } = appContainer.repositories.projectMember;
 
   return useQuery({
-    queryKey: QUERY_KEYS.projectMembers(Number(projectId) || -1),
-    queryFn: () => getProjectMembers(projectId),
+    queryKey: QUERY_KEYS.projectMembers(projectId || ""),
+    queryFn: () => findByProjectId(projectId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,

@@ -1,14 +1,13 @@
-import { Email } from "../valueobjects/Email";
-import { ProjectId } from "../valueobjects/ProjectId";
+import type { ProjectId } from "../types";
 
 export class ProjectCreationDraft {
   private id: ProjectId;
   private name: string = "";
   private description: string = "";
-  private emails: Email[] = [];
+  private emails: string[] = [];
 
   constructor(id?: string) {
-    this.id = ProjectId.create(id || Math.random().toString(36));
+    this.id = id ?? ("" as ProjectId);
   }
 
   // ===== Getters =====
@@ -25,7 +24,7 @@ export class ProjectCreationDraft {
     return this.description;
   }
 
-  getMembers(): Email[] {
+  getMembers(): string[] {
     return [...this.emails];
   }
 
@@ -52,7 +51,7 @@ export class ProjectCreationDraft {
     if (this.emails.some((e) => e.toString().toLowerCase() === email.toLowerCase())) {
       throw new Error("Member with this email already exists");
     }
-    this.emails.push(Email.create(email));
+    this.emails.push(email);
   }
 
   removeMember(email: string): void {

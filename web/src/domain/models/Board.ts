@@ -1,6 +1,6 @@
 import { DomainError } from "@/shared/errors/types";
 
-import type { BoardId } from "../valueobjects/BoardId";
+import type { BoardId } from "../types";
 
 import type { User } from "./User";
 
@@ -27,7 +27,7 @@ export class Board {
   }
 
   addMember(user: User): void {
-    if (this.members.some((member) => member.id.equals(user.id))) {
+    if (this.members.some((member) => member.id === user.id)) {
       throw new DomainError("User is already a member of this board");
     }
 
@@ -35,7 +35,7 @@ export class Board {
   }
 
   removeMember(userId: User["id"]): void {
-    const memberIndex = this.members.findIndex((member) => member.id.equals(userId));
+    const memberIndex = this.members.findIndex((member) => member.id === userId);
 
     if (memberIndex === -1) {
       throw new DomainError("User is not a member of this board");
@@ -49,7 +49,7 @@ export class Board {
   }
 
   isMember(userId: User["id"]): boolean {
-    return this.members.some((member) => member.id.equals(userId));
+    return this.members.some((member) => member.id === userId);
   }
 
   updateTaskCount(count: number): void {

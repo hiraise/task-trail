@@ -1,34 +1,21 @@
 import { toast } from "sonner";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { TaskDetailResponseDto } from "@/application/dto/TaskDetailResponseDto";
+import type { Task } from "@/domain/models/Task";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 
 import { useChangeAssignee } from "./useChangeAssignee";
 import { useChangeStatus } from "./useChangeStatus";
 import { useGetTaskDetail } from "./useGetTaskDetail";
 
-/**
- * Custom hook for managing and updating task information, including status, assignee, and project selection.
- *
- * Provides asynchronous functions to:
- * - Change the status of a task via a modal dialog.
- * - Select a new project for the task.
- * - Select or change the assignee of the task via a modal dialog.
- *
- * @param {TaskResponseDto} task - The task object to operate on.
- * @returns {{
- *   data: TaskResponseDto | undefined,
- *   changeStatus: () => Promise<void>,
- *   selectProject: () => Promise<void>,
- *   selectAssignee: () => Promise<void>
- * }} An object containing the extended task data and functions to change status, project, and assignee.
- *
- * @remarks
- * - Uses global modal dialogs for user interactions.
- * - Handles asynchronous updates to the task via mutation hooks.
- * - The assignee removal case is not yet implemented.
- */
-export const useChangeTaskInfo = (task: TaskResponseDto) => {
+export const useChangeTaskInfo = (
+  task: Task,
+): {
+  data: TaskDetailResponseDto | undefined;
+  changeStatus: () => Promise<void>;
+  selectProject: () => Promise<void>;
+  selectAssignee: () => Promise<void>;
+} => {
   const { showChangeStatus, showSelectAssignee, showSelectProject } = useGlobalModals();
   const { data: extendedTask } = useGetTaskDetail(task.id);
   const { mutateAsync: mutateStatus } = useChangeStatus();
@@ -47,10 +34,10 @@ export const useChangeTaskInfo = (task: TaskResponseDto) => {
     if (!extendedTask) return;
     const result = await showChangeStatus({
       currentStatus: extendedTask.status,
-      projectId: Number(extendedTask.project.id),
+      projectId: extendedTask.project.id,
     });
     if (!result || result.id === extendedTask.status?.id) return;
-    await mutateStatus({ taskId: task.id, statusId: Number(result.id) });
+    await mutateStatus({ taskId: task.id, statusId: result.id });
   };
 
   const selectProject = async () => {
@@ -79,8 +66,8 @@ export const useChangeTaskInfo = (task: TaskResponseDto) => {
     });
     //TODO: Also handle remove assignee case
     if (!result) return;
-    await changeAssignee({ taskId: task.id, assigneeId: Number(result.id) });
+    await changeAssignee({ taskId: task.id, assigneeId: result.id });
   };
 
-  return { data: extendedTask, changeStatus, selectProject, selectAssignee };
+  return { data: extendedTask ?? undefined, changeStatus, selectProject, selectAssignee };
 };

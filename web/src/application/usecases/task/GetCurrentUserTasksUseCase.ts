@@ -1,9 +1,8 @@
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
-import { mapTasksToResponse } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-type GetCurrentUserTasksUseCase = () => Promise<TaskResponseDto[]>;
+type GetCurrentUserTasksUseCase = () => Promise<Task[]>;
 
 const createGetCurrentUserTasksUseCase =
   (taskRepository: TaskRepository): GetCurrentUserTasksUseCase =>
@@ -22,7 +21,7 @@ const createGetCurrentUserTasksUseCase =
         tasksCount: tasks.length,
       });
 
-      return mapTasksToResponse(tasks);
+      return tasks;
     } catch (error) {
       clientLogger.error("GetCurrentUserTasksUseCase: failed", { error });
       throw error;

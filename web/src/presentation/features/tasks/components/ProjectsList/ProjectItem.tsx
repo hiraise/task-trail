@@ -1,6 +1,6 @@
 import clsx from "clsx";
 
-import type { ProjectResponseDto } from "@/application/dto/ProjectResponseDto";
+import type { Project } from "@/domain/models/Project";
 import { MembersAvatarList } from "@/presentation/shared";
 import { useProjectMembers } from "@/presentation/shared/hooks";
 import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
@@ -8,14 +8,14 @@ import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
 import styles from "./ProjectItem.module.css";
 
 interface ProjectItemProps {
-  project: ProjectResponseDto;
+  project: Project;
   isSelected?: boolean;
-  onClick?: (project: ProjectResponseDto) => void;
+  onClick?: (project: Project) => void;
 }
 
 export function ProjectItem({ project, isSelected, onClick }: ProjectItemProps) {
-  const { data: members } = useProjectMembers(Number(project.id));
-  const memberIds = members?.map((member) => Number(member.id)) || [];
+  const { data: members } = useProjectMembers(project.id);
+  const memberIds = members?.map((member) => member.id) || [];
 
   return (
     <button

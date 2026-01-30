@@ -1,17 +1,16 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
-import type { TaskResponseDto } from "@/application/dto/TaskResponseDto";
+import type { Task } from "@/domain/models/Task";
+import type { TaskId } from "@/domain/types";
 import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-export function useGetTask(
-  taskId: string | number | null | undefined,
-): UseQueryResult<TaskResponseDto | null, Error> {
+export function useGetTask(taskId: TaskId): UseQueryResult<Task | null, Error> {
   const { getTask } = appContainer.usecases.tasks;
 
   return useQuery({
-    queryKey: QUERY_KEYS.task(Number(taskId)),
+    queryKey: QUERY_KEYS.task(taskId),
     queryFn: async () => {
       if (!taskId) return null;
       return await getTask(taskId);

@@ -1,11 +1,11 @@
-import type { ProjectMemberResponseDto } from "./ProjectMemberResponseDto";
-import type { ProjectResponseDto } from "./ProjectResponseDto";
-import type { TaskResponseDto } from "./TaskResponseDto";
-import type { UserResponseDto } from "./UserResponseDto";
+import type { ProjectDetails } from "@/domain/models/Project";
+import type { ProjectMember } from "@/domain/models/ProjectMember";
+import type { Task } from "@/domain/models/Task";
+import type { User } from "@/domain/models/User";
 
 export interface ProjectDetailResponseDto {
-  project: ProjectResponseDto;
-  members: ProjectMemberResponseDto[];
-  owner: UserResponseDto;
-  tasks: TaskResponseDto[];
+  project: ProjectDetails;
+  members: ProjectMember[];
+  owner: User;
+  tasks: Task[];
 }

@@ -1,8 +1,8 @@
-import type { TaskStatusResponseDto } from "@/application/dto/TaskStatusResponseDto";
+import type { TaskStatus } from "@/domain/models/TaskStatus";
 
 export interface TaskStatusProps {
-  onSelect: (value: TaskStatusResponseDto) => void;
-  selectedStatus?: TaskStatusResponseDto;
+  onSelect: (value: TaskStatus) => void;
+  selectedStatus?: TaskStatus;
 }
 
 export interface StatusOption {

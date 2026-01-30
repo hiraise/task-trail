@@ -1,7 +1,7 @@
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
-import type { UserResponseDto } from "@/application/dto/UserResponseDto";
+import type { User } from "@/domain/models/User";
 import { appContainer } from "@/infrastructure/di/container";
 import { useCheckAuthStatus } from "@/presentation/features/auth/hooks";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
@@ -12,9 +12,9 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * Utilizes React Query to manage the asynchronous request and caching.
  * The query is enabled only when authentication has been initialized and the user is authenticated.
  *
- * @returns {UseQueryResult<UserResponseDto | null, Error>} The result of the query containing user data or an error.
+ * @returns {UseQueryResult<User | null, Error>} The result of the query containing user data or an error.
  */
-export function useGetCurrentUser(): UseQueryResult<UserResponseDto | null, Error> {
+export function useGetCurrentUser(): UseQueryResult<User | null, Error> {
   const { isAuthenticated, authInitializing } = useCheckAuthStatus();
   const { getCurrentUser } = appContainer.usecases.user;
 
