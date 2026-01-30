@@ -1,8 +1,9 @@
 "use client";
 
-import { ChangePasswordFormMobile } from "@/presentation/features/user/components";
 import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
 import { TEXTS } from "@/shared/locales/texts";
+
+import { ChangePasswordFormMobile } from "../../components";
 
 export function ChangePasswordMobilePage() {
   return (

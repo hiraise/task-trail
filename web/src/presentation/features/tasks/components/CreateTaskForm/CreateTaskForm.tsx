@@ -5,12 +5,12 @@ import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
 
-import { useCreateTaskFormStore } from "@/presentation/features/tasks/store/createTaskFormStore";
 import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { tasksTexts } from "@/shared/locales/tasks";
 
 import { useCreateTask } from "../../hooks";
+import { useCreateTaskFormStore } from "../../store/createTaskFormStore";
 
 import styles from "./CreateTaskForm.module.css";
 import { AssigneeSelection, ProjectSelection } from "./FormSelectionOptions";
@@ -79,12 +79,14 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
       projectId: store.draft?.getProjectId() ?? "",
       userId: store.draft?.getAssigneeId() ?? "",
     });
+
     if (!result) return;
     store.setAssignee(result);
   };
 
   const handleSelectProject = async () => {
     const result = await showSelectProject(store.draft?.getProjectId() ?? "");
+
     if (!result) return;
     await store.setProject(result);
   };
@@ -92,6 +94,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
   const submitHandler = async () => {
     if (!store.draft) return;
     const dto = store.draft.toPersistenceDto();
+
     await createTask(dto);
     store.reset();
     onSubmit();

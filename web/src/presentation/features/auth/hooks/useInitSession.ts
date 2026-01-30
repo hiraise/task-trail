@@ -4,9 +4,10 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
-import { useCheckAuthStatus } from "@/presentation/features/auth/hooks";
 import { ROUTES } from "@/shared/config/routes";
 import { isProtectedRoute } from "@/shared/utils/isProtectedRoute";
+
+import { useCheckAuthStatus } from "./useCheckAuthStatus";
 
 /**
  * Initializes the user session and handles route redirection based on authentication status.
@@ -34,6 +35,7 @@ export function useInitSession(pathName: string) {
         } else {
           router.replace(ROUTES.login);
         }
+
         return;
       }
 

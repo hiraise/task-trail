@@ -19,6 +19,8 @@ export function TabPanelProvider({ children }: { children: React.ReactNode }) {
 
 export const useTabPanel = (): TabPanelValue => {
   const context = useContext(TabPanelContext);
+
   if (!context) throw new Error("useTabPanel must be used within a TabPanelProvider");
+
   return context;
 };

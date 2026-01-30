@@ -1,9 +1,9 @@
 import styles from "./RadioButton.module.css";
 
-type RadioButtonOption = {
+interface RadioButtonOption {
   value: string;
   label: string;
-};
+}
 
 export function RadioButton<T extends RadioButtonOption>({
   option,

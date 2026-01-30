@@ -20,6 +20,7 @@ type ApiProjectMemberRepository = ProjectMemberRepository;
  */
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
+
   return new AppError(AppErrorType.SERVER, message);
 };
 
@@ -57,6 +58,7 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
   findByProjectId: async (projectId: ProjectId): Promise<ProjectMember[]> => {
     try {
       const dtos = await httpClient.get(API_ROUTES.PROJECT_MEMBERS(projectId));
+
       return dtos.map(createProjectMember);
     } catch (error) {
       clientLogger.error("Get project members error", {

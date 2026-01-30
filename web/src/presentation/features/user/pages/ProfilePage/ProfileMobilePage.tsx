@@ -1,12 +1,13 @@
 "use client";
 
-import { useLogout } from "@/presentation/features/auth/hooks";
-import { MenuButton, ProfileHeroMobile } from "@/presentation/features/user/components";
-import { useGetCurrentUser } from "@/presentation/features/user/hooks";
 import { Icon } from "@/presentation/shared";
+import { useLogout } from "@/presentation/shared/hooks";
 import { ICONS } from "@/shared/config/icons";
 import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
+
+import { MenuButton, ProfileHeroMobile } from "../../components";
+import { useGetCurrentUser } from "../../hooks";
 
 import styles from "./ProfileMobilePage.module.css";
 

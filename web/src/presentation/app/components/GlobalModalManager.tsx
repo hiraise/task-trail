@@ -47,6 +47,7 @@ const MODAL_COMPONENTS = {
 export function GlobalModalManager() {
   const { stack, close, back } = useGlobalModalContext();
   const topModal = stack[stack.length - 1];
+
   if (!topModal) return null;
 
   const { type, props } = topModal;

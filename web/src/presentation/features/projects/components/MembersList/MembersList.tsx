@@ -29,6 +29,7 @@ export function MembersList({ group, members }: MembersListProps) {
       currentUserId: currentUser?.id ?? -1,
       projectId: projectId,
     };
+
     await showMemberActions({ ...data });
   };
 

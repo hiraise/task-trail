@@ -1,6 +1,5 @@
 "use client";
 
-import { useGetUserTasks } from "@/presentation/features/tasks/hooks";
 import { ContentTopBarMobile } from "@/presentation/shared";
 import { PagesMobileTemplate, TopBarMobile } from "@/presentation/shared/components/Layout";
 import { TabType } from "@/presentation/shared/components/TabPanel";
@@ -9,6 +8,7 @@ import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { TEXTS } from "@/shared/locales/texts";
 
 import { TaskListMobile } from "../../components";
+import { useGetUserTasks } from "../../hooks";
 
 import styles from "./TasksMobilePage.module.css";
 

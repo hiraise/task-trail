@@ -41,6 +41,7 @@ export function BottomSheet(props: BottomSheetProps) {
     setIsDragging(false);
 
     const { delta } = event;
+
     if (!delta) return;
 
     const CLOSE_THRESHOLD = 150;

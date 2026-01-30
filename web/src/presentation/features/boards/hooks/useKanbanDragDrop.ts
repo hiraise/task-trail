@@ -3,11 +3,12 @@ import { arrayMove } from "@dnd-kit/sortable";
 import { useCallback, useMemo, useState } from "react";
 
 import type { UserId } from "@/domain/types";
+
 import type {
   MockTask,
   TaskStatus,
   boardColumns,
-} from "@/presentation/features/boards/components/KanbanBoard/KanbanBoard.mocks";
+} from "../components/KanbanBoard/KanbanBoard.mocks";
 
 export interface KanbanContainer {
   userId: UserId;
@@ -55,12 +56,14 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
    */
   const handleDragOver = useCallback((event: DragOverEvent) => {
     const { active, over } = event;
+
     if (!over || active.id === over.id) return;
 
     const activeId = active.id;
     const overId = over.id;
 
     const isActiveTask = active.data.current?.type === "Task";
+
     if (!isActiveTask) return;
 
     const isOverATask = over.data.current?.type === "Task";
@@ -72,6 +75,7 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
       setTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
         const overIndex = tasks.findIndex((t) => t.id === overId);
+
         if (activeIndex === -1 || overIndex === -1) return tasks;
 
         const task = tasks[activeIndex];
@@ -79,9 +83,12 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
 
         if (task.userId !== overTask.userId || task.status !== overTask.status) {
           const newTasks = [...tasks];
+
           newTasks[activeIndex] = { ...task, userId: overTask.userId, status: overTask.status };
+
           return arrayMove(newTasks, activeIndex, overIndex);
         }
+
         return arrayMove(tasks, activeIndex, overIndex);
       });
     }
@@ -90,6 +97,7 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
     if (container && isOverAColumn) {
       setTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
+
         if (activeIndex === -1) return tasks;
 
         const task = tasks[activeIndex];
@@ -100,10 +108,13 @@ export function useKanbanDragDrop(initialTasks: MockTask[]) {
             if (task.id === activeId) {
               return { ...task, userId: container.userId, status: container.column };
             }
+
             return task;
           });
+
           return arrayMove(updatedTasks, activeIndex, activeIndex);
         }
+
         return tasks;
       });
     }

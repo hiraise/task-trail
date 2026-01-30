@@ -20,6 +20,7 @@ export const useCreateProjectFormStore = create<CreateProjectFormState>((set) =>
   initialize: () => {
     set((state) => {
       if (state.draft) return state;
+
       return { draft: new ProjectCreationDraft() };
     });
   },
@@ -28,6 +29,7 @@ export const useCreateProjectFormStore = create<CreateProjectFormState>((set) =>
     set((state) => {
       if (!state.draft) return state;
       state.draft.setName(name);
+
       return { draft: state.draft };
     });
   },
@@ -36,6 +38,7 @@ export const useCreateProjectFormStore = create<CreateProjectFormState>((set) =>
     set((state) => {
       if (!state.draft) return state;
       state.draft.setDescription(description);
+
       return { draft: state.draft };
     });
   },
@@ -44,6 +47,7 @@ export const useCreateProjectFormStore = create<CreateProjectFormState>((set) =>
     set((state) => {
       if (!state.draft) return state;
       state.draft.addMemberByEmail(email);
+
       return { draft: state.draft };
     });
   },
@@ -52,6 +56,7 @@ export const useCreateProjectFormStore = create<CreateProjectFormState>((set) =>
     set((state) => {
       if (!state.draft) return state;
       state.draft.removeMember(email);
+
       return { draft: state.draft };
     });
   },
@@ -60,6 +65,7 @@ export const useCreateProjectFormStore = create<CreateProjectFormState>((set) =>
     set((state) => {
       if (!state.draft) return state;
       state.draft.toggleMember(email);
+
       return { draft: state.draft };
     });
   },
@@ -68,6 +74,7 @@ export const useCreateProjectFormStore = create<CreateProjectFormState>((set) =>
     set((state) => {
       if (!state.draft) return state;
       state.draft.setMembers(emails);
+
       return { draft: state.draft };
     });
   },

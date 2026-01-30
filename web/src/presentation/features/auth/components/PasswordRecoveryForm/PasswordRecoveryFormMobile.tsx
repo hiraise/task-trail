@@ -3,11 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { useRecoveryPassword } from "@/presentation/features/auth/hooks";
 import { FormFieldError, IconInput, SubmitButton } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 import { authTexts } from "@/shared/locales/auth";
 
+import { useRecoveryPassword } from "../../hooks";
 import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
 
 import styles from "./PasswordRecoveryFormMobile.module.css";

@@ -15,6 +15,7 @@ const createGetProjectUseCase =
 
       if (!project) {
         clientLogger.warn("GetProjectUseCase: project not found", { projectId });
+
         return null;
       }
 

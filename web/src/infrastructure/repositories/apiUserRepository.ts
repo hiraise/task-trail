@@ -11,6 +11,7 @@ type ApiUserRepository = UserRepository;
 
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
+
   return new AppError(AppErrorType.SERVER, message);
 };
 
@@ -28,6 +29,7 @@ const extractAvatarUrl = (responseData: unknown): string | null => {
 
   if (responseData && typeof responseData === "object") {
     const data = responseData as Record<string, unknown>;
+
     return (data.avatarUrl as string) || null;
   }
 
@@ -45,6 +47,7 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
   getCurrentUser: async (): Promise<User | null> => {
     try {
       const dto = await httpClient.get(API_ROUTES.CURRENT_USER);
+
       return createUser(dto);
     } catch (error) {
       clientLogger.error("Get current user error", { error: error });
@@ -99,6 +102,7 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
       const updatedUser = createUser(dto);
 
       clientLogger.info("Repository: user updated successfully", { userId: updatedUser.id });
+
       return updatedUser;
     } catch (error) {
       clientLogger.error("Repository: update user error", { error });
@@ -116,6 +120,7 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
   findById: async (id: UserId): Promise<User> => {
     try {
       const dto = await httpClient.get(API_ROUTES.USER_BY_ID(id));
+
       return createUser(dto);
     } catch (error) {
       clientLogger.error("Get user by ID error", { error, id });
@@ -133,6 +138,7 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
   findCandidatesForProject: async (projectId?: ProjectId): Promise<User[]> => {
     try {
       const dtos = await httpClient.get(API_ROUTES.GET_CANDIDATES(projectId));
+
       return dtos.map(createUser);
     } catch (error) {
       clientLogger.error("Get project candidates error", { error });

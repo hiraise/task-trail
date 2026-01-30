@@ -26,6 +26,7 @@ export function useProject(projectId?: ProjectId): UseQueryResult<ProjectDetails
     queryKey: QUERY_KEYS.project(projectId || ""),
     queryFn: async () => {
       if (!projectId) return null;
+
       return await getProject(projectId);
     },
     staleTime: 5 * 60 * 1000,

@@ -29,6 +29,7 @@ export function useGetTaskDetail(
     queryKey: QUERY_KEYS.taskDetails(taskId || ""),
     queryFn: async () => {
       if (!taskId) throw new Error("Task ID is required");
+
       return await getTaskDetail(taskId);
     },
     enabled: !!taskId,

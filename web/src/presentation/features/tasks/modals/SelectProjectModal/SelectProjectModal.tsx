@@ -25,6 +25,7 @@ export default function SelectProjectModal(props: BaseModalProps<Project>) {
 
   const handleApply = () => {
     const selectedProject = projects.find((p) => p.id === selectedProjectId);
+
     props.onClose(selectedProject);
   };
   const handleClose = () => props.onClose(undefined);

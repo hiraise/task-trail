@@ -1,7 +1,8 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 
 import type { MockBoardDto } from "@/application/dto/MockBoardDto";
-import { useKanbanDragDrop } from "@/presentation/features/boards/hooks";
+
+import { useKanbanDragDrop } from "../../hooks";
 
 import { boardColumns, mockBoardTasks } from "./KanbanBoard.mocks";
 import styles from "./KanbanBoard.module.css";

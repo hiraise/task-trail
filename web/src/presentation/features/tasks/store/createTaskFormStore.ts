@@ -37,6 +37,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
   initialize: () => {
     set((state) => {
       if (state.draft) return state;
+
       return { draft: new TaskCreationDraft() };
     });
   },
@@ -45,6 +46,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
     set((state) => {
       if (!state.draft) return state;
       state.draft.setName(name);
+
       return { draft: state.draft };
     });
   },
@@ -53,6 +55,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
     set((state) => {
       if (!state.draft) return state;
       state.draft.setDescription(description);
+
       return { draft: state.draft };
     });
   },
@@ -65,13 +68,16 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
         name: projectMember.username,
         email: projectMember.email,
       };
+
       state.draft.setAssigneeId(data.id);
+
       return { draft: state.draft, assignee: data };
     });
   },
 
   setProject: async (project: Project) => {
     const state = get();
+
     if (!state.draft) return;
     const { selectProject } = appContainer.usecases.tasks;
     const result = await selectProject(state.draft, project.id, state.assignee?.id || null);

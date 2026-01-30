@@ -6,6 +6,8 @@ import { useInitSession } from "@/presentation/features/auth/hooks/useInitSessio
 
 export function AuthAndUserInitializer() {
   const pathName = usePathname();
+
   useInitSession(pathName);
+
   return null;
 }

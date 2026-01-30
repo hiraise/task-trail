@@ -24,6 +24,7 @@ export function ProjectMembersMobilePage() {
 
   const handleAddMembers = async () => {
     const emails = await showInviteUser();
+
     if (!emails || emails.length === 0) return;
     await addMembers({ projectId, emails });
   };

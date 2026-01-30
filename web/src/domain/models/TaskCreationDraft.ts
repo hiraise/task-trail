@@ -83,6 +83,7 @@ export class TaskCreationDraft {
 
   toPersistenceDto() {
     const errors = this.validate();
+
     if (errors.length > 0) {
       throw new Error(`Validation failed: ${errors.join(", ")}`);
     }

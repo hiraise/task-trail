@@ -3,10 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { useSignUp } from "@/presentation/features/auth/hooks";
 import { SubmitButton } from "@/presentation/shared";
 import { authTexts } from "@/shared/locales/auth";
 
+import { useSignUp } from "../../hooks";
 import { AuthFormFieldsDesktop, schema, type FormData } from "../AuthFormFields";
 import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
 
@@ -23,6 +23,7 @@ export function SignupFormDesktop() {
   const submitHandler = async (data: FormData) => {
     await signUp({ email: data.email, password: data.password });
   };
+
   return (
     <FormProvider {...form}>
       <form className={styles.container} onSubmit={handleSubmit(submitHandler)}>

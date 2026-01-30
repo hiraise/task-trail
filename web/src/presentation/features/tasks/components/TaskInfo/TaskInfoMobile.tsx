@@ -1,7 +1,8 @@
 import type { Task } from "@/domain/models/Task";
-import { useChangeTaskInfo } from "@/presentation/features/tasks/hooks";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
+
+import { useChangeTaskInfo } from "../../hooks";
 
 import { TaskDetailsMobile } from "./TaskDetailsMobile";
 import styles from "./TaskInfoMobile.module.css";

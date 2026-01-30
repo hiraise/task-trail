@@ -14,6 +14,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export function IconInput({ icon, label, hasError, ...rest }: InputProps) {
   const iconColor = hasError ? "var(--icon-critical)" : "var(--icon-primary)";
+
   return (
     <div className={styles.inputWrapper}>
       <input

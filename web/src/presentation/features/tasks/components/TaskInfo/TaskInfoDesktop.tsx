@@ -1,9 +1,9 @@
 import type { Task } from "@/domain/models/Task";
-import { useChangeTaskInfo } from "@/presentation/features/tasks/hooks";
-import { useTaskMenuItems } from "@/presentation/features/tasks/hooks/useTaskMenuItems";
 import { DropdownMenu, IconButton } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
+
+import { useChangeTaskInfo, useTaskMenuItems } from "../../hooks";
 
 import { TaskDetailsDesktop } from "./TaskDetailsDesktop";
 import styles from "./TaskInfoDesktop.module.css";

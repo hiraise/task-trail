@@ -2,9 +2,9 @@ import clsx from "clsx";
 import { forwardRef } from "react";
 
 import type { User } from "@/domain/models/User";
-import { useUploadAvatar } from "@/presentation/features/user/hooks";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 
+import { useUploadAvatar } from "../../hooks";
 import { UserAvatar } from "../UserAvatar";
 
 import styles from "./ProfileAvatar.module.css";
@@ -23,11 +23,13 @@ export const ProfileAvatar = forwardRef<HTMLDivElement, ProfileAvatarProps>(
 
     const handleImageSelected = async (file: File) => {
       const result = await showCropImage(file);
+
       if (!result) return;
       await updateAvatar({ avatarFile: result });
     };
 
     const showCameraIcon = size === "mobile";
+
     return (
       <div ref={ref} className={clsx(className, styles.container)}>
         <UserAvatar

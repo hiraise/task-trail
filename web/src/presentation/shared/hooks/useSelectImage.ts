@@ -2,9 +2,9 @@
 
 import { useRef } from "react";
 
-type UseSelectImageProps = {
+interface UseSelectImageProps {
   onSelect: (file: File) => void;
-};
+}
 
 export function useSelectImage({ onSelect }: UseSelectImageProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -15,6 +15,7 @@ export function useSelectImage({ onSelect }: UseSelectImageProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
+
     if (files && files[0]) {
       onSelect(files[0]);
       e.target.value = "";

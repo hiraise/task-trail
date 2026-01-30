@@ -12,6 +12,7 @@ interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "color"> {
 export function Icon({ as: AsComponent, color, size, inheritColor, ...rest }: IconProps) {
   if (!AsComponent) {
     clientLogger.error('Icon component requires "as" prop');
+
     return null;
   }
 

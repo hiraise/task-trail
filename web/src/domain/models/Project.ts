@@ -48,6 +48,7 @@ export type ProjectDetails = z.infer<typeof ProjectDetailsSchema> & {
 
 export const createProjectDetails = (raw: unknown): ProjectDetails => {
   const parsed = ProjectDetailsSchema.parse(raw);
+
   return {
     ...parsed,
     userRole: getUserRole(parsed.permissions),
@@ -79,5 +80,6 @@ export const getUserRoleLabelLocalized = (project: ProjectDetails): string => {
     VIEWER: "Просмотр",
     NONE: "Нет доступа",
   };
+
   return labels[project.userRole] || "Неизвестная роль";
 };

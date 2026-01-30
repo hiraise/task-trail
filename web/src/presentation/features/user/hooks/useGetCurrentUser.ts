@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { User } from "@/domain/models/User";
 import { appContainer } from "@/infrastructure/di/container";
-import { useCheckAuthStatus } from "@/presentation/features/auth/hooks";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+
+import { useCheckAuthStatus } from "../../auth/hooks";
 
 /**
  * Custom React hook to fetch the current authenticated user's data.

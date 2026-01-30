@@ -2,10 +2,8 @@ import { useParams } from "next/navigation";
 import styled from "styled-components";
 
 import type { ProjectId } from "@/domain/types";
+import { BaseModal, Icon, type BaseModalProps } from "@/presentation/shared";
 
-import { Icon } from "../../../../shared";
-import { BaseModal } from "../../../../shared/modals/BaseModal/BaseModal";
-import type { BaseModalProps } from "../../../../shared/modals/BaseModal/BaseModal.types";
 import { useProjectMenuItems } from "../../hooks/useProjectMenuItems";
 
 const MenuWrapper = styled.div`

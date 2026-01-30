@@ -3,10 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { useSignUp } from "@/presentation/features/auth/hooks";
 import { SubmitButton } from "@/presentation/shared";
 import { authTexts } from "@/shared/locales/auth";
 
+import { useSignUp } from "../../hooks";
 import { AuthFormFieldsDesktop, schema, type FormData } from "../AuthFormFields";
 import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
 

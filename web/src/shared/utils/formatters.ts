@@ -25,6 +25,7 @@ export function formatDate(date: Date | string): string {
 export function formatTime(secondsLeft: number) {
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
+
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
@@ -54,11 +55,13 @@ export function getProjectId(str: string): string {
     .trim()
     .split(/[\s\-_\.]+/)
     .filter(Boolean);
+
   if (words.length === 1) {
     res = words[0].slice(0, 2).toUpperCase();
   } else {
     res = (words[0][0] + words[1][0]).toUpperCase();
   }
+
   return `${res}-`;
 }
 
@@ -73,12 +76,15 @@ export function getProjectId(str: string): string {
  */
 export function getUserInitials(str: string): string {
   let res: string;
+
   if (str.length === 0) return "";
   const words = str.trim().split(/\s+/).filter(Boolean);
+
   if (words.length === 1) {
     res = words[0].slice(0, 2).toUpperCase();
   } else {
     res = (words[0][0] + words[1][0]).toUpperCase();
   }
+
   return res;
 }

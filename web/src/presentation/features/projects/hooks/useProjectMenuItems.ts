@@ -47,6 +47,7 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
       color: "var(--icon-tertiary)",
       onClick: async () => {
         const emails = await showInviteUser();
+
         if (!emails || emails.length === 0) return;
         await addMembers({ projectId, emails });
       },
@@ -60,6 +61,7 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
         if (!project) return;
         const data = { id: project.id, title: project.name };
         const result = await showMoveToArchive({ type: "project", ...data });
+
         //TODO: implement move to archive logic
         if (result) toast.warning(`Project id: ${result} moved to archive`);
       },
@@ -72,6 +74,7 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
       onClick: async () => {
         if (!project) return;
         const result = await showLeaveProject({ id: project.id, title: project.name });
+
         if (result) await leave({ projectId: result });
       },
       isVisible: project ? !isProjectOwner(project) : false,
@@ -84,6 +87,7 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
         if (!project) return;
         const data = { id: project.id, title: project.name };
         const result = await showDeleteItem({ type: "project", ...data });
+
         if (result) await deleteById(projectId);
       },
       isVisible: project ? canUserDeleteProject(project) : false,

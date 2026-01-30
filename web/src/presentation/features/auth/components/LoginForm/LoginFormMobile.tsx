@@ -4,18 +4,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { FormProvider, useForm } from "react-hook-form";
 
-import { useLogin } from "@/presentation/features/auth/hooks";
 import { SubmitButton } from "@/presentation/shared";
 import { ROUTES } from "@/shared/config/routes";
 import { authTexts } from "@/shared/locales/auth";
 
+import { useLogin } from "../../hooks";
 import { AuthFormFieldsDesktop, schema, type FormData } from "../AuthFormFields";
 import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
 
 import styles from "./LoginFormMobile.module.css";
-
-
-
 
 export function LoginFormMobile() {
   const { mutateAsync: login, isPending: isLoading } = useLogin();

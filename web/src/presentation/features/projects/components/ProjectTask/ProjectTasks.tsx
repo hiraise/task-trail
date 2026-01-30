@@ -3,9 +3,10 @@ import { memo } from "react";
 
 import type { Task } from "@/domain/models/Task";
 import type { ProjectId } from "@/domain/types";
-import { ProjectMenuButton } from "@/presentation/features/projects/components/ProjectMenuButton";
 import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
+
+import { ProjectMenuButton } from "../ProjectMenuButton";
 
 import styles from "./ProjectTasks.module.css";
 import { TaskList } from "./TaskList";

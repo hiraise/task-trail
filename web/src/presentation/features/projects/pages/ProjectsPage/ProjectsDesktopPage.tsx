@@ -14,6 +14,7 @@ export function ProjectsDesktopPage() {
   const { showSortOptions } = useGlobalModals();
 
   const { data: projects } = useProjects();
+
   if (!projects) return null;
 
   const topBar = (

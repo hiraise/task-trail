@@ -30,6 +30,7 @@ export function EditProjectFormDesktop({ project, submitHandler }: EditProjectFo
   } = form;
 
   const isLoading = false;
+
   return (
     <form className={styles.form} onSubmit={handleSubmit(submitHandler)}>
       <div className={styles.formFields}>

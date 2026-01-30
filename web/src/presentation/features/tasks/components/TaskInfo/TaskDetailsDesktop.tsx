@@ -15,6 +15,7 @@ interface TaskDetailsProps {
 
 export function TaskDetailsDesktop({ icon, label, text, onClick }: TaskDetailsProps) {
   const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div className={styles.detailWrapper}>
       <span className="body-reg-2">{label}</span>

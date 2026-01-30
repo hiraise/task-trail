@@ -3,8 +3,8 @@ import { AnimatePresence, motion as m } from "framer-motion";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { useChangePassword } from "@/presentation/features/auth/hooks";
 import { FormFieldError, SubmitButton } from "@/presentation/shared";
+import { useChangePassword } from "@/presentation/shared/hooks";
 import { TEXTS } from "@/shared/locales/texts";
 
 import styles from "./ChangePasswordFormDesktop.module.css";

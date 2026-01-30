@@ -21,6 +21,7 @@ export function useProjectDetail(projectId: ProjectId) {
     queryKey: QUERY_KEYS.projectDetails(projectId || ""),
     queryFn: async () => {
       if (!projectId) throw new Error("Project ID is required");
+
       return await getProjectDetail(projectId);
     },
     staleTime: 5 * 60 * 1000,

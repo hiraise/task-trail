@@ -11,6 +11,7 @@ const createResendEmailVerificationUseCase =
       clientLogger.info("ResendEmailVerificationUseCase: executing");
       await authRepository.resendEmailVerification(payload.email);
       clientLogger.info("ResendEmailVerificationUseCase: End successfully");
+
       return payload.email;
     } catch (error) {
       clientLogger.error("ResendEmailVerificationUseCase: failed", { error, command: payload });

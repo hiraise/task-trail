@@ -3,8 +3,9 @@ import { useMemo } from "react";
 
 import type { TaskDetailResponseDto } from "@/application/dto/TaskDetailResponseDto";
 import { appContainer } from "@/infrastructure/di/container";
-import { useGetUserTasks } from "@/presentation/features/tasks/hooks";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+
+import { useGetUserTasks } from "./useGetUserTasks";
 
 interface UseGetTaskListDetailsResult {
   data: TaskDetailResponseDto[];

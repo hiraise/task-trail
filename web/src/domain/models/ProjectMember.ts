@@ -23,6 +23,7 @@ export type ProjectMember = z.infer<typeof ProjectMemberSchema> & {
 
 export const createProjectMember = (raw: unknown): ProjectMember => {
   const parsed = ProjectMemberSchema.parse(raw);
+
   return {
     ...parsed,
     userRole: getUserRole(parsed.permissions),
@@ -45,5 +46,6 @@ export const getProjectMemberRoleLabelLocalized = (member: ProjectMember): strin
     VIEWER: "Просмотр",
     NONE: "Нет доступа",
   };
+
   return labels[member.userRole] || "Неизвестная роль";
 };

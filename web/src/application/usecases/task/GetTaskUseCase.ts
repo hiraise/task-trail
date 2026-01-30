@@ -15,6 +15,7 @@ const createGetTaskUseCase =
 
       if (!task) {
         clientLogger.warn("GetTaskUseCase: task not found", { taskId });
+
         return null;
       }
 

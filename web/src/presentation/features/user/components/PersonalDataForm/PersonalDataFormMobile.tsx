@@ -2,9 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
-import { useGetCurrentUser, useUpdateUser } from "@/presentation/features/user/hooks";
 import { FormFieldError, InputFieldMobile, SubmitButton } from "@/presentation/shared";
 import { TEXTS } from "@/shared/locales/texts";
+
+import { useGetCurrentUser, useUpdateUser } from "../../hooks";
 
 import styles from "./PersonalDataFormMobile.module.css";
 import type { FormValues } from "./schema";

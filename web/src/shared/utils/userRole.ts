@@ -5,6 +5,7 @@ export const getUserRole = (permissions: Permission[]): UserRole => {
   if (permissions.includes("PROJECT_ADMIN")) return "ADMIN";
   if (permissions.includes("PROJECT_EDIT")) return "EDITOR";
   if (permissions.length > 0) return "VIEWER";
+
   return "NONE";
 };
 

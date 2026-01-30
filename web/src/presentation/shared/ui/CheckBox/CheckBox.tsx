@@ -36,6 +36,7 @@ export function CheckBox({ onChange, checked }: CheckBoxProps) {
 
   const handleCheckboxChange = () => {
     const newCheckedState = !currentCheckedState;
+
     if (checked === undefined) setIsChecked(newCheckedState);
     onChange(newCheckedState);
   };
@@ -46,6 +47,7 @@ export function CheckBox({ onChange, checked }: CheckBoxProps) {
       handleCheckboxChange();
     }
   };
+
   return (
     <div
       className={`${styles.checkBox} ${currentCheckedState ? styles.checked : ""}`}

@@ -22,12 +22,12 @@ export const MODAL_TYPE = {
 
 export type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];
 
-type ModalStackItem = {
+interface ModalStackItem {
   type: ModalType;
   props?: Record<string, unknown>;
   resolve: (value: unknown) => void;
   reject: () => void;
-};
+}
 
 interface GlobalModalContextProps {
   stack: ModalStackItem[];
@@ -55,6 +55,7 @@ export function GlobalModalProvider({ children }: { children: React.ReactNode })
         resolve: resolve as (value: unknown) => void,
         reject,
       };
+
       setStack((prev) => [...prev, item]);
     });
   };
@@ -62,11 +63,13 @@ export function GlobalModalProvider({ children }: { children: React.ReactNode })
   const close = <T,>(result?: T) => {
     setStack((prev) => {
       const top = prev[prev.length - 1];
+
       if (result !== undefined && top?.resolve) {
         top.resolve(result);
       } else if (result === undefined && top?.reject) {
         top.reject();
       }
+
       return prev.slice(0, -1);
     });
   };
@@ -79,6 +82,7 @@ export function GlobalModalProvider({ children }: { children: React.ReactNode })
           item.reject();
         }
       });
+
       return [];
     });
   };
@@ -94,6 +98,8 @@ export function GlobalModalProvider({ children }: { children: React.ReactNode })
 
 export function useGlobalModalContext() {
   const context = useContext(GlobalModalContext);
+
   if (!context) throw new Error("useTaskModal must be used within TaskModalProvider");
+
   return context;
 }

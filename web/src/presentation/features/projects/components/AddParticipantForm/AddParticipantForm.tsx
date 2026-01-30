@@ -1,12 +1,12 @@
 import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { useCreateProjectFormStore } from "@/presentation/features/projects/store/createProjectFormStore";
 import { SubmitButton } from "@/presentation/shared";
 import { useClickOutside } from "@/presentation/shared/hooks/useClickOutside";
 import { Input } from "@/presentation/shared/ui/Input";
 import { TEXTS } from "@/shared/locales/texts";
 
+import { useCreateProjectFormStore } from "../../store/createProjectFormStore";
 import { SelectedUsers } from "../SelectedUsers";
 import { UsersList } from "../UsersList";
 
@@ -25,6 +25,7 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   // Use a ref for the dropdown to handle clicks outside of it
   const dropdownRef = useRef<HTMLDivElement>(null);
+
   useClickOutside([inputRef, dropdownRef], () => setShowDropdown(false));
 
   // Use the custom hook to access the project form state and methods

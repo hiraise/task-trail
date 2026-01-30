@@ -89,6 +89,7 @@ export const createAppContainer = (config?: DIContainerConfig): DIContainer => {
       updateUser: uc.createUpdateUserUseCase(repositories.user),
     },
   };
+
   return {
     repositories,
     usecases,

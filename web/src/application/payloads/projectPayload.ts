@@ -6,7 +6,7 @@ export interface CreateProjectPayload {
   participants?: string[]; //emails
 }
 
-export type EditProjectPayload = {
+export interface EditProjectPayload {
   /**
    * Project ID is used for routing (endpoint URL),
    * NOT included in request body
@@ -14,7 +14,7 @@ export type EditProjectPayload = {
   projectId: ProjectId;
   name?: string;
   description?: string;
-};
+}
 
 export interface AddMembersPayload {
   projectId: ProjectId;

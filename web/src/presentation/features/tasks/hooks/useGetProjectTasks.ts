@@ -25,6 +25,7 @@ export function useGetProjectTasks(projectId: ProjectId): UseQueryResult<Task[] 
     queryKey: QUERY_KEYS.projectTasks(projectId),
     queryFn: async () => {
       if (!projectId) return null;
+
       return await getProjectTasks(projectId);
     },
     staleTime: 5 * 60 * 1000,

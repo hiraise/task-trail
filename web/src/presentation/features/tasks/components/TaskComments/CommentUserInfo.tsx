@@ -12,7 +12,9 @@ interface CommentUserInfoProps {
 export default function CommentUserInfo({ user, createdAt, updatedAt }: CommentUserInfoProps) {
   const getDate = () => {
     let retVal = createdAt;
+
     if (updatedAt) retVal += ` (edited: ${updatedAt})`;
+
     return retVal;
   };
 

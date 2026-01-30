@@ -23,6 +23,7 @@ type ApiProjectRepository = ProjectRepository;
  */
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
+
   return new AppError(AppErrorType.SERVER, message);
 };
 
@@ -37,6 +38,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
   findById: async (id: ProjectId): Promise<ProjectDetails> => {
     try {
       const dto = await httpClient.get(API_ROUTES.PROJECT_BY_ID(id));
+
       return createProjectDetails(dto);
     } catch (error) {
       clientLogger.error("Get project by ID error", { error, id: id });
@@ -56,6 +58,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
   findAll: async (): Promise<Project[]> => {
     try {
       const dtos = await httpClient.get(API_ROUTES.PROJECTS);
+
       return dtos.map(createProjectListItem);
     } catch (error) {
       clientLogger.error("Get projects error", { error });
@@ -92,6 +95,7 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
     try {
       const { projectId, ...apiPayload } = payload;
       const responseDto = await httpClient.patch(API_ROUTES.PROJECT_BY_ID(projectId), apiPayload);
+
       return createProjectDetails(responseDto);
     } catch (error) {
       clientLogger.error("Edit project error", { error, id: payload.projectId });

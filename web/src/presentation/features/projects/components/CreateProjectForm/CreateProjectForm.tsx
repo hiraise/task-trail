@@ -3,12 +3,12 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
-import { useCreateProjectFormStore } from "@/presentation/features/projects/store/createProjectFormStore";
 import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { projectsTexts } from "@/shared/locales/projects";
 
 import { useCreateProject } from "../../hooks";
+import { useCreateProjectFormStore } from "../../store/createProjectFormStore";
 import { SelectedUsers } from "../SelectedUsers";
 
 import { AddParticipant } from "./AddParticipant";
@@ -73,6 +73,7 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
 
   const handleInviteUser = async () => {
     const emails = await showInviteUser();
+
     if (emails && emails.length > 0) {
       store.setParticipants(emails);
     }
@@ -81,6 +82,7 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
   const submitHandler = async () => {
     if (!store.draft) return;
     const dto = store.draft.toPersistenceDto();
+
     await createProject(dto);
     store.reset();
     onSubmit();

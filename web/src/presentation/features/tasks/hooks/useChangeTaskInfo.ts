@@ -36,12 +36,14 @@ export const useChangeTaskInfo = (
       currentStatus: extendedTask.status,
       projectId: extendedTask.project.id,
     });
+
     if (!result || result.id === extendedTask.status?.id) return;
     await mutateStatus({ taskId: task.id, statusId: result.id });
   };
 
   const selectProject = async () => {
     const result = await showSelectProject(task.projectId);
+
     if (!result) return;
     await new Promise((resolve) => setTimeout(resolve, 1500));
     toast.success(`Select project with id: ${result.id}`);
@@ -64,6 +66,7 @@ export const useChangeTaskInfo = (
       userId: task.assigneeId,
       projectId: task.projectId,
     });
+
     //TODO: Also handle remove assignee case
     if (!result) return;
     await changeAssignee({ taskId: task.id, assigneeId: result.id });

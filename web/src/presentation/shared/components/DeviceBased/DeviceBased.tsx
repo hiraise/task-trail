@@ -22,5 +22,6 @@ export function DeviceBased({ mobile, tablet, desktop }: DeviceBasedProps) {
 
   if (device === "mobile") return <>{mobile}</>;
   if (device === "tablet") return <>{tablet || desktop}</>;
+
   return <>{desktop}</>;
 }

@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { useChangePassword } from "@/presentation/features/auth/hooks";
 import { FormFieldError, InputFieldMobile, SubmitButton } from "@/presentation/shared";
+import { useChangePassword } from "@/presentation/shared/hooks";
 import { TEXTS } from "@/shared/locales/texts";
 
 import styles from "./ChangePasswordFormMobile.module.css";

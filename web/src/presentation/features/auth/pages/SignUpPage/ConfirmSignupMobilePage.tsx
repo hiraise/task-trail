@@ -3,15 +3,13 @@
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
-
-import { useResendEmailVerification } from "@/presentation/features/auth/hooks";
 import { SubmitButton } from "@/presentation/shared";
 import { ASSETS } from "@/shared/config/assets";
 import { authTexts } from "@/shared/locales/auth";
 import { openUserInbox } from "@/shared/utils/openUserInbox";
 
 import { ResendEmailButton, TitleWrapper } from "../../components";
-
+import { useResendEmailVerification } from "../../hooks";
 
 import styles from "./ConfirmSignupMobilePage.module.css";
 

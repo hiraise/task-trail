@@ -14,7 +14,9 @@ type UploadAvatarUseCase = (payload: UploadAvatarPayload) => Promise<string | nu
  */
 const createFormDataFromFile = (file: File): FormData => {
   const formData = new FormData();
+
   formData.append("file", file, file.name);
+
   return formData;
 };
 
@@ -28,6 +30,7 @@ const createFormDataFromFile = (file: File): FormData => {
 const validateAvatarFile = (file: File): void => {
   // Business rule: Maximum file size (5MB)
   const MAX_SIZE = 5 * 1024 * 1024;
+
   if (file.size > MAX_SIZE) {
     throw new AppError(
       AppErrorType.VALIDATION,
@@ -37,6 +40,7 @@ const validateAvatarFile = (file: File): void => {
 
   // Business rule: Allowed file types
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
   if (!allowedTypes.includes(file.type)) {
     throw new AppError(
       AppErrorType.VALIDATION,
@@ -46,6 +50,7 @@ const validateAvatarFile = (file: File): void => {
 
   // Business rule: Minimum file size (to prevent empty uploads)
   const MIN_SIZE = 1024; // 1KB
+
   if (file.size < MIN_SIZE) {
     throw new AppError(AppErrorType.VALIDATION, "File is too small. Please upload a valid image");
   }

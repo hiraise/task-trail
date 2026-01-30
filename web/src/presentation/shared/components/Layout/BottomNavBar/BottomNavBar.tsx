@@ -27,6 +27,7 @@ export function BottomNavBar() {
       <div className={styles.menu}>
         {navItems.map((item) => {
           const isCurrent = normalize(pathName) === normalize(item.href);
+
           return (
             <AnimatePresence key={item.label} mode="popLayout">
               <MenuItem {...item} isCurrent={isCurrent} />
@@ -61,6 +62,7 @@ function MenuItem({ isCurrent, ...props }: MenuItemsProps) {
       containerRef.current.style.width = "max-content";
       // Measure the width of the element
       const width = containerRef.current.getBoundingClientRect().width;
+
       // Store the measured width in state for animation
       setMeasuredWidth(width);
       // Reset the width style to allow framer-motion to animate it

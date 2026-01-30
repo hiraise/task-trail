@@ -16,6 +16,7 @@ export const openUserInbox = (email: string): void => {
 
   if (!domain) {
     window.location.href = `mailto:${email}`;
+
     return;
   }
 

@@ -32,6 +32,7 @@ const createGetCurrentUserUseCase =
 
       if (!currentUser) {
         clientLogger.warn("GetCurrentUserUseCase: no authenticated user found");
+
         return null;
       }
 

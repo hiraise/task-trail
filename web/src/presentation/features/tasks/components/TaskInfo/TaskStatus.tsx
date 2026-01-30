@@ -11,6 +11,7 @@ interface TaskStatusProps {
 
 export function TaskStatus({ status, onClick }: TaskStatusProps) {
   const isStatusMising = !status;
+
   return (
     <button className={styles.container} onClick={onClick} disabled={isStatusMising}>
       <span className="caption-med">{status?.name || "Статус неопределен"}</span>

@@ -25,6 +25,7 @@ export function DeleteItem({ name, type }: ActionProps) {
       description = interpolate(TEXTS.projects.deleteDescription, { projectName: name });
       break;
   }
+
   return (
     <div className={styles.container}>
       <div className={styles.title}>

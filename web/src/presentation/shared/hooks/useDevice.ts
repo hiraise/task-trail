@@ -13,6 +13,7 @@ const BREAKPOINTS: Record<DeviceType, number> = {
 const getDeviceType = (width: number): DeviceType => {
   if (width <= BREAKPOINTS.mobile) return "mobile";
   if (width <= BREAKPOINTS.tablet) return "tablet";
+
   return "desktop";
 };
 
@@ -22,6 +23,7 @@ export const useDevice = (): DeviceType | null => {
   useEffect(() => {
     const detectDevice = () => {
       const currentType = getDeviceType(window.innerWidth);
+
       setDevice((prev) => (prev !== currentType ? currentType : prev));
     };
 

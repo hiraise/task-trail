@@ -1,11 +1,12 @@
 "use client";
 
 import { mockBoards } from "@/application/dto/MockBoardDto";
-import { BoardList } from "@/presentation/features/boards/components";
 import { EmptyListState } from "@/presentation/shared";
 import { PagesMobileTemplate, TopBarMobile } from "@/presentation/shared/components/Layout";
 import { ASSETS } from "@/shared/config/assets";
 import { TEXTS } from "@/shared/locales/texts";
+
+import { BoardList } from "../../components";
 
 import styles from "./BoardsMobilePage.module.css";
 

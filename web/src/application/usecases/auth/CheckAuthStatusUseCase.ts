@@ -14,6 +14,7 @@ const createCheckAuthStatusUseCase =
 
       // Get current user information
       const currentUser = await getCurrentUserUseCase();
+
       clientLogger.info("CheckAuthStatusUseCase: completed successfully");
 
       return {
@@ -22,6 +23,7 @@ const createCheckAuthStatusUseCase =
       };
     } catch (error) {
       clientLogger.info("CheckAuthStatusUseCase: failed", { error });
+
       return {
         isAuthenticated: false,
         user: null,

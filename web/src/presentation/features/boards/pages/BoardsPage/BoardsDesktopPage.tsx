@@ -52,6 +52,7 @@ export function BoardsDesktopPage() {
 
 function SortButton() {
   const { showSortOptions } = useGlobalModals();
+
   return (
     <button onClick={showSortOptions} className={styles.sortButton}>
       <Icon as={ICONS.sort} size="24px" inheritColor />

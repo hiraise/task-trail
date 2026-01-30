@@ -30,6 +30,7 @@ const createGetProjectDetailUseCase =
       }
 
       const ownerMember = members.find(isProjectMemberOwner);
+
       if (!ownerMember) {
         throw new Error(`Project owner not found: ${projectId}`);
       }

@@ -6,10 +6,13 @@ export function useClickOutside(refs: React.RefObject<HTMLElement | null>[], han
   useEffect(() => {
     const listener = (event: MouseEvent) => {
       const isClickInside = refs.some((ref) => ref.current?.contains(event.target as Node));
+
       if (isClickInside) return;
       handler();
     };
+
     document.addEventListener("mousedown", listener);
+
     return () => document.removeEventListener("mousedown", listener);
   }, [refs, handler]);
 }

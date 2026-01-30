@@ -4,13 +4,13 @@ export const boardColumns = ["Open", "In progress", "To verify", "Done"] as cons
 
 export type TaskStatus = (typeof boardColumns)[number];
 
-export type MockTask = {
+export interface MockTask {
   id: TaskId;
   userId: UserId;
   status: TaskStatus;
   text: string;
   projectId: ProjectId;
-};
+}
 
 export const mockBoardTasks: MockTask[] = Array.from({ length: 20 }, (_, i) => ({
   id: `${i + 1}`,

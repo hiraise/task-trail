@@ -14,6 +14,7 @@ const createGetCurrentUserTasksUseCase =
 
       if (tasks.length === 0) {
         clientLogger.warn("GetCurrentUserTasksUseCase: current user has no tasks");
+
         return [];
       }
 

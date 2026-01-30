@@ -1,12 +1,12 @@
 import type { Task } from "@/domain/models/Task";
-import { EditTaskFormDesktop, type FormValues } from "@/presentation/features/tasks/components";
 import { DeviceBased } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks";
 import type { EditTaskProps } from "@/presentation/shared/hooks/useGlobalModals";
+import type { BaseModalProps } from "@/presentation/shared/modals/BaseModal";
+import { BaseModal } from "@/presentation/shared/modals/BaseModal";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { BaseModal } from "../../../../shared/modals/BaseModal/BaseModal";
-import type { BaseModalProps } from "../../../../shared/modals/BaseModal/BaseModal.types";
+import { EditTaskFormDesktop, type FormValues } from "../../components";
 import { useEditTask } from "../../hooks";
 
 export default function EditTaskModal(props: BaseModalProps<string>) {

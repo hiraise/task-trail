@@ -1,2 +1,3 @@
 export { BaseModal } from "./BaseModal";
-export type { BaseModalProps, BaseModalComponentProps } from "./BaseModal.types";
+export * from "./BaseModal.types";
+export type { BaseModalComponentProps, BaseModalProps } from "./BaseModal.types";

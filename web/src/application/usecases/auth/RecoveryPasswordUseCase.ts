@@ -11,6 +11,7 @@ const createRecoveryPasswordUseCase =
       clientLogger.info("RecoveryPasswordUseCase: executing");
       await authRepository.forgotPassword(payload.email);
       clientLogger.info("RecoveryPasswordUseCase: End successfully");
+
       return payload.email;
     } catch (error) {
       clientLogger.error("RecoveryPasswordUseCase: failed", { error, payload });

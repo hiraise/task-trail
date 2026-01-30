@@ -29,6 +29,7 @@ export default function Swimline({ member, tasks }: SwimlineProps) {
     return boardColumns.reduce(
       (acc, col) => {
         acc[col] = tasks.filter((task) => task.status === col);
+
         return acc;
       },
       {} as Record<string, MockTask[]>,

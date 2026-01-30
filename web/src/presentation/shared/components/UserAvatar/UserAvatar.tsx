@@ -12,6 +12,7 @@ interface UserAvatarProps {
 
 export function UserAvatar({ variant = "standard" }: UserAvatarProps) {
   let size: string;
+
   switch (variant) {
     case "small":
       size = "18px";

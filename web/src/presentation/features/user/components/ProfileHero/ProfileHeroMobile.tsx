@@ -24,6 +24,7 @@ export function ProfileHeroMobile({ user }: { user: User }) {
 
     if (avatarRef.current) {
       const rect = avatarRef.current.getBoundingClientRect();
+
       minTop = Math.min(minTop, rect.top);
       maxBottom = Math.max(maxBottom, rect.bottom);
     }

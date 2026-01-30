@@ -16,6 +16,7 @@ type ApiTaskRepository = TaskRepository;
 
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
+
   return new AppError(AppErrorType.SERVER, message);
 };
 
@@ -56,6 +57,7 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
   changeStatus: async (task: Task, statusId: TaskStatusId): Promise<Task> => {
     try {
       const responseDto = await httpClient.patch(API_ROUTES.CHANGE_STATUS(task.id, statusId));
+
       if (responseDto) return createTask(responseDto);
 
       return task;
@@ -93,6 +95,7 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
   findById: async (id: TaskId): Promise<Task> => {
     try {
       const dto = await httpClient.get(API_ROUTES.TASKS_BY_ID(id));
+
       return createTask(dto);
     } catch (error) {
       clientLogger.error("Get task by ID error", { error, id });
@@ -112,6 +115,7 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
   findAll: async (): Promise<Task[]> => {
     try {
       const dtos = await httpClient.get(API_ROUTES.USER_TASKS);
+
       return dtos.map(createTask);
     } catch (error) {
       clientLogger.error("Failed to get user tasks", { error });
@@ -129,6 +133,7 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
   create: async (payload: CreateTaskPayload): Promise<TaskId> => {
     try {
       const responseDto = await httpClient.post(API_ROUTES.TASKS, payload);
+
       return String(responseDto.id) as TaskId;
     } catch (error) {
       clientLogger.error("Create task error", { error, payload });
@@ -149,6 +154,7 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
       const responseDto = await httpClient.patch(API_ROUTES.TASKS_BY_ID(task.id), payload);
 
       if (responseDto) return createTask(responseDto);
+
       return task;
     } catch (error) {
       clientLogger.error("Edit task error", { error, id: task.id, task });

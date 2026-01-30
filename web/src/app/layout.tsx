@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 
 import { ClientRootLayout } from "@/presentation/app";
 import { metadataTexts } from "@/shared/locales/metadata";
+
 import "./globals.css";
 
 const manrope = localFont({

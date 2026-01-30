@@ -13,6 +13,7 @@ export function useGetTask(taskId: TaskId): UseQueryResult<Task | null, Error> {
     queryKey: QUERY_KEYS.task(taskId),
     queryFn: async () => {
       if (!taskId) return null;
+
       return await getTask(taskId);
     },
     staleTime: 5 * 60 * 1000,

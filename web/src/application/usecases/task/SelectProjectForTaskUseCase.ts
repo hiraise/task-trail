@@ -31,7 +31,9 @@ const createSelectProjectForTaskUseCase =
       return { success: true, assigneeCleared };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
+
       clientLogger.error("SelectProjectForTaskUseCase failed:", { errorMessage });
+
       return { success: false, assigneeCleared: false };
     }
   };

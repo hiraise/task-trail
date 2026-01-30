@@ -12,6 +12,7 @@ export const Textarea = React.forwardRef<
 
   useEffect(() => {
     const textarea = innerRef.current;
+
     if (!textarea) return;
 
     const setHeight = () => {

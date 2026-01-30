@@ -10,6 +10,7 @@ type ApiAuthRepository = AuthRepository;
 //TODO: add propper error handler
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
+
   return new AppError(AppErrorType.SERVER, message);
 };
 
@@ -131,6 +132,7 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
   resetPassword: async (token: string, newPassword: string): Promise<void> => {
     try {
       const payload = { password: newPassword, token };
+
       await httpClient.post<{ password: string; token: string }>(
         API_ROUTES.RESET_PASSWORD,
         payload,

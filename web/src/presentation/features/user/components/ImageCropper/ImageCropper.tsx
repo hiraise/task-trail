@@ -4,15 +4,16 @@ import Cropper from "react-easy-crop";
 
 import styles from "./ImageCropper.module.css";
 
-type AvatarCropperProps = {
+interface AvatarCropperProps {
   file: File;
   onCropComplete: (croppedArea: Area, croppedAreaPixels: Area) => void;
   onImageLoad?: (imageSrc: string) => void;
-};
+}
 
 function readFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = reject;
     reader.readAsDataURL(file);

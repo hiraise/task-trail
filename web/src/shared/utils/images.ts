@@ -16,13 +16,16 @@ export async function getCroppedImage(
   fileName = "cropped-avatar.jpg",
 ): Promise<File> {
   const image = new window.Image();
+
   image.src = imageSrc;
   await new Promise((res) => (image.onload = res));
 
   const canvas = document.createElement("canvas");
+
   canvas.width = crop.width;
   canvas.height = crop.height;
   const ctx = canvas.getContext("2d");
+
   if (!ctx) throw new Error("Failed to get canvas context");
 
   ctx.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, crop.width, crop.height);
@@ -67,6 +70,7 @@ export function createImageFormData(
       type: file.type || "image/jpeg",
       lastModified: Date.now(),
     });
+
     formData.append(fieldName, fileObj);
   }
 

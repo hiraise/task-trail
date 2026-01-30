@@ -4,8 +4,8 @@ import Image from "next/image";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import type { User } from "@/domain/models/User";
-import { useLogout } from "@/presentation/features/auth/hooks";
 import { Icon, Spinner } from "@/presentation/shared";
+import { useLogout } from "@/presentation/shared/hooks";
 import { ASSETS } from "@/shared/config/assets";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
@@ -27,6 +27,7 @@ export function ProfileHeroDesktop({ user }: { user: User }) {
 
     if (avatarRef.current) {
       const rect = avatarRef.current.getBoundingClientRect();
+
       minTop = Math.min(minTop, rect.top);
       maxBottom = Math.max(maxBottom, rect.bottom);
     }

@@ -1,29 +1,29 @@
 import type { ProjectId, TaskId, UserId } from "@/domain/types";
 
-export type CreateTaskPayload = {
+export interface CreateTaskPayload {
   name: string;
   description?: string;
   assigneeId: UserId | undefined;
   projectId: ProjectId;
-};
+}
 
-export type EditTaskPayload = {
+export interface EditTaskPayload {
   taskId: TaskId;
   title: string;
   description?: string;
-};
+}
 
-export type ChangeAssigneePayload = {
+export interface ChangeAssigneePayload {
   taskId: TaskId;
   assigneeId?: UserId;
-};
+}
 
-export type ChangeStatusPayload = {
+export interface ChangeStatusPayload {
   taskId: TaskId;
   statusId: string;
-};
+}
 
-export type UpdateTaskPayload = {
+export interface UpdateTaskPayload {
   name?: string;
   description?: string;
-};
+}

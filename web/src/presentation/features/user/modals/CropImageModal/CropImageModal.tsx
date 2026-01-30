@@ -2,14 +2,14 @@ import { useCallback, useState } from "react";
 import type { Area } from "react-easy-crop";
 import { toast } from "sonner";
 
-import { ImageCropper } from "@/presentation/features/user/components";
 import { DeviceBased, DialogButtons } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
+import type { BaseModalProps } from "@/presentation/shared/modals/BaseModal";
+import { BaseModal } from "@/presentation/shared/modals/BaseModal/BaseModal";
 import { errorTexts } from "@/shared/locales/messages";
 import { getCroppedImage } from "@/shared/utils/images";
 
-import { BaseModal } from "../../../../shared/modals/BaseModal/BaseModal";
-import type { BaseModalProps } from "../../../../shared/modals/BaseModal/BaseModal.types";
+import { ImageCropper } from "../../components";
 
 export function CropImageModal(props: BaseModalProps<File>) {
   const { file } = useGlobalModalProps<{ file: File }>() ?? {};
@@ -30,9 +30,11 @@ export function CropImageModal(props: BaseModalProps<File>) {
 
     try {
       const croppedFile = await getCroppedImage(imageSrc, croppedAreaPixels);
+
       props.onClose(croppedFile);
     } catch {
       toast.error(errorTexts.somethingWentWrong);
+
       return;
     }
   };

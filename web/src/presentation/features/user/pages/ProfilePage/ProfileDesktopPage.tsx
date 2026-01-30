@@ -1,12 +1,13 @@
 "use client";
 
+import { TEXTS } from "@/shared/locales/texts";
+
 import {
   ChangePasswordFormDesktop,
   PersonalDataFormDesktop,
   ProfileHeroDesktop,
-} from "@/presentation/features/user/components";
-import { useGetCurrentUser } from "@/presentation/features/user/hooks";
-import { TEXTS } from "@/shared/locales/texts";
+} from "../../components";
+import { useGetCurrentUser } from "../../hooks";
 
 import styles from "./ProfileDesktopPage.module.css";
 

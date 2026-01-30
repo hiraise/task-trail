@@ -1,9 +1,7 @@
+import { BaseModal, Icon, type BaseModalProps } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
 import type { MemberActionsProps } from "@/presentation/shared/hooks/useGlobalModals";
 
-import { Icon } from "../../../../shared";
-import { BaseModal } from "../../../../shared/modals/BaseModal/BaseModal";
-import type { BaseModalProps } from "../../../../shared/modals/BaseModal/BaseModal.types";
 import { useMembersMenuItems } from "../../hooks/useMembersMenuItems";
 
 import styles from "./MemberActionsModal.module.css";

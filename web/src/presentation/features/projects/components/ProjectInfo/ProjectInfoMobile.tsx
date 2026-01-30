@@ -18,19 +18,24 @@ export function ProjectInfoMobile({ project, owner }: ProjectInfoMobileProps) {
 
   const checkLines = () => {
     const el = textRef.current;
+
     if (!el) return;
 
     const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
     const lines = Math.floor(el.scrollHeight / lineHeight);
+
     setShowButton(lines > 3);
   };
 
   useEffect(() => {
     const el = textRef.current;
+
     if (!el) return;
 
     const resizeObserver = new ResizeObserver(checkLines);
+
     resizeObserver.observe(el);
+
     return () => resizeObserver.disconnect();
   }, [isExpanded]);
 

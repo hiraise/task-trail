@@ -14,6 +14,7 @@ export default function PasswordResetPage() {
   const handleSubmit = async (password: string) => {
     if (!token) {
       toast.error("Что-то пошло не так");
+
       return;
     }
     await resetPassword({ password, token });

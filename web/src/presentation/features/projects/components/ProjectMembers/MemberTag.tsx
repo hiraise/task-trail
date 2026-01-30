@@ -19,6 +19,7 @@ export function MemberTag({ tag }: MemberTagProps) {
       color = "var(--bg-accent-blue)";
       break;
   }
+
   return (
     <div className={styles.container} style={{ backgroundColor: color }}>
       <span className="caption-med">{tagText}</span>

@@ -1,5 +1,5 @@
-import { useProjectStatuses } from "@/presentation/features/projects/hooks";
 import { RadioButton } from "@/presentation/shared";
+import { useProjectStatuses } from "@/presentation/shared/hooks";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
 import type { ChangeStatusProps } from "@/presentation/shared/hooks/useGlobalModals";
 

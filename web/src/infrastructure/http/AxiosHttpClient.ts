@@ -20,10 +20,10 @@ declare module "axios" {
   }
 }
 
-type RefreshQueueItem = {
+interface RefreshQueueItem {
   resolve: (value?: unknown) => void;
   reject: (reason?: unknown) => void;
-};
+}
 
 export class AxiosHttpClient implements HttpClient {
   private client: AxiosInstance;
@@ -45,26 +45,31 @@ export class AxiosHttpClient implements HttpClient {
 
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.get<T>(url, config);
+
     return response.data;
   }
 
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.post<T>(url, data, config);
+
     return response.data;
   }
 
   async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.patch<T>(url, data, config);
+
     return response.data;
   }
 
   async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.put<T>(url, data, config);
+
     return response.data;
   }
 
   async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.delete<T>(url, config);
+
     return response.data;
   }
 
@@ -99,6 +104,7 @@ export class AxiosHttpClient implements HttpClient {
         try {
           await this.refreshTokenRequest();
           this.resolveQueue(null);
+
           return this.retryOriginalRequest(originalRequest);
         } catch (refreshErr) {
           this.resolveQueue(refreshErr as AxiosError);
@@ -133,6 +139,7 @@ export class AxiosHttpClient implements HttpClient {
     ) {
       return false;
     }
+
     return error.response?.status === 401 && !config?._retry;
   }
 

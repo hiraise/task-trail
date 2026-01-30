@@ -1,5 +1,5 @@
 /* eslint-disable import/order */
-/* eslint-disable no-restricted-imports */
+ 
 // App icons
 import AddUserIcon from "../../../public/icons/AddUserIcon.svg";
 import ArchiveIcon from "../../../public/icons/ArchiveIcon.svg";

@@ -3,10 +3,11 @@ import { AnimatePresence, motion as m } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { useGetCurrentUser, useUpdateUser } from "@/presentation/features/user/hooks";
 import { FormFieldError, SubmitButton } from "@/presentation/shared";
 import { Input } from "@/presentation/shared/ui/Input";
 import { TEXTS } from "@/shared/locales/texts";
+
+import { useGetCurrentUser, useUpdateUser } from "../../hooks";
 
 import styles from "./PersonalDataFormDesktop.module.css";
 import type { FormValues } from "./schema";

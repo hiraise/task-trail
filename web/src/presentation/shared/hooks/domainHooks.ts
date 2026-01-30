@@ -7,6 +7,9 @@
  * Each export is a re-export from the appropriate domain layer.
  */
 
+// Auth domain hooks
+export { useChangePassword, useLogout } from "@/presentation/features/auth/hooks";
+
 // User domain hooks
 export { useGetCurrentUser } from "@/presentation/features/user/hooks";
 
