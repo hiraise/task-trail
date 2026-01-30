@@ -1,36 +1,34 @@
-"use client";
+import { clientLogger } from "@/infrastructure/config/clientLogger";
 
-import { StyledSvg } from "./Icon.styled";
+import styles from "./Icon.module.css";
 
-interface IconProps extends React.SVGAttributes<SVGElement> {
+interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "color"> {
   as: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  size?: string;
   color?: string;
+  size?: string;
   inheritColor?: boolean;
 }
 
-/**
- * Renders a styled SVG icon component using a provided SVG React component.
- *
- * @param as - The SVG React component to render as the icon.
- * @param size - Optional size of the icon (e.g., "24px", "2em").
- * @param color - Optional color of the icon.
- * @param inheritColor - If true, the icon inherits the color from its parent.
- * @param rest - Additional SVG attributes to pass to the icon.
- * @returns The rendered SVG icon component, or null if `as` is not provided.
- */
+export function Icon({ as: AsComponent, color, size, inheritColor, ...rest }: IconProps) {
+  if (!AsComponent) {
+    clientLogger.error('Icon component requires "as" prop');
+    return null;
+  }
 
-export function Icon({ as, color, size, inheritColor, ...rest }: IconProps) {
-  //TODO: handle case where `as` is not a valid SVG element
-  if (!as) return null;
-  return (
-    <StyledSvg
-      as={as}
-      className="StyledSvg"
-      $color={color}
-      $size={size}
-      $inheritColor={inheritColor}
-      {...rest}
-    />
-  );
+  const classNames = [styles.icon, inheritColor ? styles.inheritColor : "", rest.className]
+    .filter(Boolean)
+    .join(" ");
+
+  const style: React.CSSProperties = {};
+
+  if (size) {
+    style.width = size;
+    style.height = size;
+  }
+
+  if (color && !inheritColor) {
+    style.color = color;
+  }
+
+  return <AsComponent className={classNames} style={style} role={"icon"} {...rest} />;
 }
