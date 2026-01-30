@@ -54,6 +54,7 @@ function AvatarImage({ avatarUrl }: { avatarUrl?: string }) {
       fill
       sizes="160px"
       priority
+      unoptimized={process.env.NODE_ENV === "development"}
       onError={() => ICONS.profileLarge}
     />
   ) : (
