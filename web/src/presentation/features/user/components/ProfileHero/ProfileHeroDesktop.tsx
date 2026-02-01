@@ -39,7 +39,11 @@ export function ProfileHeroDesktop({ user }: { user: User }) {
     <div ref={heroRef} style={{ minHeight: height }}>
       <div className={styles.container}>
         <Image src={ASSETS.images.hero} fill sizes="100vw" alt={TEXTS.profile.heroAlt} priority />
-        <button onClick={() => logout()} className={styles.logoutButton}>
+        <button
+          onClick={() => logout()}
+          className={styles.logoutButton}
+          aria-label={TEXTS.profile.logoutFromAccount}
+        >
           {loading ? <Spinner size={24} /> : <Icon as={ICONS.leave} size="24px" inheritColor />}
         </button>
         <ProfileAvatar ref={avatarRef} user={user} className={styles.avatar}>
