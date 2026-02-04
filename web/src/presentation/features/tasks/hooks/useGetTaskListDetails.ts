@@ -2,7 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import type { TaskDetailResponseDto } from "@/application/dto/TaskDetailResponseDto";
-import { appContainer } from "@/infrastructure/di/container";
+import { taskRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 import { useGetUserTasks } from "./useGetUserTasks";
@@ -31,12 +31,11 @@ export function useGetTaskListDetails(): UseGetTaskListDetailsResult {
   const { data: tasks, isLoading: isLoadingTasks } = useGetUserTasks();
 
   const taskIds = useMemo(() => [...new Set(tasks?.map((task) => task.id))], [tasks]);
-  const { getTaskDetail } = appContainer.usecases.tasks;
 
   const results = useQueries({
     queries: taskIds.map((taskId) => ({
       queryKey: QUERY_KEYS.taskDetails(taskId),
-      queryFn: async () => getTaskDetail(taskId),
+      queryFn: async () => taskRepository.findById(taskId),
       enabled: !!taskId && !isLoadingTasks,
     })),
     combine: (queries) => {

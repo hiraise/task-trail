@@ -1,34 +1,112 @@
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { ChangeStatusPayload } from "@/application/payloads";
 import type { Task } from "@/domain/models/Task";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { taskRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-/**
- * React Query mutation hook that updates a task's status.
- *
- * On success, invalidates task-related queries (task, taskDetails, and task-id scoped queries)
- * and shows a success toast. On failure, shows an error toast.
- *
- * @returns A React Query mutation result for updating task status.
- */
-export function useChangeStatus(): UseMutationResult<Task, Error, ChangeStatusPayload> {
-  const queryClient = useQueryClient();
-  const { changeStatus } = appContainer.usecases.tasks;
+interface ChangeStatusContext {
+  previousTask: Task | undefined;
+  previousTaskDetails: Task | undefined;
+  taskId: string;
+}
 
-  return useMutation({
-    mutationFn: (payload) => changeStatus(payload),
-    onSuccess: (updatedTask) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task(updatedTask.id) });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.taskDetails(updatedTask.id) });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.task(updatedTask.id), updatedTask.id],
-      });
-      toast.success("Task status updated successfully");
+/**
+ * Custom hook for changing the status of a task with optimistic updates.
+ *
+ * This hook uses React Query's `useMutation` to handle status changes while providing
+ * optimistic UI updates. It automatically updates the task cache before the server responds,
+ * and rolls back changes if the mutation fails.
+ *
+ * @returns A mutation object from React Query that can be used to trigger status changes.
+ * The mutation accepts a `ChangeStatusPayload` containing the task ID and new status ID.
+ *
+ * @remarks
+ * The hook implements the following behavior:
+ * - **Optimistic Updates**: Immediately updates both task and task details queries in the cache
+ * - **Error Handling**: Automatically reverts optimistic updates and shows error toast on failure
+ * - **Success Feedback**: Displays success toast and logs the operation
+ * - **Cache Invalidation**: Invalidates relevant queries after mutation settles to ensure data consistency
+ *
+ * @example
+ * ```typescript
+ * const changeStatusMutation = useChangeStatus();
+ *
+ * changeStatusMutation.mutate({
+ *   taskId: '123',
+ *   statusId: 'completed'
+ * });
+ * ```
+ */
+export function useChangeStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Task, Error, ChangeStatusPayload, ChangeStatusContext>({
+    mutationFn: (payload) => taskRepository.changeStatus(payload),
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task(payload.taskId) });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.taskDetails(payload.taskId) });
+
+      const previousTask = queryClient.getQueryData<Task>(QUERY_KEYS.task(payload.taskId));
+      const previousTaskDetails = queryClient.getQueryData<Task>(
+        QUERY_KEYS.taskDetails(payload.taskId),
+      );
+
+      const optimisticUpdate = (old: Task | undefined) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          statusId: payload.statusId ?? undefined,
+          updatedAt: new Date().toISOString(),
+        };
+      };
+
+      queryClient.setQueryData<Task>(QUERY_KEYS.task(payload.taskId), optimisticUpdate);
+      queryClient.setQueryData<Task>(QUERY_KEYS.taskDetails(payload.taskId), optimisticUpdate);
+
+      return {
+        previousTask,
+        previousTaskDetails,
+        taskId: payload.taskId,
+      };
     },
-    onError: () => toast.error("Failed to update status"),
+
+    onError: (error, payload, context) => {
+      if (context?.previousTask) {
+        queryClient.setQueryData(QUERY_KEYS.task(context.taskId), context.previousTask);
+      }
+      if (context?.previousTaskDetails) {
+        queryClient.setQueryData(
+          QUERY_KEYS.taskDetails(context.taskId),
+          context.previousTaskDetails,
+        );
+      }
+
+      logger.error("Failed to change status", {
+        taskId: payload.taskId,
+        statusId: payload.statusId,
+        error,
+        timestamp: new Date().toISOString(),
+      });
+
+      toast.error(`Failed to change status: ${error.message}`);
+    },
+
+    onSuccess: (updatedTask, payload) => {
+      logger.info("Status changed successfully", {
+        taskId: payload.taskId,
+        statusId: payload.statusId,
+      });
+
+      toast.success("Status updated successfully");
+    },
+
+    onSettled: (_, __, payload) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task(payload.taskId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.taskDetails(payload.taskId) });
+    },
   });
 }

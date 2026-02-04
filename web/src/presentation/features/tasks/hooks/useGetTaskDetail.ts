@@ -1,36 +1,35 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
-import type { TaskDetailResponseDto } from "@/application/dto/TaskDetailResponseDto";
+import { getTaskDetailUseCase } from "@/application/usecases";
 import type { TaskId } from "@/domain/types";
-import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook to fetch detailed information about a specific task.
+ * Custom hook to fetch task details by task ID.
  *
- * Utilizes React Query's `useQuery` to manage the fetching, caching, and updating of task details.
- * The query is enabled only if a valid `taskId` is provided.
+ * @param taskId - The unique identifier of the task to retrieve, or undefined if no task is selected.
+ * @returns A UseQueryResult containing the task details, null, or an error.
  *
- * @param taskId - The unique identifier of the task to fetch details for. If undefined, the query is disabled.
- * @returns A `UseQueryResult` containing the task detail response or `null`, and any potential error.
- *
- * @throws Error if `taskId` is not provided when the query function is executed.
+ * @remarks
+ * The query is only enabled when a valid taskId is provided.
+ * If taskId is undefined or falsy, the query will not execute.
  *
  * @example
- * const { data, error, isLoading } = useGetTaskDetail(123);
+ * ```tsx
+ * const { data, isLoading, error } = useGetTaskDetail(taskId);
+ *
+ * if (isLoading) return <Loading />;
+ * if (error) return <Error message={error.message} />;
+ * if (data) return <TaskDetail task={data} />;
+ * ```
  */
-export function useGetTaskDetail(
-  taskId: TaskId | undefined,
-): UseQueryResult<TaskDetailResponseDto | null, Error> {
-  const { getTaskDetail } = appContainer.usecases.tasks;
-
+export function useGetTaskDetail(taskId: TaskId | undefined) {
   return useQuery({
     queryKey: QUERY_KEYS.taskDetails(taskId || ""),
     queryFn: async () => {
       if (!taskId) throw new Error("Task ID is required");
 
-      return await getTaskDetail(taskId);
+      return await getTaskDetailUseCase(taskId);
     },
     enabled: !!taskId,
   });

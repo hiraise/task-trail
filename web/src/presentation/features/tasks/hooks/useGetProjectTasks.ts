@@ -1,32 +1,38 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
 import type { Task } from "@/domain/models/Task";
 import type { ProjectId } from "@/domain/types";
-import { appContainer } from "@/infrastructure/di/container";
+import { taskRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook to fetch tasks for a specific project using React Query.
+ * Custom hook to fetch tasks for a specific project.
  *
- * @param projectId - The unique identifier of the project whose tasks are to be fetched.
- * @returns A React Query result object containing an array of `Task` or `null` if no projectId is provided, along with query status and error information.
+ * @param projectId - The unique identifier of the project to fetch tasks for
+ * @returns A React Query result object containing:
+ *   - `data`: Array of tasks for the project, or null if projectId is not provided
+ *   - `error`: Error object if the query fails
+ *   - Other standard React Query properties (isLoading, isError, etc.)
  *
  * @remarks
- * - The query is enabled only if a valid `projectId` is provided.
- * - Data is considered fresh for 5 minutes (`staleTime`).
- * - Unused data is garbage collected after 10 minutes (`gcTime`).
- * - The query will retry up to 2 times on failure.
+ * - The query is automatically enabled only when projectId is truthy
+ * - Data is considered stale after 5 minutes
+ * - Cache is garbage collected after 10 minutes of being unused
+ * - Failed requests are retried up to 2 times
+ * - Returns null if projectId is not provided
+ *
+ * @example
+ * ```typescript
+ * const { data: tasks, isLoading, error } = useGetProjectTasks('project-123');
+ * ```
  */
-export function useGetProjectTasks(projectId: ProjectId): UseQueryResult<Task[] | null, Error> {
-  const { getProjectTasks } = appContainer.usecases.tasks;
-
-  return useQuery({
+export function useGetProjectTasks(projectId: ProjectId) {
+  return useQuery<Task[] | null, Error>({
     queryKey: QUERY_KEYS.projectTasks(projectId),
     queryFn: async () => {
       if (!projectId) return null;
 
-      return await getProjectTasks(projectId);
+      return await taskRepository.findByProjectId(projectId);
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

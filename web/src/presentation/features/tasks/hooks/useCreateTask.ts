@@ -1,44 +1,40 @@
 "use client";
 
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { CreateTaskPayload } from "@/application/payloads";
+import { createTaskUseCase } from "@/application/usecases";
 import type { Task } from "@/domain/models/Task";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
 import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-/**
- * Custom hook to create a new task.
- *
- * This hook utilizes the `useMutation` from React Query to handle the task creation process.
- * It triggers the `createTask` use case and manages the success and error states.
- *
- * On successful task creation:
- * - Invalidates the queries related to the project's tasks to ensure the UI is up-to-date.
- * - Redirects the user to the newly created task's detail page.
- * - Displays a success toast notification.
- *
- * On error:
- * - Displays an error toast notification to inform the user of the failure.
- *
- * @returns {UseMutationResult<Task, Error, CreateTaskPayload>} The mutation result containing the status and methods to manage the mutation.
- */
-export function useCreateTask(): UseMutationResult<Task, Error, CreateTaskPayload> {
+export function useCreateTask() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { createTask } = appContainer.usecases.tasks;
 
-  return useMutation({
-    mutationFn: (payload) => createTask(payload),
-    onSuccess: (newTask) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectTasks(newTask.projectId) });
-      if (newTask) router.push(ROUTES.task(newTask.id));
+  return useMutation<Task, Error, CreateTaskPayload>({
+    mutationFn: (payload) => createTaskUseCase(payload),
+    onSuccess: async (newTask) => {
+      queryClient.setQueryData(QUERY_KEYS.taskDetails(newTask.id), newTask);
+
+      logger.info("Task created successfully", {
+        taskId: newTask.id,
+        name: newTask.name,
+      });
+
       toast.success("Task created successfully");
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      router.push(ROUTES.task(newTask.id));
     },
-    onError: () => toast.error("Failed to create task. Please try again"),
+    onError: () => {
+      logger.error("Failed to create task", { timestamp: new Date().toISOString() });
+      toast.error("Failed to create task. Please try again");
+    },
+    onSettled: (_, __, newTask) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectTasks(newTask.projectId) });
+    },
   });
 }

@@ -1,42 +1,75 @@
 "use client";
 
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { EditTaskPayload } from "@/application/payloads";
 import type { Task } from "@/domain/models/Task";
-import { appContainer } from "@/infrastructure/di/container";
+import type { TaskId } from "@/domain/types";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { taskRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-/**
- * Custom hook to handle the editing of a task.
- *
- * This hook utilizes the `useMutation` from React Query to perform the task editing operation.
- * It provides a mutation function that executes the edit task use case and manages the success
- * and error states of the operation.
- *
- * On successful task edit, it updates the query cache with the new task data and invalidates
- * related queries to ensure that the UI reflects the latest data. A success toast notification
- * is displayed to inform the user of the successful update.
- *
- * On error, an error toast notification is displayed to inform the user of the failure.
- *
- * @returns {UseMutationResult<Task, Error, EditTaskPayload>} The mutation result
- * containing the status and methods to execute the mutation.
- */
-export function useEditTask(): UseMutationResult<Task, Error, EditTaskPayload> {
-  const queryClient = useQueryClient();
-  const { editTask } = appContainer.usecases.tasks;
+interface TaskContext {
+  previousTask: Task | undefined;
+  taskId: TaskId;
+}
 
-  return useMutation({
-    mutationFn: (payload) => editTask(payload),
-    onSuccess: (updatedTask) => {
-      queryClient.setQueryData(QUERY_KEYS.task(updatedTask.id), updatedTask);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.taskDetails(updatedTask.id) });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task(updatedTask.id) });
-      toast.success("Task updated successfully");
+/**
+ * Custom hook for editing/updating a task with optimistic updates and error handling.
+ *
+ * @remarks
+ * This hook uses React Query's `useMutation` to handle task updates with the following features:
+ * - Optimistic updates: immediately updates the task in the cache before the API call completes
+ * - Error recovery: rolls back to the previous task state if the update fails
+ * - Cache invalidation: refreshes the tasks list after successful update
+ * - User feedback: displays toast notifications for success and error states
+ * - Logging: tracks update operations for debugging and monitoring
+ *
+ * @returns A mutation object from React Query with methods to trigger the task update
+ *
+ * @example
+ * ```tsx
+ * const editTask = useEditTask();
+ *
+ * editTask.mutate({
+ *   taskId: '123',
+ *   title: 'Updated Task Title',
+ *   description: 'Updated description'
+ * });
+ * ```
+ */
+export function useEditTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Task, Error, EditTaskPayload, TaskContext>({
+    mutationFn: (payload) => taskRepository.update(payload),
+    onMutate: async (payload) => {
+      const previousTask = queryClient.getQueryData<Task>(QUERY_KEYS.taskDetails(payload.taskId));
+
+      queryClient.setQueryData<Task>(QUERY_KEYS.taskDetails(payload.taskId), (old) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          name: payload.title ?? old.name,
+          description: payload.description ?? old.description,
+        };
+      });
+
+      return { previousTask, taskId: payload.taskId };
     },
-    onError: () => toast.error("Failed to edit task"),
+    onError: (error, payload, context) => {
+      if (context?.previousTask) {
+        queryClient.setQueryData(QUERY_KEYS.taskDetails(context.taskId), context.previousTask);
+      }
+      logger.error("Error updating task", { taskId: payload.taskId, error, payload });
+      toast.error(`Failed to update task: ${error.message}`);
+    },
+    onSuccess: (updatedTask, payload) => {
+      logger.info("Task updated successfully", { taskId: payload.taskId });
+      toast.success("Task updated successfully");
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks });
+    },
   });
 }
