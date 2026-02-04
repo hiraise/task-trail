@@ -1,34 +1,53 @@
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { AddMembersPayload } from "@/application/payloads";
-import { appContainer } from "@/infrastructure/di/container";
+import { addProjectMembersUseCase } from "@/application/usecases";
+import { logger } from "@/infrastructure/config/clientLogger";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom hook to add a member to a project.
+ * Custom hook to handle adding members to a project.
  *
- * This hook utilizes a mutation to execute the add member operation.
- * On successful addition of a member, it invalidates the project members query
- * to ensure the UI reflects the latest data and displays a success toast notification.
- * In case of an error during the operation, an error toast notification is shown.
+ * This hook provides a mutation function to add members to a project
+ * and manages the success, error, and settled states of the mutation.
  *
- * @returns {UseMutationResult<void, Error, AddMembersPayload>} The mutation result object
- * containing the status and methods to manage the mutation.
+ * @returns A mutation object from `useMutation` that can be used to trigger
+ * the add member operation and track its state.
+ *
+ * @example
+ * const { mutate: addMember, isLoading, isError } = useAddMember();
+ *
+ * addMember({
+ *   projectId: "project-id",
+ *   emails: ["user1@example.com", "user2@example.com"]
+ * });
+ *
+ * @remarks
+ * - On success, a success toast is displayed with the number of users invited.
+ * - On error, an error toast is displayed indicating the failure.
+ * - On settled (success or error), the project members query is invalidated
+ *   to ensure the data is up-to-date.
+ *
+ * @see {@link useMutation} for more details on the mutation object.
+ * @see {@link QUERY_KEYS.projectMembers} for the query key used to invalidate the cache.
  */
-export function useAddMember(): UseMutationResult<void, Error, AddMembersPayload> {
+export function useAddMember() {
   const queryClient = useQueryClient();
-  const { addMember } = appContainer.usecases.projectMember;
 
-  return useMutation({
-    mutationFn: (payload) => addMember(payload),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectMembers(variables.projectId),
-      });
-      toast.success("User invited successfully!");
+  return useMutation<void, Error, AddMembersPayload>({
+    mutationFn: (payload) => addProjectMembersUseCase(payload),
+    onSuccess: (_, { emails }) => {
+      const count = emails.length;
+
+      toast.success(`${count} user${count > 1 ? "s" : ""} invited successfully!`);
     },
-    onError: () => toast.error("Failed to invite user"),
+    onError: () => {
+      logger.error("Failed to invite user to project");
+      toast.error("Failed to invite user");
+    },
+    onSettled: (_, __, { projectId }) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectMembers(projectId) });
+    },
   });
 }

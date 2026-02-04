@@ -1,38 +1,47 @@
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { RemoveMemberPayload } from "@/application/payloads";
-import { appContainer } from "@/infrastructure/di/container";
+import { removeProjectMemberUseCase } from "@/application/usecases";
+import { logger } from "@/infrastructure/config/clientLogger";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom hook to remove a member from a project.
+ * Custom hook to handle the removal of a member from a project.
  *
- * This hook utilizes a mutation to execute the removal of a project member.
- * On successful removal, it invalidates the queries for the project members
- * and project details to ensure the UI reflects the latest state. It also
- * displays a success message using a toast notification. In case of an error,
- * an error message is shown to the user.
+ * This hook provides a mutation function to remove a project member and handles
+ * success and error scenarios by invalidating relevant queries and displaying
+ * appropriate toast notifications.
  *
- * @returns {UseMutationResult<void, Error, RemoveMemberPayload>} The mutation result
- * which includes methods and properties to manage the mutation state.
+ * @returns {UseMutationResult<void, Error, RemoveMemberPayload>} A mutation object
+ * that includes the mutation function and its state.
+ *
+ * @example
+ * const { mutate: removeMember } = useRemoveMember();
+ * removeMember({ projectId: '123', memberId: '456' });
+ *
+ * @remarks
+ * - On success, invalidates the `projectMembers` and `projectDetails` queries for the given project.
+ * - Displays a success toast message when the member is successfully removed.
+ * - Logs an error and displays an error toast message if the removal fails.
  */
-export function useRemoveMember(): UseMutationResult<void, Error, RemoveMemberPayload> {
+export function useRemoveMember() {
   const queryClient = useQueryClient();
-  const { removeMember } = appContainer.usecases.projectMember;
 
-  return useMutation({
-    mutationFn: (payload) => removeMember(payload),
-    onSuccess: (_, variables) => {
+  return useMutation<void, Error, RemoveMemberPayload>({
+    mutationFn: (payload) => removeProjectMemberUseCase(payload),
+    onSuccess: (_, { projectId }) => {
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectMembers(variables.memberId),
+        queryKey: QUERY_KEYS.projectMembers(projectId),
       });
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectDetails(variables.projectId),
+        queryKey: QUERY_KEYS.projectDetails(projectId),
       });
       toast.success("Member kicked successfully");
     },
-    onError: () => toast.error("Failed to kick member. Please try again."),
+    onError: (_, { projectId }) => {
+      logger.error(`Failed to kick member from project ${projectId}`);
+      toast.error("Failed to kick member. Please try again.");
+    },
   });
 }
