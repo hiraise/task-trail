@@ -1,39 +1,88 @@
 "use client";
 
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import type { EditProjectPayload } from "@/application/payloads";
 import type { ProjectDetails } from "@/domain/models/Project";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { projectRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
+interface ProjectContext {
+  previousProject: ProjectDetails | undefined;
+  projectId: string;
+}
+
 /**
- * Hook for editing an existing project.
+ * Custom React hook for editing project details with optimistic updates.
  *
- * @returns {UseMutationResult<ProjectDetails, Error, EditProjectPayload>}
- * A mutation object that handles project updates. On successful update:
- * - Updates the project query cache with the new project data
- * - Invalidates the project details query to refetch updated information
- * - Invalidates the projects list query to reflect changes
+ * This hook provides mutation functionality for updating project information including
+ * name and description. It implements optimistic UI updates by immediately updating the
+ * cache before the server response, and rolls back on error.
+ *
+ * @returns A mutation object from react-query that handles project updates with the following behavior:
+ * - **onMutate**: Optimistically updates the project details in the query cache
+ * - **onError**: Reverts to previous project state and displays error toast notification
+ * - **onSuccess**: Invalidates projects list cache and displays success toast notification
  *
  * @example
  * ```typescript
- * const editProjectMutation = useEditProject();
- * editProjectMutation.mutate({ id: 1, name: 'Updated Project' });
+ * const editProject = useEditProject();
+ *
+ * editProject.mutate({
+ *   projectId: '123',
+ *   name: 'New Project Name',
+ *   description: 'Updated description'
+ * });
  * ```
  */
-export function useEditProject(): UseMutationResult<ProjectDetails, Error, EditProjectPayload> {
+export function useEditProject() {
   const queryClient = useQueryClient();
-  const { editProject } = appContainer.usecases.project;
 
-  return useMutation({
-    mutationFn: (payload) => editProject(payload),
-    onSuccess: (updatedProject) => {
-      queryClient.setQueryData(QUERY_KEYS.project(updatedProject.id), updatedProject);
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectDetails(updatedProject.id),
-      });
+  return useMutation<ProjectDetails, Error, EditProjectPayload, ProjectContext>({
+    mutationFn: (payload) =>
+      projectRepository.update({
+        projectId: payload.projectId,
+        name: payload.name ?? "",
+        description: payload.description,
+      }),
+
+    onMutate: async (payload) => {
+      const previousProject = queryClient.getQueryData<ProjectDetails>(
+        QUERY_KEYS.projectDetails(payload.projectId),
+      );
+
+      queryClient.setQueryData<ProjectDetails>(
+        QUERY_KEYS.projectDetails(payload.projectId),
+        (old) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            name: payload.name ?? old.name,
+            description: payload.description ?? old.description,
+          };
+        },
+      );
+
+      return { previousProject, projectId: payload.projectId };
+    },
+
+    onError: (error, payload, context) => {
+      if (context?.previousProject) {
+        queryClient.setQueryData(
+          QUERY_KEYS.projectDetails(context.projectId),
+          context.previousProject,
+        );
+      }
+      logger.error("Error updating project", { projectId: payload.projectId, error, payload });
+      toast.error(`Failed to update project: ${error.message}`);
+    },
+
+    onSuccess: (updatedProject, payload) => {
+      logger.info("Project updated successfully", { projectId: payload.projectId });
+      toast.success("Project updated successfully");
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
     },
   });

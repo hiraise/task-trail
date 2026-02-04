@@ -1,47 +1,67 @@
 "use client";
-import type { UseMutationResult } from "@tanstack/react-query";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { CreateProjectPayload } from "@/application/payloads";
+import { createProjectUseCase } from "@/application/usecases";
 import type { ProjectDetails } from "@/domain/models/Project";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
 import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Hook for creating a new project.
+ * Custom hook for creating a new project with mutation handling.
  *
- * @returns {UseMutationResult<ProjectDetails, Error, CreateProjectPayload>}
- * A mutation result object with the following behavior:
- * - On success: Invalidates the projects query cache, sets the new project in cache,
- *   navigates to the project detail page, and displays a success toast notification
- * - On error: Displays an error toast notification
+ * This hook wraps the project creation mutation and provides:
+ * - Automatic cache updates on successful creation
+ * - Navigation to the newly created project page
+ * - Toast notifications for success/error states
+ * - Query invalidation to refresh project lists
+ * - Comprehensive logging of creation events and errors
+ *
+ * @returns A mutation object from `useMutation` with methods to trigger project creation
  *
  * @example
- * const createProjectMutation = useCreateProject();
+ * ```tsx
+ * const createProject = useCreateProject();
  *
- * createProjectMutation.mutate({
- *   name: "My Project",
- *   description: "Project description"
- * });
+ * const handleCreate = () => {
+ *   createProject.mutate({
+ *     name: "New Project",
+ *     description: "Project description"
+ *   });
+ * };
+ * ```
  */
-export function useCreateProject(): UseMutationResult<ProjectDetails, Error, CreateProjectPayload> {
+export function useCreateProject() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { createProject } = appContainer.usecases.project;
 
-  return useMutation({
-    mutationFn: (payload) => createProject(payload),
-    onSuccess: (newProject) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
-      queryClient.setQueryData(QUERY_KEYS.project(newProject.id), newProject);
-      if (newProject) router.push(ROUTES.project(newProject.id));
+  return useMutation<ProjectDetails, Error, CreateProjectPayload>({
+    mutationFn: (payload) => createProjectUseCase(payload),
+
+    onSuccess: async (newProject) => {
+      queryClient.setQueryData(QUERY_KEYS.projectDetails(newProject.id), newProject);
+
+      logger.info("Project created successfully", {
+        projectId: newProject.id,
+        name: newProject.name,
+      });
+
       toast.success("Project created successfully");
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      router.push(ROUTES.project(newProject.id));
     },
-    onError: () => {
-      toast.error("Failed to create project. Please try again");
+
+    onError: (error) => {
+      logger.error("Failed to create project", { error, timestamp: new Date().toISOString() });
+
+      toast.error(`Failed to create project: ${error.message}`);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
     },
   });
 }

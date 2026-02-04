@@ -1,28 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { getProjectDetailUseCase } from "@/application/usecases";
 import type { ProjectId } from "@/domain/types";
-import { appContainer } from "@/infrastructure/di/container";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook to fetch and manage the details of a project by its ID.
- *
- * Utilizes React Query to handle data fetching, caching, and updating.
- * The query is enabled only when a valid `projectId` is provided.
- * Throws an error if `projectId` is undefined.
+ * A custom hook that fetches and manages the details of a specific project.
  *
  * @param projectId - The unique identifier of the project to fetch details for.
- * @returns The result of the React Query, including project data, loading, and error states.
+ *
+ * @returns The result of the `useQuery` hook, which includes the project details,
+ *          loading state, error state, and other query-related information.
+ *
+ * @throws {Error} If the `projectId` is not provided.
+ *
+ * @remarks
+ * - The query is enabled only when a valid `projectId` is provided.
+ * - The query result is considered fresh for 5 minutes (`staleTime`).
+ * - The query result is garbage collected after 10 minutes (`gcTime`).
+ * - The query will retry up to 2 times in case of failure.
  */
 export function useProjectDetail(projectId: ProjectId) {
-  const { getProjectDetail } = appContainer.usecases.project;
-
   return useQuery({
     queryKey: QUERY_KEYS.projectDetails(projectId || ""),
     queryFn: async () => {
       if (!projectId) throw new Error("Project ID is required");
 
-      return await getProjectDetail(projectId);
+      return await getProjectDetailUseCase(projectId);
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
