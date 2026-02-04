@@ -1,25 +1,45 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
 import type { Project } from "@/domain/models/Project";
-import { appContainer } from "@/infrastructure/di/container";
+import { projectRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * React hook for fetching the list of projects.
+ * Custom React Query hook for fetching and caching the list of projects.
  *
- * Uses the project repository to retrieve all projects and caches the result
- * with React Query. Results are considered fresh for 5 minutes, garbage
- * collected after 10 minutes, and failed requests are retried up to 2 times.
+ * @returns A React Query result object containing:
+ * - `data`: Array of Project objects when successfully fetched
+ * - `error`: Error object if the query fails
+ * - `isLoading`: Boolean indicating if the query is in loading state
+ * - `isError`: Boolean indicating if the query has errored
+ * - Other standard React Query return values
  *
- * @returns A React Query result containing the project list or an error.
+ * @remarks
+ * - Uses a 5-minute stale time, meaning data is considered fresh for 5 minutes
+ * - Garbage collection time is set to 10 minutes
+ * - Automatically retries failed requests up to 2 times
+ * - Query key is stored in `QUERY_KEYS.projects` for cache management
+ *
+ * @example
+ * ```tsx
+ * function ProjectsList() {
+ *   const { data: projects, isLoading, error } = useProjects();
+ *
+ *   if (isLoading) return <div>Loading...</div>;
+ *   if (error) return <div>Error: {error.message}</div>;
+ *
+ *   return (
+ *     <ul>
+ *       {projects?.map(project => <li key={project.id}>{project.name}</li>)}
+ *     </ul>
+ *   );
+ * }
+ * ```
  */
-export function useProjects(): UseQueryResult<Project[], Error> {
-  const { findAll } = appContainer.repositories.project;
-
-  return useQuery({
+export function useProjects() {
+  return useQuery<Project[], Error>({
     queryKey: QUERY_KEYS.projects,
-    queryFn: () => findAll(),
+    queryFn: () => projectRepository.findAll(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,

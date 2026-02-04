@@ -1,29 +1,34 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { ProjectId } from "@/domain/types";
-import { appContainer } from "@/infrastructure/di/container";
+import { projectMemberRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom React hook to fetch and manage the list of project members for a given project.
+ * Custom hook to fetch and manage project members data using React Query.
  *
- * Utilizes React Query to handle data fetching, caching, and background updates.
- * The hook is enabled only when a valid `projectId` is provided.
+ * @param projectId - The unique identifier of the project to fetch members for
+ * @returns A React Query result object containing:
+ *   - `data`: Array of ProjectMember objects if the query succeeds
+ *   - `error`: Error object if the query fails
+ *   - Additional React Query properties (isLoading, isFetching, etc.)
  *
- * @param projectId - The unique identifier of the project whose members are to be fetched.
- * @returns A React Query result object containing the list of project members, loading state, error information, and query utilities.
+ * @remarks
+ * - The query is only enabled when a valid projectId is provided
+ * - Data is considered fresh for 5 minutes (staleTime)
+ * - Cached data is garbage collected after 10 minutes of inactivity (gcTime)
+ * - Failed requests are retried up to 2 times
  *
  * @example
- * const { data, isLoading, error } = useProjectMembers(123);
+ * ```typescript
+ * const { data: members, isLoading, error } = useProjectMembers('project-123');
+ * ```
  */
-export function useProjectMembers(projectId: ProjectId): UseQueryResult<ProjectMember[], Error> {
-  const { findByProjectId } = appContainer.repositories.projectMember;
-
-  return useQuery({
+export function useProjectMembers(projectId: ProjectId) {
+  return useQuery<ProjectMember[], Error>({
     queryKey: QUERY_KEYS.projectMembers(projectId || ""),
-    queryFn: () => findByProjectId(projectId),
+    queryFn: () => projectMemberRepository.findByProjectId(projectId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: 2,
