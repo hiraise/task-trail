@@ -34,7 +34,7 @@ export function useCreateTask() {
       toast.error("Failed to create task. Please try again");
     },
     onSettled: (_, __, newTask) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectTasks(newTask.projectId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.tasks(newTask.projectId) });
     },
   });
 }

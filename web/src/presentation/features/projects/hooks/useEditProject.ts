@@ -50,11 +50,11 @@ export function useEditProject() {
 
     onMutate: async (payload) => {
       const previousProject = queryClient.getQueryData<ProjectDetails>(
-        QUERY_KEYS.projectDetails(payload.projectId),
+        QUERY_KEYS.project.detail(payload.projectId),
       );
 
       queryClient.setQueryData<ProjectDetails>(
-        QUERY_KEYS.projectDetails(payload.projectId),
+        QUERY_KEYS.project.detail(payload.projectId),
         (old) => {
           if (!old) return old;
 
@@ -72,7 +72,7 @@ export function useEditProject() {
     onError: (error, payload, context) => {
       if (context?.previousProject) {
         queryClient.setQueryData(
-          QUERY_KEYS.projectDetails(context.projectId),
+          QUERY_KEYS.project.detail(context.projectId),
           context.previousProject,
         );
       }
@@ -80,10 +80,12 @@ export function useEditProject() {
       toast.error(`Failed to update project: ${error.message}`);
     },
 
-    onSuccess: (updatedProject, payload) => {
+    onSuccess: (_, payload) => {
       logger.info("Project updated successfully", { projectId: payload.projectId });
       toast.success("Project updated successfully");
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(payload.projectId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.all });
+      // queryClient.invalidateQueries({ queryKey: ["project", payload.projectId] });
     },
   });
 }

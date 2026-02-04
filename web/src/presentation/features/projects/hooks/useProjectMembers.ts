@@ -27,7 +27,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useProjectMembers(projectId: ProjectId) {
   return useQuery<ProjectMember[], Error>({
-    queryKey: QUERY_KEYS.projectMembers(projectId || ""),
+    queryKey: QUERY_KEYS.project.members(projectId || ""),
     queryFn: () => projectMemberRepository.findByProjectId(projectId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

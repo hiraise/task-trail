@@ -43,7 +43,7 @@ export function useCreateProject() {
     mutationFn: (payload) => createProjectUseCase(payload),
 
     onSuccess: async (newProject) => {
-      queryClient.setQueryData(QUERY_KEYS.projectDetails(newProject.id), newProject);
+      queryClient.setQueryData(QUERY_KEYS.project.detail(newProject.id), newProject);
 
       logger.info("Project created successfully", {
         projectId: newProject.id,
@@ -60,8 +60,10 @@ export function useCreateProject() {
 
       toast.error(`Failed to create project: ${error.message}`);
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
+    onSettled: (newProject) => {
+      if (newProject) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(newProject.id) });
+      }
     },
   });
 }

@@ -42,23 +42,29 @@ export function useDeleteProject() {
     mutationFn: projectRepository.delete,
 
     onMutate: async (projectId) => {
-      const previousProjects = queryClient.getQueryData<Project[]>(QUERY_KEYS.projects);
+      const previousProjects = queryClient.getQueryData<Project[]>(QUERY_KEYS.project.all);
 
-      queryClient.setQueryData<Project[]>(QUERY_KEYS.projects, (old) => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.project.all });
+      await queryClient.cancelQueries({ queryKey: ["project", projectId] });
+
+      queryClient.setQueryData<Project[]>(QUERY_KEYS.project.all, (old) => {
         if (!old) return old;
 
         return old.filter((project) => project.id !== projectId);
       });
 
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.project(projectId) });
+      queryClient.removeQueries({ queryKey: ["project", projectId] });
 
       return { previousProjects, projectId };
     },
 
     onError: (error, projectId, context) => {
       if (context?.previousProjects) {
-        queryClient.setQueryData(QUERY_KEYS.projects, context.previousProjects);
+        queryClient.setQueryData(QUERY_KEYS.project.all, context.previousProjects);
       }
+
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+
       logger.error("Failed to delete project", {
         projectId,
         error: error.message,

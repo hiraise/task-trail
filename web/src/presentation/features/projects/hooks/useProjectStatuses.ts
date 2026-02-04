@@ -19,12 +19,12 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * - The query will retry up to 2 times in case of failure.
  * - The query is enabled only if a valid `projectId` is provided.
  *
- * @see QUERY_KEYS.projectStatuses
+ * @see QUERY_KEYS.project.statuses
  * @see projectRepository.getProjectStatuses
  */
 export function useProjectStatuses(projectId: ProjectId) {
   return useQuery<TaskStatus[], Error>({
-    queryKey: QUERY_KEYS.projectStatuses(projectId),
+    queryKey: QUERY_KEYS.project.statuses(projectId),
     queryFn: () => projectRepository.getProjectStatuses(projectId),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

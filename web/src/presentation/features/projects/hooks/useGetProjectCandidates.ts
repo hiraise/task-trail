@@ -21,7 +21,9 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useGetProjectCandidates(projectId?: ProjectId) {
   return useQuery<User[], Error>({
-    queryKey: QUERY_KEYS.projectCandidates(projectId),
+    queryKey: projectId
+      ? QUERY_KEYS.project.candidates.byProject(projectId)
+      : QUERY_KEYS.project.candidates.all,
     queryFn: async () => userRepository.findCandidatesForProject(projectId),
   });
 }

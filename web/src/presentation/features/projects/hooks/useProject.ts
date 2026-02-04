@@ -27,7 +27,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useProject(projectId?: ProjectId) {
   return useQuery<ProjectDetails | null, Error>({
-    queryKey: QUERY_KEYS.project(projectId || ""),
+    queryKey: QUERY_KEYS.project.detail(projectId || ""),
     queryFn: async () => {
       if (!projectId) return null;
 

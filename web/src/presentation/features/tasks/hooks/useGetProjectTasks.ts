@@ -28,7 +28,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useGetProjectTasks(projectId: ProjectId) {
   return useQuery<Task[] | null, Error>({
-    queryKey: QUERY_KEYS.projectTasks(projectId),
+    queryKey: QUERY_KEYS.project.tasks(projectId),
     queryFn: async () => {
       if (!projectId) return null;
 

@@ -40,8 +40,7 @@ export function useLeaveProject() {
   return useMutation<void, Error, LeaveProjectPayload>({
     mutationFn: (payload) => leaveProject(payload.projectId),
     onSuccess: (_, { projectId }) => {
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.project(projectId) });
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.projectDetails(projectId) });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.project.detail(projectId) });
       router.replace(ROUTES.projects);
       toast.success("You have left the project");
     },
@@ -49,8 +48,8 @@ export function useLeaveProject() {
       logger.error("Failed to leave project", { error });
       toast.error("Failed to leave project. Please try again.");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects });
+    onSettled: (_, __, { projectId }) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(projectId) });
     },
   });
 }

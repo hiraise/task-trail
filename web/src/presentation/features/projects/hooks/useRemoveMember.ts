@@ -7,23 +7,29 @@ import { logger } from "@/infrastructure/config/clientLogger";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom hook to handle the removal of a member from a project.
+ * Custom hook for removing a member from a project.
  *
- * This hook provides a mutation function to remove a project member and handles
- * success and error scenarios by invalidating relevant queries and displaying
- * appropriate toast notifications.
+ * This hook uses React Query's `useMutation` to handle the removal of a project member.
+ * On successful removal, it invalidates the project members and project detail queries
+ * to ensure the UI reflects the updated state, and displays a success toast notification.
  *
- * @returns {UseMutationResult<void, Error, RemoveMemberPayload>} A mutation object
- * that includes the mutation function and its state.
+ * @returns A mutation object from `useMutation` that can be used to trigger the member removal operation.
  *
  * @example
- * const { mutate: removeMember } = useRemoveMember();
- * removeMember({ projectId: '123', memberId: '456' });
+ * ```typescript
+ * const removeMember = useRemoveMember();
+ *
+ * removeMember.mutate({
+ *   projectId: '123',
+ *   memberId: '456'
+ * });
+ * ```
  *
  * @remarks
- * - On success, invalidates the `projectMembers` and `projectDetails` queries for the given project.
- * - Displays a success toast message when the member is successfully removed.
- * - Logs an error and displays an error toast message if the removal fails.
+ * - Invalidates `project.members` and `project.detail` queries after successful removal
+ * - Displays success toast message: "Member kicked successfully"
+ * - Displays error toast message: "Failed to kick member. Please try again."
+ * - Logs errors using the logger service
  */
 export function useRemoveMember() {
   const queryClient = useQueryClient();
@@ -32,10 +38,10 @@ export function useRemoveMember() {
     mutationFn: (payload) => removeProjectMemberUseCase(payload),
     onSuccess: (_, { projectId }) => {
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectMembers(projectId),
+        queryKey: QUERY_KEYS.project.members(projectId),
       });
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.projectDetails(projectId),
+        queryKey: QUERY_KEYS.project.detail(projectId),
       });
       toast.success("Member kicked successfully");
     },

@@ -2,7 +2,7 @@ import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import type { TaskDetailResponseDto } from "@/application/dto/TaskDetailResponseDto";
-import { taskRepository } from "@/infrastructure/repositories";
+import { getTaskDetailUseCase } from "@/application/usecases";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 import { useGetUserTasks } from "./useGetUserTasks";
@@ -35,7 +35,7 @@ export function useGetTaskListDetails(): UseGetTaskListDetailsResult {
   const results = useQueries({
     queries: taskIds.map((taskId) => ({
       queryKey: QUERY_KEYS.taskDetails(taskId),
-      queryFn: async () => taskRepository.findById(taskId),
+      queryFn: async () => getTaskDetailUseCase(taskId),
       enabled: !!taskId && !isLoadingTasks,
     })),
     combine: (queries) => {

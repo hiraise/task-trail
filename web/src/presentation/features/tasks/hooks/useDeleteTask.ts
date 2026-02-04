@@ -48,16 +48,16 @@ export function useDeleteTask(projectId: ProjectId) {
     onMutate: async (taskId) => {
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task(taskId) });
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.taskDetails(taskId) });
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.projectTasks(projectId) });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.project.tasks(projectId) });
 
       const previousTask = queryClient.getQueryData<Task>(QUERY_KEYS.task(taskId));
       const previousTaskDetails = queryClient.getQueryData<Task>(QUERY_KEYS.taskDetails(taskId));
-      const previousTasks = queryClient.getQueryData<Task[]>(QUERY_KEYS.projectTasks(projectId));
+      const previousTasks = queryClient.getQueryData<Task[]>(QUERY_KEYS.project.tasks(projectId));
 
       queryClient.removeQueries({ queryKey: QUERY_KEYS.task(taskId) });
       queryClient.removeQueries({ queryKey: QUERY_KEYS.taskDetails(taskId) });
 
-      queryClient.setQueryData<Task[]>(QUERY_KEYS.projectTasks(projectId), (old) =>
+      queryClient.setQueryData<Task[]>(QUERY_KEYS.project.tasks(projectId), (old) =>
         old?.filter((task) => task.id !== taskId),
       );
 
@@ -88,7 +88,10 @@ export function useDeleteTask(projectId: ProjectId) {
         );
       }
       if (context?.previousTasks) {
-        queryClient.setQueryData(QUERY_KEYS.projectTasks(context.projectId), context.previousTasks);
+        queryClient.setQueryData(
+          QUERY_KEYS.project.tasks(context.projectId),
+          context.previousTasks,
+        );
       }
 
       logger.error("Failed to delete task", {

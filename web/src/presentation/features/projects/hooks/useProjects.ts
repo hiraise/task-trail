@@ -38,7 +38,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useProjects() {
   return useQuery<Project[], Error>({
-    queryKey: QUERY_KEYS.projects,
+    queryKey: QUERY_KEYS.project.all,
     queryFn: () => projectRepository.findAll(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

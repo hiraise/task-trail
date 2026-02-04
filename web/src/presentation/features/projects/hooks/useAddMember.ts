@@ -30,7 +30,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  *   to ensure the data is up-to-date.
  *
  * @see {@link useMutation} for more details on the mutation object.
- * @see {@link QUERY_KEYS.projectMembers} for the query key used to invalidate the cache.
+ * @see {@link QUERY_KEYS.project.members} for the query key used to invalidate the cache.
  */
 export function useAddMember() {
   const queryClient = useQueryClient();
@@ -47,7 +47,7 @@ export function useAddMember() {
       toast.error("Failed to invite user");
     },
     onSettled: (_, __, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projectMembers(projectId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.members(projectId) });
     },
   });
 }
