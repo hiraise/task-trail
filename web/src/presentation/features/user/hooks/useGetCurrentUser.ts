@@ -1,25 +1,36 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 
 import type { User } from "@/domain/models/User";
-import { appContainer } from "@/infrastructure/di/container";
+import { userRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 import { useCheckAuthStatus } from "../../auth/hooks";
 
 /**
- * Custom React hook to fetch the current authenticated user's data.
+ * Custom hook to fetch the current user data.
  *
- * Utilizes React Query to manage the asynchronous request and caching.
- * The query is enabled only when authentication has been initialized and the user is authenticated.
+ * This hook utilizes the `useQuery` hook from React Query to fetch and cache
+ * the current user's information. It depends on the authentication status
+ * and initialization state to determine whether the query should be enabled.
  *
- * @returns {UseQueryResult<User | null, Error>} The result of the query containing user data or an error.
+ * @returns {UseQueryResult<User | null, Error>} The query result containing the current user data or null if not authenticated.
+ *
+ * @remarks
+ * - The query is identified by the `QUERY_KEYS.currentUser` key.
+ * - The query function fetches the current user using the `getCurrentUser` method from the `userRepository`.
+ * - The query result is considered stale after 5 minutes (`staleTime`).
+ * - Garbage collection for the query result occurs after 10 minutes (`gcTime`).
+ * - The query will retry up to 2 times in case of failure.
+ * - The query is enabled only when the user is authenticated (`isAuthenticated`) and the authentication process is not initializing (`authInitializing`).
+ *
+ * @see useCheckAuthStatus
+ * @see userRepository.getCurrentUser
  */
-export function useGetCurrentUser(): UseQueryResult<User | null, Error> {
+export function useGetCurrentUser() {
   const { isAuthenticated, authInitializing } = useCheckAuthStatus();
-  const { getCurrentUser } = appContainer.usecases.user;
+  const { getCurrentUser } = userRepository;
 
-  return useQuery({
+  return useQuery<User | null, Error>({
     queryKey: QUERY_KEYS.currentUser,
     queryFn: () => getCurrentUser(),
     staleTime: 5 * 60 * 1000,

@@ -1,17 +1,8 @@
 import type { UploadAvatarPayload } from "@/application/payloads";
-import type { UserRepository } from "@/domain/repositories/UserRepository";
-import { clientLogger } from "@/infrastructure/config/clientLogger";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { userRepository } from "@/infrastructure/repositories";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-type UploadAvatarUseCase = (payload: UploadAvatarPayload) => Promise<string | null>;
-
-/**
- * Creates FormData from File for repository.
- *
- * @private
- * @param file - File to convert to FormData
- * @returns FormData ready for HTTP request
- */
 const createFormDataFromFile = (file: File): FormData => {
   const formData = new FormData();
 
@@ -20,16 +11,10 @@ const createFormDataFromFile = (file: File): FormData => {
   return formData;
 };
 
-/**
- * Validates the avatar file according to business rules.
- *
- * @private
- * @param file - File to validate
- * @throws {AppError} If validation fails
- */
 const validateAvatarFile = (file: File): void => {
-  // Business rule: Maximum file size (5MB)
   const MAX_SIZE = 5 * 1024 * 1024;
+  const MIN_SIZE = 1024;
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
   if (file.size > MAX_SIZE) {
     throw new AppError(
@@ -38,9 +23,6 @@ const validateAvatarFile = (file: File): void => {
     );
   }
 
-  // Business rule: Allowed file types
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-
   if (!allowedTypes.includes(file.type)) {
     throw new AppError(
       AppErrorType.VALIDATION,
@@ -48,62 +30,24 @@ const validateAvatarFile = (file: File): void => {
     );
   }
 
-  // Business rule: Minimum file size (to prevent empty uploads)
-  const MIN_SIZE = 1024; // 1KB
-
   if (file.size < MIN_SIZE) {
     throw new AppError(AppErrorType.VALIDATION, "File is too small. Please upload a valid image");
   }
-
-  clientLogger.info("UploadAvatarUseCase: file validation passed", {
-    fileName: file.name,
-    fileSize: file.size,
-    fileType: file.type,
-  });
 };
 
-/**
- * Use case for uploading a user's avatar.
- *
- * This use case encapsulates the business logic for avatar upload,
- * including validation of file constraints and coordination with
- * the repository layer for the actual upload operation.
- */
-const createUploadAvatarUseCase =
-  (userRepository: UserRepository): UploadAvatarUseCase =>
-  async (payload) => {
-    try {
-      clientLogger.info("UploadAvatarUseCase: starting execution");
+export async function uploadAvatarUseCase(payload: UploadAvatarPayload): Promise<string | null> {
+  validateAvatarFile(payload.avatarFile);
+  const formData = createFormDataFromFile(payload.avatarFile);
 
-      // Business rule validation
-      validateAvatarFile(payload.avatarFile);
+  try {
+    return await userRepository.uploadAvatar(formData);
+  } catch (error) {
+    if (error instanceof AppError) throw error;
 
-      // Convert File to FormData for repository
-      const formData = createFormDataFromFile(payload.avatarFile);
-
-      // Delegate to repository for technical upload
-      const avatarUrl = await userRepository.uploadAvatar(formData);
-
-      if (avatarUrl) {
-        clientLogger.info("UploadAvatarUseCase: avatar uploaded successfully", {
-          avatarUrl,
-          fileName: payload.avatarFile.name,
-          fileSize: payload.avatarFile.size,
-        });
-      } else {
-        clientLogger.warn("UploadAvatarUseCase: upload completed but no URL returned");
-      }
-
-      return avatarUrl;
-    } catch (error) {
-      clientLogger.error("UploadAvatarUseCase: execution failed", { error });
-
-      if (error instanceof AppError) {
-        throw error;
-      }
-
-      throw new AppError(AppErrorType.UNKNOWN, "Failed to upload avatar");
+    if (process.env.NODE_ENV !== "production") {
+      logger.error("Upload avatar failed:", { error });
     }
-  };
 
-export { createUploadAvatarUseCase, type UploadAvatarUseCase };
+    throw new AppError(AppErrorType.UNKNOWN, "Failed to upload avatar");
+  }
+}

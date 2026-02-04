@@ -4,10 +4,8 @@ import type { ProjectId, UserId } from "@/domain/types";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
-import { clientLogger } from "../config/clientLogger";
+import axiosClient from "../http/axiosClient";
 import type { HttpClient } from "../http/HttpClient";
-
-type ApiUserRepository = UserRepository;
 
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
@@ -50,7 +48,6 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
 
       return createUser(dto);
     } catch (error) {
-      clientLogger.error("Get current user error", { error: error });
       throw handleError("Failed to get current user", error);
     }
   },
@@ -74,13 +71,8 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
 
       const avatarUrl = extractAvatarUrl(response.data);
 
-      if (avatarUrl) {
-        clientLogger.info("Repository: avatar uploaded successfully", { avatarUrl });
-      }
-
       return avatarUrl;
     } catch (error) {
-      clientLogger.error("Repository: upload avatar error", { error });
       throw handleError("Failed to upload avatar", error);
     }
   },
@@ -101,11 +93,8 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
       const dto = await httpClient.patch(API_ROUTES.CURRENT_USER, { username });
       const updatedUser = createUser(dto);
 
-      clientLogger.info("Repository: user updated successfully", { userId: updatedUser.id });
-
       return updatedUser;
     } catch (error) {
-      clientLogger.error("Repository: update user error", { error });
       throw handleError("Failed to update user", error);
     }
   },
@@ -123,7 +112,6 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
 
       return createUser(dto);
     } catch (error) {
-      clientLogger.error("Get user by ID error", { error, id });
       throw handleError("Failed to get user by ID", error);
     }
   },
@@ -141,10 +129,9 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
 
       return dtos.map(createUser);
     } catch (error) {
-      clientLogger.error("Get project candidates error", { error });
       throw new AppError(AppErrorType.SERVER, "Failed to get project candidates");
     }
   },
 });
 
-export { createUserRepository, type ApiUserRepository };
+export const userRepository = createUserRepository(axiosClient);
