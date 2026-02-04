@@ -1,37 +1,45 @@
 "use client";
 
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { VerifyEmailPayload } from "@/application/payloads";
-import { clientLogger } from "@/infrastructure/config/clientLogger";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { authRepository } from "@/infrastructure/repositories";
 import { ROUTES } from "@/shared/config/routes";
 
 /**
- * A custom hook that handles the email verification process.
+ * A custom hook that provides functionality for verifying a user's email address.
+ * It uses a mutation to handle the email verification process and provides success
+ * and error handling with appropriate user feedback.
  *
- * This hook utilizes a mutation to verify the user's email address.
- * On successful verification, it redirects the user to the login page
- * and displays a success message. In case of an error, it logs the error
- * and shows an error message to the user.
+ * @returns A mutation object from `useMutation` configured for email verification.
  *
- * @returns {UseMutationResult<void, Error, VerifyEmailPayload>} The mutation result containing the status of the email verification process.
+ * @remarks
+ * - On successful email verification, the user is redirected to the login page and
+ *   a success toast message is displayed.
+ * - On failure, an error is logged, and an error toast message is displayed to the user.
+ *
+ * @example
+ * ```typescript
+ * const verifyEmailMutation = useVerifyEmail();
+ *
+ * verifyEmailMutation.mutate({ token: "example-token" });
+ * ```
  */
-export function useVerifyEmail(): UseMutationResult<void, Error, VerifyEmailPayload> {
+export function useVerifyEmail() {
   const router = useRouter();
-  const { verifyEmail } = appContainer.usecases.auth;
+  const { verifyEmail } = authRepository;
 
-  return useMutation({
-    mutationFn: (payload) => verifyEmail(payload),
+  return useMutation<void, Error, VerifyEmailPayload>({
+    mutationFn: (payload) => verifyEmail(payload.token),
     onSuccess: () => {
       router.push(ROUTES.login);
       toast.success("Email успешно подтвержден. Теперь вы можете войти в систему");
     },
     onError: (error) => {
-      clientLogger.error("Failed to confirm email", { error });
+      logger.error("Failed to confirm email", { error });
       toast.error("Что-то пошло не так. Пожалуйста попробуйте еще раз.");
     },
   });

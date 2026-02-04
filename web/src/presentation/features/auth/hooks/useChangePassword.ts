@@ -1,35 +1,43 @@
 "use client";
 
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { ChangePasswordPayload } from "@/application/payloads";
-import { clientLogger } from "@/infrastructure/config/clientLogger";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { authRepository } from "@/infrastructure/repositories";
 
 /**
- * Custom hook to handle password change functionality.
+ * Custom hook for handling password change functionality.
  *
- * Utilizes a mutation to execute the password change use case.
- * On successful password change, navigates back and displays a success toast.
- * On error, logs the error and displays an error toast notification.
+ * Uses React Query's `useMutation` to manage the password change process,
+ * including success and error handling with toast notifications.
  *
- * @returns {UseMutationResult<void, Error, ChangePasswordPayload>} Mutation result object for password change.
+ * @returns A mutation object from `useMutation` that can be used to trigger
+ * the password change operation with `mutate` or `mutateAsync`.
+ *
+ * @example
+ * ```tsx
+ * const { mutate, isLoading } = useChangePassword();
+ *
+ * const handleSubmit = (oldPassword: string, newPassword: string) => {
+ *   mutate({ oldPassword, newPassword });
+ * };
+ * ```
  */
-export function useChangePassword(): UseMutationResult<void, Error, ChangePasswordPayload> {
+export function useChangePassword() {
   const router = useRouter();
-  const { changePassword } = appContainer.usecases.auth;
+  const { changePassword } = authRepository;
 
-  return useMutation({
-    mutationFn: (payload) => changePassword(payload),
+  return useMutation<void, Error, ChangePasswordPayload>({
+    mutationFn: (payload) => changePassword(payload.oldPassword, payload.newPassword),
     onSuccess: () => {
       router.back();
       toast.success("Пароль успешно изменен");
     },
     onError: (error) => {
-      clientLogger.error("usePasswordChange error:", { login: error });
+      logger.error("usePasswordChange error:", { login: error });
       toast.error("Не удалось изменить пароль. Пожалуйста, попробуйте еще раз.");
     },
   });

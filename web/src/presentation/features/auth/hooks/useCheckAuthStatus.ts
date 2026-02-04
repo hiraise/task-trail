@@ -1,24 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { appContainer } from "@/infrastructure/di/container";
+import type { AuthStatusDto } from "@/application/dto/AuthStatusDto";
+import { checkAuthStatusUseCase } from "@/application/usecases";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
- * Custom hook to check the current authentication status of the user.
+ * Custom hook to check the authentication status of the user.
  *
- * Utilizes a query to determine if the user is authenticated and whether the authentication check is still initializing.
- * The query does not retry on failure and does not refetch when the window regains focus.
+ * This hook uses a query to fetch the authentication status and provides
+ * the result in the form of an `AuthStatusDto` object. It also manages
+ * the loading state during the query execution.
  *
- * @returns An object containing:
- * - `isAuthenticated`: A boolean indicating if the user is authenticated.
- * - `authInitializing`: A boolean indicating if the authentication status is currently being loaded.
+ * @returns {AuthStatusDto} An object containing:
+ * - `isAuthenticated`: A boolean indicating whether the user is authenticated.
+ * - `authInitializing`: A boolean indicating whether the authentication status is being loaded.
  */
-export const useCheckAuthStatus = () => {
-  const { checkAuthStatus } = appContainer.usecases.auth;
-
+export const useCheckAuthStatus = (): AuthStatusDto => {
   const query = useQuery({
     queryKey: QUERY_KEYS.auth,
-    queryFn: () => checkAuthStatus(),
+    queryFn: () => checkAuthStatusUseCase(),
     retry: false,
     refetchOnWindowFocus: false,
   });

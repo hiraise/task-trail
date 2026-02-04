@@ -1,38 +1,44 @@
 "use client";
 
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { ResetPasswordPayload } from "@/application/payloads";
-import { clientLogger } from "@/infrastructure/config/clientLogger";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { authRepository } from "@/infrastructure/repositories";
 import { ROUTES } from "@/shared/config/routes";
 
 /**
  * Custom hook for handling password reset functionality.
  *
- * This hook utilizes a mutation to execute the password reset process.
- * On successful password reset, it displays a success message and redirects
- * the user to the login page. In case of an error, it logs the error and
- * displays an error message to the user.
+ * Uses React Query's `useMutation` to manage the password reset process,
+ * including success and error handling with toast notifications.
  *
- * @returns {UseMutationResult<void, Error, ResetPasswordPayload>} The mutation result
- * containing the status of the password reset operation.
+ * @returns A mutation object from React Query that can be used to trigger
+ * the password reset operation with `mutate` or `mutateAsync` methods.
+ *
+ * @example
+ * ```tsx
+ * const resetPasswordMutation = useResetPassword();
+ *
+ * const handleSubmit = (token: string, password: string) => {
+ *   resetPasswordMutation.mutate({ token, password });
+ * };
+ * ```
  */
-export function useResetPassword(): UseMutationResult<void, Error, ResetPasswordPayload> {
+export function useResetPassword() {
   const router = useRouter();
-  const { resetPassword } = appContainer.usecases.auth;
+  const { resetPassword } = authRepository;
 
-  return useMutation({
-    mutationFn: (payload) => resetPassword(payload),
+  return useMutation<void, Error, ResetPasswordPayload>({
+    mutationFn: (payload) => resetPassword(payload.token, payload.password),
     onSuccess: () => {
       toast.success("Пароль успешно изменен");
       router.replace(ROUTES.login);
     },
     onError: (error) => {
-      clientLogger.error("usePasswordReset error:", { login: error });
+      logger.error("Ошибка при сбросе пароля:", { error });
       toast.error("Не удалось изменить пароль. Пожалуйста, попробуйте еще раз.");
     },
   });

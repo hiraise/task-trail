@@ -2,10 +2,8 @@ import type { AuthRepository } from "@/domain/repositories/AuthRepository";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
-import { clientLogger } from "../config/clientLogger";
+import axiosClient from "../http/axiosClient";
 import type { HttpClient } from "../http/HttpClient";
-
-type ApiAuthRepository = AuthRepository;
 
 //TODO: add propper error handler
 const handleError = (message: string, error: unknown): AppError => {
@@ -29,7 +27,6 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
     try {
       await httpClient.post(API_ROUTES.LOGIN, { email, password });
     } catch (error) {
-      clientLogger.error("Login error", { error });
       throw handleError("Failed to login", error);
     }
   },
@@ -44,7 +41,6 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
     try {
       await httpClient.post(API_ROUTES.LOGOUT);
     } catch (error) {
-      clientLogger.error("Logout error", { error });
       throw handleError("Failed to logout", error);
     }
   },
@@ -61,7 +57,6 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
     try {
       await httpClient.post(API_ROUTES.SIGNUP, { email, password });
     } catch (error) {
-      clientLogger.error("SignUp error", { error });
       throw handleError("Failed to signup", error);
     }
   },
@@ -76,7 +71,6 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
     try {
       await httpClient.get(API_ROUTES.AUTH_CHECK);
     } catch (error) {
-      clientLogger.error("Check Auth Status error", { error });
       throw new AppError(AppErrorType.UNAUTHORIZED, "User is not authenticated");
     }
   },
@@ -97,23 +91,26 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
         { newPassword, oldPassword },
       );
     } catch (error) {
-      clientLogger.error("ChangePassword error", { error });
       throw handleError("Failed to change password", error);
     }
   },
 
   /**
-   * Sends a forgot password request for the specified email address.
+   * Initiates the forgot password process by sending a request to the API with the user's email.
    *
-   * @param email - The email address of the user requesting a password reset.
-   * @returns A promise that resolves when the request is complete.
-   * @throws Will throw an error if the request fails.
+   * Sends a POST request to the forgot password API endpoint with the email address.
+   * If the request succeeds, returns the email; otherwise, throws a handled error.
+   *
+   * @param email - The email address of the user who forgot their password.
+   * @returns A promise that resolves with the email address if the request is successful.
+   * @throws Will throw an error if the forgot password request fails.
    */
-  forgotPassword: async (email: string): Promise<void> => {
+  forgotPassword: async (email: string): Promise<string> => {
     try {
       await httpClient.post(API_ROUTES.FORGOT_PASSWORD, { email });
+
+      return email;
     } catch (error) {
-      clientLogger.error("ForgotPassword error", { error });
       throw handleError("Forgot password error", error);
     }
   },
@@ -138,7 +135,6 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
         payload,
       );
     } catch (error) {
-      clientLogger.error("Reset password error", { error });
       throw handleError("Reset password error", error);
     }
   },
@@ -147,14 +143,15 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
    * Sends a request to resend the email verification link to the specified email address.
    *
    * @param email - The email address to which the verification link should be resent.
-   * @returns A promise that resolves when the request is complete.
+   * @returns A promise that resolves with the email address when the request is complete.
    * @throws Will throw an error if the resend verification request fails.
    */
-  resendEmailVerification: async (email: string): Promise<void> => {
+  resendEmailVerification: async (email: string): Promise<string> => {
     try {
       await httpClient.post(API_ROUTES.RESEND_VERIFICATION, { email });
+
+      return email;
     } catch (error) {
-      clientLogger.error("ResendVerification error", { error });
       throw handleError("Resend verification error", error);
     }
   },
@@ -172,10 +169,9 @@ const createAuthRepository = (httpClient: HttpClient): AuthRepository => ({
     try {
       await httpClient.post(API_ROUTES.VERIFY, { token });
     } catch (error) {
-      clientLogger.error("Verify email error", { error });
       throw handleError("Verify email error", error);
     }
   },
 });
 
-export { createAuthRepository, type ApiAuthRepository };
+export const authRepository: AuthRepository = createAuthRepository(axiosClient);

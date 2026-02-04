@@ -1,39 +1,47 @@
 "use client";
 
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { AuthPayload } from "@/application/payloads";
-import { clientLogger } from "@/infrastructure/config/clientLogger";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { authRepository } from "@/infrastructure/repositories";
 import { ROUTES } from "@/shared/config/routes";
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 
 /**
- * Custom hook for handling user sign-up.
+ * Custom hook for handling user sign-up functionality.
  *
- * This hook utilizes a mutation to execute the sign-up process.
- * On successful sign-up, it displays a success message and redirects
- * the user to the confirmation page. In case of an error, it logs
- * the error and displays an error message.
+ * @returns A mutation object from React Query that handles the sign-up process.
  *
- * @returns {UseMutationResult<void, Error, AuthPayload>} The mutation result containing
- * the status of the sign-up operation and methods to trigger the mutation.
+ * @remarks
+ * This hook utilizes the `authRepository.signUp` method to register a new user.
+ * On successful sign-up, it displays a success toast message and redirects the user
+ * to the sign-up confirmation page. On failure, it logs the error and displays
+ * an error toast message.
+ *
+ * @example
+ * ```tsx
+ * const { mutate: signUp, isLoading } = useSignUp();
+ *
+ * const handleSubmit = (email: string, password: string) => {
+ *   signUp({ email, password });
+ * };
+ * ```
  */
-export function useSignUp(): UseMutationResult<void, Error, AuthPayload> {
+export function useSignUp() {
   const router = useRouter();
-  const { signUp } = appContainer.usecases.auth;
+  const { signUp } = authRepository;
 
-  return useMutation({
-    mutationFn: (payload) => signUp(payload),
+  return useMutation<void, Error, AuthPayload>({
+    mutationFn: (payload) => signUp(payload.email, payload.password),
     onSuccess: (_, payload) => {
       toast.success(successTexts.signUpSuccessCheckEmail);
       router.push(ROUTES.signUpConfirm(payload.email));
     },
     onError: (error) => {
-      clientLogger.error("Failed to signup", { error });
+      logger.error("Failed to signup", { error });
       toast.error(errorTexts.somethingWentWrong);
     },
   });

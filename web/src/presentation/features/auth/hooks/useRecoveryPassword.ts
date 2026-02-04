@@ -1,33 +1,48 @@
 "use client";
 
-import type { UseMutationResult } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { EmailPayload } from "@/application/payloads";
-import { clientLogger } from "@/infrastructure/config/clientLogger";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { authRepository } from "@/infrastructure/repositories";
 import { ROUTES } from "@/shared/config/routes";
 
 /**
- * Custom hook to handle password recovery via email.
+ * Custom hook to handle the password recovery process.
  *
- * Uses a mutation to execute the password recovery use case, sending a recovery email to the provided address.
- * On success, navigates to the password recovery confirmation page.
- * On error, logs the error and displays a toast notification to the user.
+ * This hook provides a mutation that allows users to initiate the password recovery process
+ * by sending a recovery email. It handles the mutation logic, including success and error
+ * scenarios, and integrates with the router for navigation.
  *
- * @returns {UseMutationResult<string, Error, EmailPayload>} Mutation result object for password recovery.
+ * @returns A mutation object from `useMutation` with the following properties:
+ * - `mutate`: Function to trigger the password recovery process.
+ * - `isLoading`: Boolean indicating if the mutation is in progress.
+ * - `isError`: Boolean indicating if the mutation resulted in an error.
+ * - `isSuccess`: Boolean indicating if the mutation was successful.
+ * - `error`: The error object if the mutation failed.
+ *
+ * @example
+ * const { mutate, isLoading, isError, isSuccess } = useRecoveryPassword();
+ *
+ * const handlePasswordRecovery = () => {
+ *   mutate({ email: "user@example.com" });
+ * };
+ *
+ * @remarks
+ * - On success, the user is redirected to the password recovery confirmation page.
+ * - On error, an error message is logged and a toast notification is displayed.
  */
-export function useRecoveryPassword(): UseMutationResult<string, Error, EmailPayload> {
+export function useRecoveryPassword() {
   const router = useRouter();
-  const { recoveryPassword } = appContainer.usecases.auth;
+  const { forgotPassword } = authRepository;
 
-  return useMutation({
-    mutationFn: (email) => recoveryPassword(email),
+  return useMutation<string, Error, EmailPayload>({
+    mutationFn: (payload) => forgotPassword(payload.email),
     onSuccess: (email) => router.push(ROUTES.passwordRecoveryConfirm(email)),
     onError: (error) => {
-      clientLogger.error("Password recovery error", { error });
+      logger.error("Password recovery error", { error });
       toast.error("Failed to send email. Please try again.");
     },
   });
