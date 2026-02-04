@@ -4,10 +4,8 @@ import type { ProjectId, UserId } from "@/domain/types";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
-import { clientLogger } from "../config/clientLogger";
+import axiosClient from "../http/axiosClient";
 import type { HttpClient } from "../http/HttpClient";
-
-type ApiProjectMemberRepository = ProjectMemberRepository;
 
 /**
  * Handles errors by checking if the provided error is already an instance of `AppError`.
@@ -39,7 +37,6 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
     try {
       return null;
     } catch (error) {
-      clientLogger.error("Get project member error", { error, id });
       throw handleError("Failed to get project member", error);
     }
   },
@@ -61,10 +58,6 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
 
       return dtos.map(createProjectMember);
     } catch (error) {
-      clientLogger.error("Get project members error", {
-        error,
-        projectId,
-      });
       throw handleError("Failed to get project members", error);
     }
   },
@@ -84,11 +77,6 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
     try {
       await httpClient.post(API_ROUTES.PROJECT_MEMBERS(projectId), emails);
     } catch (error) {
-      clientLogger.error("Add members error", {
-        error,
-        projectId,
-        emails,
-      });
       throw handleError("Failed to add members to project", error);
     }
   },
@@ -105,11 +93,6 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
     try {
       await httpClient.delete(API_ROUTES.KICK_MEMBER(projectId, memberId));
     } catch (error) {
-      clientLogger.error("Kick member error", {
-        error,
-        projectId,
-        memberId: memberId,
-      });
       throw handleError("Failed to kick member from project", error);
     }
   },
@@ -128,13 +111,9 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
     try {
       await httpClient.delete(API_ROUTES.LEAVE_PROJECT(projectId));
     } catch (error) {
-      clientLogger.error("Leave project error", {
-        error,
-        projectId,
-      });
       throw handleError("Failed to leave project", error);
     }
   },
 });
 
-export { createProjectMemberRepository, type ApiProjectMemberRepository };
+export const projectMemberRepository = createProjectMemberRepository(axiosClient);

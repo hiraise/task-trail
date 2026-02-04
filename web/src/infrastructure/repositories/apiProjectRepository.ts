@@ -7,10 +7,8 @@ import type { ProjectId } from "@/domain/types";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
-import { clientLogger } from "../config/clientLogger";
+import axiosClient from "../http/axiosClient";
 import type { HttpClient } from "../http/HttpClient";
-
-type ApiProjectRepository = ProjectRepository;
 
 /**
  * Handles errors by checking if the provided error is already an instance of `AppError`.
@@ -41,7 +39,6 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
 
       return createProjectDetails(dto);
     } catch (error) {
-      clientLogger.error("Get project by ID error", { error, id: id });
       throw handleError("Failed to get project by ID", error);
     }
   },
@@ -61,7 +58,6 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
 
       return dtos.map(createProjectListItem);
     } catch (error) {
-      clientLogger.error("Get projects error", { error });
       throw handleError("Failed to get projects", error);
     }
   },
@@ -79,7 +75,6 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
 
       return String(responseDto.id);
     } catch (error) {
-      clientLogger.error("Create project error", { error, payload });
       throw handleError("Failed to create project", error);
     }
   },
@@ -98,7 +93,6 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
 
       return createProjectDetails(responseDto);
     } catch (error) {
-      clientLogger.error("Edit project error", { error, id: payload.projectId });
       throw handleError("Failed to edit project", error);
     }
   },
@@ -117,7 +111,6 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
     try {
       await httpClient.delete(API_ROUTES.PROJECT_BY_ID(id));
     } catch (error) {
-      clientLogger.error("Delete project error", { error, id: id });
       throw handleError("Failed to delete project", error);
     }
   },
@@ -136,10 +129,9 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
 
       return dtos.map(createTaskStatus);
     } catch (error) {
-      clientLogger.error("Get project statuses error", { error });
       throw handleError("Failed to get project statuses", error);
     }
   },
 });
 
-export { createProjectRepository, type ApiProjectRepository };
+export const projectRepository = createProjectRepository(axiosClient);

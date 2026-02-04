@@ -1,18 +1,17 @@
 import type {
   ChangeAssigneePayload,
+  ChangeStatusPayload,
   CreateTaskPayload,
   UpdateTaskPayload,
 } from "@/application/payloads";
 import { createTask, type Task } from "@/domain/models/Task";
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
-import type { ProjectId, TaskId, TaskStatusId, UserId } from "@/domain/types";
+import type { ProjectId, TaskId } from "@/domain/types";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
 import { API_ROUTES } from "../config/apiRoutes";
-import { clientLogger } from "../config/clientLogger";
+import axiosClient from "../http/axiosClient";
 import type { HttpClient } from "../http/HttpClient";
-
-type ApiTaskRepository = TaskRepository;
 
 const handleError = (message: string, error: unknown): AppError => {
   if (error instanceof AppError) return error;
@@ -24,24 +23,17 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
   /**
    * Changes the assignee of the specified task to the given user.
    *
-   * @param task - The task whose assignee is to be changed.
-   * @param assigneeId - The user ID of the new assignee.
+   * @param payload - The payload containing taskId and assigneeId.
    * @returns A promise that resolves to the updated Task object.
    * @throws Throws an error if the assignee change fails.
    */
-  changeAssignee: async (task: Task, assigneeId: UserId): Promise<Task> => {
+  changeAssignee: async (payload: ChangeAssigneePayload): Promise<Task> => {
     try {
-      const payload: ChangeAssigneePayload = { taskId: task.id, assigneeId };
-      const responseDto = await httpClient.patch(
-        API_ROUTES.CHANGE_ASSIGNEE(task.id, assigneeId),
-        payload,
-      );
+      const { taskId, assigneeId } = payload;
+      const dto = await httpClient.patch(API_ROUTES.CHANGE_ASSIGNEE(taskId, assigneeId), payload);
 
-      if (responseDto) return createTask(responseDto);
-
-      return task;
+      return createTask(dto);
     } catch (error) {
-      clientLogger.error("Change assignee error", { error });
       throw handleError("Failed to change assignee", error);
     }
   },
@@ -49,20 +41,17 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
   /**
    * Changes the status of the specified task to the given status ID.
    *
-   * @param task - The task whose status is to be changed.
-   * @param statusId - The ID of the new status to set for the task.
+   * @param payload - The payload containing taskId and statusId.
    * @returns A promise that resolves to the updated Task object.
    * @throws Will throw an error if the status change fails.
    */
-  changeStatus: async (task: Task, statusId: TaskStatusId): Promise<Task> => {
+  changeStatus: async (payload: ChangeStatusPayload): Promise<Task> => {
     try {
-      const responseDto = await httpClient.patch(API_ROUTES.CHANGE_STATUS(task.id, statusId));
+      const { taskId, statusId } = payload;
+      const dto = await httpClient.patch(API_ROUTES.CHANGE_STATUS(taskId, statusId));
 
-      if (responseDto) return createTask(responseDto);
-
-      return task;
+      return createTask(dto);
     } catch (error) {
-      clientLogger.error("Change status error", { error });
       throw handleError("Failed to change status", error);
     }
   },
@@ -78,10 +67,11 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
     try {
       const dtos = await httpClient.get(API_ROUTES.PROJECT_TASKS(projectId));
 
+      if (!dtos || dtos.length === 0) return [];
+
       return dtos.map(createTask);
     } catch (error) {
-      clientLogger.error("Get tasks error", { error });
-      throw handleError("Failed to get tasks", error);
+      throw handleError("Failed to get tasks by project ID", error);
     }
   },
 
@@ -98,7 +88,6 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
 
       return createTask(dto);
     } catch (error) {
-      clientLogger.error("Get task by ID error", { error, id });
       throw new AppError(AppErrorType.SERVER, "Failed to fetch task");
     }
   },
@@ -116,9 +105,10 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
     try {
       const dtos = await httpClient.get(API_ROUTES.USER_TASKS);
 
+      if (!dtos || dtos.length === 0) return [];
+
       return dtos.map(createTask);
     } catch (error) {
-      clientLogger.error("Failed to get user tasks", { error });
       throw new AppError(AppErrorType.UNKNOWN, "Failed to get user tasks");
     }
   },
@@ -136,7 +126,6 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
 
       return String(responseDto.id) as TaskId;
     } catch (error) {
-      clientLogger.error("Create task error", { error, payload });
       throw handleError("Failed to create task", error);
     }
   },
@@ -148,16 +137,13 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
    * @returns A promise that resolves to the updated task domain object.
    * @throws Will throw an error if the update operation fails.
    */
-  update: async (task: Task): Promise<Task> => {
+  update: async (payload: UpdateTaskPayload): Promise<Task> => {
     try {
-      const payload: UpdateTaskPayload = { name: task.name, description: task.description };
-      const responseDto = await httpClient.patch(API_ROUTES.TASKS_BY_ID(task.id), payload);
+      const { taskId } = payload;
+      const responseDto = await httpClient.patch(API_ROUTES.TASKS_BY_ID(taskId), payload);
 
-      if (responseDto) return createTask(responseDto);
-
-      return task;
+      return createTask(responseDto);
     } catch (error) {
-      clientLogger.error("Edit task error", { error, id: task.id, task });
       throw handleError("Failed to edit task", error);
     }
   },
@@ -176,10 +162,9 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
     try {
       await httpClient.delete(API_ROUTES.TASKS_BY_ID(id));
     } catch (error) {
-      clientLogger.error("Delete task error", { error, id });
       throw handleError("Failed to delete task", error);
     }
   },
 });
 
-export { createTaskRepository, type ApiTaskRepository };
+export const taskRepository = createTaskRepository(axiosClient);

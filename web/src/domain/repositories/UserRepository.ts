@@ -5,6 +5,6 @@ export interface UserRepository {
   findById(id: UserId): Promise<User>;
   findCandidatesForProject(projectId?: ProjectId): Promise<User[]>;
   getCurrentUser(): Promise<User | null>;
-  updateUser(username?: string, email?: string): Promise<User>;
+  updateUser(username?: string): Promise<User>;
   uploadAvatar(data: FormData): Promise<string | null>;
 }
