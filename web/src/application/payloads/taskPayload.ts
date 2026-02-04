@@ -24,6 +24,11 @@ export interface ChangeStatusPayload {
 }
 
 export interface UpdateTaskPayload {
+  /**
+   * Task ID is used for routing (endpoint URL),
+   * NOT included in request body
+   */
+  taskId: TaskId;
   name?: string;
   description?: string;
 }
