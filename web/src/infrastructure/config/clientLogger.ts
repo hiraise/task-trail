@@ -55,7 +55,7 @@ const log = (type: LogType, message: string, meta?: Record<string, unknown>): vo
   }
 };
 
-export const clientLogger: ClientLogger = {
+export const logger: ClientLogger = {
   error: (message, meta) => log("error", message, meta),
   info: (message, meta) => log("info", message, meta),
   warn: (message, meta) => log("warn", message, meta),
