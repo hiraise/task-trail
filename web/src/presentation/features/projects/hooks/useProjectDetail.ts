@@ -1,36 +1,60 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
+import { useMemo } from "react";
 
-import { getProjectDetailUseCase } from "@/application/usecases";
 import type { ProjectId } from "@/domain/types";
+import {
+  projectMemberRepository,
+  projectRepository,
+  taskRepository,
+} from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-/**
- * A custom hook that fetches and manages the details of a specific project.
- *
- * @param projectId - The unique identifier of the project to fetch details for.
- *
- * @returns The result of the `useQuery` hook, which includes the project details,
- *          loading state, error state, and other query-related information.
- *
- * @throws {Error} If the `projectId` is not provided.
- *
- * @remarks
- * - The query is enabled only when a valid `projectId` is provided.
- * - The query result is considered fresh for 5 minutes (`staleTime`).
- * - The query result is garbage collected after 10 minutes (`gcTime`).
- * - The query will retry up to 2 times in case of failure.
- */
-export function useProjectDetail(projectId: ProjectId) {
-  return useQuery({
-    queryKey: QUERY_KEYS.projectDetails(projectId || ""),
-    queryFn: async () => {
-      if (!projectId) throw new Error("Project ID is required");
-
-      return await getProjectDetailUseCase(projectId);
-    },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-    retry: 2,
-    enabled: !!projectId,
+export const useProjectDetail = (projectId: ProjectId) => {
+  const [projectQuery, membersQuery, tasksQuery] = useQueries({
+    queries: [
+      {
+        queryKey: QUERY_KEYS.project.detail(projectId),
+        queryFn: () => projectRepository.findById(projectId),
+      },
+      {
+        queryKey: QUERY_KEYS.project.members(projectId),
+        queryFn: () => projectMemberRepository.findByProjectId(projectId),
+      },
+      {
+        queryKey: QUERY_KEYS.project.tasks(projectId),
+        queryFn: () => taskRepository.findByProjectId(projectId),
+      },
+    ],
   });
-}
+
+  const data = useMemo(() => {
+    if (!projectQuery.data || !membersQuery.data || !tasksQuery.data) {
+      return undefined;
+    }
+
+    const owner = membersQuery.data.find((member) => member.userRole === "OWNER");
+
+    if (!owner) {
+      return undefined;
+    }
+
+    return {
+      project: projectQuery.data,
+      members: membersQuery.data,
+      owner,
+      tasks: tasksQuery.data,
+    };
+  }, [projectQuery.data, membersQuery.data, tasksQuery.data]);
+
+  return {
+    data,
+    isLoading: projectQuery.isLoading || membersQuery.isLoading || tasksQuery.isLoading,
+    isError: projectQuery.isError || membersQuery.isError || tasksQuery.isError,
+    error: projectQuery.error || membersQuery.error || tasksQuery.error,
+    refetch: () => {
+      projectQuery.refetch();
+      membersQuery.refetch();
+      tasksQuery.refetch();
+    },
+  };
+};
