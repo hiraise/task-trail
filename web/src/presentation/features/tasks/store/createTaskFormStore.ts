@@ -1,10 +1,11 @@
 import { create } from "zustand";
 
+import { selectProjectForTaskUseCase } from "@/application/usecases";
 import type { Project } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { TaskCreationDraft } from "@/domain/models/TaskCreationDraft";
 import type { ProjectId, UserId } from "@/domain/types";
-import { appContainer } from "@/infrastructure/di/container";
+import { logger } from "@/infrastructure/config/clientLogger";
 
 export interface ProjectData {
   id: ProjectId;
@@ -79,19 +80,31 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
     const state = get();
 
     if (!state.draft) return;
-    const { selectProject } = appContainer.usecases.tasks;
-    const result = await selectProject(state.draft, project.id, state.assignee?.id || null);
 
-    if (!result.success) return;
+    try {
+      const result = await selectProjectForTaskUseCase(
+        state.draft,
+        project.id,
+        state.assignee?.id || null,
+      );
 
-    set({
-      draft: state.draft,
-      project: {
-        id: project.id,
-        name: project.name,
-      },
-      assignee: result.assigneeCleared ? null : state.assignee,
-    });
+      set({
+        draft: state.draft,
+        project: {
+          id: project.id,
+          name: project.name,
+        },
+        assignee: result.assigneeCleared ? null : state.assignee,
+      });
+
+      logger.info("Project selected for task", {
+        projectId: project.id,
+        assigneeCleared: result.assigneeCleared,
+      });
+    } catch (error) {
+      logger.error("Failed to select project for task", { error, projectId: project.id });
+      throw error;
+    }
   },
 
   reset: () => set({ draft: null }),
