@@ -89,9 +89,14 @@ const createProjectRepository = (httpClient: HttpClient): ProjectRepository => (
   update: async (payload: EditProjectPayload): Promise<ProjectDetails> => {
     try {
       const { projectId, ...apiPayload } = payload;
-      const responseDto = await httpClient.patch(API_ROUTES.PROJECT_BY_ID(projectId), apiPayload);
 
-      return createProjectDetails(responseDto);
+      await httpClient.patch(API_ROUTES.PROJECT_BY_ID(projectId), apiPayload);
+
+      //TOOD: refactor to return updated project details from API instead of making an additional request
+
+      const dto = await projectRepository.findById(projectId);
+
+      return createProjectDetails(dto);
     } catch (error) {
       throw handleError("Failed to edit project", error);
     }
