@@ -1,25 +1,32 @@
 "use client";
 
+import clsx from "clsx";
+
 import { Icon } from "../Icon";
 
-import { StyledButton } from "./IconButton.styled";
-import type { IconButtonProps } from "./IconButton.types";
+import styles from "./IconButton.module.css";
 
-/**
- * Renders a button containing an icon, supporting multiple visual variants and accessibility features.
- *
- * @param icon - The SVG icon component to display inside the button.
- * @param variant - The visual style of the button. Can be `"primary"`, `"ghost"`, or `"danger"`. Defaults to `"primary"`.
- * @param size - The size of the icon, passed to the `Icon` component.
- * @param rest - Additional props forwarded to the underlying `<button>` element.
- *
- * @returns A styled button element containing the specified icon, with variant-based styling and accessibility support.
- */
+type IconButtonVariant = "primary" | "ghost" | "danger";
 
-export function IconButton({ icon, variant, size = "24px", ...rest }: IconButtonProps) {
+interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  variant?: IconButtonVariant;
+  size?: string;
+}
+
+export function IconButton({
+  icon,
+  variant = "primary",
+  size = "24px",
+  disabled,
+  className,
+  ...rest
+}: IconButtonProps) {
+  const buttonClasses = clsx(styles.iconButton, styles[`iconButton--${variant}`], className);
+
   return (
-    <StyledButton $variant={variant} {...rest}>
+    <button className={buttonClasses} disabled={disabled} {...rest}>
       <Icon as={icon} size={size} inheritColor />
-    </StyledButton>
+    </button>
   );
 }
