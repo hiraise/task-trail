@@ -11,7 +11,7 @@ export interface TaskRepository {
     assigneeId?: UserId;
     projectId: ProjectId;
   }): Promise<TaskId>;
-  update(data: { taskId: TaskId; name?: string; description?: string }): Promise<Task>;
+  update(data: { taskId: TaskId; name?: string; description?: string }): Promise<void>;
   delete(id: TaskId): Promise<void>;
   changeAssignee({ taskId, assigneeId }: { taskId: TaskId; assigneeId?: UserId }): Promise<Task>;
   changeStatus({ taskId, statusId }: { taskId: TaskId; statusId: TaskStatusId }): Promise<Task>;

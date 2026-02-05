@@ -137,12 +137,12 @@ const createTaskRepository = (httpClient: HttpClient): TaskRepository => ({
    * @returns A promise that resolves to the updated task domain object.
    * @throws Will throw an error if the update operation fails.
    */
-  update: async (payload: UpdateTaskPayload): Promise<Task> => {
+  update: async (payload: UpdateTaskPayload): Promise<void> => {
     try {
       const { taskId } = payload;
-      const responseDto = await httpClient.patch(API_ROUTES.TASKS_BY_ID(taskId), payload);
 
-      return createTask(responseDto);
+      //TODO: return updated task from server and update it in the app instead of just sending request without response
+      await httpClient.patch(API_ROUTES.TASKS_BY_ID(taskId), payload);
     } catch (error) {
       throw handleError("Failed to edit task", error);
     }
