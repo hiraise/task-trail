@@ -31,6 +31,7 @@ export function useGetTaskDetail(taskId: TaskId | undefined) {
 
       return await getTaskDetailUseCase(taskId);
     },
+    throwOnError: true,
     enabled: !!taskId,
   });
 }

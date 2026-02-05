@@ -110,7 +110,10 @@ const createUserRepository = (httpClient: HttpClient): UserRepository => ({
     try {
       const dto = await httpClient.get(API_ROUTES.USER_BY_ID(id));
 
-      return createUser(dto);
+      //TODO: This is a temporary solution to handle the case when API returns null for non-existing user.
+      if (!dto) return createUser(dto);
+
+      return dto;
     } catch (error) {
       throw handleError("Failed to get user by ID", error);
     }

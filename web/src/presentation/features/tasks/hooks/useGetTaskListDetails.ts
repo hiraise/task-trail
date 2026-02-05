@@ -37,7 +37,9 @@ export function useGetTaskListDetails(): UseGetTaskListDetailsResult {
       queryKey: QUERY_KEYS.taskDetails(taskId),
       queryFn: async () => getTaskDetailUseCase(taskId),
       enabled: !!taskId && !isLoadingTasks,
+      throwOnError: true,
     })),
+
     combine: (queries) => {
       return {
         data: queries.map((q) => q.data).filter((d): d is TaskDetailResponseDto => !!d),

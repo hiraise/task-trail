@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 
 import { GLOBAL_ERRORS } from "./globalErrors";
-import type { AppError} from "./types";
+import type { AppError } from "./types";
 import { AppErrorType } from "./types";
 
 export function handleGlobalError(error: unknown) {
