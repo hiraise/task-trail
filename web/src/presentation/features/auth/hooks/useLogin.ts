@@ -48,13 +48,15 @@ export function useLogin() {
     mutationFn: (payload) => login(payload.email, payload.password),
     onSuccess: () => {
       toast.success(successTexts.loginSuccess);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUser });
       router.replace(from);
     },
     onError: (error) => {
       logger.error("Login error:", { error });
       toast.error(errorTexts.somethingWentWrong);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth.session });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user.current });
     },
   });
 }

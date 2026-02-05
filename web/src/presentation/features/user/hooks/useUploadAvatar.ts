@@ -34,7 +34,7 @@ export function useUploadAvatar() {
   return useMutation<string | null, Error, UploadAvatarPayload>({
     mutationFn: (payload) => uploadAvatarUseCase(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUser });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user.current });
       toast.success("Avatar updated successfully!");
     },
     onError: (error) => {

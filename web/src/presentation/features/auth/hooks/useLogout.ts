@@ -34,11 +34,13 @@ export function useLogout() {
     mutationFn: () => authRepository.logout(),
     onSuccess: () => {
       toast.success(successTexts.logoutSuccess);
-      queryClient.resetQueries({ queryKey: [QUERY_KEYS.currentUser, QUERY_KEYS.auth] });
       router.replace(ROUTES.login);
     },
     onError: (error) => {
       logger.error("Logout error:", { logout: error });
+    },
+    onSettled: () => {
+      queryClient.resetQueries({ queryKey: [QUERY_KEYS.user.current, QUERY_KEYS.auth.session] });
     },
     retry: false,
   });

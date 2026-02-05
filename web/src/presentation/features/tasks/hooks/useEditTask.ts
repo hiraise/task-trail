@@ -45,9 +45,9 @@ export function useEditTask() {
   return useMutation<Task, Error, EditTaskPayload, TaskContext>({
     mutationFn: (payload) => taskRepository.update(payload),
     onMutate: async (payload) => {
-      const previousTask = queryClient.getQueryData<Task>(QUERY_KEYS.taskDetails(payload.taskId));
+      const previousTask = queryClient.getQueryData<Task>(QUERY_KEYS.task.detail(payload.taskId));
 
-      queryClient.setQueryData<Task>(QUERY_KEYS.taskDetails(payload.taskId), (old) => {
+      queryClient.setQueryData<Task>(QUERY_KEYS.task.detail(payload.taskId), (old) => {
         if (!old) return old;
 
         return {
@@ -61,7 +61,7 @@ export function useEditTask() {
     },
     onError: (error, payload, context) => {
       if (context?.previousTask) {
-        queryClient.setQueryData(QUERY_KEYS.taskDetails(context.taskId), context.previousTask);
+        queryClient.setQueryData(QUERY_KEYS.task.detail(context.taskId), context.previousTask);
       }
       logger.error("Error updating task", { taskId: payload.taskId, error, payload });
       toast.error(`Failed to update task: ${error.message}`);
@@ -69,7 +69,7 @@ export function useEditTask() {
     onSuccess: (updatedTask, payload) => {
       logger.info("Task updated successfully", { taskId: payload.taskId });
       toast.success("Task updated successfully");
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.tasks });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.detail(payload.taskId) });
     },
   });
 }

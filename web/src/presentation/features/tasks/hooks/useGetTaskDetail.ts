@@ -25,7 +25,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useGetTaskDetail(taskId: TaskId | undefined) {
   return useQuery({
-    queryKey: QUERY_KEYS.taskDetails(taskId || ""),
+    queryKey: QUERY_KEYS.task.detail(taskId || ""),
     queryFn: async () => {
       if (!taskId) throw new Error("Task ID is required");
 

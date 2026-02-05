@@ -31,7 +31,7 @@ export function useGetCurrentUser() {
   const { getCurrentUser } = userRepository;
 
   return useQuery<User | null, Error>({
-    queryKey: QUERY_KEYS.currentUser,
+    queryKey: QUERY_KEYS.user.current,
     queryFn: () => getCurrentUser(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

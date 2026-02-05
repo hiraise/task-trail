@@ -8,22 +8,22 @@ import { BackButton } from "@/presentation/shared";
 import { tasksTexts } from "@/shared/locales/tasks";
 
 import { CommentInput, CommentsList, TaskInfoDesktop } from "../../components";
-import { useGetTask } from "../../hooks";
+import { useGetTaskDetail } from "../../hooks/useGetTaskDetail";
 
 import styles from "./TaskDesktopPage.module.css";
 
 export function TaskDesktopPage() {
   const params = useParams();
-  const { data: task } = useGetTask(params.taskId as TaskId);
+  const { data } = useGetTaskDetail(params.taskId as TaskId);
 
-  if (!task) return null;
+  if (!data) return null;
 
   return (
     <div className={styles.container}>
       <BackButton />
       <div className={styles.contentWrapper}>
         <div className={clsx(styles.content, styles.taskInfo)}>
-          <TaskInfoDesktop task={task} />
+          <TaskInfoDesktop task={data.task} />
         </div>
         <div className={clsx(styles.content, styles.comments)}>
           <span className={styles.title}>{tasksTexts.comments.title}</span>

@@ -37,7 +37,7 @@ export function useUpdateUser() {
   return useMutation<User, Error, UpdateUserPayload>({
     mutationFn: (payload) => updateUser(payload.username),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.currentUser });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user.current });
       toast.success("User updated successfully");
     },
     onError: (error) => {

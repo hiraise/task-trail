@@ -30,7 +30,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export function useGetUserTasks() {
   return useQuery<Task[] | null, Error>({
-    queryKey: QUERY_KEYS.userTasks,
+    queryKey: QUERY_KEYS.task.user,
     queryFn: () => taskRepository.findAll(),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

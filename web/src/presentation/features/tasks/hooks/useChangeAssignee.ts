@@ -48,12 +48,12 @@ export function useChangeAssignee() {
     mutationFn: (payload) => taskRepository.changeAssignee(payload),
 
     onMutate: async (payload) => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task(payload.taskId) });
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.taskDetails(payload.taskId) });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task.all });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task.detail(payload.taskId) });
 
-      const previousTask = queryClient.getQueryData<Task>(QUERY_KEYS.task(payload.taskId));
+      const previousTask = queryClient.getQueryData<Task>(QUERY_KEYS.task.detail(payload.taskId));
       const previousTaskDetails = queryClient.getQueryData<Task>(
-        QUERY_KEYS.taskDetails(payload.taskId),
+        QUERY_KEYS.task.detail(payload.taskId),
       );
 
       const optimisticUpdate = (old: Task | undefined) => {
@@ -66,8 +66,7 @@ export function useChangeAssignee() {
         };
       };
 
-      queryClient.setQueryData<Task>(QUERY_KEYS.task(payload.taskId), optimisticUpdate);
-      queryClient.setQueryData<Task>(QUERY_KEYS.taskDetails(payload.taskId), optimisticUpdate);
+      queryClient.setQueryData<Task>(QUERY_KEYS.task.detail(payload.taskId), optimisticUpdate);
 
       return {
         previousTask,
@@ -78,11 +77,11 @@ export function useChangeAssignee() {
 
     onError: (error, payload, context) => {
       if (context?.previousTask) {
-        queryClient.setQueryData(QUERY_KEYS.task(context.taskId), context.previousTask);
+        queryClient.setQueryData(QUERY_KEYS.task.detail(context.taskId), context.previousTask);
       }
       if (context?.previousTaskDetails) {
         queryClient.setQueryData(
-          QUERY_KEYS.taskDetails(context.taskId),
+          QUERY_KEYS.task.detail(context.taskId),
           context.previousTaskDetails,
         );
       }
@@ -107,8 +106,8 @@ export function useChangeAssignee() {
     },
 
     onSettled: (_, __, payload) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task(payload.taskId) });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.taskDetails(payload.taskId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.detail(payload.taskId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
     },
   });
 }

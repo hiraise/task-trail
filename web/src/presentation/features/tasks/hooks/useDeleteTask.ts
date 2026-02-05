@@ -11,7 +11,6 @@ import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 interface DeleteTaskContext {
-  previousTask: Task | undefined;
   previousTaskDetails: Task | undefined;
   previousTasks: Task[] | undefined;
   taskId: TaskId;
@@ -46,23 +45,20 @@ export function useDeleteTask(projectId: ProjectId) {
   return useMutation<void, Error, TaskId, DeleteTaskContext>({
     mutationFn: (taskId) => taskRepository.delete(taskId),
     onMutate: async (taskId) => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task(taskId) });
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.taskDetails(taskId) });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task.all });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task.detail(taskId) });
       await queryClient.cancelQueries({ queryKey: QUERY_KEYS.project.tasks(projectId) });
 
-      const previousTask = queryClient.getQueryData<Task>(QUERY_KEYS.task(taskId));
-      const previousTaskDetails = queryClient.getQueryData<Task>(QUERY_KEYS.taskDetails(taskId));
+      const previousTaskDetails = queryClient.getQueryData<Task>(QUERY_KEYS.task.detail(taskId));
       const previousTasks = queryClient.getQueryData<Task[]>(QUERY_KEYS.project.tasks(projectId));
 
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.task(taskId) });
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.taskDetails(taskId) });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.task.detail(taskId) });
 
       queryClient.setQueryData<Task[]>(QUERY_KEYS.project.tasks(projectId), (old) =>
         old?.filter((task) => task.id !== taskId),
       );
 
       return {
-        previousTask,
         previousTaskDetails,
         previousTasks,
         taskId,
@@ -78,12 +74,9 @@ export function useDeleteTask(projectId: ProjectId) {
       router.replace(ROUTES.project(projectId));
     },
     onError: (error, taskId, context) => {
-      if (context?.previousTask) {
-        queryClient.setQueryData(QUERY_KEYS.task(context.taskId), context.previousTask);
-      }
       if (context?.previousTaskDetails) {
         queryClient.setQueryData(
-          QUERY_KEYS.taskDetails(context.taskId),
+          QUERY_KEYS.task.detail(context.taskId),
           context.previousTaskDetails,
         );
       }

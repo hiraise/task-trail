@@ -14,13 +14,18 @@ import type { ProjectId, TaskId, UserId } from "../../domain/types";
  */
 
 export const QUERY_KEYS = {
-  auth: ["auth"] as const,
-  currentUser: ["me"] as const,
-  userTasks: ["me", "task"] as const,
-  user: (id: UserId) => ["user", id] as const,
-  tasks: ["tasks"] as const,
-  task: (id: TaskId) => ["task", id] as const,
-  taskDetails: (id: TaskId) => ["taskDetails", id] as const,
+  auth: {
+    session: ["auth", "session"] as const,
+  },
+  user: {
+    current: ["user", "current"] as const,
+    detail: (id: UserId) => ["user", id] as const,
+  },
+  task: {
+    all: ["task"] as const,
+    user: ["task", "user"] as const,
+    detail: (id: TaskId) => ["task", id] as const,
+  },
   project: {
     all: ["project", "all"] as const,
     detail: (id: ProjectId) => ["project", id] as const,

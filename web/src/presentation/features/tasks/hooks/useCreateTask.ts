@@ -18,7 +18,7 @@ export function useCreateTask() {
   return useMutation<Task, Error, CreateTaskPayload>({
     mutationFn: (payload) => createTaskUseCase(payload),
     onSuccess: async (newTask) => {
-      queryClient.setQueryData(QUERY_KEYS.taskDetails(newTask.id), newTask);
+      queryClient.setQueryData(QUERY_KEYS.task.detail(newTask.id), newTask);
 
       logger.info("Task created successfully", {
         taskId: newTask.id,

@@ -17,7 +17,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  */
 export const useCheckAuthStatus = (): AuthStatusDto => {
   const query = useQuery({
-    queryKey: QUERY_KEYS.auth,
+    queryKey: QUERY_KEYS.auth.session,
     queryFn: () => checkAuthStatusUseCase(),
     retry: false,
     refetchOnWindowFocus: false,
