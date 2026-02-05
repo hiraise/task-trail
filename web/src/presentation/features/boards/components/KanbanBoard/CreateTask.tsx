@@ -1,6 +1,5 @@
 "use client";
 
-
 import { Icon } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 
@@ -12,7 +11,7 @@ interface CreateTaskProps {
 
 export function CreateTask({ variant }: CreateTaskProps) {
   const handleClick = () => {
-    console.log("Create new task");
+    //TODO: Implement task creation logic
   };
 
   switch (variant) {

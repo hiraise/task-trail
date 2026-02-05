@@ -1,8 +1,8 @@
 import { clsx } from "clsx";
+import { z } from "zod";
 
 import { Spinner } from "@/presentation/shared";
 import { projectsTexts } from "@/shared/locales/projects";
-import { VALIDATION_PATTERNS } from "@/shared/utils/validate";
 
 import { useGetProjectCandidates } from "../../hooks";
 
@@ -32,7 +32,7 @@ export function UsersList({ onUserSelect, selectedUsers = [], searchQuery = "" }
     ? usersToDisplay.filter(
         (user) =>
           user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.username?.toLowerCase().includes(searchQuery.toLowerCase())
+          user.username?.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : usersToDisplay;
 
@@ -45,7 +45,9 @@ export function UsersList({ onUserSelect, selectedUsers = [], searchQuery = "" }
   }
 
   if (filteredUsers.length === 0) {
-    return VALIDATION_PATTERNS.email.test(searchQuery) ? (
+    const isValidEmail = z.email().safeParse(searchQuery).success;
+
+    return isValidEmail ? (
       <div
         className={clsx(styles.container, styles.selectUser)}
         onClick={() => onUserSelect(searchQuery)}

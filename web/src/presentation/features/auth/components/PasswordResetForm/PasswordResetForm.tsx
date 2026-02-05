@@ -1,15 +1,11 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
 import { FormFieldError, Input, SubmitButton } from "@/presentation/shared";
 import { authTexts } from "@/shared/locales/auth";
-import { getConfirmPasswordValidator, getPasswordValidator } from "@/shared/utils/validate";
 
 import styles from "./PasswordResetForm.module.css";
-
-interface FormValues {
-  password: string;
-  confirmPassword: string;
-}
+import { PasswordResetSchema, type PasswordResetFormData } from "./schema";
 
 interface PasswordResetFormProps {
   onSubmit: (password: string) => void | Promise<void>;
@@ -20,14 +16,16 @@ export function PasswordResetForm({ onSubmit, isLoading }: PasswordResetFormProp
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting, isValid },
-  } = useForm<FormValues>({ mode: "onChange" });
+  } = useForm<PasswordResetFormData>({
+    resolver: zodResolver(PasswordResetSchema),
+    mode: "onChange",
+  });
 
-  const password = watch("password");
+  const submitHandler = (data: PasswordResetFormData) => {
+    const { password } = data;
 
-  const submitHandler = (data: FormValues) => {
-    return onSubmit(data.password);
+    return onSubmit(password);
   };
 
   return (
@@ -40,7 +38,7 @@ export function PasswordResetForm({ onSubmit, isLoading }: PasswordResetFormProp
           <Input
             id="password"
             type="password"
-            {...register("password", getPasswordValidator())}
+            {...register("password")}
             aria-invalid={!!errors.password}
             aria-describedby="password-error"
             placeholder={authTexts.passwordPlaceholder}
@@ -56,9 +54,9 @@ export function PasswordResetForm({ onSubmit, isLoading }: PasswordResetFormProp
           <Input
             id="confirmPassword"
             type="password"
-            {...register("confirmPassword", getConfirmPasswordValidator(password))}
+            {...register("confirmPassword")}
             aria-invalid={!!errors.confirmPassword}
-            aria-describedby="newPassword-error"
+            aria-describedby="confirmPassword-error"
             placeholder={authTexts.passwordPlaceholder}
             disabled={isSubmitting}
             autoComplete="off"

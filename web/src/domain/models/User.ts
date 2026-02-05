@@ -9,7 +9,7 @@ export const UserIdSchema = z
 export const UserSchema = z.object({
   id: UserIdSchema,
   email: z.email(),
-  username: z.string().optional(),
+  username: z.string().optional().nullable(),
   avatarUrl: z.url().optional(),
 });
 

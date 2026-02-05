@@ -1,7 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import z from "zod";
+import { useForm, useWatch } from "react-hook-form";
 
 import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
@@ -13,16 +12,8 @@ import { SelectedUsers } from "../SelectedUsers";
 
 import { AddParticipant } from "./AddParticipant";
 import styles from "./CreateProjectForm.module.css";
-
-const createProjectSchema = z.object({
-  name: z
-    .string()
-    .min(6, "Project name must be at least 6 characters")
-    .max(100, "Project name must not exceed 100 characters"),
-  description: z.string().max(1000, "Description must not exceed 1000 characters").optional(),
-});
-
-type CreateProjectFormData = z.infer<typeof createProjectSchema>;
+import type { CreateProjectFormData } from "./schema";
+import { CreateProjectSchema } from "./schema";
 
 interface CreateProjectFormProps {
   onSubmit: () => void;
@@ -41,10 +32,10 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<CreateProjectFormData>({
-    resolver: zodResolver(createProjectSchema),
+    resolver: zodResolver(CreateProjectSchema),
     mode: "onChange",
     defaultValues: {
       name: store.draft?.getName() || "",
@@ -52,7 +43,7 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
     },
   });
 
-  const formValues = watch();
+  const formValues = useWatch({ control });
 
   // Sync name with state
   useEffect(() => {

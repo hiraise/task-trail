@@ -2,8 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
-import z from "zod";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
@@ -14,18 +13,8 @@ import { useCreateTaskFormStore } from "../../store/createTaskFormStore";
 
 import styles from "./CreateTaskForm.module.css";
 import { AssigneeSelection, ProjectSelection } from "./FormSelectionOptions";
-
-const createTaskSchema = z.object({
-  name: z
-    .string()
-    .min(6, "Task name must be at least 6 characters")
-    .max(100, "Task name must not exceed 100 characters"),
-  description: z.string().max(1000, "Description must not exceed 1000 characters").optional(),
-  projectId: z.string().min(1, tasksTexts.requiredField),
-  assigneeId: z.string().optional(),
-});
-
-type CreateTaskFormData = z.infer<typeof createTaskSchema>;
+import type { CreateTaskFormData } from "./schema";
+import { CreateTaskSchema } from "./schema";
 
 interface CreateTaskFormProps {
   onSubmit: () => void;
@@ -44,10 +33,9 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     control,
     register,
     handleSubmit,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<CreateTaskFormData>({
-    resolver: zodResolver(createTaskSchema),
+    resolver: zodResolver(CreateTaskSchema),
     mode: "onChange",
     defaultValues: {
       name: store.draft?.getName(),
@@ -55,7 +43,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     },
   });
 
-  const formValues = watch();
+  const formValues = useWatch({ control });
 
   // Sync name with state
   useEffect(() => {

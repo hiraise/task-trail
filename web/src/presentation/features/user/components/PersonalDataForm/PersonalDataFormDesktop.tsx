@@ -10,19 +10,19 @@ import { TEXTS } from "@/shared/locales/texts";
 import { useGetCurrentUser, useUpdateUser } from "../../hooks";
 
 import styles from "./PersonalDataFormDesktop.module.css";
-import type { FormValues } from "./schema";
-import { schema } from "./schema";
+import type { PersonalDataFormData } from "./schema";
+import { PersonalDataSchema } from "./schema";
 
 export function PersonalDataFormDesktop() {
   const { data: user } = useGetCurrentUser();
   const { mutateAsync: update } = useUpdateUser();
 
-  const initialUsername = user?.username;
-  const initialEmail = user?.email;
+  const initialUsername = user?.username ?? undefined;
+  const initialEmail = user?.email ?? undefined;
 
-  const form = useForm<FormValues>({
+  const form = useForm<PersonalDataFormData>({
     defaultValues: { username: initialUsername, email: initialEmail },
-    resolver: zodResolver(schema),
+    resolver: zodResolver(PersonalDataSchema),
     mode: "onChange",
   });
 
@@ -35,7 +35,7 @@ export function PersonalDataFormDesktop() {
 
   const [focused, setFocused] = useState(false);
 
-  const submitHandler = async (data: FormValues) => {
+  const submitHandler = async (data: PersonalDataFormData) => {
     if (initialUsername !== data.username) {
       await update({ username: data.username });
     }

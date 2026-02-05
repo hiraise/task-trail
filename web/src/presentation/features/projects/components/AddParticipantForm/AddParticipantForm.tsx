@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { SubmitButton } from "@/presentation/shared";
 import { useClickOutside } from "@/presentation/shared/hooks/useClickOutside";
@@ -36,14 +36,13 @@ export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
   const {
     control,
     handleSubmit,
-    watch,
     formState: { isSubmitting },
   } = useForm<FormValues>({
     mode: "onChange",
     defaultValues: { query: "" },
   });
 
-  const queryValue = watch("query");
+  const queryValue = useWatch({ control, name: "query" });
 
   const submitHandler = () => {
     if (!onSubmit || emails.length === 0) return;

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { FormFieldError, InputFieldMobile, SubmitButton } from "@/presentation/shared";
 import { useChangePassword } from "@/presentation/shared/hooks";
@@ -15,7 +15,7 @@ export function ChangePasswordFormMobile() {
   const form = useForm<FormValues>({ resolver: zodResolver(schema), mode: "onSubmit" });
 
   const {
-    watch,
+    control,
     register,
     handleSubmit,
     formState: { errors, isSubmitting, isValid },
@@ -25,6 +25,10 @@ export function ChangePasswordFormMobile() {
     if (!isValid) return;
     await changePassword({ oldPassword: data.oldPassword, newPassword: data.newPassword });
   };
+
+  const newPassword = useWatch({ control, name: "newPassword" });
+  const oldPassword = useWatch({ control, name: "oldPassword" });
+  const confirmPassword = useWatch({ control, name: "confirmPassword" });
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className={styles.form}>
@@ -43,7 +47,7 @@ export function ChangePasswordFormMobile() {
             autoComplete="off"
             mode="password"
             hasError={!!errors.oldPassword}
-            showSuffixButton={!!watch("oldPassword")}
+            showSuffixButton={!!oldPassword}
           />
           {errors.oldPassword && <FormFieldError>{errors.oldPassword.message}</FormFieldError>}
         </div>
@@ -64,7 +68,7 @@ export function ChangePasswordFormMobile() {
             autoComplete="off"
             mode="password"
             hasError={!!errors.newPassword}
-            showSuffixButton={!!watch("newPassword")}
+            showSuffixButton={!!newPassword}
           />
           {errors.newPassword && <FormFieldError>{errors.newPassword.message}</FormFieldError>}
         </div>
@@ -85,7 +89,7 @@ export function ChangePasswordFormMobile() {
             autoComplete="off"
             mode="password"
             hasError={!!errors.confirmPassword}
-            showSuffixButton={!!watch("confirmPassword")}
+            showSuffixButton={!!confirmPassword}
           />
           {errors.confirmPassword && (
             <FormFieldError>{errors.confirmPassword.message}</FormFieldError>

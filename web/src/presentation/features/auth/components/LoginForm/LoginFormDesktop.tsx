@@ -24,7 +24,6 @@ export function LoginFormDesktop() {
 
   const submitHandler = async (data: FormData) => {
     await login({ email: data.email, password: data.password });
-    console.log("Form values: ", data);
   };
 
   return (

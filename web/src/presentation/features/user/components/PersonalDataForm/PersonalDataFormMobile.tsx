@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { FormFieldError, InputFieldMobile, SubmitButton } from "@/presentation/shared";
 import { TEXTS } from "@/shared/locales/texts";
@@ -8,8 +8,8 @@ import { TEXTS } from "@/shared/locales/texts";
 import { useGetCurrentUser, useUpdateUser } from "../../hooks";
 
 import styles from "./PersonalDataFormMobile.module.css";
-import type { FormValues } from "./schema";
-import { schema } from "./schema";
+import type { PersonalDataFormData } from "./schema";
+import { PersonalDataSchema } from "./schema";
 
 export function PersonalDataFormMobile() {
   const { data: user } = useGetCurrentUser();
@@ -18,9 +18,9 @@ export function PersonalDataFormMobile() {
   const initialUsername = user?.username;
   const initialEmail = user?.email;
 
-  const form = useForm<FormValues>({
-    defaultValues: { username: initialUsername, email: initialEmail },
-    resolver: zodResolver(schema),
+  const form = useForm<PersonalDataFormData>({
+    defaultValues: { username: initialUsername ?? undefined, email: initialEmail ?? undefined },
+    resolver: zodResolver(PersonalDataSchema),
     mode: "onSubmit",
   });
 
@@ -29,15 +29,16 @@ export function PersonalDataFormMobile() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    control,
   } = form;
 
-  const username = form.watch("username");
+  const username = useWatch({ control, name: "username" });
 
   useEffect(() => {
-    reset({ username: initialUsername });
+    reset({ username: initialUsername ?? undefined });
   }, [initialUsername, reset]);
 
-  const submitHandler = async (data: FormValues) => {
+  const submitHandler = async (data: PersonalDataFormData) => {
     if (initialUsername === data.username) return;
     await update({ username: data.username });
   };
