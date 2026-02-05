@@ -44,35 +44,3 @@ export async function getCroppedImage(
     }, "image/jpeg");
   });
 }
-
-/**
- * Creates a FormData object containing an image file.
- *
- * @param file - The image data as a File or Blob.
- * @param fileName - Optional name to assign to the uploaded file (only used if file is Blob).
- * @param fieldName - The form field name for the file (defaults to `"avatar"`).
- * @returns A FormData instance with the image file appended.
- */
-export function createImageFormData(
-  file: File | Blob,
-  fileName?: string,
-  fieldName = "avatar",
-): FormData {
-  const formData = new FormData();
-
-  if (file instanceof File) {
-    // Use existing File object
-    formData.append(fieldName, file);
-  } else {
-    // Convert Blob to File with provided name
-    const finalFileName = fileName || "uploaded-image.jpg";
-    const fileObj = new File([file], finalFileName, {
-      type: file.type || "image/jpeg",
-      lastModified: Date.now(),
-    });
-
-    formData.append(fieldName, fileObj);
-  }
-
-  return formData;
-}
