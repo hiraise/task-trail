@@ -10,7 +10,7 @@ import { authTexts } from "@/shared/locales/auth";
 
 import { useLogin } from "../../hooks";
 import { AuthFormFieldsDesktop, schema, type FormData } from "../AuthFormFields";
-import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
+import { PrivacyPolicyText } from "../PrivacyPolicyText";
 
 import styles from "./LoginFormMobile.module.css";
 
@@ -40,7 +40,7 @@ export function LoginFormMobile() {
           <SubmitButton className="btn-font-m" disabled={isLoading || isSubmitting}>
             {isSubmitting || isLoading ? authTexts.login.loggingIn : authTexts.login.login}
           </SubmitButton>
-          <PrivacyPolicyDesktop btnName={authTexts.login.login} />
+          <PrivacyPolicyText btnName={authTexts.login.login} />
         </div>
       </form>
     </FormProvider>

@@ -6,7 +6,7 @@ import { ICONS } from "@/shared/config/icons";
 import { authTexts } from "@/shared/locales/auth";
 
 import { useRecoveryPassword } from "../../hooks";
-import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
+import { PrivacyPolicyText } from "../PrivacyPolicyText";
 
 import styles from "./PasswordRecoveryFormDesktop.module.css";
 import { schema, type FormData } from "./schema";
@@ -43,7 +43,7 @@ export function PasswordRecoveryFormDesktop() {
         <SubmitButton className="btn-font-m" disabled={!isValid || isSubmitting}>
           {isSubmitting || isLoading ? authTexts.sending : authTexts.send}
         </SubmitButton>
-        <PrivacyPolicyDesktop btnName={authTexts.send} />
+        <PrivacyPolicyText btnName={authTexts.send} />
       </div>
     </form>
   );

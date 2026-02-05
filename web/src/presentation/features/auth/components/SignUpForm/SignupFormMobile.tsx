@@ -8,7 +8,7 @@ import { authTexts } from "@/shared/locales/auth";
 
 import { useSignUp } from "../../hooks";
 import { AuthFormFieldsDesktop, schema, type FormData } from "../AuthFormFields";
-import { PrivacyPolicyDesktop } from "../PrivacyPolicyText";
+import { PrivacyPolicyText } from "../PrivacyPolicyText";
 
 import styles from "./SignupFormMobile.module.css";
 
@@ -35,7 +35,7 @@ export function SignupFormMobile() {
           <SubmitButton className="btn-font-m" disabled={isLoading || isSubmitting}>
             {isSubmitting || isLoading ? authTexts.signup.signingUp : authTexts.signup.signup}
           </SubmitButton>
-          <PrivacyPolicyDesktop btnName={authTexts.signup.signup} />
+          <PrivacyPolicyText btnName={authTexts.signup.signup} />
         </div>
       </form>
     </FormProvider>

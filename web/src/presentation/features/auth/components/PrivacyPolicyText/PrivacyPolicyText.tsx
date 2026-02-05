@@ -4,14 +4,13 @@ import Link from "next/link";
 import { authTexts } from "@/shared/locales/auth";
 import { interpolate } from "@/shared/utils/interpolate";
 
-import styles from "./PrivacyPolicyDesktop.module.css";
-
+import styles from "./PrivacyPolicyText.module.css";
 
 interface PrivacyPolicyProps {
   btnName: string;
 }
 
-export function PrivacyPolicyDesktop({ btnName }: PrivacyPolicyProps) {
+export function PrivacyPolicyText({ btnName }: PrivacyPolicyProps) {
   return (
     <p>
       <span className={styles.privacyPolicy}>
