@@ -3,8 +3,8 @@ package app
 import (
 	"os"
 	"task-trail/config"
-	"task-trail/internal/controller/http"
-	"task-trail/internal/controller/http/middleware"
+	"task-trail/internal/presentation/http"
+	"task-trail/internal/presentation/http/middleware"
 	"task-trail/internal/customerrors"
 	"task-trail/internal/pkg/contextmanager"
 	slogger "task-trail/internal/pkg/logger/slog"

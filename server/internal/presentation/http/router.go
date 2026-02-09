@@ -5,7 +5,7 @@ import (
 	"task-trail/config"
 	"task-trail/internal/customerrors"
 
-	v1 "task-trail/internal/controller/http/v1"
+	v1 "task-trail/internal/presentation/http/v1"
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/pkg/storage"
 	"task-trail/internal/usecase"

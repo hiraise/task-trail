@@ -3,8 +3,8 @@ package v1
 import (
 	"net/http"
 	"strconv"
-	"task-trail/internal/controller/http/v1/request"
-	"task-trail/internal/controller/http/v1/response"
+	"task-trail/internal/presentation/http/v1/request"
+	"task-trail/internal/presentation/http/v1/response"
 	"task-trail/internal/customerrors"
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/usecase"

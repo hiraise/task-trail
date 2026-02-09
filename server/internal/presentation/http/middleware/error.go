@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"task-trail/internal/controller/http/v1/response"
 	"task-trail/internal/customerrors"
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/pkg/logger"
+	"task-trail/internal/presentation/http/v1/response"
 
 	"github.com/gin-gonic/gin"
 )
