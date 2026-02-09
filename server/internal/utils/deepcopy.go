@@ -8,3 +8,12 @@ func CopySlice[T any](v []*T) []*T {
 	}
 	return r
 }
+
+func CopyMap[K comparable, T any](v map[K]*T) map[K]*T {
+	r := make(map[K]*T, len(v))
+	for k, x := range v {
+		p := *x
+		r[k] = &p
+	}
+	return r
+}
