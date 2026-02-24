@@ -3,7 +3,7 @@ import { TasksDesktopTemplate, TopBarDesktop } from "@/presentation/shared/compo
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { ProjectsListDesktop } from "../../components";
+import { ProjectsList } from "../../components";
 import { useProjects } from "../../hooks";
 
 import styles from "./ProjectsDesktopPage.module.css";
@@ -30,7 +30,7 @@ export function ProjectsDesktopPage() {
     <TasksDesktopTemplate topBar={topBar}>
       <div className={styles.container}>
         <ContentTopBarDesktop onClick={showSortOptions} />
-        {activeTab === TabType.ACTIVE && <ProjectsListDesktop projects={projects} />}
+        {activeTab === TabType.ACTIVE && <ProjectsList projects={projects} variant="desktop" />}
         {activeTab === TabType.ARCHIVED && <h1>Архив</h1>}
       </div>
     </TasksDesktopTemplate>

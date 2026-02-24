@@ -8,7 +8,7 @@ import { render, screen } from "@testing-library/react";
 import type { Project } from "@/domain/models/Project";
 import { ROUTES } from "@/shared/config/routes";
 
-import { ProjectsListDesktop } from "./ProjectsListDesktop";
+import { ProjectsList } from "./ProjectsList";
 
 jest.mock("next/link", () => ({
   __esModule: true,
@@ -50,25 +50,25 @@ describe("ProjectsListDesktop", () => {
   });
 
   it("displays project names", () => {
-    render(<ProjectsListDesktop projects={mockProjects} />);
+    render(<ProjectsList projects={mockProjects} />);
     expect(screen.getByText(mockProjects[0].name)).toBeInTheDocument();
     expect(screen.getByText(mockProjects[0].description ?? "")).toBeInTheDocument();
   });
 
   it("renders correctly ProjectCard components based on projects prop", () => {
-    render(<ProjectsListDesktop projects={mockProjects} />);
+    render(<ProjectsList projects={mockProjects} />);
     const projectCards = screen.getAllByTestId("project-card");
 
     expect(projectCards).toHaveLength(mockProjects.length);
   });
 
   it("renders EmptyListState when projects list is empty", () => {
-    render(<ProjectsListDesktop projects={[]} />);
+    render(<ProjectsList projects={[]} />);
     expect(screen.getByTestId("empty-state")).toBeInTheDocument();
   });
 
   it("renders link with correct href to project details page", () => {
-    render(<ProjectsListDesktop projects={mockProjects} />);
+    render(<ProjectsList projects={mockProjects} />);
     const expectedHref = ROUTES.project(mockProjects[0].id);
 
     const links = screen.getAllByRole("link");

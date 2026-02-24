@@ -4,11 +4,11 @@
   gap: 16px;
   padding: 20px;
   width: 100%;
+  overflow: auto;
 }
 
 .cards {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 66px;
 }

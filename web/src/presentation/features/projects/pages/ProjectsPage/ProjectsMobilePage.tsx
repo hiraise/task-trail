@@ -5,7 +5,7 @@ import { useTabPanel } from "@/presentation/shared/components/TabPanel/TabPanelC
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { ProjectsListMobile } from "../../components";
+import { ProjectsList } from "../../components";
 import { useProjects } from "../../hooks";
 
 import styles from "./ProjectsMobilePage.module.css";
@@ -25,7 +25,7 @@ export function ProjectsMobilePage() {
     <PagesMobileTemplate topBar={topBar}>
       <div className={styles.container}>
         <ContentTopBarMobile onClick={showSortOptions} />
-        {activeTab === TabType.ACTIVE && <ProjectsListMobile projects={projects} />}
+        {activeTab === TabType.ACTIVE && <ProjectsList projects={projects} variant="mobile" />}
         {activeTab === TabType.ARCHIVED && <h1>Архив</h1>}
       </div>
     </PagesMobileTemplate>

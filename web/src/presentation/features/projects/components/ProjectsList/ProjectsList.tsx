@@ -9,9 +9,17 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { ProjectCard } from "../ProjectCard";
 
-import styles from "./ProjectsListDesktop.module.css";
+import desktopStyles from "./ProjectsList.desktop.module.css";
+import mobileStyles from "./ProjectsList.mobile.module.css";
 
-export function ProjectsListDesktop({ projects }: { projects: Project[] }) {
+type ProjectListVariant = "desktop" | "mobile";
+
+interface ProjectsListProps {
+  projects: Project[];
+  variant?: ProjectListVariant;
+}
+
+export function ProjectsList({ projects, variant = "desktop" }: ProjectsListProps) {
   const { showCreateProject } = useGlobalModals();
 
   if (projects.length === 0)
@@ -25,8 +33,10 @@ export function ProjectsListDesktop({ projects }: { projects: Project[] }) {
       />
     );
 
+  const containerStyles = variant === "mobile" ? mobileStyles : desktopStyles;
+
   return (
-    <div className={styles.cards}>
+    <div className={containerStyles.cards}>
       {projects?.map((project) => (
         <Link key={project.id} href={ROUTES.project(project.id)}>
           <ProjectCard project={project} />

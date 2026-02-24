@@ -1,2 +1,1 @@
-export { ProjectsListDesktop } from "./ProjectsListDesktop";
-export { ProjectsListMobile } from "./ProjectsListMobile";
+export { ProjectsList } from "./ProjectsList";
