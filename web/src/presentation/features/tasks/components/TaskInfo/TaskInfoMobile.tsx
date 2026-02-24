@@ -23,7 +23,7 @@ export function TaskInfoMobile({ task }: { task: Task }) {
       <div className={styles.layout}>
         <TaskDetailsMobile
           icon={ICONS.profile}
-          label={data.assignee ? data.assignee.username || data.assignee.username : undefined}
+          label={data.assignee?.username ?? TEXTS.tasks.assignee}
           onClick={selectAssignee}
           placeholder={TEXTS.tasks.assignee}
         />
