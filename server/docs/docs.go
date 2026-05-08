@@ -23,7 +23,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/v1/auth/check": {
+        "/v1/access/check": {
             "get": {
                 "security": [
                     {
@@ -37,7 +37,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/auth"
+                    "/v1/access"
                 ],
                 "summary": "check user authentication",
                 "responses": {
@@ -53,7 +53,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/auth/login": {
+        "/v1/access/login": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -62,9 +62,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/auth"
+                    "/v1/access"
                 ],
-                "summary": "login user",
+                "summary": "login",
                 "parameters": [
                     {
                         "description": "user email and password",
@@ -101,13 +101,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/auth/logout": {
+        "/v1/access/logout": {
             "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -115,15 +110,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/auth"
+                    "/v1/access"
                 ],
-                "summary": "logout user",
+                "summary": "logout",
                 "responses": {
                     "200": {
                         "description": "OK"
                     },
                     "401": {
-                        "description": "authentication required",
+                        "description": "invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
@@ -131,7 +132,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/auth/password/change": {
+        "/v1/access/password/change": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -140,12 +141,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/auth"
+                    "/v1/access"
                 ],
                 "summary": "change user password",
                 "parameters": [
                     {
-                        "description": "old and new password",
+                        "description": "old and new passoword",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -163,11 +164,23 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
+                    },
+                    "401": {
+                        "description": "invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
                     }
                 }
             }
         },
-        "/v1/auth/password/forgot": {
+        "/v1/access/password/reset": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -176,12 +189,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/auth"
+                    "/v1/access"
                 ],
-                "summary": "send reset password email",
+                "summary": "reset user password",
                 "parameters": [
                     {
-                        "description": "user email",
+                        "description": "email",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -199,11 +212,23 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
+                    },
+                    "401": {
+                        "description": "invalid email",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
                     }
                 }
             }
         },
-        "/v1/auth/password/reset": {
+        "/v1/access/password/reset/confirm": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -212,9 +237,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/auth"
+                    "/v1/access"
                 ],
-                "summary": "reset user password",
+                "summary": "confirm reset user password",
                 "parameters": [
                     {
                         "description": "token and new password",
@@ -235,28 +260,9 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
-                    }
-                }
-            }
-        },
-        "/v1/auth/refresh": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/auth"
-                ],
-                "summary": "refresh tokens pair",
-                "responses": {
-                    "200": {
-                        "description": "OK"
                     },
                     "401": {
-                        "description": "refresh token is invalid",
+                        "description": "invalid token",
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
@@ -270,7 +276,38 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/auth/register": {
+        "/v1/access/refresh": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/access"
+                ],
+                "summary": "refresh user session",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/access/register": {
             "post": {
                 "description": "endpoint for register new user",
                 "consumes": [
@@ -280,7 +317,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/auth"
+                    "/v1/access"
                 ],
                 "summary": "register new user",
                 "parameters": [
@@ -319,7 +356,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/auth/resend-verification": {
+        "/v1/access/verify": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -328,12 +365,60 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "/v1/auth"
+                    "/v1/access"
                 ],
-                "summary": "resend account verification email",
+                "summary": "verfiy user",
                 "parameters": [
                     {
-                        "description": "user email",
+                        "description": "verification token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.verifyReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "invalid request body",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "401": {
+                        "description": "invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    },
+                    "500": {
+                        "description": "internal error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrAPI"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/access/verify/resend": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/v1/access"
+                ],
+                "summary": "resend verification",
+                "parameters": [
+                    {
+                        "description": "email",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -351,1201 +436,18 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
-                    }
-                }
-            }
-        },
-        "/v1/auth/verify": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/auth"
-                ],
-                "summary": "verify user account",
-                "parameters": [
-                    {
-                        "description": "token",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.verifyReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "token is invalid",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "token or user not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/projects": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "List of projects where current user is a member or owner",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "get list of projects",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.projectListRes"
-                            }
-                        }
                     },
                     "401": {
-                        "description": "authentication required",
+                        "description": "invalid email",
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
                     },
-                    "404": {
-                        "description": "user not found",
+                    "500": {
+                        "description": "internal error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrAPI"
                         }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "create new project",
-                "parameters": [
-                    {
-                        "description": "project data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.projectCreateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.projectCreateRes"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "user not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/projects/candidates": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Candidates are participatns in other projects owned by the current user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "get list of candidates to add to the project",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.userSimpleRes"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "project not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/projects/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Project by id, where current user is a member",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "get project by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.projectRes"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "project not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "delete project by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "project not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "update project by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": " ",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.projectUpdateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/projects/{id}/leave": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "leave from project by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "project not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/projects/{id}/members": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "get project members",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.projectMemberRes"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "project not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "validate list of candidates, create accounts if they do not exist yet, and add them to the project",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "add new members to project",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "emails",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.projectAddMembersReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "user not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/projects/{id}/members/{memberId}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "kick user from project",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "member id",
-                        "name": "memberId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "project not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/projects/{id}/tasks": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "get project tasks",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.taskListRes"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "project not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/projects/{id}/tasks/statuses": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/projects"
-                ],
-                "summary": "get project task statuses",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "project id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.projectTaskStatusRes"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "project not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/tasks": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/tasks"
-                ],
-                "summary": "create new task",
-                "parameters": [
-                    {
-                        "description": "task data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.taskCreateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.taskCreateRes"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "user not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/tasks/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/tasks"
-                ],
-                "summary": "get task by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "task id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.taskListRes"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "task not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/tasks"
-                ],
-                "summary": "delete task",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "task id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "task not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/tasks"
-                ],
-                "summary": "edit task",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "task id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "task data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.taskEditReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "user or task not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/tasks/{id}/assignee": {
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/tasks"
-                ],
-                "summary": "change assignee",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "task id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "assignee id",
-                        "name": "assigneeId",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.taskCreateRes"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "user or task not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/tasks/{id}/status/{statusId}": {
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/tasks"
-                ],
-                "summary": "change task status",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "task id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "status id",
-                        "name": "statusId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.taskCreateRes"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "user or task not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/users/me": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "...",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/users"
-                ],
-                "summary": "return current user",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.currentRes"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "...",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/users"
-                ],
-                "summary": "update current user",
-                "parameters": [
-                    {
-                        "description": "user data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.updateReq"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.currentRes"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "404": {
-                        "description": "user not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/users/me/avatar": {
-            "patch": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "...",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/users"
-                ],
-                "summary": "upload new avatar",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "new file",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.avatarRes"
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/users/me/tasks": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/users"
-                ],
-                "summary": "get users tasks",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/response.taskListRes"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "authentication required",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    },
-                    "403": {
-                        "description": "access denied",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrAPI"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/users/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "...",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/v1/users"
-                ],
-                "summary": "return user by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "user id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
                     }
                 }
             }
@@ -1599,47 +501,6 @@ const docTemplate = `{
                 }
             }
         },
-        "request.projectAddMembersReq": {
-            "type": "object",
-            "required": [
-                "emails"
-            ],
-            "properties": {
-                "emails": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "request.projectCreateReq": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 254
-                }
-            }
-        },
-        "request.projectUpdateReq": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 254
-                }
-            }
-        },
         "request.resetPasswordReq": {
             "type": "object",
             "required": [
@@ -1654,57 +515,6 @@ const docTemplate = `{
                 },
                 "token": {
                     "type": "string"
-                }
-            }
-        },
-        "request.taskCreateReq": {
-            "type": "object",
-            "required": [
-                "name",
-                "projectId"
-            ],
-            "properties": {
-                "assigneeId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 254,
-                    "minLength": 6
-                },
-                "projectId": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "statusId": {
-                    "type": "integer",
-                    "minimum": 1
-                }
-            }
-        },
-        "request.taskEditReq": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 254,
-                    "minLength": 6
-                }
-            }
-        },
-        "request.updateReq": {
-            "type": "object",
-            "properties": {
-                "username": {
-                    "type": "string",
-                    "maxLength": 100
                 }
             }
         },
@@ -1727,176 +537,6 @@ const docTemplate = `{
                     "additionalProperties": {}
                 },
                 "msg": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.avatarRes": {
-            "type": "object",
-            "properties": {
-                "avatarUrl": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.currentRes": {
-            "type": "object",
-            "properties": {
-                "avatarUrl": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.projectCreateRes": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "response.projectListRes": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "tasksCount": {
-                    "type": "integer"
-                }
-            }
-        },
-        "response.projectMemberRes": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "permissions": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.projectRes": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "permissions": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "tasksCount": {
-                    "type": "integer"
-                }
-            }
-        },
-        "response.projectTaskStatusRes": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "isDefault": {
-                    "type": "boolean"
-                },
-                "isResolved": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.taskCreateRes": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "response.taskListRes": {
-            "type": "object",
-            "properties": {
-                "assigneeId": {
-                    "type": "integer"
-                },
-                "authorId": {
-                    "type": "integer"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "projectId": {
-                    "type": "integer"
-                },
-                "statusId": {
-                    "type": "integer"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.userSimpleRes": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "username": {
                     "type": "string"
                 }
             }
