@@ -35,6 +35,7 @@ type AuthConfig struct {
 	RTLifeMin   int    `env:"AUTH_REFRESH_TOKEN_LIFETIME_MIN,required"`
 	RTName      string `env:"AUTH_REFRESH_TOKEN_NAME" envDefault:"rt"`
 	TokenIssuer string `env:"AUTH_TOKEN_ISSUER,required"`
+	CTLifeMin   int    `env:"AUTH_CONFIRMATION_TOKEN_LIFETIME_MIN,required"`
 }
 
 type SMTP struct {
