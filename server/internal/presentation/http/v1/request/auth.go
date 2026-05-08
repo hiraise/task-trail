@@ -1,7 +1,8 @@
 package request
 
 import (
-	"task-trail/internal/usecase/dto"
+	"task-trail/internal/application/dto"
+	"task-trail/internal/domain"
 
 	"github.com/gin-gonic/gin"
 )
@@ -32,22 +33,22 @@ type verifyReq struct {
 // BindChangePasswordDTO binds and validates the payload from the Gin context.
 // UserID required for build DTO
 // Returns PasswordChange DTO if ok, or an error if the request payload is invalid or binding fails.
-func BindChangePasswordDTO(c *gin.Context, userID int) (*dto.PasswordChange, error) {
+func BindChangePasswordDTO(c *gin.Context) (dto.ChangePassword, error) {
 	body, err := validate[changePasswordReq](c)
 	if err != nil {
-		return nil, err
+		return dto.ChangePassword{}, err
 	}
-	return &dto.PasswordChange{UserID: userID, OldPassword: body.OldPassword, NewPassword: body.NewPassword}, nil
+	return dto.ChangePassword{OldPassword: body.OldPassword, NewPassword: body.NewPassword}, nil
 }
 
 // BindResetPasswordDTO binds and validates the payload from the Gin context.
 // Returns PasswordReset DTO if ok, or an error if the request payload is invalid or binding fails.
-func BindResetPasswordDTO(c *gin.Context) (*dto.PasswordReset, error) {
+func BindResetPasswordDTO(c *gin.Context) (dto.ResetPassword, error) {
 	body, err := validate[resetPasswordReq](c)
 	if err != nil {
-		return nil, err
+		return dto.ResetPassword{}, err
 	}
-	return &dto.PasswordReset{TokenID: body.Token, NewPassword: body.Password}, nil
+	return dto.ResetPassword{Token: body.Token, Password: body.Password}, nil
 }
 
 // BindEmail binds and validates the payload from the Gin context.
@@ -72,18 +73,19 @@ func BindVerifyToken(c *gin.Context) (string, error) {
 
 // BindCredentialsDTO binds and validates the payload from the Gin context.
 // Returns Credentials DTO if ok, or an error if the request payload is invalid or binding fails.
-func BindCredentialsDTO(c *gin.Context) (*dto.Credentials, error) {
+func BindCredentialsDTO(c *gin.Context) (dto.Credentials, error) {
 	body, err := validate[credentials](c)
 	if err != nil {
-		return nil, err
+		return dto.Credentials{}, err
 	}
-	return &dto.Credentials{Email: body.Email, Password: body.Password}, nil
+	return dto.Credentials{Email: body.Email, Password: body.Password}, nil
 }
 
 func validate[T any](c *gin.Context) (*T, error) {
 	var body T
 	if err := c.ShouldBindBodyWithJSON(&body); err != nil {
-		return nil, err
+		// offset is 2 to skip 'validate' and 'Bind...' functions
+		return nil, domain.ErrInputValidation(2, err)
 	}
 	return &body, nil
 }

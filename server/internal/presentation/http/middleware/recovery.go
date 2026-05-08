@@ -11,7 +11,7 @@ import (
 const sourceCodeOffset = 4
 
 // recover server after panic
-func NewRecovery(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
+func NewRecovery(l logger.Logger, m *contextmanager.GinContextManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -23,7 +23,7 @@ func NewRecovery(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
 					"function": fn.Name(),
 					"line":     line,
 				}
-				var userID *int = nil
+				var userID *string = nil
 				v, err := m.GetUserID(c)
 				if err == nil {
 					userID = &v

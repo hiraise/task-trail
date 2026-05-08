@@ -1,32 +1,30 @@
 package middleware
 
 import (
-	"task-trail/internal/customerrors"
+	"task-trail/internal/domain"
+	"task-trail/internal/domain/service"
 	"task-trail/internal/pkg/contextmanager"
-	"task-trail/internal/pkg/token"
 
 	"github.com/gin-gonic/gin"
 )
 
 // authenticate request, with validation access token
 func NewAuth(
-	t token.Service,
-	errHandler customerrors.ErrorHandler,
-	m contextmanager.Gin,
-	atName string,
+	ts service.AccessTokenService,
+	m *contextmanager.GinContextManager,
 ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		at, err := c.Cookie("at")
+		at, err := c.Cookie(m.ATName)
 		if err != nil {
-			_ = c.Error(errHandler.Unauthorized(err, "access token not found"))
+			_ = c.Error(domain.ErrAccessTokenNotFound())
 			c.Abort()
 			return
 		}
-		userID, err := t.VerifyAccessToken(at)
+		userID, err := ts.VerifyAccessToken(at)
 		if err != nil {
-			_ = c.Error(errHandler.Unauthorized(err, "invalid access token"))
-			m.DeleteAccessToken(c, atName)
+			_ = c.Error(err)
+			m.DeleteAccessToken(c, m.ATName)
 			c.Abort()
 			return
 		}

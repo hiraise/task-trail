@@ -7,9 +7,7 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     verified_at TIMESTAMP WITH TIME ZONE NULL,
-    deleted_at TIMESTAMP WITH TIME ZONE NULL,
-    CONSTRAINT non_empty_email CHECK (char_length(email) > 0),
-    CONSTRAINT non_empty_pwd CHECK (char_length(password_hash) > 0)
+    deleted_at TIMESTAMP WITH TIME ZONE NULL
 );
 
 CREATE TABLE files (   
@@ -41,17 +39,17 @@ CREATE TABLE refresh_tokens(
 );
 CREATE INDEX idx_refresh_tokens_id_user ON refresh_tokens(id, user_id);
 
-CREATE TABLE email_tokens
+CREATE TABLE confirmation_tokens
 (   
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    expired_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    expired_at TIMESTAMP WITH TIME ZONE,
     used_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     purpose VARCHAR NOT NULL,
     CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id)
 );
-CREATE INDEX idx_email_tokens_id_user ON email_tokens(id, user_id);
+CREATE INDEX idx_confirmation_tokens_id_user ON confirmation_tokens(id, user_id);
 
 CREATE TABLE projects (
     id UUID PRIMARY KEY,

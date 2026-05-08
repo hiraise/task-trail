@@ -30,7 +30,6 @@ func New(debug bool, source bool) *slog.Logger {
 	} else {
 		handler = NewHandler(options)
 	}
-
 	kek := slog.New(handler)
 	slog.SetDefault(kek)
 	log.SetFlags(log.Lshortfile)

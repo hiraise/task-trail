@@ -9,29 +9,30 @@ import (
 )
 
 // log each http event
-func NewLog(l logger.Logger, m contextmanager.Gin) gin.HandlerFunc {
+func NewResponseLog(l logger.Logger, m *contextmanager.GinContextManager) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
-		var userID *int = nil
+		var userID *string = nil
 		v, err := m.GetUserID(c)
 		if err == nil {
 			userID = &v
 		}
 		latency := time.Since(start)
-		status := c.Writer.Status()
-		args := []any{
-			"status", status,
+
+		l.Info("http request",
+			"status", c.Writer.Status(),
 			"userID", userID,
 			"reqID", m.GetRequestID(c),
-			"client_ip", c.ClientIP(),
 			"method", c.Request.Method,
 			"path", c.Request.URL.Path,
-			"user_agent", c.Request.UserAgent(),
 			"latency", latency.String(),
-		}
+			"client", map[string]string{
+				"ip":         c.ClientIP(),
+				"user_agent": c.Request.UserAgent(),
+			},
+		)
 
-		l.Info("http request", args...)
 	}
 }
