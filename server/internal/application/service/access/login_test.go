@@ -48,7 +48,6 @@ func TestLoginService(t *testing.T) {
 				mockTx(ctx, deps.txManager)
 				deps.userRepo.EXPECT().GetByEmail(ctx, gomock.Any()).Return(getTestUser(true, true), nil)
 				deps.passwordService.EXPECT().ComparePassword(gomock.Any(), gomock.Any()).Return(true, nil)
-				deps.idGenerator.EXPECT().Generate().Return("tokenID")
 				deps.refreshTokenRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(dto.AccessToken{}, dto.RefreshToken{}, nil)
 				return module.Login
@@ -145,7 +144,6 @@ func TestLoginService(t *testing.T) {
 				mockTx(ctx, deps.txManager)
 				deps.userRepo.EXPECT().GetByEmail(ctx, gomock.Any()).Return(getTestUser(true, true), nil)
 				deps.passwordService.EXPECT().ComparePassword(gomock.Any(), gomock.Any()).Return(true, nil)
-				deps.idGenerator.EXPECT().Generate().Return("tokenID")
 				deps.refreshTokenRepo.EXPECT().Create(ctx, gomock.Any()).Return(domain.ErrRepoInternal(2, nil))
 				return module.Login
 			},
@@ -160,7 +158,6 @@ func TestLoginService(t *testing.T) {
 				mockTx(ctx, deps.txManager)
 				deps.userRepo.EXPECT().GetByEmail(ctx, gomock.Any()).Return(getTestUser(true, true), nil)
 				deps.passwordService.EXPECT().ComparePassword(gomock.Any(), gomock.Any()).Return(true, nil)
-				deps.idGenerator.EXPECT().Generate().Return("tokenID")
 				deps.refreshTokenRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(dto.AccessToken{}, dto.RefreshToken{}, domain.ErrTokenGenerateFailed(nil))
 				return module.Login
