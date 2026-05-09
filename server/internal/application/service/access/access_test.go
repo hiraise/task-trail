@@ -99,3 +99,25 @@ func getTestUser(verified bool, withPassword bool) *entity.UserAccount {
 	}
 	return user
 }
+
+func getTestRefreshToken(expired bool, used bool) *entity.RefreshToken {
+	now := time.Now()
+	var expiredAt time.Time
+	if expired {
+		expiredAt = now.Add(-time.Hour)
+	} else {
+		expiredAt = now.Add(RT_LIFETIME)
+	}
+
+	var revokedAt *time.Time
+	if used {
+		revokedAt = &now
+	}
+
+	return &entity.RefreshToken{
+		ID:        entity.RefreshTokenID("rtID"),
+		UserID:    entity.UserID(TEST_USER_ID),
+		ExpiredAt: expiredAt,
+		RevokedAt: revokedAt,
+	}
+}
