@@ -6,6 +6,7 @@ import (
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/factory"
+	"task-trail/internal/infrastructure/service/id"
 	"task-trail/test/mocks"
 	"time"
 
@@ -26,7 +27,7 @@ type testDeps struct {
 	notifier              mocks.MockAccessNotifier
 	passwordService       mocks.MockPasswordService
 	accessTokenService    mocks.MockAccessTokenService
-	idGenerator           mocks.MockIDGenerator
+	idGenerator           *id.UUIDGenerator
 }
 
 func MockUseCase(ctrl *gomock.Controller) (*access.AccessModule, *testDeps) {
@@ -37,7 +38,7 @@ func MockUseCase(ctrl *gomock.Controller) (*access.AccessModule, *testDeps) {
 	notifier := mocks.NewMockAccessNotifier(ctrl)
 	accessTokenService := mocks.NewMockAccessTokenService(ctrl)
 	passwordService := mocks.NewMockPasswordService(ctrl)
-	idGenerator := mocks.NewMockIDGenerator(ctrl)
+	idGenerator := id.New()
 
 	userFactory := factory.NewUserFactory(idGenerator)
 	confirmationTokenFactory := factory.NewCTFactory(idGenerator, RT_LIFETIME)
@@ -62,7 +63,7 @@ func MockUseCase(ctrl *gomock.Controller) (*access.AccessModule, *testDeps) {
 		notifier:              *notifier,
 		passwordService:       *passwordService,
 		accessTokenService:    *accessTokenService,
-		idGenerator:           *idGenerator,
+		idGenerator:           idGenerator,
 	}
 	return module, deps
 }
