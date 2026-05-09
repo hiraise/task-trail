@@ -33,15 +33,19 @@ func (s *RefreshService) Execute(ctx context.Context, rt string) (dto.SuccessLog
 	f := func(ctx context.Context) error {
 		oldToken, err := s.refreshTokenRepository.GetUserToken(ctx, rtID, userID)
 		if err != nil {
-			// возможно токен может быть удален из бд так как старый, но нужно ли это считать 401 или 500 хз.
-			// по идее если токен разобрался но его в бд нет то можно просто 500 кинуть
+			var e *domain.DomainError
+			if errors.As(err, &e) {
+				if e.Code == domain.EntityNotFound {
+					return domain.ErrRefreshTokenNotFound()
+				}
+			}
 			return err
 		}
 		if err := oldToken.Validate(); err != nil {
 			var e *domain.DomainError
 			if errors.As(err, &e) {
 				if e.Code == domain.RefreshTokenAlreadyUsed {
-					// Revoke all
+					// TODO: Revoke all
 				}
 			}
 			return err
