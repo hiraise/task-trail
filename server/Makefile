@@ -22,7 +22,7 @@ test-integration:
 	go test -v -race -covermode atomic -coverprofile=coverage.out ./internal/... --tags=integration
 
 testcov: 
-	go test -v -race -covermode atomic -coverprofile=coverage.out ./internal/... --tags=integration
+	go test -v -race -coverpkg=./... -covermode atomic -coverprofile=coverage.out ./internal/... --tags=integration
 	go tool cover -html=coverage.out 
 
 migrate-up-force:
