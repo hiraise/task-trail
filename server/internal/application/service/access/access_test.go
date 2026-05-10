@@ -121,3 +121,25 @@ func getTestRefreshToken(expired bool, used bool) *entity.RefreshToken {
 		RevokedAt: revokedAt,
 	}
 }
+
+func getTestConfirmationToken(purpose entity.ConfirmationTokenPurpose, expired bool, used bool) *entity.ConfirmationToken {
+	now := time.Now()
+	var expiredAt time.Time
+	if expired {
+		expiredAt = now.Add(-time.Hour)
+	} else {
+		expiredAt = now.Add(RT_LIFETIME)
+	}
+
+	var usedAt *time.Time
+	if used {
+		usedAt = &now
+	}
+	return &entity.ConfirmationToken{
+		ID:        entity.ConfirmationTokenID("ctID"),
+		UserID:    entity.UserID(TEST_USER_ID),
+		Purpose:   purpose,
+		ExpiredAt: expiredAt,
+		UsedAt:    usedAt,
+	}
+}
