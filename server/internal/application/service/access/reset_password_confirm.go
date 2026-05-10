@@ -18,14 +18,14 @@ type ConfirmResetPasswordService struct {
 	tokenRepository repository.ConfirmationTokenRepository
 }
 
-func (s *ConfirmResetPasswordService) Execute(ctx context.Context, credentials dto.ResetPassword) error {
+func (s *ConfirmResetPasswordService) Execute(ctx context.Context, data dto.ResetPassword) error {
 	f := func(ctx context.Context) error {
-		t, err := s.tokenRepository.GetByID(ctx, entity.ConfirmationTokenID(credentials.Token))
+		t, err := s.tokenRepository.GetByID(ctx, entity.ConfirmationTokenID(data.Token))
 		if err != nil {
 			var e *domain.DomainError
 			if errors.As(err, &e) {
 				if e.Code == domain.EntityNotFound {
-					return domain.ErrWrongConfirmationToken("tokenID", credentials.Token)
+					return domain.ErrWrongConfirmationToken("tokenID", data.Token)
 				}
 			}
 			return err
@@ -37,7 +37,7 @@ func (s *ConfirmResetPasswordService) Execute(ctx context.Context, credentials d
 		if err != nil {
 			return err
 		}
-		if err := u.ChangePassword(credentials.Password, s.pwdService); err != nil {
+		if err := u.ChangePassword(data.Password, s.pwdService); err != nil {
 			return err
 		}
 		if err := s.userRepository.Update(ctx, u); err != nil {
