@@ -52,9 +52,9 @@ func TestRefreshService(t *testing.T) {
 			wantErr: false,
 			want:    dto.SuccessLogin{UserID: TEST_USER_ID, AccessToken: dto.AccessToken{}, RefreshToken: dto.RefreshToken{}},
 		},
-		// invalid RT
+		// received is RT invalid
 		{
-			name: "invalid refresh token",
+			name: "received is RT invalid",
 			args: a,
 			service: func(ctrl *gomock.Controller) *access.RefreshService {
 				module, deps := MockUseCase(ctrl)
@@ -64,9 +64,21 @@ func TestRefreshService(t *testing.T) {
 			wantErr:     true,
 			wantErrCode: domain.RefreshTokenWrong,
 		},
-		// RT not found
+		// received RT is expired
 		{
-			name: "RT not found",
+			name: "received RT is expired",
+			args: a,
+			service: func(ctrl *gomock.Controller) *access.RefreshService {
+				module, deps := MockUseCase(ctrl)
+				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return("", "", domain.ErrRefreshTokenExpired())
+				return module.Refresh
+			},
+			wantErr:     true,
+			wantErrCode: domain.RefreshTokenExpired,
+		},
+		// received RT not found
+		{
+			name: "received RT not found",
 			args: a,
 			service: func(ctrl *gomock.Controller) *access.RefreshService {
 				module, deps := MockUseCase(ctrl)
@@ -78,9 +90,9 @@ func TestRefreshService(t *testing.T) {
 			wantErr:     true,
 			wantErrCode: domain.RefreshTokenNotFound,
 		},
-		// repo internal
+		// failed to get stored RT
 		{
-			name: "repo internal",
+			name: "failed to get stored RT",
 			args: a,
 			service: func(ctrl *gomock.Controller) *access.RefreshService {
 				module, deps := MockUseCase(ctrl)
@@ -92,9 +104,9 @@ func TestRefreshService(t *testing.T) {
 			wantErr:     true,
 			wantErrCode: domain.RepoInternal,
 		},
-		// old RT is used
+		// stored RT is used
 		{
-			name: "old RT is used",
+			name: "stored RT is used",
 			args: a,
 			service: func(ctrl *gomock.Controller) *access.RefreshService {
 				module, deps := MockUseCase(ctrl)
@@ -106,9 +118,9 @@ func TestRefreshService(t *testing.T) {
 			wantErr:     true,
 			wantErrCode: domain.RefreshTokenAlreadyUsed,
 		},
-		// old RT is expired
+		// stored RT is expired
 		{
-			name: "old RT is expired",
+			name: "stored RT is expired",
 			args: a,
 			service: func(ctrl *gomock.Controller) *access.RefreshService {
 				module, deps := MockUseCase(ctrl)
@@ -151,9 +163,9 @@ func TestRefreshService(t *testing.T) {
 			wantErr:     true,
 			wantErrCode: domain.TokenGenerationFailed,
 		},
-		// failed to revoke old RT
+		// failed to revoke stored RT
 		{
-			name: "failed to revoke old RT",
+			name: "failed to revoke stored RT",
 			args: a,
 			service: func(ctrl *gomock.Controller) *access.RefreshService {
 				module, deps := MockUseCase(ctrl)
