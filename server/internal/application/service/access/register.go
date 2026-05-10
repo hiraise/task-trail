@@ -22,8 +22,8 @@ type RegistrationService struct {
 	notifier        service.AccessNotifier
 }
 
-func (s *RegistrationService) Execute(ctx context.Context, credentials dto.Credentials) error {
-	email := entity.Email(credentials.Email)
+func (s *RegistrationService) Execute(ctx context.Context, data dto.Credentials) error {
+	email := entity.Email(data.Email)
 
 	f := func(ctx context.Context) error {
 		exist, err := s.userRepository.ExistsByEmail(ctx, email)
@@ -31,9 +31,9 @@ func (s *RegistrationService) Execute(ctx context.Context, credentials dto.Crede
 			return err
 		}
 		if exist {
-			return domain.ErrEmailAlreadyExists("email", credentials.Email)
+			return domain.ErrEmailAlreadyExists("email", data.Email)
 		}
-		hash, err := s.pwdHasher.HashPassword(credentials.Password)
+		hash, err := s.pwdHasher.HashPassword(data.Password)
 		if err != nil {
 			return err
 		}
