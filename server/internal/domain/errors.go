@@ -45,6 +45,9 @@ const (
 	RepoInternal        ErrorCode = "REPOSITORY_INTERNAL"
 	// VALIDATION
 	InputValidation ErrorCode = "INPUT_VALIDATION"
+
+	// NOTIFICATION
+	NotificationFailed ErrorCode = "NOTIFICATION_FAILED"
 )
 
 type DomainError struct {
@@ -190,4 +193,10 @@ func ErrAccessTokenExpired(data ...any) *DomainError {
 
 func FailedToParseToken(sourceErr error, data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, ParseTokenFailed, sourceErr, data...)
+}
+
+// NOTIFICATION
+
+func ErrNotificationFailed(sourceErr error, data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, NotificationFailed, sourceErr, data...)
 }

@@ -33,10 +33,7 @@ func (r *AccessNotifier) SendAccountConfirmation(e entity.Email, tokenID entity.
 		Subject:    "Account Confirmation",
 		Text:       r.verificationUrl + string(tokenID) + "&email=" + string(e),
 	}
-	if err := r.send(msg); err != nil {
-		return err //TODO Create domain error
-	}
-	return nil
+	return r.send(msg)
 }
 func (r *AccessNotifier) SendPasswordResetConfirmation(e entity.Email, tokenID entity.ConfirmationTokenID) error {
 	msg := email.Message{
@@ -50,7 +47,7 @@ func (r *AccessNotifier) SendPasswordResetConfirmation(e entity.Email, tokenID e
 func (r *AccessNotifier) send(msg email.Message) error {
 	eventID := r.uuidGenerator.Generate()
 	if err := r.sender.Send(msg, eventID); err != nil {
-		return domain.ErrRepoInternal(2, err)
+		return domain.ErrNotificationFailed(err)
 	}
 	return nil
 }
