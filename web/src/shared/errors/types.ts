@@ -4,6 +4,9 @@ export enum AppErrorType {
   NETWORK = "network",
   SERVER = "server",
   UNKNOWN = "unknown",
+  VALIDATION = "validation",
+  NOT_FOUND = "not found",
+  FORBIDDEN = "forbidden",
 }
 
 export interface AppErrorProps {
@@ -22,5 +25,17 @@ export class AppError extends Error {
       type: this.type,
       message: this.message,
     };
+  }
+}
+
+/**
+ * Domain Error for business rule violations
+ *
+ * Используется в доменном слое для сигнализации о нарушении бизнес-правил.
+ */
+export class DomainError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DomainError";
   }
 }

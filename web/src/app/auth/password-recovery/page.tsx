@@ -1,8 +1,8 @@
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
 import {
   PasswordRecoveryDesktopPage,
   PasswordRecoveryMobilePage,
-} from "@/presentation/pages/password-recovery";
+} from "@/presentation/features/auth/pages/PasswordRecoveryPage";
+import { DeviceBased } from "@/presentation/shared";
 
 export default function PasswordRecoveryPage() {
   return (

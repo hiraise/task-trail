@@ -2,10 +2,10 @@
 
 import { useParams } from "next/navigation";
 
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
-import { ROUTES } from "@/infrastructure/config/routes";
-import { ProjectMembersMobilePage } from "@/presentation/pages/projects";
+import type { ProjectId } from "@/domain/types";
+import { ProjectMembersMobilePage } from "@/presentation/features/projects/pages";
+import { DeviceBased, RedirectScreen } from "@/presentation/shared";
+import { ROUTES } from "@/shared/config/routes";
 
 /**
  * Mobile-only page. Always redirects desktop users to the project page.
@@ -13,7 +13,7 @@ import { ProjectMembersMobilePage } from "@/presentation/pages/projects";
 
 export default function ProjectMembersPage() {
   const params = useParams();
-  const projectId = Number(params.id);
+  const projectId = params.id as ProjectId;
 
   return (
     <DeviceBased

@@ -2,10 +2,9 @@
 
 import { usePathname } from "next/navigation";
 
-import { DesktopTemplate } from "@/presentation/templates/DesktopTemplate";
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import { BottomNavBar } from "@/presentation/widgets/common/BottomNavBar";
-import { BOTTOM_NAV_PATHS } from "@/infrastructure/config/routes";
+import { DeviceBased } from "@/presentation/shared";
+import { BottomNavBar, DesktopTemplate } from "@/presentation/shared/components/Layout";
+import { BOTTOM_NAV_PATHS } from "@/shared/config/routes";
 import { normalize } from "@/shared/utils/formatters";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {

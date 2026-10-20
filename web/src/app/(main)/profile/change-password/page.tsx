@@ -1,7 +1,6 @@
-import { DeviceBased } from "@/presentation/ui/DeviceBased";
-import RedirectScreen from "@/presentation/widgets/common/RedirectScreen";
-import { ChangePasswordMobilePage } from "@/presentation/pages/profile";
-import { ROUTES } from "@/infrastructure/config/routes";
+import { ChangePasswordMobilePage } from "@/presentation/features/user/pages";
+import { DeviceBased, RedirectScreen } from "@/presentation/shared";
+import { ROUTES } from "@/shared/config/routes";
 
 /**
  * Mobile-only page. Always redirects desktop users to the profile page.

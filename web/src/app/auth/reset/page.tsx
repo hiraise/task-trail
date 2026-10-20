@@ -3,17 +3,18 @@
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-import { usePasswordReset } from "@/application/auth/hooks/usePasswordReset";
-import { PasswordResetForm } from "@/presentation/widgets/auth/PasswordResetForm";
+import { PasswordResetForm } from "@/presentation/features/auth/components/PasswordResetForm";
+import { useResetPassword } from "@/presentation/features/auth/hooks";
 
 export default function PasswordResetPage() {
-  const { mutateAsync: resetPassword, isPending: isLoading } = usePasswordReset();
+  const { mutateAsync: resetPassword, isPending: isLoading } = useResetPassword();
 
   const token = useSearchParams().get("token");
 
   const handleSubmit = async (password: string) => {
     if (!token) {
       toast.error("Что-то пошло не так");
+
       return;
     }
     await resetPassword({ password, token });
