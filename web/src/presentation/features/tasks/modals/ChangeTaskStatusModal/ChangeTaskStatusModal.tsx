@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 
 import type { TaskStatus } from "@/domain/models/TaskStatus";
@@ -12,7 +10,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { TaskStatusDesktop, TaskStatusMobile } from "../../components";
 
-export default function ChangeTaskStatusModal(props: BaseModalProps<TaskStatus>) {
+export function ChangeTaskStatusModal(props: BaseModalProps<TaskStatus>) {
   const { onClose, ...rest } = props;
 
   const { currentStatus } = useGlobalModalProps<ChangeStatusProps>() ?? {};

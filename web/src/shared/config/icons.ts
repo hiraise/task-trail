@@ -1,37 +1,35 @@
-/* eslint-disable import/order */
- 
 // App icons
-import AddUserIcon from "../../../public/icons/AddUserIcon.svg";
-import ArchiveIcon from "../../../public/icons/ArchiveIcon.svg";
-import DownArrow from "../../../public/icons/ArrowDown.svg";
-import ArrowLeft from "../../../public/icons/ArrowLeft.svg";
-import ArrowLeftWithPadding from "../../../public/icons/ArrowLeftWithPadding.svg";
-import ArrowRight from "../../../public/icons/ArrowRight.svg";
-import ArrowRightWithPadding from "../../../public/icons/ArrowRightWithPadding.svg";
-import CameraIcon from "../../../public/icons/camera.svg";
-import CheckIcon from "../../../public/icons/check.svg";
-import CheckMarkIcon from "../../../public/icons/checkMark.svg";
-import BoardIcon from "../../../public/icons/circum_view-board.svg";
-import CloseIcon from "../../../public/icons/CloseIcon.svg";
-import DeleteIcon from "../../../public/icons/DeleteIcon.svg";
-import EditIcon from "../../../public/icons/EditIcon.svg";
-import HideIcon from "../../../public/icons/HideIcon.svg";
-import TaskIcon from "../../../public/icons/hugeicons_task-01.svg";
-import LeaveIcon from "../../../public/icons/LeaveIcon.svg";
-import LockIcon from "../../../public/icons/LockIcon.svg";
-import LogoDesktop from "../../../public/icons/LogoDesktop.svg";
-import LogoMedium from "../../../public/icons/LogoMedium.svg";
-import LogoMobile from "../../../public/icons/LogoMobile.svg";
-import MailIcon from "../../../public/icons/MailIcon.svg";
-import MenuIcon from "../../../public/icons/menu_icon.svg";
-import MenuHorizontalIcon from "../../../public/icons/MenuHorizontalIcon.svg";
-import PlusIcon from "../../../public/icons/PlusIcon.svg";
-import ProfileLargeIcon from "../../../public/icons/profile-large.svg";
-import ProfileIcon from "../../../public/icons/ProfileIcon.svg";
-import ProjectIcon from "../../../public/icons/ProjectIcon.svg";
-import SearchIcon from "../../../public/icons/SearchIcon.svg";
-import ShowIcon from "../../../public/icons/ShowIcon.svg";
-import SortIcon from "../../../public/icons/SortIcon.svg";
+import AddUserIcon from "@/assets/icons/AddUserIcon.svg?react";
+import ArchiveIcon from "@/assets/icons/ArchiveIcon.svg?react";
+import DownArrow from "@/assets/icons/ArrowDown.svg?react";
+import ArrowLeft from "@/assets/icons/ArrowLeft.svg?react";
+import ArrowLeftWithPadding from "@/assets/icons/ArrowLeftWithPadding.svg?react";
+import ArrowRight from "@/assets/icons/ArrowRight.svg?react";
+import ArrowRightWithPadding from "@/assets/icons/ArrowRightWithPadding.svg?react";
+import CameraIcon from "@/assets/icons/camera.svg?react";
+import CheckIcon from "@/assets/icons/check.svg?react";
+import CheckMarkIcon from "@/assets/icons/checkMark.svg?react";
+import BoardIcon from "@/assets/icons/circum_view-board.svg?react";
+import CloseIcon from "@/assets/icons/CloseIcon.svg?react";
+import DeleteIcon from "@/assets/icons/DeleteIcon.svg?react";
+import EditIcon from "@/assets/icons/EditIcon.svg?react";
+import HideIcon from "@/assets/icons/HideIcon.svg?react";
+import TaskIcon from "@/assets/icons/hugeicons_task-01.svg?react";
+import LeaveIcon from "@/assets/icons/LeaveIcon.svg?react";
+import LockIcon from "@/assets/icons/LockIcon.svg?react";
+import LogoDesktop from "@/assets/icons/LogoDesktop.svg?react";
+import LogoMedium from "@/assets/icons/LogoMedium.svg?react";
+import LogoMobile from "@/assets/icons/LogoMobile.svg?react";
+import MailIcon from "@/assets/icons/MailIcon.svg?react";
+import MenuIcon from "@/assets/icons/menu_icon.svg?react";
+import MenuHorizontalIcon from "@/assets/icons/MenuHorizontalIcon.svg?react";
+import PlusIcon from "@/assets/icons/PlusIcon.svg?react";
+import ProfileLargeIcon from "@/assets/icons/profile-large.svg?react";
+import ProfileIcon from "@/assets/icons/ProfileIcon.svg?react";
+import ProjectIcon from "@/assets/icons/ProjectIcon.svg?react";
+import SearchIcon from "@/assets/icons/SearchIcon.svg?react";
+import ShowIcon from "@/assets/icons/ShowIcon.svg?react";
+import SortIcon from "@/assets/icons/SortIcon.svg?react";
 
 export const ICONS = {
   search: SearchIcon,
@@ -68,13 +66,13 @@ export const ICONS = {
 };
 
 // Design elements
-import ArchiveDesignElement from "../../../public/elements/archive.svg";
-import DeleteDesignElement from "../../../public/elements/delete.svg";
-import LeaveDesignElement from "../../../public/elements/leave.svg";
-import LockDesignElement from "../../../public/elements/lock.svg";
-import PictureDesignElement from "../../../public/elements/picture.svg";
-import SearchDesignElement from "../../../public/elements/search.svg";
-import TaskDesignElement from "../../../public/elements/task.svg";
+import ArchiveDesignElement from "@/assets/elements/archive.svg?react";
+import DeleteDesignElement from "@/assets/elements/delete.svg?react";
+import LeaveDesignElement from "@/assets/elements/leave.svg?react";
+import LockDesignElement from "@/assets/elements/lock.svg?react";
+import PictureDesignElement from "@/assets/elements/picture.svg?react";
+import SearchDesignElement from "@/assets/elements/search.svg?react";
+import TaskDesignElement from "@/assets/elements/task.svg?react";
 
 export const DESIGN_ELEMENTS = {
   search: SearchDesignElement,

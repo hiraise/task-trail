@@ -1,1 +1,1 @@
-export { default as DeleteItemModal } from "./DeleteItemModal";
+export { DeleteItemModal } from "./DeleteItemModal";

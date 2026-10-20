@@ -1,5 +1,3 @@
-"use client";
-
 import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
 import { TEXTS } from "@/shared/locales/texts";
 

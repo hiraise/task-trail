@@ -1,2 +1,1 @@
-export { LoginMobilePage } from "./LoginMobilePage";
-export { LoginDesktopPage } from "./LoginDesktopPage";
+export { LoginPage } from "./LoginPage";

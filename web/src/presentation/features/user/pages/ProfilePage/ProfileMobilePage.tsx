@@ -1,5 +1,3 @@
-"use client";
-
 import { Icon } from "@/presentation/shared";
 import { useLogout } from "@/presentation/shared/hooks";
 import { ICONS } from "@/shared/config/icons";

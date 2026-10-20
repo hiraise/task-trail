@@ -1,2 +1,2 @@
-export * from "./BoardPage";
-export * from "./BoardsPage";
+export { BoardsPage } from "./BoardsPage";
+export { BoardPage } from "./BoardPage";

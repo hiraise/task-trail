@@ -1,7 +1,3 @@
-"use client";
-
-import Image from "next/image";
-
 import type { Project } from "@/domain/models/Project";
 import { ProjectCard } from "@/presentation/features/projects/components/ProjectCard";
 import { ASSETS } from "@/shared/config/assets";
@@ -44,7 +40,14 @@ function SearchIcon() {
 function EmptyState() {
   return (
     <div className={styles.emptyState}>
-      <Image src={ASSETS.images.search} width={160} height={160} alt={TEXTS.emptySearch} />
+      <img
+        src={ASSETS.images.search}
+        width={160}
+        height={160}
+        alt={TEXTS.emptySearch}
+        loading="lazy"
+        decoding="async"
+      />
       <p className="bode-reg-2">{TEXTS.emptySearch}</p>
     </div>
   );

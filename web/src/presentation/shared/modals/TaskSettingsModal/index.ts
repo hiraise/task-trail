@@ -1,1 +1,1 @@
-export { default as TaskSettingsModal } from "./TaskSettingsModal";
+export { TaskSettingsModal } from "./TaskSettingsModal";

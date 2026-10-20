@@ -1,8 +1,5 @@
-"use client";
-
 import { ICONS } from "@/shared/config/icons";
-
-import { Icon } from "../../../ui/Icon";
+import { Icon } from "@/presentation/shared/ui";
 
 import styles from "./TopBarMobile.module.css";
 

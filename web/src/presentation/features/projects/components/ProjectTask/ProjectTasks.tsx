@@ -3,7 +3,6 @@ import { memo } from "react";
 
 import type { Task } from "@/domain/models/Task";
 import type { ProjectId } from "@/domain/types";
-import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
 
 import { ProjectMenuButton } from "../ProjectMenuButton";
@@ -39,7 +38,8 @@ export const ProjectTasks = memo(function ProjectTasks({
   return (
     <section className={clsx(styles.container, className)} aria-label="Project tasks">
       <ProjectMenuButton
-        href={ROUTES.projectTasks(projectId)}
+        to="/projects/$id/tasks"
+        params={{ id: projectId }}
         text={TEXTS.projects.tasks}
         showButton={hasTask}
       />

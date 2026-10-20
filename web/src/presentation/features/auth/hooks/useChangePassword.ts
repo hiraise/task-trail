@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { ChangePasswordPayload } from "@/application/payloads";
@@ -27,13 +25,13 @@ import { authRepository } from "@/infrastructure/repositories";
  * ```
  */
 export function useChangePassword() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { changePassword } = authRepository;
 
   return useMutation<void, Error, ChangePasswordPayload>({
     mutationFn: (payload) => changePassword(payload.oldPassword, payload.newPassword),
     onSuccess: () => {
-      router.back();
+      navigate({ to: ".." });
       toast.success("Пароль успешно изменен");
     },
     onError: (error) => {

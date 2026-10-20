@@ -1,14 +1,10 @@
-"use client";
-
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 import { SubmitButton } from "@/presentation/shared";
 import { authTexts } from "@/shared/locales/auth";
 
 import { EmailResendTimer } from "./EmailResendTimer";
 import styles from "./ResendEmailButton.module.css";
-
-
 
 const RESEND_DELAY = 4 * 60 + 30; // 4:30
 

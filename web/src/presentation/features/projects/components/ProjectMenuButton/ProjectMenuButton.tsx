@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link, type LinkProps } from "@tanstack/react-router";
 
 import { Icon } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
@@ -6,17 +6,18 @@ import { ICONS } from "@/shared/config/icons";
 import styles from "./ProjectMenuButton.module.css";
 
 interface ProjectMenuButtonProps {
-  href: string;
+  to: LinkProps["to"];
+  params?: LinkProps["params"];
   text: string;
   showButton?: boolean;
 }
 
-export function ProjectMenuButton({ href, text, showButton = true }: ProjectMenuButtonProps) {
+export function ProjectMenuButton({ to, params, text, showButton = true }: ProjectMenuButtonProps) {
   return (
     <div className={styles.container}>
       <h4>{text}</h4>
       {showButton && (
-        <Link href={href}>
+        <Link to={to} params={params}>
           <Icon as={ICONS.rightArrowWithPadding} size="24px" color="var(--icon-secondary)" />
         </Link>
       )}

@@ -1,8 +1,7 @@
-import type { BoardId } from "@/domain/types";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { boardsTexts } from "@/shared/locales/boards";
 
-export const useBoardMenuItems = (boardId: BoardId) => {
+export const useBoardMenuItems = () => {
   const menuItems: MenuItem[] = [
     {
       label: boardsTexts.menuItems.edit,

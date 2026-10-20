@@ -1,13 +1,10 @@
-"use client";
-
 import clsx from "clsx";
 import { motion as m } from "framer-motion";
 import { useState } from "react";
 
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
-
-import { Icon } from "../../../ui/Icon";
+import { Icon } from "@/presentation/shared/ui";
 
 import { navItems, searchItem } from "./Drawer.config";
 import styles from "./Drawer.module.css";

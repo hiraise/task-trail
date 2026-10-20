@@ -1,2 +1,3 @@
 export * from "./ProfilePage";
-export * from "./SettingsPage";
+export * from "./ChangePasswordPage";
+export * from "./EditPersonalDataPage";

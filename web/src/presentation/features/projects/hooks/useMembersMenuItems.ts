@@ -13,7 +13,6 @@ import { useRemoveMember } from "./useRemoveMember";
 export const useMembersMenuItems = (
   memberId: UserId,
   memberDisplayName: string,
-  currentUserId: UserId,
   projectId: ProjectId,
 ) => {
   const { data: project } = useProject(projectId);

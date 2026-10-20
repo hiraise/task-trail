@@ -1,29 +1,24 @@
-"use client";
+import { Suspense } from "react";
 
+import { MODAL_TYPE, useGlobalModalContext } from "./GlobalModalContext";
 import {
   CreateProjectModal,
+  CreateTaskModal,
+  CropImageModal,
+  DeleteItemModal,
   EditProjectModal,
+  EditTaskModal,
   InviteUserModal,
   LeaveProjectModal,
   MemberActionsModal,
+  MoveToArchiveModal,
   ProjectSettingsModal,
-} from "@/presentation/features/projects/modals";
-import {
-  ChangeTaskStatusModal,
-  CreateTaskModal,
-  EditTaskModal,
   SelectAssigneeModal,
   SelectProjectModal,
-} from "@/presentation/features/tasks/modals";
-import { CropImageModal } from "@/presentation/features/user/modals";
-import {
-  DeleteItemModal,
-  MoveToArchiveModal,
   SortItemsModal,
   TaskSettingsModal,
-} from "@/presentation/shared";
-
-import { MODAL_TYPE, useGlobalModalContext } from "./GlobalModalContext";
+  ChangeTaskStatusModal,
+} from "./lazyModalComponents";
 
 const MODAL_COMPONENTS = {
   [MODAL_TYPE.CREATE_TASK]: CreateTaskModal,
@@ -53,5 +48,9 @@ export function GlobalModalManager() {
   const { type, props } = topModal;
   const ModalComponent = MODAL_COMPONENTS[type];
 
-  return <ModalComponent isOpen onClose={close} onBack={back} {...props} />;
+  return (
+    <Suspense>
+      <ModalComponent isOpen onClose={close} onBack={back} {...props} />
+    </Suspense>
+  );
 }

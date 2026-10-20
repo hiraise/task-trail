@@ -1,4 +1,4 @@
-import { RadioButton } from "../../../ui/RadioButton";
+import { RadioButton } from "@/presentation/shared/ui";
 
 import type { SortItemsProps, SortOption } from "./SortItems.types";
 import { options } from "./SortItems.types";

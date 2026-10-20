@@ -1,13 +1,10 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { EmailPayload } from "@/application/payloads";
 import { logger } from "@/infrastructure/config/clientLogger";
 import { authRepository } from "@/infrastructure/repositories";
-import { ROUTES } from "@/shared/config/routes";
 
 /**
  * Custom hook to handle the password recovery process.
@@ -35,12 +32,12 @@ import { ROUTES } from "@/shared/config/routes";
  * - On error, an error message is logged and a toast notification is displayed.
  */
 export function useRecoveryPassword() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { forgotPassword } = authRepository;
 
   return useMutation<string, Error, EmailPayload>({
     mutationFn: (payload) => forgotPassword(payload.email),
-    onSuccess: (email) => router.push(ROUTES.passwordRecoveryConfirm(email)),
+    onSuccess: (email) => navigate({ to: "/auth/password-recovery/confirm", params: { email } }),
     onError: (error) => {
       logger.error("Password recovery error", { error });
       toast.error("Failed to send email. Please try again.");

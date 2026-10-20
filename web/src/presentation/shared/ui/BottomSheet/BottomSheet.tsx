@@ -1,5 +1,3 @@
-"use client";
-
 import { DndContext, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { motion as m, AnimatePresence } from "framer-motion";

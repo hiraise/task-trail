@@ -1,13 +1,12 @@
-"use client";
-
 import clsx from "clsx";
 
 import { Icon } from "../Icon";
 
 import styles from "./IconInput.module.css";
+import type { ComponentType } from "react";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: ComponentType<React.SVGProps<SVGSVGElement>>;
   label: string;
   hasError?: boolean;
 }

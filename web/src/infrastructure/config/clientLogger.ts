@@ -37,7 +37,7 @@ function getConsoleMethod(type: LogType): typeof console.error {
 }
 
 const log = (type: LogType, message: string, meta?: Record<string, unknown>): void => {
-  if (process.env.NODE_ENV === "production") return;
+  if (import.meta.env.PROD) return;
 
   const prefix = LOG_PREFIXES[type];
   const style = CONSOLE_STYLES[type];

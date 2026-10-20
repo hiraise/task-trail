@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { Project } from "@/domain/models/Project";
@@ -36,7 +34,7 @@ interface DeleteContext {
  */
 export function useDeleteProject() {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   return useMutation<void, Error, ProjectId, DeleteContext>({
     mutationFn: projectRepository.delete,
@@ -78,7 +76,7 @@ export function useDeleteProject() {
       toast.success("Project deleted successfully");
 
       await new Promise((resolve) => setTimeout(resolve, 300));
-      router.push(ROUTES.projects);
+      navigate({ to: ROUTES.projects, replace: true });
     },
   });
 }

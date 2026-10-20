@@ -31,6 +31,6 @@ export async function getTaskDetailUseCase(taskId: TaskId): Promise<TaskDetailRe
     };
   } catch (error) {
     if (error instanceof Error) throw error;
-    throw new Error("Failed to fetch task details");
+    throw new Error("Failed to fetch task details", { cause: error });
   }
 }

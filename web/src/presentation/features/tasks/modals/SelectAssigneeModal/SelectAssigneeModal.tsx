@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 
 import type { ProjectMember } from "@/domain/models/ProjectMember";
@@ -11,7 +9,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { MembersListDesktop, MembersListMobile } from "../../components/MembersList";
 
-export default function SelectAssigneeModal(props: BaseModalProps<ProjectMember>) {
+export function SelectAssigneeModal(props: BaseModalProps<ProjectMember>) {
   const { projectId, userId } = useGlobalModalProps<SelectAssigneeProps>() ?? {};
 
   const { data: members = [] } = useProjectMembers(projectId!);

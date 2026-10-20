@@ -9,7 +9,7 @@ import { TEXTS } from "@/shared/locales/texts";
 import { EditTaskFormDesktop, type FormValues } from "../../components";
 import { useEditTask } from "../../hooks";
 
-export default function EditTaskModal(props: BaseModalProps<string>) {
+export function EditTaskModal(props: BaseModalProps<string>) {
   const { taskId, title, description } = useGlobalModalProps<EditTaskProps>() ?? {};
   const task: Partial<Task> = { name: title, description };
 

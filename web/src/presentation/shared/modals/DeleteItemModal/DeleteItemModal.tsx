@@ -5,7 +5,7 @@ import { useGlobalModalProps, useGlobalModals } from "../../hooks";
 import type { ActionProps } from "../../hooks/useGlobalModals";
 import { BaseModal, type BaseModalProps } from "../BaseModal";
 
-export default function DeleteItemModal(props: BaseModalProps<TaskId | ProjectId | UserId>) {
+export function DeleteItemModal(props: BaseModalProps<TaskId | ProjectId | UserId>) {
   const { type, id, title } = useGlobalModalProps<ActionProps>() ?? {};
   const { closeAllModals } = useGlobalModals();
 

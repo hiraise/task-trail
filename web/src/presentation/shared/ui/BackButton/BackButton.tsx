@@ -1,5 +1,3 @@
-"use client";
-
 import clsx from "clsx";
 
 import { ICONS } from "@/shared/config/icons";

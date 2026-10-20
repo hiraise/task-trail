@@ -1,34 +1,38 @@
-/**
- * @jest-environment jsdom
- */
-
-import "@testing-library/jest-dom";
+import { vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 import type { Project } from "@/domain/models/Project";
-import { ROUTES } from "@/shared/config/routes";
 
 import { ProjectsList } from "./ProjectsList";
 
-jest.mock("next/link", () => ({
-  __esModule: true,
-  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
-    <a href={href}>{children}</a>
-  ),
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({
+    children,
+    to,
+    params,
+  }: {
+    children: React.ReactNode;
+    to: string;
+    params?: Record<string, string>;
+  }) => {
+    const href = params ? to.replace(/\$(\w+)/g, (_, key) => params[key] ?? "") : to;
+
+    return <a href={href}>{children}</a>;
+  },
 }));
 
-jest.mock("@/presentation/shared/hooks/useGlobalModals", () => ({
-  useGlobalModals: jest.fn(() => ({
-    showCreateProject: jest.fn(),
+vi.mock("@/presentation/shared/hooks/useGlobalModals", () => ({
+  useGlobalModals: vi.fn(() => ({
+    showCreateProject: vi.fn(),
   })),
 }));
 
-jest.mock("@/presentation/shared", () => ({
+vi.mock("@/presentation/shared", () => ({
   EmptyListState: () => <div data-testid="empty-state">Empty State</div>,
 }));
 
-jest.mock("../ProjectCard", () => ({
-  ProjectCard: ({ project }: { project: any }) => (
+vi.mock("../ProjectCard", () => ({
+  ProjectCard: ({ project }: { project: Project }) => (
     <div data-testid="project-card">
       <div>{project.name}</div>
       <div>{project.description}</div>
@@ -69,7 +73,7 @@ describe("ProjectsListDesktop", () => {
 
   it("renders link with correct href to project details page", () => {
     render(<ProjectsList projects={mockProjects} />);
-    const expectedHref = ROUTES.project(mockProjects[0].id);
+    const expectedHref = `/projects/${mockProjects[0].id}`;
 
     const links = screen.getAllByRole("link");
     const link = links.find((l) => l.getAttribute("href") === expectedHref);

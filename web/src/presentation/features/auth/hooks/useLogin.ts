@@ -1,7 +1,5 @@
-"use client";
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import type { AuthPayload } from "@/application/payloads";
@@ -37,9 +35,8 @@ import { errorTexts, successTexts } from "@/shared/locales/messages";
  * ```
  */
 export function useLogin() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams.get("from") || ROUTES.projects;
+  const navigate = useNavigate();
+  const { from = ROUTES.projects } = useSearch({ from: "/auth/" });
 
   const queryClient = useQueryClient();
   const { login } = authRepository;
@@ -48,15 +45,14 @@ export function useLogin() {
     mutationFn: (payload) => login(payload.email, payload.password),
     onSuccess: () => {
       toast.success(successTexts.loginSuccess);
-      router.replace(from);
+      // Remove cached auth data so beforeLoad guard fetches fresh state on navigation
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.auth.session });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.user.current });
+      navigate({ to: from, replace: true });
     },
     onError: (error) => {
       logger.error("Login error:", { error });
       toast.error(errorTexts.somethingWentWrong);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth.session });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user.current });
     },
   });
 }

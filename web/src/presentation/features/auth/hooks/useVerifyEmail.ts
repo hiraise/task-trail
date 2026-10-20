@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { VerifyEmailPayload } from "@/application/payloads";
@@ -29,13 +27,13 @@ import { ROUTES } from "@/shared/config/routes";
  * ```
  */
 export function useVerifyEmail() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { verifyEmail } = authRepository;
 
   return useMutation<void, Error, VerifyEmailPayload>({
     mutationFn: (payload) => verifyEmail(payload.token),
     onSuccess: () => {
-      router.push(ROUTES.login);
+      navigate({ to: ROUTES.login, replace: true });
       toast.success("Email успешно подтвержден. Теперь вы можете войти в систему");
     },
     onError: (error) => {

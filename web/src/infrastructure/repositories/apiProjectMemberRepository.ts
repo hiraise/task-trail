@@ -6,6 +6,7 @@ import { AppError, AppErrorType } from "@/shared/errors/types";
 import { API_ROUTES } from "../config/apiRoutes";
 import axiosClient from "../http/axiosClient";
 import type { HttpClient } from "../http/HttpClient";
+import { logger } from "../config/clientLogger";
 
 /**
  * Handles errors by checking if the provided error is already an instance of `AppError`.
@@ -35,6 +36,8 @@ const createProjectMemberRepository = (httpClient: HttpClient): ProjectMemberRep
    */
   findById: async (id: UserId): Promise<ProjectMember | null> => {
     try {
+      logger.info("Fetching project member by ID", { memberId: id });
+
       return null;
     } catch (error) {
       throw handleError("Failed to get project member", error);

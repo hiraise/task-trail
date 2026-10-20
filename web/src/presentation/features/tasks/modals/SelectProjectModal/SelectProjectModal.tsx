@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 
 import type { Project } from "@/domain/models/Project";
@@ -11,7 +9,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { ProjectsList } from "../../components/ProjectsList";
 
-export default function SelectProjectModal(props: BaseModalProps<Project>) {
+export function SelectProjectModal(props: BaseModalProps<Project>) {
   // const { data: projects = [] } = useGet();
   const { data: projects = [] } = useProjects();
   const { projectId: initialProjectId } = useGlobalModalProps<{ projectId?: ProjectId }>() || {};

@@ -1,7 +1,5 @@
-"use client";
-
+import { Link } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Link from "next/link";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { SubmitButton } from "@/presentation/shared";
@@ -32,7 +30,7 @@ export function LoginFormMobile() {
       <form className={styles.container} onSubmit={handleSubmit(submitHandler)}>
         <div className={styles.formItems}>
           <AuthFormFieldsDesktop />
-          <Link href={ROUTES.passwordRecovery} className={styles.forgotPassword}>
+          <Link to={ROUTES.passwordRecovery} className={styles.forgotPassword}>
             <span className="btn-font-s"> {authTexts.login.forgotPassword}</span>
           </Link>
         </div>

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 import { authTexts } from "@/shared/locales/auth";
 import { interpolate } from "@/shared/utils/interpolate";
@@ -16,7 +16,7 @@ export function PrivacyPolicyText({ btnName }: PrivacyPolicyProps) {
       <span className={styles.privacyPolicy}>
         {interpolate(authTexts.privacyPolicy.text, { btnName: btnName })}
       </span>
-      <Link href={authTexts.privacyPolicy.buttonLink}>
+      <Link to={authTexts.privacyPolicy.buttonLink}>
         <span className={clsx("caption-med", styles.link)}>
           {authTexts.privacyPolicy.buttonText}
         </span>

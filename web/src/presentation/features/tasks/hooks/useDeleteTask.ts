@@ -1,13 +1,12 @@
-"use client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
+
 import { toast } from "sonner";
 
 import type { Task } from "@/domain/models/Task";
 import type { ProjectId, TaskId } from "@/domain/types";
 import { logger } from "@/infrastructure/config/clientLogger";
 import { taskRepository } from "@/infrastructure/repositories";
-import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 interface DeleteTaskContext {
@@ -40,7 +39,7 @@ interface DeleteTaskContext {
  */
 export function useDeleteTask(projectId: ProjectId) {
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   return useMutation<void, Error, TaskId, DeleteTaskContext>({
     mutationFn: (taskId) => taskRepository.delete(taskId),
@@ -71,7 +70,7 @@ export function useDeleteTask(projectId: ProjectId) {
       toast.success("Task deleted successfully");
 
       await new Promise((resolve) => setTimeout(resolve, 300));
-      router.replace(ROUTES.project(projectId));
+      navigate({ to: "/projects/$id", params: { id: projectId }, replace: true });
     },
     onError: (error, taskId, context) => {
       if (context?.previousTaskDetails) {

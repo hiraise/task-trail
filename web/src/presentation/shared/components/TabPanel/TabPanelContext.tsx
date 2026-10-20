@@ -1,5 +1,3 @@
-"use client";
-
 import { createContext, useContext, useState } from "react";
 
 import { TabType } from "./TabPanel.types";

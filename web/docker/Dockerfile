@@ -1,20 +1,23 @@
-FROM node:22
-# add NODE_ENV
+FROM node:22-alpine AS build
 WORKDIR /code
 
 ARG ROOT_PATH
 ARG API_URL
-ENV NEXT_PUBLIC_API_URL=$API_URL
-ENV NEXT_PUBLIC_ROOT_PATH=$ROOT_PATH
+ENV VITE_API_URL=$API_URL
+ENV VITE_ROOT_PATH=$ROOT_PATH
 
-RUN echo $NEXT_PUBLIC_ROOT_PATH
-RUN echo $NEXT_PUBLIC_API_URL
-COPY package.json /code/package.json
-COPY tsconfig.json /code/tsconfig.json
-COPY next.config.ts /code/next.config.ts
+RUN echo $VITE_ROOT_PATH
+RUN echo $VITE_API_URL
+COPY package.json package-lock.json /code/
+RUN npm ci
+COPY index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json /code/
 COPY src/ /code/src/
 COPY public/ /code/public/
-RUN npm install
 RUN npm run build
+
+FROM nginx:1.27-alpine
+ARG ROOT_PATH
+ENV ROOT_PATH=$ROOT_PATH
+COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=build /code/dist /usr/share/nginx/html${ROOT_PATH}
 EXPOSE 3000
-CMD ["npm","run","start"]

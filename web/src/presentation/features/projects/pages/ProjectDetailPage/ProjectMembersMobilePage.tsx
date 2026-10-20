@@ -1,4 +1,4 @@
-import { useParams } from "next/navigation";
+import { useParams } from "@tanstack/react-router";
 
 import { isProjectMemberAdmin, isProjectMemberOwner } from "@/domain/models/ProjectMember";
 import type { ProjectId } from "@/domain/types";
@@ -10,8 +10,8 @@ import { MembersList } from "../../components";
 import { useAddMember, useProjectMembers } from "../../hooks";
 
 export function ProjectMembersMobilePage() {
-  const params = useParams();
-  const projectId = params.id as ProjectId;
+  const { id } = useParams({ from: "/_main/projects/$id/members" });
+  const projectId = id as ProjectId;
 
   const { showInviteUser } = useGlobalModals();
   const { mutateAsync: addMembers } = useAddMember();

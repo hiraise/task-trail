@@ -6,7 +6,7 @@ import { BaseModal, type BaseModalProps } from "../BaseModal";
 
 import { TaskSettings } from "./TaskSettings";
 
-export default function TaskSettingsModal(props: BaseModalProps<void>) {
+export function TaskSettingsModal(props: BaseModalProps<void>) {
   const { task } = useGlobalModalProps<{ task: Task }>() ?? {};
   const { menuItems } = useTaskMenuItems(task ?? ({} as Task));
 

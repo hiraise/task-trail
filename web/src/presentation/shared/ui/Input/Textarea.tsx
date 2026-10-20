@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useImperativeHandle, useRef } from "react";
 
 import styles from "./Textarea.module.css";

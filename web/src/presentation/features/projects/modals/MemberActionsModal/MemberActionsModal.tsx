@@ -9,11 +9,10 @@ import styles from "./MemberActionsModal.module.css";
 export function MemberActionsModal(props: BaseModalProps<void>) {
   const modalProps = useGlobalModalProps<MemberActionsProps>();
 
-  const { memberId, memberDisplayName, currentUserId, projectId } = modalProps || {};
+  const { memberId, memberDisplayName, projectId } = modalProps || {};
   const { menuItems } = useMembersMenuItems(
     memberId ?? "-1",
     memberDisplayName ?? "No name",
-    currentUserId ?? "-1",
     projectId ?? "-1",
   );
 

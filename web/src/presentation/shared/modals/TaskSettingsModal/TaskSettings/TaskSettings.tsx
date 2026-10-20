@@ -1,5 +1,5 @@
-import type { MenuItem } from "../../../ui/DropdownMenu";
-import { Icon } from "../../../ui/Icon";
+import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
+import { Icon } from "@/presentation/shared/ui/Icon";
 
 import styles from "./TaskSettings.module.css";
 

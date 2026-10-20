@@ -1,5 +1,3 @@
-"use client";
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -96,7 +94,7 @@ export function useChangeAssignee() {
       toast.error(`Failed to change assignee: ${error.message}`);
     },
 
-    onSuccess: (updatedTask, payload) => {
+    onSuccess: (_, payload) => {
       logger.info("Assignee changed successfully", {
         taskId: payload.taskId,
         assigneeId: payload.assigneeId,

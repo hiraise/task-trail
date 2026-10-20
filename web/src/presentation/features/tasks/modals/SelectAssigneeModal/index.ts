@@ -1,1 +1,1 @@
-export { default as SelectAssigneeModal } from "./SelectAssigneeModal";
+export { SelectAssigneeModal } from "./SelectAssigneeModal";

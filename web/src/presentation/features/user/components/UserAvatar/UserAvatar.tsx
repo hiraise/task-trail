@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import Image from "next/image";
 
 import { Icon } from "@/presentation/shared";
 import { useSelectImage } from "@/presentation/shared/hooks/useSelectImage";
@@ -47,16 +46,7 @@ export function UserAvatar({
 
 function AvatarImage({ avatarUrl }: { avatarUrl?: string }) {
   return avatarUrl ? (
-    <Image
-      className={styles.userAvatar}
-      src={avatarUrl}
-      alt="User Avatar"
-      fill
-      sizes="160px"
-      priority
-      unoptimized={process.env.NODE_ENV === "development"}
-      onError={() => ICONS.profileLarge}
-    />
+    <img className={styles.userAvatar} src={avatarUrl} alt="User Avatar" />
   ) : (
     <Icon as={ICONS.profileLarge} size="40px" />
   );

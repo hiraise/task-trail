@@ -1,12 +1,10 @@
 import clsx from "clsx";
-import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 import type { TaskDetailResponseDto } from "@/application/dto/TaskDetailResponseDto";
 import { EmptyListState } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { ASSETS } from "@/shared/config/assets";
-import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
 import { getProjectId, getUserInitials } from "@/shared/utils/formatters";
 
@@ -33,7 +31,7 @@ export function TaskListDesktop({ data }: TaskListProps) {
   return (
     <div className={styles.container}>
       {data.map((data) => (
-        <Link key={data.task.id} href={ROUTES.task(data.task.id)}>
+        <Link key={data.task.id} to={"/tasks/$taskId"} params={{ taskId: data.task.id }}>
           <TaskItemDesktop data={data} />
         </Link>
       ))}
@@ -54,7 +52,7 @@ function TaskItemDesktop({ data }: { data: TaskDetailResponseDto }) {
       </div>
       {assignee && (
         <div className={styles.avatarWrapper}>
-          {assignee.avatarUrl && <Image src={assignee.avatarUrl} fill alt="User avatar" />}
+          {assignee.avatarUrl && <img src={assignee.avatarUrl} alt="User avatar" />}
           {!assignee.avatarUrl && (
             <span className="caption-2-reg">{getUserInitials(assignee.username ?? "ХХ")}</span>
           )}

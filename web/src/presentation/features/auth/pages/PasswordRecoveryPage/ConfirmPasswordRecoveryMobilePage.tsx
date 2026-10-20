@@ -1,7 +1,4 @@
-"use client";
-
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useSearch } from "@tanstack/react-router";
 
 import { SubmitButton } from "@/presentation/shared";
 import { ASSETS } from "@/shared/config/assets";
@@ -14,10 +11,10 @@ import { useRecoveryPassword } from "../../hooks";
 import styles from "./ConfirmPasswordRecoveryMobilePage.module.css";
 
 export function ConfirmPasswordRecoveryMobilePage() {
-  const email = useSearchParams().get("email") || "";
+  const { email } = useSearch({ from: "/auth/password-recovery/confirm" });
   const { mutateAsync: recovery } = useRecoveryPassword();
 
-  if (email.length === 0) return null;
+  if (!email || email.length === 0) return null;
 
   return (
     <div className={styles.container}>
@@ -27,7 +24,7 @@ export function ConfirmPasswordRecoveryMobilePage() {
           <CheckEmailMessage email={email} />
         </TitleWrapper>
 
-        <Image
+        <img
           className={styles.cover}
           src={ASSETS.images.passwordRecovery}
           alt={authTexts.checkEmailAlt}

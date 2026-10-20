@@ -44,7 +44,7 @@ export async function uploadAvatarUseCase(payload: UploadAvatarPayload): Promise
   } catch (error) {
     if (error instanceof AppError) throw error;
 
-    if (process.env.NODE_ENV !== "production") {
+    if (!import.meta.env.PROD) {
       logger.error("Upload avatar failed:", { error });
     }
 
