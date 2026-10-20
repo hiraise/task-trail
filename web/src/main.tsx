@@ -15,6 +15,7 @@ document
 
 const router = createRouter({
   routeTree,
+  basepath: import.meta.env.VITE_ROOT_PATH || "/",
   defaultPreload: "intent", // Preload on user intent (e.g., hover, focus)
   defaultPreloadStaleTime: 0,
 });

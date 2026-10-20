@@ -5,7 +5,7 @@ import svgr from "vite-plugin-svgr";
 import path from "path";
 
 export default defineConfig({
-  base: process.env.VITE_ROOT_PATH || "/",
+  base: `${process.env.VITE_ROOT_PATH ?? ""}/`,
   plugins: [
     tanstackRouter({
       target: "react",
