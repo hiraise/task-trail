@@ -1,6 +1,3 @@
-"use client";
-
-import Image from "next/image";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import type { User } from "@/domain/models/User";
@@ -38,7 +35,7 @@ export function ProfileHeroDesktop({ user }: { user: User }) {
   return (
     <div ref={heroRef} style={{ minHeight: height }}>
       <div className={styles.container}>
-        <Image src={ASSETS.images.hero} fill sizes="100vw" alt={TEXTS.profile.heroAlt} priority />
+        <img src={ASSETS.images.hero} alt={TEXTS.profile.heroAlt} />
         <button
           onClick={() => logout()}
           className={styles.logoutButton}

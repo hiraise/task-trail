@@ -1,5 +1,3 @@
-"use client";
-
 import { mockBoards } from "@/application/dto/MockBoardDto";
 import { EmptyListState } from "@/presentation/shared";
 import { PagesMobileTemplate, TopBarMobile } from "@/presentation/shared/components/Layout";

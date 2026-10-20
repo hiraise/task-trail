@@ -1,12 +1,11 @@
 import clsx from "clsx";
+import { useParams } from "@tanstack/react-router";
 import { AnimatePresence, motion as m } from "framer-motion";
-import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { getProjectMemberDisplayName, type ProjectMember } from "@/domain/models/ProjectMember";
 import type { ProjectId } from "@/domain/types";
 import { DropdownMenu, IconButton, UserAvatar } from "@/presentation/shared";
-import { useGetCurrentUser } from "@/presentation/shared/hooks";
 import { ICONS } from "@/shared/config/icons";
 
 import { useMembersMenuItems } from "../../hooks/useMembersMenuItems";
@@ -16,15 +15,9 @@ import styles from "./MemberCard.module.css";
 export function MemberCard({ user }: { user: ProjectMember }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  const params = useParams();
+  const params = useParams({ from: "/_main/projects/$id/" });
   const projectId = params.id as ProjectId;
-  const { data: currentUser } = useGetCurrentUser();
-  const { menuItems } = useMembersMenuItems(
-    user.id,
-    user.username,
-    currentUser?.id ?? "",
-    projectId,
-  );
+  const { menuItems } = useMembersMenuItems(user.id, user.username, projectId);
 
   return (
     <div

@@ -53,7 +53,7 @@ export function getProjectId(str: string): string {
   let res: string;
   const words = str
     .trim()
-    .split(/[\s\-_\.]+/)
+    .split(/[\s\-_.]+/)
     .filter(Boolean);
 
   if (words.length === 1) {

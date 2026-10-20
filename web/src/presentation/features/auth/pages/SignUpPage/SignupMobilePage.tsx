@@ -1,7 +1,5 @@
-"use client";
-
 import clsx from "clsx";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 import { ROUTES } from "@/shared/config/routes";
 import { authTexts } from "@/shared/locales/auth";
@@ -20,7 +18,7 @@ export function SignupMobilePage() {
       <SignupFormMobile />
       <BottomContent>
         <span className={clsx(styles.text, "body-reg-2")}>{authTexts.hasAccount}</span>
-        <Link href={ROUTES.login}>
+        <Link to={ROUTES.login}>
           <span className="btn-font-s">{authTexts.login.login}</span>
         </Link>
       </BottomContent>

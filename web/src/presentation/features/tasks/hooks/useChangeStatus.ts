@@ -94,7 +94,7 @@ export function useChangeStatus() {
       toast.error(`Failed to change status: ${error.message}`);
     },
 
-    onSuccess: (updatedTask, payload) => {
+    onSuccess: (_, payload) => {
       logger.info("Status changed successfully", {
         taskId: payload.taskId,
         statusId: payload.statusId,

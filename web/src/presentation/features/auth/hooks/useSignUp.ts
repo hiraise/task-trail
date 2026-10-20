@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { AuthPayload } from "@/application/payloads";
@@ -31,14 +29,14 @@ import { errorTexts, successTexts } from "@/shared/locales/messages";
  * ```
  */
 export function useSignUp() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { signUp } = authRepository;
 
   return useMutation<void, Error, AuthPayload>({
     mutationFn: (payload) => signUp(payload.email, payload.password),
     onSuccess: (_, payload) => {
       toast.success(successTexts.signUpSuccessCheckEmail);
-      router.push(ROUTES.signUpConfirm(payload.email));
+      navigate({ to: ROUTES.signUpConfirm, params: { email: payload.email } });
     },
     onError: (error) => {
       logger.error("Failed to signup", { error });

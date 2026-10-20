@@ -1,5 +1,3 @@
-"use client";
-
 import { mockBoards } from "@/application/dto/MockBoardDto";
 import { EmptyListState, Icon } from "@/presentation/shared";
 import { TasksDesktopTemplate, TopBarDesktop } from "@/presentation/shared/components/Layout";

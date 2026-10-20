@@ -1,5 +1,3 @@
-"use state";
-
 import { useState } from "react";
 
 import type { ProjectMember } from "@/domain/models/ProjectMember";

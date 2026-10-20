@@ -11,7 +11,7 @@
 
 ---
 
-TaskTrail is a modern, open-source, self-hosted task tracking web application built with **Next.js** and TypeScript. The project follows a modular, Clean Architecture-inspired structure for scalability, maintainability, and clear separation of concerns.
+TaskTrail is a modern, open-source, self-hosted task tracking web application built with **Vite + React** and TypeScript. The project follows a modular, Clean Architecture-inspired structure for scalability, maintainability, and clear separation of concerns.
 
 ## Features
 
@@ -27,11 +27,9 @@ TaskTrail is a modern, open-source, self-hosted task tracking web application bu
 - **Reusable Components**: Rich library of UI components, modals, and feature-specific widgets
 - **Form Management**: Type-safe forms with React Hook Form and Zod validation
 - **Drag & Drop**: Advanced drag-and-drop functionality with @dnd-kit
-- **Animations**: Smooth animations and transitions with Motion
+- **Animations**: Smooth animations and transitions with Framer Motion
 - **Centralized Error Handling**: Global and local error management
 - **Clean Architecture**: Clear separation of concerns with domain, application, infrastructure, and presentation layers
-- **Testing**: Unit and integration tests with Jest and React Testing Library
-- **Docker Support**: Containerized deployment with Dockerfile
 
 ## ✨ Features
 
@@ -45,34 +43,37 @@ Here's a sneak peek of our clean and intuitive login interface, available on bot
 
 ## Tech Stack
 
-- **Next.js 16** (App Router, SSR, Turbopack)
-- **TypeScript 5**
+- **Vite 8** (dev server, bundler)
+- **TypeScript 6**
 - **React 19**
-- **Zustand** (for client-side state management)
-- **React Query** (@tanstack/react-query for server-side state management)
+- **TanStack Router** (file-based routing with auto code splitting)
+- **TanStack Query** (server-side state management)
+- **Zustand** (client-side state management)
 - **CSS Modules** (primary styling approach)
-- **Motion** (for animations)
-- **React Hook Form** + **Zod** (for form management and validation)
-- **@dnd-kit** (for drag-and-drop functionality)
-- **Sonner** (for toast notifications)
-- **Axios** (for HTTP requests)
-- **Jest** + **React Testing Library** (for testing)
-- **ESLint** + **Prettier** (for code quality)
+- **Framer Motion** (animations)
+- **React Hook Form** + **Zod** (form management and validation)
+- **@dnd-kit** (drag-and-drop functionality)
+- **Sonner** (toast notifications)
+- **Axios** (HTTP requests)
+- **@floating-ui/react** (floating elements positioning)
+- **date-fns** (date formatting)
+- **ESLint** + **Prettier** (code quality)
 
 ## Project Structure
 
 ```
 src/
-├── app/                     # Next.js App Router, pages, and layouts
-│   ├── (main)/              # Main application routes
+├── routes/                  # TanStack Router file-based routes
+│   ├── __root.tsx           # Root layout
+│   ├── _main.tsx            # Authenticated layout
+│   ├── auth.tsx             # Auth layout
+│   ├── _main/               # Main application routes
 │   │   ├── boards/          # Kanban boards
 │   │   ├── projects/        # Project management
 │   │   ├── tasks/           # Task management
 │   │   ├── profile/         # User profile
 │   │   └── search/          # Global search
-│   ├── auth/                # Authentication pages (login, signup, etc.)
-│   ├── layout.tsx           # Root layout
-│   └── globals.css          # Global styles
+│   └── auth/                # Authentication pages (login, signup, etc.)
 ├── application/             # Application-level logic (use cases)
 │   ├── dto/                 # Data Transfer Objects
 │   ├── payloads/            # Request/Response payloads
@@ -87,12 +88,11 @@ src/
 │   ├── repositories/        # Repository interfaces
 │   └── types/               # Domain types
 ├── infrastructure/          # External integrations
-│   ├── config/              # Configuration
-│   ├── di/                  # Dependency injection
+│   ├── config/              # Configuration (API routes, logger)
 │   ├── http/                # HTTP clients (Axios)
 │   └── repositories/        # Repository implementations
 ├── presentation/            # UI layer
-│   ├── app/                 # App-level components
+│   ├── app/                 # App-level components and providers
 │   ├── features/            # Feature-specific components
 │   │   ├── auth/
 │   │   ├── boards/
@@ -117,27 +117,25 @@ src/
 ### Prerequisites
 
 - **Node.js** (v18 or higher)
-- **npm** (v9 or higher) or **yarn**
+- **npm** (v9 or higher)
 
 ### Installation
 
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/SergeyRusinovich/tt-frontend.git
+    git clone https://github.com/SergeyRusinovich/tt-frontend-v2.git
     ```
 
 2.  **Navigate to the project directory:**
 
     ```bash
-    cd tt-frontend
+    cd tt-frontend-v2
     ```
 
 3.  **Install dependencies:**
     ```bash
     npm install
-    # or
-    yarn install
     ```
 
 ### Running the Development Server
@@ -146,28 +144,24 @@ To run the app in development mode, use:
 
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
-### Building for Production
+> The dev server proxies `/api` requests to `http://localhost:8080` (backend).
 
-To build the application for production, use:
+### Building for Production
 
 ```bash
 npm run build
 ```
 
-This will create an optimized build in the `.next` directory.
+Output will be in the `dist` directory.
 
-### Running Tests
-
-To run the test suite, use:
+### Preview Production Build
 
 ```bash
-npm test
+npm run preview
 ```
 
 ## Contributing
@@ -199,8 +193,6 @@ Contributions are welcome! If you'd like to contribute, please follow these step
 - [x] Complete task management (create, edit, assign, comment, status tracking)
 - [x] Global search functionality
 - [x] Responsive mobile and desktop layouts
-- [x] Docker containerization
-- [ ] Real backend integration (currently using mock API)
 - [ ] Real-time collaboration features
 - [ ] Notifications system
 - [ ] Task attachments and file management
@@ -214,12 +206,12 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 TaskTrail uses a modular architecture inspired by Clean Architecture principles to ensure a clean separation of concerns, making the codebase scalable and maintainable.
 
-- **`app`**: The entry point of the application, containing routes, layouts, and pages following Next.js 16 App Router conventions. Main routes are grouped under `(main)/` with separate `auth/` section.
+- **`routes`**: File-based routing powered by TanStack Router. Routes are split into `_main/` (authenticated) and `auth/` sections. Supports auto code splitting and type-safe navigation.
 - **`application`**: Contains the application-specific business rules and use cases. It orchestrates the flow of data between the domain and infrastructure layers. Includes DTOs, payloads, and organized use cases by feature (auth, project, task, user).
 - **`domain`**: The core of the application, containing the business logic, entities (models), repository interfaces, and domain types. This layer is independent of any framework or external dependency.
-- **`infrastructure`**: Implements the interfaces defined in the domain layer, handling external concerns like HTTP communication (Axios client), dependency injection (DI container), and repository implementations.
+- **`infrastructure`**: Implements the interfaces defined in the domain layer, handling external concerns like HTTP communication (Axios client) and repository implementations.
 - **`presentation`**: Contains all UI-related code organized into:
-  - `app/`: Application-level components (root layout, providers)
+  - `app/`: Application-level components and providers
   - `features/`: Feature-specific components organized by domain (auth, boards, projects, tasks, user)
   - `shared/`: Reusable UI components, modals, hooks, and base UI elements
-- **`shared`**: A collection of utilities, hooks, constants, error definitions, localization files, and other shared code that can be used across all application layers.
+- **`shared`**: A collection of utilities, constants, error definitions, localization files, and other shared code that can be used across all application layers.

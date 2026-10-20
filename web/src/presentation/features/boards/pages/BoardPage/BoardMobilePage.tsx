@@ -1,5 +1,3 @@
-"use client";
-
 import type { MockBoardDto } from "@/application/dto/MockBoardDto";
 import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
 

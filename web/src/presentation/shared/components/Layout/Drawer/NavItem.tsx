@@ -1,11 +1,9 @@
 import clsx from "clsx";
 import { motion as m } from "framer-motion";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useRouterState } from "@tanstack/react-router";
 
+import { Icon } from "@/presentation/shared/ui";
 import { normalize } from "@/shared/utils/formatters";
-
-import { Icon } from "../../../ui";
 
 import type { NavMenuItem } from "./Drawer.config";
 import styles from "./NavItem.module.css";
@@ -16,11 +14,11 @@ interface NavItemProps {
 }
 
 export function NavItem({ item, isExpanded }: NavItemProps) {
-  const pathName = usePathname();
+  const pathName = useRouterState({ select: (s) => s.location.pathname });
   const isActive = normalize(pathName).startsWith(normalize(item.href));
 
   return (
-    <Link href={item.href} className={clsx(styles.navItem, { [styles.active]: isActive })}>
+    <Link to={item.href} className={clsx(styles.navItem, { [styles.active]: isActive })}>
       <Icon as={item.icon} size="24px" />
       <m.span
         className="body-med-2"

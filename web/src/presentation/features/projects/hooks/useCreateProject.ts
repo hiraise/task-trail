@@ -1,14 +1,11 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { CreateProjectPayload } from "@/application/payloads";
 import { createProjectUseCase } from "@/application/usecases";
 import type { ProjectDetails } from "@/domain/models/Project";
 import { logger } from "@/infrastructure/config/clientLogger";
-import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
@@ -36,7 +33,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  * ```
  */
 export function useCreateProject() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   return useMutation<ProjectDetails, Error, CreateProjectPayload>({
@@ -52,7 +49,7 @@ export function useCreateProject() {
 
       toast.success("Project created successfully");
       await new Promise((resolve) => setTimeout(resolve, 300));
-      router.push(ROUTES.project(newProject.id));
+      navigate({ to: "/projects/$id", params: { id: newProject.id } });
     },
 
     onError: (error) => {

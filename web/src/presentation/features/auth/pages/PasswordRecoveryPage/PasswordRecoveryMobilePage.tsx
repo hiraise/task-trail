@@ -1,5 +1,3 @@
-"use client";
-
 import { authTexts } from "@/shared/locales/auth";
 
 import { TitleWrapper } from "../../components";

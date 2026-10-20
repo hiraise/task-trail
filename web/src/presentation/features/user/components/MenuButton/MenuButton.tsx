@@ -1,18 +1,18 @@
-import Link from "next/link";
-
+import { Link } from "@tanstack/react-router";
 import { Icon } from "@/presentation/shared";
 
 import styles from "./MenuButton.module.css";
+import type { ComponentType } from "react";
 
 interface MenuButtonProps {
   href: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: ComponentType<React.SVGProps<SVGSVGElement>>;
   text: string;
 }
 
 export function MenuButton({ href, icon, text }: MenuButtonProps) {
   return (
-    <Link className={styles.buttonWrapper} href={href}>
+    <Link className={styles.buttonWrapper} to={href}>
       <span className="btn-font-m">{text}</span>
       <div className={styles.iconWrapper}>
         <Icon as={icon} size="24px" />

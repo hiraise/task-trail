@@ -1,27 +1,23 @@
-"use client";
-
 import type { Transition } from "framer-motion";
 import { AnimatePresence, motion as m } from "framer-motion";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { ICONS } from "@/shared/config/icons";
 import { ROUTES } from "@/shared/config/routes";
 import { normalize } from "@/shared/utils/formatters";
-
-import { Icon } from "../../../ui";
+import { Icon } from "@/presentation/shared/ui";
 
 import type { NavItem } from "./BottomNavBar.config";
 import { navItems } from "./BottomNavBar.config";
 import styles from "./BottomNavBar.module.css";
 
 export function BottomNavBar() {
-  const pathName = usePathname();
+  const pathName = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <div className={styles.container}>
-      <Link className={styles.search} href={ROUTES.search}>
+      <Link className={styles.search} to={ROUTES.search}>
         <Icon as={ICONS.search} size="24px" inheritColor />
       </Link>
       <div className={styles.menu}>
@@ -73,7 +69,7 @@ function MenuItem({ isCurrent, ...props }: MenuItemsProps) {
   return (
     <MotionLink
       ref={containerRef}
-      href={href}
+      to={href}
       className={styles.icon}
       initial={{ opacity: 0, width: INACTIVE_ICON_WIDTH }}
       animate={{

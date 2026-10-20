@@ -1,10 +1,12 @@
+import type { ComponentType, SVGProps } from "react";
+
 import { ASSETS } from "@/shared/config/assets";
 import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
 
 export interface NavItem {
   href: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   label: string;
 }
 

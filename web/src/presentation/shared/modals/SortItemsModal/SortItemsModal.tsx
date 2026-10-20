@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 
 import { TEXTS } from "@/shared/locales/texts";
@@ -11,7 +9,7 @@ import type { SortOption } from "./SortItems";
 import { SortItems, SortItemsDesktop } from "./SortItems";
 import { options } from "./SortItems/SortItems.types";
 
-export default function SortItemsModal(props: BaseModalProps<string>) {
+export function SortItemsModal(props: BaseModalProps<string>) {
   const [selectedOption, setSelectedOption] = useState<SortOption>(options[0]);
 
   const handleMobileSort = (option: SortOption) => {

@@ -1,1 +1,1 @@
-export { default as MoveToArchiveModal } from "./MoveToArchiveModal";
+export { MoveToArchiveModal } from "./MoveToArchiveModal";

@@ -1,1 +1,1 @@
-export { default as CreateTaskModal } from "./CreateTaskModal";
+export { CreateTaskModal } from "./CreateTaskModal";

@@ -4,11 +4,11 @@ WORKDIR /code
 
 ARG ROOT_PATH
 ARG API_URL
-ENV NEXT_PUBLIC_API_URL=$API_URL
-ENV NEXT_PUBLIC_ROOT_PATH=$ROOT_PATH
+ENV VITE_API_URL=$API_URL
+ENV VITE_ROOT_PATH=$ROOT_PATH
 
-RUN echo $NEXT_PUBLIC_ROOT_PATH
-RUN echo $NEXT_PUBLIC_API_URL
+RUN echo $VITE_ROOT_PATH
+RUN echo $VITE_API_URL
 COPY package.json /code/package.json
 COPY tsconfig.json /code/tsconfig.json
 COPY next.config.ts /code/next.config.ts

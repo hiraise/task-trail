@@ -1,5 +1,3 @@
-"use client";
-
 import { ContentTopBarDesktop } from "@/presentation/shared";
 import { TasksDesktopTemplate, TopBarDesktop } from "@/presentation/shared/components/Layout";
 import { TabType, useTabPanel } from "@/presentation/shared/components/TabPanel";

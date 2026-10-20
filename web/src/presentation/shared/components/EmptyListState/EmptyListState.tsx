@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import { ICONS } from "@/shared/config/icons";
 
 import { Icon } from "../../ui";
@@ -19,7 +17,7 @@ export function EmptyListState({ src, alt, text, btnLabel, onClick }: EmptyListS
   return (
     <div className={styles.content}>
       <div className={styles.emptyState}>
-        <Image src={src} width={160} height={160} alt={alt} />
+        <img src={src} width={160} height={160} alt={alt} />
         <span className="body-reg">{text}</span>
         <SubmitButton variant="text" className={styles.button} onClick={onClick}>
           <Icon as={ICONS.plus} size="24px" inheritColor />

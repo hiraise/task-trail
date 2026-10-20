@@ -1,7 +1,5 @@
-"use client";
-
 import clsx from "clsx";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 import { Icon } from "@/presentation/shared";
 import { DESIGN_ELEMENTS } from "@/shared/config/icons";
@@ -11,9 +9,6 @@ import { authTexts } from "@/shared/locales/auth";
 import { AuthBackground, BottomContent, SignupFormDesktop, TitleWrapper } from "../../components";
 
 import styles from "./SignupDesktopPage.module.css";
-
-
-
 
 export function SignupDesktopPage() {
   return (
@@ -29,7 +24,7 @@ export function SignupDesktopPage() {
       </AuthBackground>
       <BottomContent>
         <span className={clsx(styles.text, "body-reg-2")}>{authTexts.hasAccount}</span>
-        <Link href={ROUTES.login}>
+        <Link to={ROUTES.login}>
           <span className="btn-font-s">{authTexts.login.login}</span>
         </Link>
       </BottomContent>

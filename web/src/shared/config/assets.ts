@@ -1,6 +1,6 @@
 import { ICONS } from "../../shared/config/icons";
 
-const basePath = process.env.NEXT_PUBLIC_ROOT_PATH;
+const basePath = import.meta.env.VITE_ROOT_PATH;
 
 function addBasePath(path: string) {
   return basePath + path;

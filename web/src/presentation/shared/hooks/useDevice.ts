@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 
 type DeviceType = "mobile" | "tablet" | "desktop";

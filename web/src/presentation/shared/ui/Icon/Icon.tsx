@@ -1,9 +1,11 @@
+import type { ComponentType, CSSProperties, SVGProps } from "react";
+
 import { logger } from "@/infrastructure/config/clientLogger";
 
 import styles from "./Icon.module.css";
 
-interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "color"> {
-  as: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+interface IconProps extends Omit<SVGProps<SVGSVGElement>, "color"> {
+  as: ComponentType<SVGProps<SVGSVGElement>>;
   color?: string;
   size?: string;
   inheritColor?: boolean;
@@ -20,7 +22,7 @@ export function Icon({ as: AsComponent, color, size, inheritColor, ...rest }: Ic
     .filter(Boolean)
     .join(" ");
 
-  const style: React.CSSProperties = {};
+  const style: CSSProperties = {};
 
   if (size) {
     style.width = size;

@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { logger } from "@/infrastructure/config/clientLogger";
@@ -27,20 +25,20 @@ import { successTexts } from "@/shared/locales/messages";
  * logoutMutation.mutate();
  */
 export function useLogout() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, void>({
     mutationFn: () => authRepository.logout(),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success(successTexts.logoutSuccess);
-      router.replace(ROUTES.login);
+      // Clear auth cache before navigation to ensure fresh state in route guards
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.auth.session });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.user.current });
+      navigate({ to: ROUTES.login, replace: true });
     },
     onError: (error) => {
       logger.error("Logout error:", { logout: error });
-    },
-    onSettled: () => {
-      queryClient.resetQueries({ queryKey: [QUERY_KEYS.user.current, QUERY_KEYS.auth.session] });
     },
     retry: false,
   });

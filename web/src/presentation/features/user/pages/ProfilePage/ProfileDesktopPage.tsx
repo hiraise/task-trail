@@ -1,5 +1,3 @@
-"use client";
-
 import { TEXTS } from "@/shared/locales/texts";
 
 import {

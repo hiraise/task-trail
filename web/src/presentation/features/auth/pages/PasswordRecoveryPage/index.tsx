@@ -1,3 +1,2 @@
-export { PasswordRecoveryMobilePage } from "./PasswordRecoveryMobilePage";
-export { PasswordRecoveryDesktopPage } from "./PasswordRecoveryDesktopPage";
+export { PasswordRecoveryPage } from "./PasswordRecoveryPage";
 export { ConfirmPasswordRecoveryMobilePage } from "./ConfirmPasswordRecoveryMobilePage";

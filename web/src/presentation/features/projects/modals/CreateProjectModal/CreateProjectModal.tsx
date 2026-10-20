@@ -1,4 +1,3 @@
-"use client";
 import { useEffect } from "react";
 
 import type { BaseModalProps } from "@/presentation/shared";

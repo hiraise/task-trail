@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useParams } from "next/navigation";
+import { useParams } from "@tanstack/react-router";
 
 import { isProjectMemberOwner, type ProjectMember } from "@/domain/models/ProjectMember";
 import type { ProjectId } from "@/domain/types";
@@ -16,7 +16,8 @@ interface MembersListProps {
 }
 
 export function MembersList({ group, members }: MembersListProps) {
-  const projectId = useParams().id as ProjectId;
+  const { id } = useParams({ from: "/_main/projects/$id/members" });
+  const projectId = id as ProjectId;
   const { data: currentUser } = useGetCurrentUser();
   const { showMemberActions } = useGlobalModals();
 

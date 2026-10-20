@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { ResetPasswordPayload } from "@/application/payloads";
@@ -28,14 +26,14 @@ import { ROUTES } from "@/shared/config/routes";
  * ```
  */
 export function useResetPassword() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { resetPassword } = authRepository;
 
   return useMutation<void, Error, ResetPasswordPayload>({
     mutationFn: (payload) => resetPassword(payload.token, payload.password),
     onSuccess: () => {
       toast.success("Пароль успешно изменен");
-      router.replace(ROUTES.login);
+      navigate({ to: ROUTES.login, replace: true });
     },
     onError: (error) => {
       logger.error("Ошибка при сбросе пароля:", { error });

@@ -1,15 +1,14 @@
-"use client";
-
 import clsx from "clsx";
 
 import { Icon } from "../Icon";
 
 import styles from "./IconButton.module.css";
+import type { ComponentType } from "react";
 
 type IconButtonVariant = "primary" | "ghost" | "danger";
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: ComponentType<React.SVGProps<SVGSVGElement>>;
   variant?: IconButtonVariant;
   size?: string;
 }

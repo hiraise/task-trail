@@ -1,7 +1,4 @@
-"use client";
-
-import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useSearch } from "@tanstack/react-router";
 
 import { SubmitButton } from "@/presentation/shared";
 import { ASSETS } from "@/shared/config/assets";
@@ -14,10 +11,10 @@ import { useResendEmailVerification } from "../../hooks";
 import styles from "./ConfirmSignupMobilePage.module.css";
 
 export function ConfirmSignupMobilePage() {
-  const email = useSearchParams().get("email") || "";
+  const { email } = useSearch({ from: "/auth/signup/confirm" });
   const { mutateAsync: resendVerification } = useResendEmailVerification();
 
-  if (email.length === 0) return null;
+  if (!email || email.length === 0) return null;
 
   return (
     <div className={styles.container}>
@@ -27,7 +24,7 @@ export function ConfirmSignupMobilePage() {
           <CheckEmailMessage email={email} />
         </TitleWrapper>
 
-        <Image
+        <img
           className={styles.cover}
           src={ASSETS.images.resendVerification}
           alt={authTexts.checkEmailAlt}

@@ -1,13 +1,10 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { LeaveProjectPayload } from "@/application/payloads";
 import { logger } from "@/infrastructure/config/clientLogger";
 import { projectMemberRepository } from "@/infrastructure/repositories";
-import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 /**
@@ -30,10 +27,9 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
  *
  * @see {@link useMutation} for more details on the mutation object.
  * @see {@link QUERY_KEYS} for query key definitions.
- * @see {@link ROUTES} for route definitions.
  */
 export function useLeaveProject() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { leaveProject } = projectMemberRepository;
 
@@ -41,7 +37,7 @@ export function useLeaveProject() {
     mutationFn: (payload) => leaveProject(payload.projectId),
     onSuccess: (_, { projectId }) => {
       queryClient.removeQueries({ queryKey: QUERY_KEYS.project.detail(projectId) });
-      router.replace(ROUTES.projects);
+      navigate({ to: "/projects", replace: true });
       toast.success("You have left the project");
     },
     onError: (error) => {

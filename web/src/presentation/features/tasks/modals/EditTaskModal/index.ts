@@ -1,1 +1,1 @@
-export { default as EditTaskModal } from "./EditTaskModal";
+export { EditTaskModal } from "./EditTaskModal";

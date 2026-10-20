@@ -1,10 +1,9 @@
-import { useParams } from "next/navigation";
+import { useParams } from "@tanstack/react-router";
 
 import type { ProjectId, UserId } from "@/domain/types";
 import { MembersAvatarList } from "@/presentation/shared";
 import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
-import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
 
 import {
@@ -18,8 +17,8 @@ import { useProjectDetail } from "../../hooks";
 import styles from "./ProjectMobilePage.module.css";
 
 export function ProjectMobilePage() {
-  const params = useParams();
-  const projectId = params.id as ProjectId;
+  const { id } = useParams({ from: "/_main/projects/$id/" });
+  const projectId = id as ProjectId;
   const { data } = useProjectDetail(projectId);
   const { showProjectSettings } = useGlobalModals();
 
@@ -53,7 +52,11 @@ interface ProjectMembersProps {
 function ProjectMembers({ projectId, memberIds }: ProjectMembersProps) {
   return (
     <div className={styles.members}>
-      <ProjectMenuButton href={ROUTES.projectMembers(projectId)} text={TEXTS.projects.members} />
+      <ProjectMenuButton
+        to="/projects/$id/members"
+        params={{ id: projectId }}
+        text={TEXTS.projects.members}
+      />
       <MembersAvatarList memberIds={memberIds} variant="large" />
     </div>
   );

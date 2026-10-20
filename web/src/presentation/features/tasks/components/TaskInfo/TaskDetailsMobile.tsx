@@ -4,9 +4,10 @@ import { Icon } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 
 import styles from "./TaskDetailsMobile.module.css";
+import type { ComponentType } from "react";
 
 interface TaskDetailsMobileProps {
-  icon: React.FC<React.SVGProps<SVGElement>>;
+  icon: ComponentType<React.SVGProps<SVGSVGElement>>;
   label?: string;
   onClick: () => void;
   placeholder?: string;

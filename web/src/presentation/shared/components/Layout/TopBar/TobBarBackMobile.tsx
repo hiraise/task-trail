@@ -1,10 +1,6 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-
+import { useNavigate } from "@tanstack/react-router";
 import { ICONS } from "@/shared/config/icons";
-
-import { IconButton } from "../../../ui/IconButton";
+import { IconButton } from "@/presentation/shared/ui";
 
 import styles from "./TobBarBackMobile.module.css";
 
@@ -21,7 +17,7 @@ export function TopBarBackMobile({
   variant = "none",
   onActionClick,
 }: TopBarBackMobileProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   let content: React.ReactNode;
 
@@ -42,7 +38,11 @@ export function TopBarBackMobile({
 
   return (
     <div className={styles.container}>
-      <IconButton icon={ICONS.leftArrowWithPadding} size="24px" onClick={() => router.back()} />
+      <IconButton
+        icon={ICONS.leftArrowWithPadding}
+        size="24px"
+        onClick={() => navigate({ to: ".." })}
+      />
       <h4 className={styles.title}>{title}</h4>
       {content}
     </div>

@@ -1,7 +1,9 @@
+import type { ComponentType, SVGProps } from "react";
+
 export interface MenuItem {
   label: string;
   onClick: () => void;
   isVisible: boolean;
-  icon?: React.FC<React.SVGProps<SVGElement>>;
+  icon?: ComponentType<SVGProps<SVGSVGElement>>;
   color?: string;
 }

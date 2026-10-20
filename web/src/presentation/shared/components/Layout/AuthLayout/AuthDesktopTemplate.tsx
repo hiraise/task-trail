@@ -1,8 +1,5 @@
-"use client";
-
 import { ICONS } from "@/shared/config/icons";
-
-import { Icon } from "../../../ui";
+import { Icon } from "@/presentation/shared/ui";
 
 import styles from "./AuthDesktopTemplate.module.css";
 

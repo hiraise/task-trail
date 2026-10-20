@@ -1,5 +1,3 @@
-"use client";
-
 import { ContentTopBarMobile } from "@/presentation/shared";
 import { PagesMobileTemplate, TopBarMobile } from "@/presentation/shared/components/Layout";
 import { TabType } from "@/presentation/shared/components/TabPanel";

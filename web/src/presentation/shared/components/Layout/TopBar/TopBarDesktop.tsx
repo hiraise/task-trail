@@ -1,8 +1,6 @@
-"use client";
-
 import { ICONS } from "@/shared/config/icons";
+import { Icon } from "@/presentation/shared/ui";
 
-import { Icon } from "../../../ui/Icon";
 import { SubmitButton } from "../../SubmitButton";
 
 import styles from "./TopBarDesktop.module.css";

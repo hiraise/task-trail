@@ -1,1 +1,1 @@
-export { default as ChangeTaskStatusModal } from "./ChangeTaskStatusModal";
+export { ChangeTaskStatusModal } from "./ChangeTaskStatusModal";

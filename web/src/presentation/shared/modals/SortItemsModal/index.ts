@@ -1,1 +1,1 @@
-export { default as SortItemsModal } from "./SortItemsModal";
+export { SortItemsModal } from "./SortItemsModal";

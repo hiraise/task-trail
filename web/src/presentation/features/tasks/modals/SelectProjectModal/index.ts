@@ -1,1 +1,1 @@
-export { default as SelectProjectModal } from "./SelectProjectModal";
+export { SelectProjectModal } from "./SelectProjectModal";

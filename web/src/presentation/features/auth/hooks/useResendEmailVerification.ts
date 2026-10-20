@@ -1,13 +1,10 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import type { EmailPayload } from "@/application/payloads";
 import { logger } from "@/infrastructure/config/clientLogger";
 import { authRepository } from "@/infrastructure/repositories";
-import { ROUTES } from "@/shared/config/routes";
 
 /**
  * Custom hook to handle the resend email verification functionality.
@@ -37,12 +34,12 @@ import { ROUTES } from "@/shared/config/routes";
  * - On error, an error message is logged and displayed to the user via a toast notification.
  */
 export function useResendEmailVerification() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { resendEmailVerification } = authRepository;
 
   return useMutation<string, Error, EmailPayload>({
     mutationFn: (payload) => resendEmailVerification(payload.email),
-    onSuccess: (email) => router.push(ROUTES.signUpConfirm(email)),
+    onSuccess: (email) => navigate({ to: "/auth/signup/confirm", params: { email } }),
     onError: (error) => {
       logger.error("Failed to resend verification", { error });
       toast.error(error.message ?? "Не удалось отправить письмо с подтверждением");

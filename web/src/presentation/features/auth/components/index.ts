@@ -4,3 +4,4 @@ export { SignupFormDesktop, SignupFormMobile } from "./SignUpForm";
 export { TitleWrapper } from "./TitleWrapper";
 export { AuthBackground } from "./AuthBackground";
 export { BottomContent } from "./BottomContent";
+export { PasswordResetForm } from "./PasswordResetForm";

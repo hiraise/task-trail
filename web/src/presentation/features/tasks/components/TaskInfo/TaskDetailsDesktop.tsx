@@ -1,5 +1,5 @@
 import { AnimatePresence, motion as m } from "framer-motion";
-import { useState } from "react";
+import { useState, type ComponentType, type SVGProps } from "react";
 
 import { Icon } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
@@ -7,7 +7,7 @@ import { ICONS } from "@/shared/config/icons";
 import styles from "./TaskDetailsDesktop.module.css";
 
 interface TaskDetailsProps {
-  icon: React.FC<React.SVGProps<SVGElement>>;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   label: string;
   text: string;
   onClick: () => void;
