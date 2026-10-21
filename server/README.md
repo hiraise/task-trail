@@ -28,7 +28,7 @@ make mock           # пересоздать моки в test/mocks после �
 | --- | --- | --- | --- |
 | `APP_DEBUG` | да | `true` | подробные логи |
 | `APP_ROOT_PATH` | да | пусто или `/tasktrail/api` | префикс путей API: от него считаются путь cookie обновления токена и Swagger |
-| `PG_CONNECTION_STRING` | да | `postgresql://user:password@localhost:5432/tasktrail` | подключение к PostgreSQL |
+| `PG_CONNECTION_STRING` | да | `postgresql://user:password@localhost:5432/tasktrail` | подключение к PostgreSQL; `@`, `+`, `%` и другие спецсимволы в пароле — в процент-кодировке, например `@` → `%40` |
 | `PG_MAX_POOL_SIZE` | да | `10` | максимум одновременных подключений к базе |
 | `PG_MIGRATION_ENABLED` | нет | `false` | применять миграции при запуске |
 | `PG_MIGRATION_PATH` | при включённых миграциях | `file://migrations` | папка миграций |

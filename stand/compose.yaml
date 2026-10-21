@@ -7,13 +7,15 @@ name: tasktrail
 
 services:
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: tasktrail
       POSTGRES_USER: tasktrail
       POSTGRES_PASSWORD: tasktrail
+    # С PostgreSQL 18 данные лежат в /var/lib/postgresql/<версия>/docker, поэтому том — на
+    # /var/lib/postgresql: при следующем переходе версии новый том не понадобится
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U tasktrail -d tasktrail"]
       interval: 2s
@@ -96,4 +98,4 @@ services:
         condition: service_healthy
 
 volumes:
-  pgdata:
+  postgres:

@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /code
 
 ARG ROOT_PATH
@@ -15,7 +15,7 @@ COPY src/ /code/src/
 COPY public/ /code/public/
 RUN npm run build
 
-FROM nginx:1.27-alpine
+FROM nginx:1.30-alpine
 ARG ROOT_PATH
 ENV ROOT_PATH=$ROOT_PATH
 COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template

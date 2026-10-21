@@ -13,7 +13,8 @@ SPA на React и TypeScript: вход и регистрация, проекты
 
 ## Запуск
 
-Нужен Node.js — версия в `engines` в `package.json`. Команды — из папки `web/`:
+Нужны Node.js и npm версий из `engines` в `package.json`; другие npm отвергает сам (`.npmrc`).
+Команды — из папки `web/`:
 
 ```bash
 npm ci            # зависимости по package-lock.json
