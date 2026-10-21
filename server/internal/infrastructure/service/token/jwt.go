@@ -19,6 +19,7 @@ type JWTTokenService struct {
 	rtSecret   []byte
 	iss        string
 	uuidGen    *id.UUIDGenerator
+	clock      service.Clock
 }
 
 // New принимает ключи подписи access- и refresh-токенов: они разные, чтобы refresh-токен
@@ -29,6 +30,7 @@ func New(
 	rtKey []byte,
 	tokenIssuer string,
 	uuidGenerator *id.UUIDGenerator,
+	clock service.Clock,
 ) *JWTTokenService {
 	return &JWTTokenService{
 		atSecret:   atKey,
@@ -36,6 +38,7 @@ func New(
 		rtSecret:   rtKey,
 		iss:        tokenIssuer,
 		uuidGen:    uuidGenerator,
+		clock:      clock,
 	}
 }
 
@@ -52,7 +55,7 @@ func (s *JWTTokenService) GenerateTokensPair(userID entity.UserID, rtEntity *ent
 }
 
 func (s *JWTTokenService) GenerateAccessToken(userID entity.UserID) (service.IssuedToken, error) {
-	exp := time.Now().Add(s.atLifeTime)
+	exp := s.clock.Now().Add(s.atLifeTime)
 	claims := jwt.MapClaims{
 		"sub": userID,
 		"exp": exp.Unix(),
@@ -126,7 +129,7 @@ func (s *JWTTokenService) VerifyRefreshToken(token string) (string, string, erro
 func (s *JWTTokenService) verifyToken(token string, secret []byte) (jwt.MapClaims, error) {
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		return secret, nil
-	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}), jwt.WithTimeFunc(s.clock.Now))
 	if err != nil {
 		return nil, err
 	}

@@ -275,7 +275,7 @@ function checkStandPorts() {
 // Текущее время сервер берёт из Clock (ADR-0022): time.Now, time.Since и time.Until — только
 // в реализации Clock, в тестах и для замера длительности в middleware/log.go. Остальных вызовов
 // не становится больше: перевёл на Clock — снизь порог.
-const TIME_CALL_LIMIT = 14;
+const TIME_CALL_LIMIT = 11;
 
 function checkClock() {
   const allowed = (path) =>

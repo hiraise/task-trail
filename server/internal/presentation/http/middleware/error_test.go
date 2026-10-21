@@ -7,11 +7,13 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"task-trail/internal/domain"
 	"task-trail/internal/infrastructure/service/id"
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/presentation/http/middleware"
+	"task-trail/test/clock"
 	"task-trail/test/contract"
 
 	"github.com/gin-gonic/gin"
@@ -33,7 +35,7 @@ type changePasswordReq struct {
 func engine(method, path string, handler gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	e := gin.New()
-	middleware.Setup(e, id.New(), contextmanager.NewGin("at", "rt"), nopLogger{})
+	middleware.Setup(e, id.New(), contextmanager.NewGin("at", "rt", clock.New(time.Now())), nopLogger{})
 	e.Handle(method, path, handler)
 	return e
 }

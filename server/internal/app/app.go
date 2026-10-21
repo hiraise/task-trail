@@ -7,6 +7,7 @@ import (
 	"task-trail/internal/customerrors"
 	"task-trail/internal/domain/factory"
 	"task-trail/internal/infrastructure/repository/persistent"
+	"task-trail/internal/infrastructure/service/clock"
 	"task-trail/internal/infrastructure/service/id"
 	"task-trail/internal/infrastructure/service/keys"
 	notification "task-trail/internal/infrastructure/service/notification/access"
@@ -54,15 +55,17 @@ func Run(cfg *config.Config) {
 	// init services
 	pwdService := password.New(passwordHashCost)
 	idGen := id.New()
+	systemClock := clock.New()
 	accessTokenService := token.New(
 		keys.Derive(cfg.App.Secret, keys.AccessToken),
 		accessTokenLifetime,
 		keys.Derive(cfg.App.Secret, keys.RefreshToken),
 		tokenIssuer,
 		idGen,
+		systemClock,
 	)
 	errHandler := customerrors.NewErrHander()
-	contextManager := contextmanager.NewGin(accessTokenCookie, refreshTokenCookie)
+	contextManager := contextmanager.NewGin(accessTokenCookie, refreshTokenCookie, systemClock)
 	smtp := email.New(logger, cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.User, cfg.SMTP.Password, cfg.SMTP.Sender)
 	accessNotifier := notification.NewSmtpAccessNotifier(smtp, idGen, cfg.Frontend.VerifyURL, cfg.Frontend.ResetPasswordURL)
 

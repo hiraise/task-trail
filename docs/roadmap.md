@@ -40,8 +40,11 @@
      (`APP_SECRET` и ключи из него — `infrastructure/service/keys`, константы в `internal/app/app.go`,
      встроенные миграции через pgx), таблица `settings` с шифрованием секретов
      (`infrastructure/service/secretbox`, `persistent/settings.go`), интеграционные тесты на
-     PostgreSQL (`test/testdb`), импорты слоёв в `scripts/rules.mjs`.
+     PostgreSQL (`test/testdb`), импорты слоёв в `scripts/rules.mjs`, часы `Clock` по ADR-0022
+     (на них уже переведены выдача JWT и cookie токенов).
    - 3.2. Доступ по контракту:
+     - сущности токенов, фабрики и репозитории доступа, которые меняешь, переводи на `Clock`
+       (ADR-0022) и снижай порог в `scripts/rules.mjs`;
      - эндпоинты `/v1/auth/*` и `GET /v1/settings/public` по контракту, тесты обработчиков
        с `contract.Load(t).Check(...)` (ADR-0019);
      - первый аккаунт — администратор (ADR-0014, ADR-0016), `users.is_admin`, адрес сервиса

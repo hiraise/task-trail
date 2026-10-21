@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"task-trail/internal/domain/service"
 
-	"time"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,10 +21,11 @@ type Gin interface {
 type GinContextManager struct {
 	ATName string
 	RTName string
+	clock  service.Clock
 }
 
-func NewGin(atName string, rtName string) *GinContextManager {
-	return &GinContextManager{ATName: atName, RTName: rtName}
+func NewGin(atName string, rtName string, clock service.Clock) *GinContextManager {
+	return &GinContextManager{ATName: atName, RTName: rtName, clock: clock}
 }
 
 func (m *GinContextManager) DeleteAccessToken(c *gin.Context, name string) {
@@ -42,8 +41,9 @@ func (m *GinContextManager) DeleteTokens(c *gin.Context, refreshPath string) {
 
 func (m *GinContextManager) SetTokens(c *gin.Context, at service.IssuedToken, rt service.IssuedToken, refreshPath string) {
 	c.SetSameSite(http.SameSiteLaxMode)
-	atTime := int(time.Until(at.ExpiredAt).Seconds())
-	rtTime := int(time.Until(rt.ExpiredAt).Seconds())
+	now := m.clock.Now()
+	atTime := int(at.ExpiredAt.Sub(now).Seconds())
+	rtTime := int(rt.ExpiredAt.Sub(now).Seconds())
 	c.SetCookie(m.ATName, at.Token, atTime, "/", "", true, true)
 	c.SetCookie(m.RTName, rt.Token, rtTime, refreshPath, "", true, true)
 }
