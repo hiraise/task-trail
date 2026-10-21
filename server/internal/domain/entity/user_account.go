@@ -23,7 +23,7 @@ type UserAccount struct {
 	PasswordHash string
 	Username     *string
 	// AvatarID — ID файла аватарки (ADR-0013) или nil.
-	AvatarID *string
+	AvatarID *FileID
 	// IsAdmin — администратор сервиса (ADR-0014).
 	IsAdmin    bool
 	VerifiedAt *time.Time
@@ -69,6 +69,21 @@ func (u *UserAccount) ResetPassword(newPassword string, pwdHasher password.Passw
 	u.PasswordHash = newHash
 	u.UpdatedAt = now
 	return nil
+}
+
+// Rename меняет имя; nil — имени нет, другим показывается почта (DisplayName).
+func (u *UserAccount) Rename(username *string, now time.Time) {
+	u.Username = username
+	u.UpdatedAt = now
+}
+
+// ReplaceAvatar ставит новую аватарку и возвращает прежнюю или nil: она больше не нужна,
+// её файл помечается удалённым (ADR-0013).
+func (u *UserAccount) ReplaceAvatar(fileID FileID, now time.Time) (previous *FileID) {
+	previous = u.AvatarID
+	u.AvatarID = &fileID
+	u.UpdatedAt = now
+	return previous
 }
 
 // DisplayName — как называть человека другим: имя, а если его нет — почта.

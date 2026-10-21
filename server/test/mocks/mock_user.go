@@ -100,6 +100,36 @@ func (mr *MockUserRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockUserRepository)(nil).GetByID), ctx, id)
 }
 
+// GetForUpdate mocks base method.
+func (m *MockUserRepository) GetForUpdate(ctx context.Context, id entity.UserID) (*entity.UserAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetForUpdate", ctx, id)
+	ret0, _ := ret[0].(*entity.UserAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetForUpdate indicates an expected call of GetForUpdate.
+func (mr *MockUserRepositoryMockRecorder) GetForUpdate(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetForUpdate", reflect.TypeOf((*MockUserRepository)(nil).GetForUpdate), ctx, id)
+}
+
+// GetVisible mocks base method.
+func (m *MockUserRepository) GetVisible(ctx context.Context, id, viewer entity.UserID) (*entity.UserAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetVisible", ctx, id, viewer)
+	ret0, _ := ret[0].(*entity.UserAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetVisible indicates an expected call of GetVisible.
+func (mr *MockUserRepositoryMockRecorder) GetVisible(ctx, id, viewer any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVisible", reflect.TypeOf((*MockUserRepository)(nil).GetVisible), ctx, id, viewer)
+}
+
 // LockRegistration mocks base method.
 func (m *MockUserRepository) LockRegistration(ctx context.Context) error {
 	m.ctrl.T.Helper()

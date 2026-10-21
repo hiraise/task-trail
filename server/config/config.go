@@ -20,6 +20,8 @@ type App struct {
 	Secret   string `env:"APP_SECRET,required,notEmpty"`
 	Port     string `env:"PORT" envDefault:"8080"`
 	RootPath string `env:"APP_ROOT_PATH"`
+	// FilesDir — папка файлов (ADR-0013); относительный путь — от рабочей папки сервера.
+	FilesDir string `env:"FILES_DIR" envDefault:"files"`
 	Debug    bool   `env:"APP_DEBUG" envDefault:"false"`
 }
 

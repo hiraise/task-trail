@@ -69,6 +69,9 @@ func findContract() (string, error) {
 }
 
 func load() (*Validator, error) {
+	// Файл из GET /v1/files/{fileId} — любого типа (`*/*` в контракте): незнакомый тип, например
+	// image/png, kin-openapi иначе не разберёт. JSON и другие известные типы разбираются как прежде.
+	openapi3filter.RegisterBodyDecoder("*/*", openapi3filter.FileBodyDecoder)
 	path, err := findContract()
 	if err != nil {
 		return nil, err

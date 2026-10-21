@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -46,8 +47,12 @@ type Server struct {
 	t        testing.TB
 	contract *contract.Validator
 	engine   *gin.Engine
-	Clock    *clock.Fixed
-	Pool     *pgxpool.Pool
+	// App — модули сервера: тест вызывает то, что сервер делает по расписанию, например очистку.
+	App   *app.Server
+	Clock *clock.Fixed
+	Pool  *pgxpool.Pool
+	// FilesDir — папка файлов сервера (FILES_DIR), своя у каждого теста.
+	FilesDir string
 	// Jar — cookie «браузера»: ответы их ставят и удаляют, запросы отправляют по пути.
 	Jar http.CookieJar
 }
@@ -65,7 +70,9 @@ func New(t testing.TB, v *contract.Validator) *Server {
 	gin.SetMode(gin.TestMode)
 	pool := testdb.New(t)
 	clk := clock.New(Start)
-	srv, err := app.New(pool, &config.Config{App: config.App{Secret: Secret}}, clk, nopLogger{}, app.WithPasswordHashCost(bcrypt.MinCost))
+	filesDir := t.TempDir()
+	cfg := &config.Config{App: config.App{Secret: Secret, FilesDir: filesDir}}
+	srv, err := app.New(pool, cfg, clk, nopLogger{}, app.WithPasswordHashCost(bcrypt.MinCost))
 	if err != nil {
 		t.Fatalf("сборка сервера: %v", err)
 	}
@@ -73,11 +80,11 @@ func New(t testing.TB, v *contract.Validator) *Server {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &Server{t: t, contract: v, engine: srv.Engine, Clock: clk, Pool: pool, Jar: jar}
+	return &Server{t: t, contract: v, engine: srv.Engine, App: srv, Clock: clk, Pool: pool, FilesDir: filesDir, Jar: jar}
 }
 
 // Do отправляет запрос с cookie из Jar, сверяет ответ с контрактом и сохраняет новые cookie.
-// body — значение для JSON или строка с готовым JSON; replace — cookie, которые запрос
+// body — значение для JSON, строка с готовым JSON или Multipart; replace — cookie, которые запрос
 // отправит вместо одноимённых из Jar (например, старый refresh-токен).
 func (s *Server) Do(method, path string, body any, replace ...*http.Cookie) *httptest.ResponseRecorder {
 	s.t.Helper()
@@ -93,13 +100,51 @@ func (s *Server) Get(path string) *httptest.ResponseRecorder {
 	return rec
 }
 
+// Part — поле multipart/form-data: файл, если задано FileName.
+type Part struct {
+	Name     string
+	FileName string
+	Content  []byte
+}
+
+// Multipart — тело multipart/form-data для Do.
+type Multipart []Part
+
+func (m Multipart) encode(t testing.TB) (io.Reader, string) {
+	t.Helper()
+	var body bytes.Buffer
+	w := multipart.NewWriter(&body)
+	for _, p := range m {
+		var part io.Writer
+		var err error
+		if p.FileName != "" {
+			part, err = w.CreateFormFile(p.Name, p.FileName)
+		} else {
+			part, err = w.CreateFormField(p.Name)
+		}
+		if err == nil {
+			_, err = part.Write(p.Content)
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := w.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return &body, w.FormDataContentType()
+}
+
 func (s *Server) do(method, path string, body any, replace ...*http.Cookie) (*http.Request, *httptest.ResponseRecorder) {
 	s.t.Helper()
 	var reader io.Reader
+	contentType := "application/json"
 	switch b := body.(type) {
 	case nil:
 	case string:
 		reader = bytes.NewBufferString(b)
+	case Multipart:
+		reader, contentType = b.encode(s.t)
 	default:
 		data, err := json.Marshal(b)
 		if err != nil {
@@ -109,7 +154,7 @@ func (s *Server) do(method, path string, body any, replace ...*http.Cookie) (*ht
 	}
 	req := httptest.NewRequest(method, BaseURL+path, reader)
 	if reader != nil {
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Content-Type", contentType)
 	}
 	replaced := map[string]bool{}
 	for _, c := range replace {
@@ -142,7 +187,7 @@ func (s *Server) SaveMail(settings *entity.MailSettings) {
 // InvitationLifetime — срок приглашения (ADR-0016).
 const InvitationLifetime = 7 * 24 * time.Hour
 
-// CreateProject создаёт проект прямо в базе: API проектов появится в шаге 4 этапа 1.
+// CreateProject создаёт проект прямо в базе: API проектов появится в шаге 4.2 этапа 1.
 func (s *Server) CreateProject(name string) string {
 	s.t.Helper()
 	projectID := id.New().Generate()
@@ -152,8 +197,41 @@ func (s *Server) CreateProject(name string) string {
 	return projectID
 }
 
+// AddMember делает пользователя участником проекта прямо в базе — до API участников (шаг 4.2).
+func (s *Server) AddMember(projectID, userID string, role entity.ProjectRole) {
+	s.t.Helper()
+	_, err := s.Pool.Exec(context.Background(),
+		`INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, $3)`, projectID, userID, role)
+	if err != nil {
+		s.t.Fatal(err)
+	}
+}
+
+// RemoveMember исключает пользователя из проекта прямо в базе — до API участников (шаг 4.2).
+func (s *Server) RemoveMember(projectID, userID string) {
+	s.t.Helper()
+	_, err := s.Pool.Exec(context.Background(),
+		`DELETE FROM project_members WHERE project_id = $1 AND user_id = $2`, projectID, userID)
+	if err != nil {
+		s.t.Fatal(err)
+	}
+}
+
+// CreateTask создаёт задачу прямо в базе — до API задач (шаг 4.3) — и возвращает её ID.
+func (s *Server) CreateTask(projectID, authorID, name string) string {
+	s.t.Helper()
+	taskID := id.New().Generate()
+	_, err := s.Pool.Exec(context.Background(),
+		`INSERT INTO tasks (id, project_id, author_id, name, status) VALUES ($1, $2, $3, $4, 'open')`,
+		taskID, projectID, authorID, name)
+	if err != nil {
+		s.t.Fatal(err)
+	}
+	return taskID
+}
+
 // Invite приглашает email в проект от inviterID и возвращает токен ссылки. Приглашение
-// пишется прямо в базу: приглашать через API можно будет с шага 4 этапа 1.
+// пишется прямо в базу: приглашать через API можно будет с шага 4.2 этапа 1.
 func (s *Server) Invite(projectID, email, inviterID string) string {
 	s.t.Helper()
 	f := factory.NewInvitationFactory(id.New(), linktoken.New(), s.Clock, InvitationLifetime)

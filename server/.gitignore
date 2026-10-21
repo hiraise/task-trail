@@ -28,3 +28,6 @@ go.work.sum
 .DS_Store
 rules.txt
 cmd/sandbox
+
+# Файлы сервера (FILES_DIR по умолчанию), когда он запущен из server/
+/files/

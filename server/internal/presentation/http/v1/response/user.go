@@ -2,23 +2,32 @@ package response
 
 import "task-trail/internal/domain/entity"
 
-// CurrentUser — пользователь, который вошёл (CurrentUser в контракте).
-type CurrentUser struct {
+// User — пользователь, каким его видят другие (User в контракте).
+type User struct {
 	ID       string  `json:"id"`
 	Email    string  `json:"email"`
 	Username *string `json:"username"`
+	// AvatarID — ID файла для GET /v1/files/{fileId} или null.
 	AvatarID *string `json:"avatarId"`
-	IsAdmin  bool    `json:"isAdmin"`
+}
+
+func NewUser(u *entity.UserAccount) User {
+	var avatarID *string
+	if u.AvatarID != nil {
+		id := string(*u.AvatarID)
+		avatarID = &id
+	}
+	return User{ID: string(u.ID), Email: string(u.Email), Username: u.Username, AvatarID: avatarID}
+}
+
+// CurrentUser — пользователь, который вошёл (CurrentUser в контракте).
+type CurrentUser struct {
+	User
+	IsAdmin bool `json:"isAdmin"`
 }
 
 func NewCurrentUser(u *entity.UserAccount) CurrentUser {
-	return CurrentUser{
-		ID:       string(u.ID),
-		Email:    string(u.Email),
-		Username: u.Username,
-		AvatarID: u.AvatarID,
-		IsAdmin:  u.IsAdmin,
-	}
+	return CurrentUser{User: NewUser(u), IsAdmin: u.IsAdmin}
 }
 
 // PublicSettings — настройки, нужные вебу до входа.

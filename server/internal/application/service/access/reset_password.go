@@ -37,7 +37,7 @@ func (s *ResetPasswordService) Execute(ctx context.Context, data dto.ResetPasswo
 		if reset.IsExpired(now) {
 			return domain.ErrLinkInvalid("userID", reset.UserID, "reason", "password reset link expired")
 		}
-		user, err := s.userRepository.GetByID(ctx, reset.UserID)
+		user, err := s.userRepository.GetForUpdate(ctx, reset.UserID)
 		if isEntityNotFound(err) {
 			return domain.ErrLinkInvalid("userID", reset.UserID, "reason", "user not found")
 		}

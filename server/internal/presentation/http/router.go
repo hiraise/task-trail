@@ -1,7 +1,6 @@
 package http
 
 import (
-	"task-trail/internal/application/service/access"
 	"task-trail/internal/pkg/contextmanager"
 	v1 "task-trail/internal/presentation/http/v1"
 
@@ -13,8 +12,8 @@ func NewRouter(
 	contextmanager *contextmanager.GinContextManager,
 	authMW gin.HandlerFunc,
 	adminMW gin.HandlerFunc,
-	accessModule *access.AccessModule,
+	modules v1.Modules,
 ) {
-	v1.NewRouter(app, contextmanager, authMW, accessModule)
+	v1.NewRouter(app, contextmanager, authMW, modules)
 	newDocsRouter(app, authMW, adminMW)
 }

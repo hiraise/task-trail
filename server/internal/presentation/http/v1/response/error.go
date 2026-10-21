@@ -17,6 +17,8 @@ const (
 	CodeInvitationAccepted ErrorCode = "INVITATION_ACCEPTED"
 	CodeMailDisabled       ErrorCode = "MAIL_DISABLED"
 	CodeMailSendFailed     ErrorCode = "MAIL_SEND_FAILED"
+	CodeFileTooLarge       ErrorCode = "FILE_TOO_LARGE"
+	CodeFileTypeNotAllowed ErrorCode = "FILE_TYPE_NOT_ALLOWED"
 	CodeInternal           ErrorCode = "INTERNAL"
 )
 
