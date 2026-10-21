@@ -10,7 +10,11 @@ export const UserSchema = z.object({
   id: UserIdSchema,
   email: z.email(),
   username: z.string().optional().nullable(),
-  avatarUrl: z.url().optional(),
+  // Сервер отдаёт null, пока аватарки нет; без nullish разбор падал, и вход возвращал на страницу логина
+  avatarUrl: z
+    .url()
+    .nullish()
+    .transform((value) => value ?? undefined),
 });
 
 export type User = z.infer<typeof UserSchema>;

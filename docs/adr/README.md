@@ -20,4 +20,4 @@ AI-агенты, поэтому ADR пишутся в первую очеред�
 | [0007](0007-server-architecture.md) | Сервер — слои DDD, домен не зависит от остальных слоёв | Принято | `server/internal/`, `server/test/mocks/` |
 | [0008](0008-web-architecture.md) | Веб — слои по образцу clean architecture, один адаптивный компонент на экран | Принято | `web/src/` |
 | [0009](0009-checks-and-ci.md) | Проверки — в `scripts/dev.sh`, CI запускает их на каждый PR; `main` меняется только через PR | Принято | `scripts/`, `.github/workflows/`, `server/.golangci.yml`, CLAUDE.md «Сборка и проверка» |
-| [0010](0010-local-development.md) | Разработка и приёмка — на локальной машине, без dev-стенда | Принято | `.github/workflows/`, `scripts/dev.sh`, настройки окружения сервера и веба |
+| [0010](0010-local-development.md) | Разработка и приёмка — на локальной машине, без dev-стенда | Принято | `.github/workflows/`, `scripts/dev.sh`, `stand/`, настройки окружения сервера и веба |

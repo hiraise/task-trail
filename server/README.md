@@ -51,4 +51,3 @@ make mock           # пересоздать моки в test/mocks после �
 | `FRONTEND_PROJECT_URL` | да | `http://localhost:3000/projects/` | ссылка на проект в письмах |
 | `SWAGGER_ENABLED` | нет | `true` | Swagger по адресу `/docs/` |
 | `SWAGGER_LOGIN`, `SWAGGER_PASSWORD` | нет | `root`, `root` | Basic-авторизация Swagger; поменяйте, если сервер доступен не только вам |
-| `S3_ENABLED` | нет | `true` | хранилище файлов S3. Код S3 удалён при переработке — ставьте `false`, иначе потребуются все `S3_*` |
