@@ -1,6 +1,6 @@
 # ADR-0013: Файлы хранятся на диске сервера и отдаются через API
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** таблица `files` в `server/migrations/`, загрузка и выдача файлов в `server/internal/`, `server/config/config.go`, `stand/compose.yaml`, `stand/nginx.conf.template`, загрузка аватарки в `web/src/`
 
