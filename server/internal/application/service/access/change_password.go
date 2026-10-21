@@ -2,7 +2,6 @@ package access
 
 import (
 	"context"
-	"errors"
 	"task-trail/internal/application/dto"
 	"task-trail/internal/application/transaction"
 	"task-trail/internal/domain"
@@ -22,12 +21,11 @@ type ChangePasswordService struct {
 func (s *ChangePasswordService) Execute(ctx context.Context, userID string, passwords dto.ChangePassword) error {
 	f := func(ctx context.Context) error {
 		user, err := s.userRepository.GetByID(ctx, entity.UserID(userID))
+		if isEntityNotFound(err) {
+			// Пользователя удалили, а access-токен ещё жив: сессия недействительна
+			return domain.ErrWrongAccessToken("userID", userID, "reason", "user not found")
+		}
 		if err != nil {
-			var e *domain.DomainError
-			if errors.As(err, &e) && e.Code == domain.EntityNotFound {
-				// Пользователя удалили, а access-токен ещё жив: сессия недействительна
-				return domain.ErrWrongAccessToken("userID", userID, "reason", "user not found")
-			}
 			return err
 		}
 		if err := user.VerifyOldPassword(passwords.OldPassword, s.pwdService); err != nil {

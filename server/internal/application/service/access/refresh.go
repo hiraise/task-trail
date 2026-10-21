@@ -2,7 +2,6 @@ package access
 
 import (
 	"context"
-	"errors"
 	"task-trail/internal/application/dto"
 	"task-trail/internal/application/transaction"
 	"task-trail/internal/domain"
@@ -67,25 +66,18 @@ func (s *RefreshService) Execute(ctx context.Context, rt string) (dto.Tokens, er
 
 func getUserToken(ctx context.Context, repo repository.RefreshTokenRepository, id entity.RefreshTokenID, userID entity.UserID) (*entity.RefreshToken, error) {
 	token, err := repo.GetForUpdate(ctx, id, userID)
+	if isEntityNotFound(err) {
+		return nil, domain.ErrRefreshTokenNotFound("tokenID", id, "userID", userID)
+	}
 	if err != nil {
-		var e *domain.DomainError
-		if errors.As(err, &e) && e.Code == domain.EntityNotFound {
-			return nil, domain.ErrRefreshTokenNotFound("tokenID", id, "userID", userID)
-		}
 		return nil, err
 	}
 	return token, nil
 }
 
-func isReuse(err error) bool {
-	var e *domain.DomainError
-	return errors.As(err, &e) && e.Code == domain.RefreshTokenReused
-}
+func isReuse(err error) bool { return hasCode(err, domain.RefreshTokenReused) }
 
-func isNotFound(err error) bool {
-	var e *domain.DomainError
-	return errors.As(err, &e) && e.Code == domain.RefreshTokenNotFound
-}
+func isNotFound(err error) bool { return hasCode(err, domain.RefreshTokenNotFound) }
 
 // revokeAll отзывает все токены пользователя после кражи. Вызывается после транзакции,
 // которая нашла кражу: внутри неё отзыв откатился бы вместе с ошибкой.

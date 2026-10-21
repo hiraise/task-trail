@@ -11,6 +11,8 @@ import (
 	"task-trail/internal/infrastructure/service/clock"
 	"task-trail/internal/infrastructure/service/id"
 	"task-trail/internal/infrastructure/service/keys"
+	"task-trail/internal/infrastructure/service/linktoken"
+	"task-trail/internal/infrastructure/service/notification"
 	"task-trail/internal/infrastructure/service/password"
 	"task-trail/internal/infrastructure/service/secretbox"
 	"task-trail/internal/infrastructure/service/token"
@@ -32,12 +34,14 @@ import (
 const (
 	accessTokenLifetime  = 15 * time.Minute
 	refreshTokenLifetime = 30 * 24 * time.Hour
-	tokenCleanupInterval = time.Hour
-	accessTokenCookie    = "at"
-	refreshTokenCookie   = "rt"
-	tokenIssuer          = "tasktrail"
-	pgMaxPoolSize        = 10
-	passwordHashCost     = 12
+	// Ссылку сброса из письма или от администратора человек может открыть не сразу
+	passwordResetLifetime = 24 * time.Hour
+	cleanupInterval       = time.Hour
+	accessTokenCookie     = "at"
+	refreshTokenCookie    = "rt"
+	tokenIssuer           = "tasktrail"
+	pgMaxPoolSize         = 10
+	passwordHashCost      = 12
 )
 
 // Server — HTTP-движок с модулями. Run запускает его, тесты обработчиков собирают так же.
@@ -82,20 +86,28 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	userFactory := factory.NewUserFactory(idGen, clk)
 	rtFactory := factory.NewRTFactory(idGen, clk, refreshTokenLifetime)
 	accessModule := access.New(access.Deps{
-		TxManager:           persistent.NewPgTxManager(pool),
-		Clock:               clk,
-		UserRepo:            persistent.NewUserRepo(pool, userFactory),
-		UserFactory:         userFactory,
-		PasswordService:     password.New(o.passwordHashCost),
-		RefreshTokenFactory: rtFactory,
-		RefreshTokenRepo:    persistent.NewRefreshTokenRepo(pool, rtFactory),
-		AccessTokenService:  accessTokenService,
-		SettingsRepo:        persistent.NewSettingsRepo(pool, box),
+		TxManager:            persistent.NewPgTxManager(pool),
+		Clock:                clk,
+		UserRepo:             persistent.NewUserRepo(pool, userFactory),
+		UserFactory:          userFactory,
+		PasswordService:      password.New(o.passwordHashCost),
+		RefreshTokenFactory:  rtFactory,
+		RefreshTokenRepo:     persistent.NewRefreshTokenRepo(pool, rtFactory),
+		AccessTokenService:   accessTokenService,
+		SettingsRepo:         persistent.NewSettingsRepo(pool, box),
+		PasswordResetFactory: factory.NewPasswordResetFactory(linktoken.New(), clk, passwordResetLifetime),
+		PasswordResetRepo:    persistent.NewPasswordResetRepo(pool),
+		InvitationRepo:       persistent.NewInvitationRepo(pool),
+		ProjectMemberRepo:    persistent.NewProjectMemberRepo(pool),
+		Mailer:               notification.NewSMTP(clk),
 	})
 
 	engine := gin.New()
 	middleware.Setup(engine, idGen, contextManager, l)
-	http.NewRouter(engine, cfg, contextManager, middleware.NewAuth(accessTokenService, contextManager), accessModule)
+	http.NewRouter(engine, contextManager,
+		middleware.NewAuth(accessTokenService, contextManager),
+		middleware.NewAdmin(accessModule.AdminCheck, contextManager),
+		accessModule)
 	return &Server{Engine: engine, Access: accessModule}, nil
 }
 
@@ -118,23 +130,23 @@ func Run(cfg *config.Config) {
 		logger.Error("server setup failed", "error", err.Error())
 		os.Exit(1)
 	}
-	go cleanupTokens(context.Background(), server.Access.Cleanup, logger, tokenCleanupInterval)
+	go cleanupExpired(context.Background(), server.Access.Cleanup, logger, cleanupInterval)
 	if err := server.Engine.Run(":" + cfg.App.Port); err != nil {
 		logger.Error("http server start failed", "error", err.Error())
 		os.Exit(1)
 	}
 }
 
-// cleanupTokens удаляет истёкшие refresh-токены при запуске и затем раз в interval,
-// пока ctx не отменён.
-func cleanupTokens(ctx context.Context, cleanup *access.CleanupService, l logger.Logger, interval time.Duration) {
+// cleanupExpired удаляет истёкшие токены, ссылки и приглашения при запуске и затем раз
+// в interval, пока ctx не отменён.
+func cleanupExpired(ctx context.Context, cleanup *access.CleanupService, l logger.Logger, interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
 		if deleted, err := cleanup.Execute(ctx); err != nil {
-			l.Error("token cleanup failed", "error", err.Error())
+			l.Error("cleanup failed", "error", err.Error())
 		} else if deleted > 0 {
-			l.Info("expired tokens deleted", "count", deleted)
+			l.Info("expired tokens and invitations deleted", "count", deleted)
 		}
 		select {
 		case <-ctx.Done():

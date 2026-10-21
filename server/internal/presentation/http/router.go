@@ -1,44 +1,20 @@
 package http
 
 import (
-	"task-trail/config"
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/pkg/contextmanager"
 	v1 "task-trail/internal/presentation/http/v1"
 
-	docs "task-trail/docs"
-
 	"github.com/gin-gonic/gin"
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
-
-// @title           Task Trail API
-// @version         1.0
-
-// @contact.name   HiRaise
-// @contact.url    https://hiraise.net/
-// @contact.email  musaev.ae@hiraise.net
-
-// @license.name  MIT License
-// @license.url   https://mit-license.org/
-// @securityDefinitions.apikey BearerAuth
-// @in cookie
-// @name at
 
 func NewRouter(
 	app *gin.Engine,
-	cfg *config.Config,
 	contextmanager *contextmanager.GinContextManager,
 	authMW gin.HandlerFunc,
+	adminMW gin.HandlerFunc,
 	accessModule *access.AccessModule,
 ) {
 	v1.NewRouter(app, contextmanager, authMW, accessModule)
-	if cfg.Docs.Enabled {
-		authMiddleware := gin.BasicAuth(gin.Accounts{
-			cfg.Docs.Login: cfg.Docs.Password, // логин и пароль
-		})
-		docs.SwaggerInfo.BasePath = cfg.App.RootPath
-		app.GET("/docs/*any", authMiddleware, ginSwagger.WrapHandler(swaggerfiles.Handler))
-	}
+	newDocsRouter(app, authMW, adminMW)
 }

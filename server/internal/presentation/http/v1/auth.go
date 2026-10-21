@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// authRoutes — вход, сессия и пароль: /v1/auth/* в контракте.
+// authRoutes — вход, сессия, пароль и приглашения: /v1/auth/* в контракте.
 type authRoutes struct {
 	cm       *contextmanager.GinContextManager
 	services *access.AccessModule
@@ -115,6 +115,66 @@ func (r *authRoutes) changePassword(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (r *authRoutes) forgotPassword(c *gin.Context) {
+	email, err := request.BindForgotPassword(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if err := r.services.ForgotPassword.Execute(c, email); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (r *authRoutes) resetPassword(c *gin.Context) {
+	data, err := request.BindResetPassword(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if err := r.services.ResetPassword.Execute(c, data); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (r *authRoutes) lookupInvitation(c *gin.Context) {
+	token, err := request.BindInvitationToken(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	info, err := r.services.InvitationLookup.Execute(c, token)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.InvitationInfo{
+		Email:       string(info.Email),
+		ProjectName: info.ProjectName,
+		InvitedBy:   info.InvitedBy,
+	})
+}
+
+func (r *authRoutes) acceptInvitation(c *gin.Context) {
+	data, err := request.BindAcceptInvitation(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	session, err := r.services.AcceptInvitation.Execute(c, data)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	r.cm.SetUserID(c, string(session.UserID))
+	r.cm.SetTokens(c, session.AccessToken, session.RefreshToken)
+	c.JSON(http.StatusCreated, response.NewCurrentUser(session.User))
+}
+
 func (r *authRoutes) publicSettings(c *gin.Context) {
 	settings, err := r.services.PublicSettings.Execute(c)
 	if err != nil {
@@ -142,4 +202,8 @@ func NewAuthRouter(
 	g.POST("/logout", r.logout)
 	g.GET("/check", authMW, r.check)
 	g.POST("/password/change", authMW, r.changePassword)
+	g.POST("/password/forgot", r.forgotPassword)
+	g.POST("/password/reset", r.resetPassword)
+	g.POST("/invitations/lookup", r.lookupInvitation)
+	g.POST("/invitations/accept", r.acceptInvitation)
 }

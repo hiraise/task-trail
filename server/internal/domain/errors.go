@@ -17,6 +17,18 @@ const (
 	WrongPassword      ErrorCode = "WRONG_PASSWORD"
 	PasswordSameAsOld  ErrorCode = "PASSWORD_SAME_AS_OLD"
 	RegistrationClosed ErrorCode = "REGISTRATION_CLOSED"
+	// Нужна роль администратора сервиса (ADR-0014)
+	Forbidden ErrorCode = "FORBIDDEN"
+
+	// Ссылка приглашения или сброса пароля неверна, использована или истекла
+	LinkInvalid ErrorCode = "LINK_INVALID"
+	// Аккаунт с почтой приглашения уже есть: ссылка ведёт на вход (ADR-0016)
+	InvitationAccepted ErrorCode = "INVITATION_ACCEPTED"
+
+	// Почта не подключена (ADR-0017)
+	MailDisabled ErrorCode = "MAIL_DISABLED"
+	// SMTP не принял письмо: не подключился, отказал во входе или в отправке
+	MailSendFailed ErrorCode = "MAIL_SEND_FAILED"
 
 	RefreshTokenNotFound ErrorCode = "REFRESH_TOKEN_NOT_FOUND"
 	RefreshTokenWrong    ErrorCode = "WRONG_REFRESH_TOKEN"
@@ -51,7 +63,7 @@ type DomainError struct {
 }
 
 func (e *DomainError) Error() string {
-	return fmt.Sprintf("code: %s, data: %s", e.Code, e.Metadata)
+	return fmt.Sprintf("code: %s, data: %v", e.Code, e.Metadata)
 }
 
 func (e *DomainError) Unwrap() error {
@@ -99,6 +111,26 @@ func ErrPasswordSameAsOld(data ...any) *DomainError {
 
 func ErrRegistrationClosed(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, RegistrationClosed, nil, data...)
+}
+
+func ErrForbidden(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, Forbidden, nil, data...)
+}
+
+func ErrLinkInvalid(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, LinkInvalid, nil, data...)
+}
+
+func ErrInvitationAccepted(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, InvitationAccepted, nil, data...)
+}
+
+func ErrMailDisabled(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, MailDisabled, nil, data...)
+}
+
+func ErrMailSendFailed(sourceErr error, data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, MailSendFailed, sourceErr, data...)
 }
 
 func ErrPasswordCompareFailed(sourceErr error, data ...any) *DomainError {

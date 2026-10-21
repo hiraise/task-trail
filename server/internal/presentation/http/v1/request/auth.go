@@ -32,6 +32,27 @@ type changePasswordReq struct {
 	NewPassword string `json:"newPassword" binding:"required,min=8,maxbytes=72"`
 }
 
+type forgotPasswordReq struct {
+	Email string `json:"email" binding:"required,email,max=254"`
+}
+
+func (r *forgotPasswordReq) normalize() { r.Email = string(entity.NewEmail(r.Email)) }
+
+type resetPasswordReq struct {
+	Token    string `json:"token" binding:"required"`
+	Password string `json:"password" binding:"required,min=8,maxbytes=72"`
+}
+
+type invitationTokenReq struct {
+	Token string `json:"token" binding:"required"`
+}
+
+type acceptInvitationReq struct {
+	Token    string `json:"token" binding:"required"`
+	Username string `json:"username" binding:"required,max=100"`
+	Password string `json:"password" binding:"required,min=8,maxbytes=72"`
+}
+
 func BindRegister(c *gin.Context) (dto.Register, error) {
 	body, err := validate[registerReq](c)
 	if err != nil {
@@ -54,6 +75,40 @@ func BindChangePassword(c *gin.Context) (dto.ChangePassword, error) {
 		return dto.ChangePassword{}, err
 	}
 	return dto.ChangePassword{OldPassword: body.OldPassword, NewPassword: body.NewPassword}, nil
+}
+
+// BindForgotPassword возвращает почту, приведённую к норме.
+func BindForgotPassword(c *gin.Context) (string, error) {
+	body, err := validate[forgotPasswordReq](c)
+	if err != nil {
+		return "", err
+	}
+	return body.Email, nil
+}
+
+func BindResetPassword(c *gin.Context) (dto.ResetPassword, error) {
+	body, err := validate[resetPasswordReq](c)
+	if err != nil {
+		return dto.ResetPassword{}, err
+	}
+	return dto.ResetPassword{Token: body.Token, Password: body.Password}, nil
+}
+
+// BindInvitationToken возвращает токен из ссылки приглашения.
+func BindInvitationToken(c *gin.Context) (string, error) {
+	body, err := validate[invitationTokenReq](c)
+	if err != nil {
+		return "", err
+	}
+	return body.Token, nil
+}
+
+func BindAcceptInvitation(c *gin.Context) (dto.AcceptInvitation, error) {
+	body, err := validate[acceptInvitationReq](c)
+	if err != nil {
+		return dto.AcceptInvitation{}, err
+	}
+	return dto.AcceptInvitation{Token: body.Token, Username: body.Username, Password: body.Password}, nil
 }
 
 // normalizer приводит поля к виду, в котором их проверяют и хранят, например почту

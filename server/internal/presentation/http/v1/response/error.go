@@ -14,6 +14,9 @@ const (
 	CodeWrongPassword      ErrorCode = "WRONG_PASSWORD"
 	CodePasswordSameAsOld  ErrorCode = "PASSWORD_SAME_AS_OLD"
 	CodeLinkInvalid        ErrorCode = "LINK_INVALID"
+	CodeInvitationAccepted ErrorCode = "INVITATION_ACCEPTED"
+	CodeMailDisabled       ErrorCode = "MAIL_DISABLED"
+	CodeMailSendFailed     ErrorCode = "MAIL_SEND_FAILED"
 	CodeInternal           ErrorCode = "INTERNAL"
 )
 

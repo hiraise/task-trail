@@ -5,6 +5,7 @@ package apitest
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -16,6 +17,13 @@ import (
 
 	"task-trail/config"
 	"task-trail/internal/app"
+	"task-trail/internal/domain/entity"
+	"task-trail/internal/domain/factory"
+	"task-trail/internal/infrastructure/repository/persistent"
+	"task-trail/internal/infrastructure/service/id"
+	"task-trail/internal/infrastructure/service/keys"
+	"task-trail/internal/infrastructure/service/linktoken"
+	"task-trail/internal/infrastructure/service/secretbox"
 	"task-trail/test/clock"
 	"task-trail/test/contract"
 	"task-trail/test/testdb"
@@ -73,6 +81,20 @@ func New(t testing.TB, v *contract.Validator) *Server {
 // отправит вместо одноимённых из Jar (например, старый refresh-токен).
 func (s *Server) Do(method, path string, body any, replace ...*http.Cookie) *httptest.ResponseRecorder {
 	s.t.Helper()
+	req, rec := s.do(method, path, body, replace...)
+	s.contract.Check(s.t, req, rec)
+	return rec
+}
+
+// Get — GET с cookie из Jar для путей вне контракта, например Swagger по /docs/.
+func (s *Server) Get(path string) *httptest.ResponseRecorder {
+	s.t.Helper()
+	_, rec := s.do(http.MethodGet, path, nil)
+	return rec
+}
+
+func (s *Server) do(method, path string, body any, replace ...*http.Cookie) (*http.Request, *httptest.ResponseRecorder) {
+	s.t.Helper()
 	var reader io.Reader
 	switch b := body.(type) {
 	case nil:
@@ -101,9 +123,45 @@ func (s *Server) Do(method, path string, body any, replace ...*http.Cookie) *htt
 	}
 	rec := httptest.NewRecorder()
 	s.engine.ServeHTTP(rec, req)
-	s.contract.Check(s.t, req, rec)
 	s.Jar.SetCookies(req.URL, rec.Result().Cookies())
-	return rec
+	return req, rec
+}
+
+// SaveMail подключает почту, как это сделает администратор в интерфейсе (ADR-0017).
+func (s *Server) SaveMail(settings *entity.MailSettings) {
+	s.t.Helper()
+	box, err := secretbox.New(keys.Derive(Secret, keys.SecretBox))
+	if err != nil {
+		s.t.Fatal(err)
+	}
+	if err := persistent.NewSettingsRepo(s.Pool, box).SaveMail(context.Background(), settings); err != nil {
+		s.t.Fatal(err)
+	}
+}
+
+// InvitationLifetime — срок приглашения (ADR-0016).
+const InvitationLifetime = 7 * 24 * time.Hour
+
+// CreateProject создаёт проект прямо в базе: API проектов появится в шаге 4 этапа 1.
+func (s *Server) CreateProject(name string) string {
+	s.t.Helper()
+	projectID := id.New().Generate()
+	if _, err := s.Pool.Exec(context.Background(), `INSERT INTO projects (id, name) VALUES ($1, $2)`, projectID, name); err != nil {
+		s.t.Fatal(err)
+	}
+	return projectID
+}
+
+// Invite приглашает email в проект от inviterID и возвращает токен ссылки. Приглашение
+// пишется прямо в базу: приглашать через API можно будет с шага 4 этапа 1.
+func (s *Server) Invite(projectID, email, inviterID string) string {
+	s.t.Helper()
+	f := factory.NewInvitationFactory(id.New(), linktoken.New(), s.Clock, InvitationLifetime)
+	token, invitation := f.New(entity.ProjectID(projectID), entity.NewEmail(email), entity.UserID(inviterID))
+	if err := persistent.NewInvitationRepo(s.Pool).Create(context.Background(), invitation); err != nil {
+		s.t.Fatal(err)
+	}
+	return token
 }
 
 // Cookie — значение cookie name, которое браузер отправит на path, или пустая строка.

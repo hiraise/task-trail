@@ -36,6 +36,11 @@ var apiErrorFor = map[domain.ErrorCode]response.ApiError{
 	domain.WrongPassword:      {Status: http.StatusUnprocessableEntity, Code: response.CodeWrongPassword, Message: "неверный текущий пароль"},
 	domain.PasswordSameAsOld:  {Status: http.StatusUnprocessableEntity, Code: response.CodePasswordSameAsOld, Message: "новый пароль совпадает с текущим"},
 	domain.RegistrationClosed: {Status: http.StatusConflict, Code: response.CodeRegistrationClosed, Message: "регистрация закрыта: первый аккаунт уже создан"},
+	domain.Forbidden:          {Status: http.StatusForbidden, Code: response.CodeForbidden, Message: "нужны права администратора сервиса"},
+	domain.LinkInvalid:        {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "ссылка неверна, использована или истекла"},
+	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "аккаунт с этой почтой уже есть, нужно войти"},
+	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "почта не подключена"},
+	domain.MailSendFailed:     {Status: http.StatusBadGateway, Code: response.CodeMailSendFailed, Message: "SMTP не принял письмо"},
 
 	domain.RefreshTokenNotFound: {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "нет сессии"},
 	domain.RefreshTokenWrong:    {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
@@ -70,6 +75,10 @@ func toAPIError(err error, l logger.Logger, reqID string) *response.ApiError {
 		// Ошибки репозитория без своего кода — тоже внутренние
 		l.Error(string(e.Code), append(args, "error", e.Unwrap())...)
 		return internalError()
+	}
+	if source := e.Unwrap(); source != nil {
+		// Причина отказа внешней службы, например ответ SMTP, — администратору в лог
+		args = append(args, "error", source)
 	}
 	l.Warn(string(e.Code), args...)
 	return &known

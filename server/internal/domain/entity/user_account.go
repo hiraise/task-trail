@@ -58,3 +58,23 @@ func (u *UserAccount) ChangePassword(newPassword string, pwdService password.Pas
 	u.UpdatedAt = now
 	return nil
 }
+
+// ResetPassword задаёт пароль по ссылке сброса: старый пароль человек не помнит, поэтому
+// и совпадение с ним не проверяется.
+func (u *UserAccount) ResetPassword(newPassword string, pwdHasher password.PasswordHasher, now time.Time) error {
+	newHash, err := pwdHasher.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+	u.PasswordHash = newHash
+	u.UpdatedAt = now
+	return nil
+}
+
+// DisplayName — как называть человека другим: имя, а если его нет — почта.
+func DisplayName(username *string, email Email) string {
+	if username != nil && *username != "" {
+		return *username
+	}
+	return string(email)
+}

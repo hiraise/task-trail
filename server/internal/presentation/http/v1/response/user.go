@@ -26,3 +26,10 @@ type PublicSettings struct {
 	RegistrationOpen bool `json:"registrationOpen"`
 	MailEnabled      bool `json:"mailEnabled"`
 }
+
+// InvitationInfo — куда ведёт ссылка приглашения (InvitationInfo в контракте).
+type InvitationInfo struct {
+	Email       string `json:"email"`
+	ProjectName string `json:"projectName"`
+	InvitedBy   string `json:"invitedBy"`
+}
