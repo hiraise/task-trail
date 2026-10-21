@@ -1,0 +1,21 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  padding: 12px;
+  gap: 12px;
+  border-radius: 12px;
+  background-color: var(--bg-secondary-2);
+  justify-items: center;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.container:hover {
+  cursor: pointer;
+  background-color: var(--bg-secondary);
+}
+
+.container > span {
+  color: var(--text-primary);
+}

@@ -1,0 +1,36 @@
+.cardContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  height: 100%;
+  transition: background-color 0.2s;
+
+  &:active {
+    opacity: 0.6;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
+
+.cardTextWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.infoWrapper > span {
+  color: var(--text-secondary);
+}

@@ -1,0 +1,1 @@
+export { BoardMobilePage } from "./BoardMobilePage";

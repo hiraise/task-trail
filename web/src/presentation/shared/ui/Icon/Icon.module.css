@@ -1,0 +1,10 @@
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  transition: color 0.2s ease;
+  color: var(--icon-grey, #888);
+}
+
+.icon.inheritColor {
+  color: inherit;
+}

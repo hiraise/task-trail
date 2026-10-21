@@ -1,0 +1,21 @@
+.statusContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 20px;
+}
+
+.statusWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.statusWrapper:hover {
+  cursor: pointer;
+  background-color: var(--grey);
+}

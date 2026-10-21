@@ -1,0 +1,10 @@
+.cropContainer {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  margin-top: 10px;
+}
+
+.cropContainer > :global(.reactEasyCrop_Container) {
+  border-radius: 12px !important;
+}

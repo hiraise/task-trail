@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.userWrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.userInfo > p.name {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.userInfo > p.email {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 18px;
+  opacity: 40%;
+}

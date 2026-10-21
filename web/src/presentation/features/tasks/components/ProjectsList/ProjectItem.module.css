@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+  gap: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background-color: var(--bg-secondary-2);
+  transition: background-color 0.3s ease;
+}
+
+.container.selected {
+  border: 1px solid var(--border-accent);
+}
+
+.container:hover {
+  cursor: pointer;
+  background-color: var(--bg-secondary);
+}
+
+.titleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}

@@ -1,0 +1,54 @@
+/* Styles for BoardList */
+.boardList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 8px;
+  padding-bottom: calc(var(--bottom-nav-height) + 20px);
+}
+
+/* Styles for BoardListItem */
+.cardWrapper {
+  position: relative;
+  min-height: 140px;
+  overflow: auto;
+}
+
+.menu {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  background-color: var(--bg-secondary-2);
+  border-radius: 8px;
+  padding: 12px;
+  height: 100%;
+}
+
+.card:hover {
+  cursor: pointer;
+  background-color: var(--bg-secondary);
+  transition: background-color 0.2s ease;
+}
+
+.card:active {
+  background-color: var(--bg-secondary);
+}
+
+.titleWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 80%;
+  word-break: break-word;
+}
+
+.titleWrapper > span {
+  color: var(--text-secondary);
+}

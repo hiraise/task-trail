@@ -1,0 +1,6 @@
+.container {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 8px;
+  padding: 6px 12px;
+}

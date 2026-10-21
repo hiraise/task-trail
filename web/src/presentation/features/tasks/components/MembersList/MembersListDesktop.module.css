@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.membersList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.userItem {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  padding: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.userItem:hover {
+  cursor: pointer;
+}
+
+.icon {
+  color: var(--icon-accent);
+}

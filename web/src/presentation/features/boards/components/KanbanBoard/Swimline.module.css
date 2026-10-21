@@ -1,0 +1,18 @@
+.swimline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.swimlineBg {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  gap: 8px;
+  padding: 8px;
+  min-height: 100px;
+  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.08);
+}

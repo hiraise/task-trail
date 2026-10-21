@@ -1,0 +1,9 @@
+.taskContainer {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(var(--bottom-nav-height) + 20px);
+}
+
+.taskContainer :last-child {
+  border-bottom: none;
+}

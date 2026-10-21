@@ -1,0 +1,22 @@
+.kanbanContainer {
+  overflow-x: auto;
+  white-space: nowrap;
+  margin: -4px -20px;
+}
+
+.swimlineContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.dragOverlay {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transform: rotate(5deg) scale(1.05);
+  opacity: 0.95;
+  cursor: grabbing;
+  border-radius: 8px;
+  background: white;
+  z-index: 1000;
+}

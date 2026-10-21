@@ -1,0 +1,47 @@
+# Проверка каждого PR и main (ADR-0009). Логика — в scripts/dev.sh, здесь только окружение:
+# любой шаг воспроизводится локально той же командой.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Новый коммит в PR отменяет устаревший прогон; уже запущенный прогон main не прерывается
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Проверка
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Правила проекта (ADR, ссылки, зависимости, экраны)
+        run: scripts/dev.sh rules
+
+      - name: 'Сервер: vet, тесты, golangci-lint'
+        run: scripts/dev.sh server
+
+      - name: 'Веб: линтер, тесты, типы и сборка'
+        run: scripts/dev.sh web

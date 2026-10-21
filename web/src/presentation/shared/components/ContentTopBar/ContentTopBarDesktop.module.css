@@ -1,0 +1,20 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sortButton {
+  border: none;
+  border-radius: 8px;
+  background-color: var(--bg-secondary-2);
+  width: 40px;
+  height: 40px;
+  transition: opacity 0.3s;
+  color: var(--icon-secondary);
+}
+.sortButton:hover {
+  cursor: pointer;
+  opacity: 0.6;
+}

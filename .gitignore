@@ -1,0 +1,4 @@
+.DS_Store
+.env
+# Инструменты, которые скачивает scripts/dev.sh
+.cache/

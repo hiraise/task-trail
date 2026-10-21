@@ -1,0 +1,11 @@
+.background {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  padding: 40px 40px 48px;
+  background-color: var(--bg-card);
+  width: 680px;
+  min-height: 350px;
+  box-sizing: border-box;
+}

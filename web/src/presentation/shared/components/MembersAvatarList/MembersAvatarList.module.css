@@ -1,0 +1,37 @@
+.membersList {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  align-items: center;
+  scrollbar-width: none;
+}
+
+.membersList > * {
+  outline: 1px solid var(--outline-color, var(--border-secondary-2));
+}
+
+/* Small variant (default) */
+.membersList.small > *:not(:first-child) {
+  margin-left: -2px;
+}
+
+/* Standard variant */
+.membersList.standard > *:not(:first-child) {
+  margin-left: -4px;
+}
+
+/* Large variant */
+.membersList.large > *:not(:first-child) {
+  margin-left: -10px;
+}
+
+.remainingCount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--bg-tertiary);
+  flex-shrink: 0;
+}
