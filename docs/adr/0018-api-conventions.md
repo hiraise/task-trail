@@ -1,6 +1,6 @@
 # ADR-0018: Соглашения контракта API: UUID, ошибка с кодом, изменение возвращает ресурс
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** `api/openapi.yaml`, HTTP-слой `server/internal/presentation/`, `server/internal/presentation/http/middleware/error.go`, клиент API `web/src/infrastructure/`
 
