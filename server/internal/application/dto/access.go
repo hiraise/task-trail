@@ -1,6 +1,6 @@
 package dto
 
-import "time"
+import "task-trail/internal/domain/service"
 
 type Credentials struct {
 	Email    string
@@ -16,18 +16,8 @@ type ChangePassword struct {
 	OldPassword string
 	NewPassword string
 }
-type AccessToken struct {
-	Token     string
-	ExpiredAt time.Time
-}
-
-type RefreshToken struct {
-	Token     string
-	ExpiredAt time.Time
-}
-
 type SuccessLogin struct {
 	UserID       string
-	AccessToken  AccessToken
-	RefreshToken RefreshToken
+	AccessToken  service.IssuedToken
+	RefreshToken service.IssuedToken
 }

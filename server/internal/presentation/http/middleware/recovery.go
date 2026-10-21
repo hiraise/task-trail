@@ -38,7 +38,8 @@ func NewRecovery(l logger.Logger, m *contextmanager.GinContextManager) gin.Handl
 					"userID", userID,
 					"reqID", m.GetRequestID(c),
 				)
-				c.AbortWithStatus(500)
+				apiErr := internalError()
+				c.AbortWithStatusJSON(apiErr.Status, apiErr)
 			}
 		}()
 		c.Next()

@@ -10,44 +10,40 @@ API на Go: Gin, pgx, PostgreSQL. Сейчас реализован модул�
 ## Запуск и проверки
 
 Нужен Go (версия — в `go.mod`) и PostgreSQL. Сервер читает переменные окружения и файл `.env`
-из ближайшей родительской папки. Слушает порт 8080 или порт из переменной `PORT`.
+из ближайшей родительской папки, при каждом запуске применяет миграции — они встроены
+в бинарник (`migrations/migrations.go`).
 
 ```bash
 go run ./cmd/app    # запуск
 make mock           # пересоздать моки в test/mocks после изменения интерфейсов
 ```
 
-Проверки сервера — `scripts/dev.sh server` из корня репозитория.
+Проверки сервера — `scripts/dev.sh server` из корня репозитория. Для интеграционных тестов
+репозиториев он поднимает временный PostgreSQL в Docker и передаёт адрес в `TEST_PG_URL`;
+без него `go test` такие тесты пропускает (`test/testdb`).
 
 ## Переменные окружения
 
-«Да» в колонке «Обязательна» значит, что переменная должна быть задана, иначе сервер не запустится;
-значение при этом может быть пустым.
+В окружении — только то, без чего сервер не запустится ([ADR-0015](../docs/adr/0015-settings-in-admin-ui.md));
+остальное — настройки администратора в интерфейсе или константы в `internal/app/app.go`.
 
 | Переменная | Обязательна | Пример или значение по умолчанию | Что задаёт |
 | --- | --- | --- | --- |
-| `APP_DEBUG` | да | `true` | подробные логи |
-| `APP_ROOT_PATH` | да | пусто или `/tasktrail/api` | префикс путей API: от него считаются путь cookie обновления токена и Swagger |
 | `PG_CONNECTION_STRING` | да | `postgresql://user:password@localhost:5432/tasktrail` | подключение к PostgreSQL; `@`, `+`, `%` и другие спецсимволы в пароле — в процент-кодировке, например `@` → `%40` |
-| `PG_MAX_POOL_SIZE` | да | `10` | максимум одновременных подключений к базе |
-| `PG_MIGRATION_ENABLED` | нет | `false` | применять миграции при запуске |
-| `PG_MIGRATION_PATH` | при включённых миграциях | `file://migrations` | папка миграций |
-| `AUTH_ACCESS_TOKEN_SECRET` | да | длинная случайная строка | секрет access-токенов |
-| `AUTH_ACCESS_TOKEN_LIFETIME_MIN` | да | `5` | время жизни access-токена, минут |
-| `AUTH_ACCESS_TOKEN_NAME` | нет | `at` | имя cookie access-токена |
-| `AUTH_REFRESH_TOKEN_SECRET` | да | другая длинная случайная строка | секрет refresh-токенов; должен отличаться от секрета access-токенов |
-| `AUTH_REFRESH_TOKEN_LIFETIME_MIN` | да | `1440` | время жизни refresh-токена, минут |
-| `AUTH_REFRESH_TOKEN_NAME` | нет | `rt` | имя cookie refresh-токена |
-| `AUTH_TOKEN_ISSUER` | да | `tasktrail.local` | поле [iss](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.1) в токенах |
-| `AUTH_CONFIRMATION_TOKEN_LIFETIME_MIN` | да | `60` | время жизни ссылок из писем: подтверждение почты, сброс пароля |
-| `SMTP_HOST` | да | `localhost` | SMTP-сервер для писем |
-| `SMTP_PORT` | да | `1025` | порт SMTP |
-| `SMTP_USER` | да | `noreply@example.com` | логин SMTP |
-| `SMTP_PASSWORD` | да | | пароль SMTP |
+| `APP_SECRET` | да | `openssl rand -hex 32` | не короче 32 символов; из него выводятся ключи подписи токенов и шифрования секретов настроек. Смена завершает все сессии, секреты интеграций придётся ввести заново |
+| `PORT` | нет | `8080` | порт HTTP |
+| `APP_ROOT_PATH` | нет | пусто или `/api` | префикс путей API за прокси: от него считаются пути cookie и Swagger |
+| `APP_DEBUG` | нет | `false` | подробные логи |
+
+Временно, пока почта и Swagger не перешли в настройки администратора (шаг 3 этапа 1,
+[ADR-0014](../docs/adr/0014-service-administrator.md), [ADR-0017](../docs/adr/0017-mail-in-admin-ui.md)):
+
+| Переменная | Обязательна | Пример или значение по умолчанию | Что задаёт |
+| --- | --- | --- | --- |
+| `SMTP_HOST`, `SMTP_PORT` | да | `localhost`, `1025` | SMTP-сервер для писем |
+| `SMTP_USER`, `SMTP_PASSWORD` | да | `noreply@example.com`, пусто | вход на SMTP |
 | `SMTP_SENDER` | нет | `TaskTrail <noreply@example.com>` | отправитель; по умолчанию `SMTP_USER` |
-| `FRONTEND_URL` | да | `http://localhost:3000` | адрес веб-клиента |
 | `FRONTEND_VERIFY_URL` | да | `http://localhost:3000/auth/confirm?token=` | ссылка подтверждения почты, токен дописывается в конец |
 | `FRONTEND_RESET_PASSWORD_URL` | да | `http://localhost:3000/auth/reset?token=` | ссылка сброса пароля, токен дописывается в конец |
-| `FRONTEND_PROJECT_URL` | да | `http://localhost:3000/projects/` | ссылка на проект в письмах |
 | `SWAGGER_ENABLED` | нет | `true` | Swagger по адресу `/docs/` |
-| `SWAGGER_LOGIN`, `SWAGGER_PASSWORD` | нет | `root`, `root` | Basic-авторизация Swagger; поменяйте, если сервер доступен не только вам |
+| `SWAGGER_LOGIN`, `SWAGGER_PASSWORD` | нет | `root`, `root` | Basic-авторизация Swagger |

@@ -11,8 +11,8 @@ package mocks
 
 import (
 	reflect "reflect"
-	dto "task-trail/internal/application/dto"
 	entity "task-trail/internal/domain/entity"
+	service "task-trail/internal/domain/service"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -42,10 +42,10 @@ func (m *MockAccessTokenService) EXPECT() *MockAccessTokenServiceMockRecorder {
 }
 
 // GenerateAccessToken mocks base method.
-func (m *MockAccessTokenService) GenerateAccessToken(userID entity.UserID) (dto.AccessToken, error) {
+func (m *MockAccessTokenService) GenerateAccessToken(userID entity.UserID) (service.IssuedToken, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateAccessToken", userID)
-	ret0, _ := ret[0].(dto.AccessToken)
+	ret0, _ := ret[0].(service.IssuedToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -57,10 +57,10 @@ func (mr *MockAccessTokenServiceMockRecorder) GenerateAccessToken(userID any) *g
 }
 
 // GenerateRefreshToken mocks base method.
-func (m *MockAccessTokenService) GenerateRefreshToken(userID entity.UserID, jti *entity.RefreshToken) (dto.RefreshToken, error) {
+func (m *MockAccessTokenService) GenerateRefreshToken(userID entity.UserID, jti *entity.RefreshToken) (service.IssuedToken, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateRefreshToken", userID, jti)
-	ret0, _ := ret[0].(dto.RefreshToken)
+	ret0, _ := ret[0].(service.IssuedToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -72,11 +72,11 @@ func (mr *MockAccessTokenServiceMockRecorder) GenerateRefreshToken(userID, jti a
 }
 
 // GenerateTokensPair mocks base method.
-func (m *MockAccessTokenService) GenerateTokensPair(userID entity.UserID, jti *entity.RefreshToken) (dto.AccessToken, dto.RefreshToken, error) {
+func (m *MockAccessTokenService) GenerateTokensPair(userID entity.UserID, jti *entity.RefreshToken) (service.IssuedToken, service.IssuedToken, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GenerateTokensPair", userID, jti)
-	ret0, _ := ret[0].(dto.AccessToken)
-	ret1, _ := ret[1].(dto.RefreshToken)
+	ret0, _ := ret[0].(service.IssuedToken)
+	ret1, _ := ret[1].(service.IssuedToken)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }

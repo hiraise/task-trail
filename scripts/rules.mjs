@@ -349,6 +349,25 @@ function checkContract() {
   }
 }
 
+// Слои сервера (ADR-0007): domain не импортирует application, infrastructure и presentation,
+// application — infrastructure и presentation. Тестам можно: они собирают сценарий целиком.
+function checkServerLayers() {
+  const forbidden = {
+    "server/internal/domain/": ["application", "infrastructure", "presentation"],
+    "server/internal/application/": ["infrastructure", "presentation"],
+  };
+  for (const path of FILES.filter((file) => file.endsWith(".go") && !file.endsWith("_test.go"))) {
+    const layer = Object.keys(forbidden).find((prefix) => path.startsWith(prefix));
+    if (!layer) continue;
+    const code = read(path).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    for (const [, target] of code.matchAll(/"task-trail\/internal\/([a-z]+)[/"]/g)) {
+      if (forbidden[layer].includes(target)) {
+        errors.push(`${path}: слой ${layer.split("/")[2]} не импортирует ${target} (ADR-0007)`);
+      }
+    }
+  }
+}
+
 checkAdr();
 checkAdrNumbers();
 checkStyleTokens();
@@ -359,6 +378,7 @@ checkLinks();
 checkWebImports();
 checkDeviceSplit();
 checkContract();
+checkServerLayers();
 
 for (const hint of hints) console.log(`подсказка: ${hint}`);
 if (errors.length > 0) {

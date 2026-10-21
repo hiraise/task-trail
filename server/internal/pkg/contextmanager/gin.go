@@ -3,7 +3,7 @@ package contextmanager
 import (
 	"fmt"
 	"net/http"
-	"task-trail/internal/application/dto"
+	"task-trail/internal/domain/service"
 
 	"time"
 
@@ -13,7 +13,7 @@ import (
 type Gin interface {
 	DeleteAccessToken(c *gin.Context, name string)
 	DeleteTokens(c *gin.Context, refreshPath string)
-	SetTokens(c *gin.Context, at dto.AccessToken, rt dto.RefreshToken, refreshPath string)
+	SetTokens(c *gin.Context, at service.IssuedToken, rt service.IssuedToken, refreshPath string)
 	SetUserID(c *gin.Context, userID string)
 	GetUserID(c *gin.Context) (string, error)
 	SetRequestID(c *gin.Context)
@@ -40,7 +40,7 @@ func (m *GinContextManager) DeleteTokens(c *gin.Context, refreshPath string) {
 	c.SetCookie(m.RTName, "", -1, refreshPath, "", true, true)
 }
 
-func (m *GinContextManager) SetTokens(c *gin.Context, at dto.AccessToken, rt dto.RefreshToken, refreshPath string) {
+func (m *GinContextManager) SetTokens(c *gin.Context, at service.IssuedToken, rt service.IssuedToken, refreshPath string) {
 	c.SetSameSite(http.SameSiteLaxMode)
 	atTime := int(time.Until(at.ExpiredAt).Seconds())
 	rtTime := int(time.Until(rt.ExpiredAt).Seconds())

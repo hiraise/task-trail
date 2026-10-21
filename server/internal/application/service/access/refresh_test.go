@@ -7,6 +7,7 @@ import (
 	"task-trail/internal/application/dto"
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/domain"
+	"task-trail/internal/domain/service"
 
 	"testing"
 
@@ -45,12 +46,12 @@ func TestRefreshService(t *testing.T) {
 				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
 				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
 				deps.refreshTokenRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
-				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(dto.AccessToken{}, dto.RefreshToken{}, nil)
+				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(service.IssuedToken{}, service.IssuedToken{}, nil)
 				deps.refreshTokenRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil)
 				return module.Refresh
 			},
 			wantErr: false,
-			want:    dto.SuccessLogin{UserID: TEST_USER_ID, AccessToken: dto.AccessToken{}, RefreshToken: dto.RefreshToken{}},
+			want:    dto.SuccessLogin{UserID: TEST_USER_ID, AccessToken: service.IssuedToken{}, RefreshToken: service.IssuedToken{}},
 		},
 		// received is RT invalid
 		{
@@ -157,7 +158,7 @@ func TestRefreshService(t *testing.T) {
 				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
 				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
 				deps.refreshTokenRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
-				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(dto.AccessToken{}, dto.RefreshToken{}, domain.ErrTokenGenerateFailed(nil))
+				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(service.IssuedToken{}, service.IssuedToken{}, domain.ErrTokenGenerateFailed(nil))
 				return module.Refresh
 			},
 			wantErr:     true,
@@ -173,7 +174,7 @@ func TestRefreshService(t *testing.T) {
 				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
 				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
 				deps.refreshTokenRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
-				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(dto.AccessToken{}, dto.RefreshToken{}, nil)
+				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(service.IssuedToken{}, service.IssuedToken{}, nil)
 				deps.refreshTokenRepo.EXPECT().Update(ctx, gomock.Any()).Return(domain.ErrRepoInternal(0, nil))
 				return module.Refresh
 			},

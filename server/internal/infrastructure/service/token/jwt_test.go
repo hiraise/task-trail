@@ -38,7 +38,7 @@ func requireCode(t *testing.T, err error, code domain.ErrorCode) {
 // Токен с нашей подписью, но без строкового sub или jti раньше ронял обработчик паникой
 // в domain.NewErr; теперь это ошибка PARSE_TOKEN_FAILED.
 func TestVerifyTokenWithBrokenClaims(t *testing.T) {
-	service := token.New(atSecret, time.Minute, rtSecret, issuer, id.New())
+	service := token.New([]byte(atSecret), time.Minute, []byte(rtSecret), issuer, id.New())
 	exp := time.Now().Add(time.Minute).Unix()
 
 	_, err := service.VerifyAccessToken(sign(t, atSecret, jwt.MapClaims{"exp": exp, "iss": issuer}))
@@ -52,7 +52,7 @@ func TestVerifyTokenWithBrokenClaims(t *testing.T) {
 }
 
 func TestVerifyValidTokens(t *testing.T) {
-	service := token.New(atSecret, time.Minute, rtSecret, issuer, id.New())
+	service := token.New([]byte(atSecret), time.Minute, []byte(rtSecret), issuer, id.New())
 	exp := time.Now().Add(time.Minute).Unix()
 
 	userID, err := service.VerifyAccessToken(sign(t, atSecret, jwt.MapClaims{"exp": exp, "sub": "user"}))
