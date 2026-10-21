@@ -7,14 +7,28 @@ ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 CACHE="$ROOT/.cache"
 GOLANGCI_LINT_VERSION=2.15.0
 
+# Стенд (ADR-0010). Сервер на нём — эталон старого API, с которым работает веб-клиент:
+# коммит de79e25 из hiraise/tt-backend, после переноса истории — этот.
+LEGACY_API_COMMIT=71b514ee41c26b60afb7bbb8b970036b1d591483
+STAND="$CACHE/stand"
+COMPOSE=(docker compose -f "$ROOT/stand/compose.yaml")
+
 usage() {
 	cat <<'EOF'
 Использование: scripts/dev.sh <команда>
 
-  check   всё, что проверяет CI: rules, server, web
+Проверки (их же запускает CI):
+  check   всё сразу: rules, server, web
   rules   правила проекта: ADR, ссылки в документации, зависимости и экраны веба
   server  сервер: go vet, тесты с -race, golangci-lint
   web     веб: линтер, тесты, проверка типов и сборка
+
+Локальный стенд в Docker:
+  up              собрать и запустить: веб, сервер, PostgreSQL, перехватчик почты
+  smoke           дымовая проверка поднятого стенда: вход через письмо, проект
+  down            остановить, данные сохраняются
+  reset           остановить и стереть базу
+  logs [сервис]   логи: server, web, postgres, mailpit
 EOF
 }
 
@@ -110,6 +124,57 @@ web() (
 	npm run build
 )
 
+# Docker нужен стенду. На macOS Docker Desktop запускается сам, если ещё не запущен.
+ensure_docker() {
+	docker info >/dev/null 2>&1 && return
+	if [ "$(uname -s)" = Darwin ] && [ -d /Applications/Docker.app ]; then
+		echo "== Docker: запускаю Docker Desktop"
+		open -a Docker
+		local attempt
+		for attempt in $(seq 1 90); do
+			docker info >/dev/null 2>&1 && return
+			sleep 2
+		done
+	fi
+	echo "Docker не запущен: запусти его и повтори команду" >&2
+	exit 1
+}
+
+# Исходники эталонного сервера и сертификат почты — в .cache/stand/, их подхватывает stand/compose.yaml
+prepare_stand() {
+	local legacy="$STAND/legacy"
+	if [ "$(cat "$legacy/COMMIT" 2>/dev/null)" != "$LEGACY_API_COMMIT" ]; then
+		echo "== стенд: выгружаю сервер ${LEGACY_API_COMMIT:0:7} из истории"
+		rm -rf "$legacy"
+		mkdir -p "$legacy"
+		git -C "$ROOT" archive "$LEGACY_API_COMMIT" server | tar -x -C "$legacy"
+		echo "$LEGACY_API_COMMIT" >"$legacy/COMMIT"
+	fi
+	local certs="$STAND/certs"
+	if [ ! -f "$certs/mailpit.crt" ]; then
+		echo "== стенд: самоподписанный сертификат для Mailpit"
+		mkdir -p "$certs"
+		printf '[req]\ndistinguished_name = dn\nx509_extensions = ext\nprompt = no\n[dn]\nCN = mailpit\n[ext]\nsubjectAltName = DNS:mailpit\n' >"$certs/openssl.cnf"
+		openssl req -x509 -newkey rsa:2048 -nodes -days 3650 -config "$certs/openssl.cnf" \
+			-keyout "$certs/mailpit.key" -out "$certs/mailpit.crt" 2>/dev/null
+		chmod 644 "$certs/mailpit.key"
+	fi
+}
+
+stand_up() {
+	ensure_docker
+	prepare_stand
+	echo "== стенд: сборка и запуск"
+	"${COMPOSE[@]}" up -d --build --wait
+	cat <<'EOF'
+== стенд запущен
+  веб      http://localhost:3000   Chrome или Firefox: Safari не принимает Secure-cookies по http
+  почта    http://localhost:8025   письма подтверждения почты и сброса пароля
+  Swagger  http://localhost:3000/api/docs/index.html   логин и пароль — root
+Остановить — scripts/dev.sh down, стереть базу — scripts/dev.sh reset.
+EOF
+}
+
 case "${1:-}" in
 check)
 	rules
@@ -120,6 +185,14 @@ check)
 rules) rules ;;
 server) server ;;
 web) web ;;
+up) stand_up ;;
+smoke) node "$ROOT/scripts/stand-smoke.mjs" ;;
+down) "${COMPOSE[@]}" down ;;
+reset) "${COMPOSE[@]}" down --volumes ;;
+logs)
+	shift
+	"${COMPOSE[@]}" logs --follow "$@"
+	;;
 "" | -h | --help | help) usage ;;
 *)
 	echo "Неизвестная команда: $1" >&2

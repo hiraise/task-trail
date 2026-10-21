@@ -1,0 +1,99 @@
+# Локальный стенд для разработки и приёмки (ADR-0010). Поднимается через scripts/dev.sh up:
+# скрипт выгружает исходники сервера и сертификат почты в .cache/stand/, а потом зовёт compose.
+#
+# Сервер — эталон старого API (коммит в LEGACY_API_COMMIT, scripts/dev.sh): с его контрактом
+# работает веб-клиент. На этапе 1 его заменит текущий сервер из server/.
+name: tasktrail
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: tasktrail
+      POSTGRES_USER: tasktrail
+      POSTGRES_PASSWORD: tasktrail
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tasktrail -d tasktrail"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Перехватчик почты: письма видны в веб-интерфейсе, наружу ничего не уходит.
+  # Старый API шлёт почту только через STARTTLS с проверкой сертификата, поэтому у Mailpit
+  # самоподписанный сертификат на имя mailpit, а сервер доверяет ему через SSL_CERT_FILE.
+  mailpit:
+    image: axllent/mailpit:v1.31.6
+    environment:
+      MP_SMTP_TLS_CERT: /certs/mailpit.crt
+      MP_SMTP_TLS_KEY: /certs/mailpit.key
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+    volumes:
+      - ../.cache/stand/certs:/certs:ro
+    ports:
+      - "127.0.0.1:8025:8025"
+
+  server:
+    build:
+      context: ../.cache/stand/legacy/server
+      dockerfile: docker/Dockerfile
+    environment:
+      APP_DEBUG: "true"
+      # Веб обращается к API по /api, nginx срезает префикс; от него считается путь cookie обновления токена
+      APP_ROOT_PATH: /api
+      # Без sslmode: для миграций сервер сам дописывает ?sslmode=disable
+      PG_CONNECTION_STRING: postgresql://tasktrail:tasktrail@postgres:5432/tasktrail
+      PG_MAX_POOL_SIZE: "10"
+      PG_MIGRATION_ENABLED: "true"
+      PG_MIGRATION_PATH: file://migrations
+      # Секреты одинаковые намеренно: старый API подписывает refresh-токен секретом access-токена,
+      # а проверяет секретом refresh-токена — с разными секретами сессию не обновить.
+      # В текущем сервере (server/) это исправлено.
+      AUTH_ACCESS_TOKEN_SECRET: stand-token-secret
+      AUTH_ACCESS_TOKEN_LIFETIME_MIN: "15"
+      AUTH_REFRESH_TOKEN_SECRET: stand-token-secret
+      AUTH_REFRESH_TOKEN_LIFETIME_MIN: "43200"
+      AUTH_TOKEN_ISSUER: tasktrail.local
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      SMTP_USER: tasktrail
+      SMTP_PASSWORD: tasktrail
+      SMTP_SENDER: TaskTrail <noreply@tasktrail.local>
+      SSL_CERT_FILE: /certs/mailpit.crt
+      FRONTEND_URL: http://localhost:3000
+      FRONTEND_VERIFY_URL: http://localhost:3000/auth/confirm?token=
+      FRONTEND_RESET_PASSWORD_URL: http://localhost:3000/auth/reset?token=
+      FRONTEND_PROJECT_URL: http://localhost:3000/projects/
+      # S3 на стенде нет: загрузка аватарок на эталоне не работает
+      S3_ENABLED: "false"
+    volumes:
+      - ../.cache/stand/certs:/certs:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+
+  web:
+    build:
+      context: ../web
+      dockerfile: docker/Dockerfile
+      args:
+        API_URL: /api
+        ROOT_PATH: ""
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      server:
+        condition: service_healthy
+
+volumes:
+  pgdata:
