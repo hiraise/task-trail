@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"task-trail/internal/domain"
+	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/factory"
 	"task-trail/internal/domain/repository"
 	"task-trail/internal/infrastructure/repository/persistent"
@@ -117,4 +118,118 @@ func TestLockRegistration(t *testing.T) {
 	if err := <-second; err != nil {
 		t.Fatal(err)
 	}
+}
+
+// Аватарка читается и пишется вместе с пользователем; GetForUpdate держит строку до конца
+// транзакции, и параллельное изменение ждёт, а не затирает его.
+func TestUserAvatarAndLock(t *testing.T) {
+	pool := testdb.New(t)
+	repo, _ := userRepo(pool)
+	files := persistent.NewFileRepo(pool)
+	tx := persistent.NewPgTxManager(pool)
+	ctx := context.Background()
+	user := createUser(t, pool, "ivan@example.com", "Иван")
+	avatar := factory.NewFileFactory(id.New(), clock.New(now)).New("a.png", "image/png", user.ID)
+	if err := files.Create(ctx, avatar); err != nil {
+		t.Fatal(err)
+	}
+
+	locked := make(chan struct{})
+	release := make(chan struct{})
+	first := make(chan error, 1)
+	go func() {
+		first <- tx.DoWithTx(ctx, func(ctx context.Context) error {
+			u, err := repo.GetForUpdate(ctx, user.ID)
+			if err != nil {
+				return err
+			}
+			close(locked)
+			<-release
+			u.ReplaceAvatar(avatar.ID, now)
+			return repo.Update(ctx, u)
+		})
+	}()
+	<-locked
+	second := make(chan error, 1)
+	go func() {
+		second <- tx.DoWithTx(ctx, func(ctx context.Context) error {
+			u, err := repo.GetForUpdate(ctx, user.ID)
+			if err != nil {
+				return err
+			}
+			if u.AvatarID == nil || *u.AvatarID != avatar.ID {
+				return errors.New("вторая транзакция не увидела аватарку первой")
+			}
+			name := "Иван Петров"
+			u.Rename(&name, now)
+			return repo.Update(ctx, u)
+		})
+	}()
+	select {
+	case err := <-second:
+		t.Fatalf("вторая транзакция не ждала блокировку: %v", err)
+	case <-time.After(200 * time.Millisecond):
+	}
+	close(release)
+	if err := <-first; err != nil {
+		t.Fatal(err)
+	}
+	if err := <-second; err != nil {
+		t.Fatal(err)
+	}
+	got, err := repo.GetByID(ctx, user.ID)
+	if err != nil || got.AvatarID == nil || *got.AvatarID != avatar.ID || *got.Username != "Иван Петров" {
+		t.Fatalf("после обеих транзакций: %+v, %v", got, err)
+	}
+}
+
+// Пользователь виден себе, участникам общих проектов и участникам проекта, где он автор
+// задачи, — в неудалённых проектах и по неудалённым задачам.
+func TestUserVisible(t *testing.T) {
+	pool := testdb.New(t)
+	repo, _ := userRepo(pool)
+	ctx := context.Background()
+	exec := func(query string, args ...any) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, query, args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	member := func(project entity.ProjectID, user *entity.UserAccount) {
+		t.Helper()
+		exec(`INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, 'member')`, project, user.ID)
+	}
+	anna := createUser(t, pool, "anna@example.com", "Анна")
+	ivan := createUser(t, pool, "ivan@example.com", "Иван")
+	petr := createUser(t, pool, "petr@example.com", "Пётр")
+	olga := createUser(t, pool, "olga@example.com", "Ольга")
+	design := createProject(t, pool, "Дизайн-система")
+	member(design, anna)
+	member(design, ivan)
+	backend := createProject(t, pool, "Бэкенд")
+	member(backend, anna)
+	// Пётр — автор задачи в бэкенде, но не участник: вышел из проекта
+	exec(`INSERT INTO tasks (id, project_id, author_id, name, status) VALUES ($1, $2, $3, 'Задача', 'open')`,
+		id.New().Generate(), backend, petr.ID)
+	member(createProject(t, pool, "Чужой"), olga)
+
+	visible := func(viewer *entity.UserAccount, want map[*entity.UserAccount]bool) {
+		t.Helper()
+		for u, ok := range want {
+			got, err := repo.GetVisible(ctx, u.ID, viewer.ID)
+			if ok && (err != nil || got.ID != u.ID) {
+				t.Errorf("%s не видит %s: %v", viewer.Email, u.Email, err)
+			}
+			if !ok && !domain.HasCode(err, domain.EntityNotFound) {
+				t.Errorf("%s видит %s: %v", viewer.Email, u.Email, err)
+			}
+		}
+	}
+	visible(anna, map[*entity.UserAccount]bool{anna: true, ivan: true, petr: true, olga: false})
+	visible(ivan, map[*entity.UserAccount]bool{ivan: true, anna: true, petr: false, olga: false})
+	visible(petr, map[*entity.UserAccount]bool{petr: true, anna: false})
+
+	exec(`UPDATE tasks SET deleted_at = $1`, now)
+	exec(`UPDATE projects SET deleted_at = $1 WHERE id = $2`, now, design)
+	visible(anna, map[*entity.UserAccount]bool{anna: true, ivan: false, petr: false})
 }

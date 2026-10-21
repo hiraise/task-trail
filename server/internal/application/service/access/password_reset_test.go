@@ -105,7 +105,7 @@ func TestResetPassword(t *testing.T) {
 	module, d := newModule(t)
 	d.expectTx()
 	d.resets.EXPECT().GetForUpdate(inTx, entity.HashLinkToken(resetToken)).Return(storedReset(now.Add(time.Minute)), nil)
-	d.users.EXPECT().GetByID(inTx, userID).Return(user(), nil)
+	d.users.EXPECT().GetForUpdate(inTx, userID).Return(user(), nil)
 	d.passwords.EXPECT().HashPassword("new-password").Return("$2a$12$new", nil)
 	d.users.EXPECT().Update(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, u *entity.UserAccount) error {
 		if u.PasswordHash != "$2a$12$new" || !u.UpdatedAt.Equal(now) {
@@ -137,7 +137,7 @@ func TestResetPasswordLinkInvalid(t *testing.T) {
 		module, d := newModule(t)
 		d.expectTx()
 		d.resets.EXPECT().GetForUpdate(inTx, gomock.Any()).Return(storedReset(now.Add(time.Minute)), nil)
-		d.users.EXPECT().GetByID(inTx, userID).Return(nil, domain.ErrEntityNotFound(0, nil))
+		d.users.EXPECT().GetForUpdate(inTx, userID).Return(nil, domain.ErrEntityNotFound(0, nil))
 		requireCode(t, module.ResetPassword.Execute(context.Background(), resetData), domain.LinkInvalid)
 	})
 }

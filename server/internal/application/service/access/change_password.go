@@ -20,7 +20,7 @@ type ChangePasswordService struct {
 
 func (s *ChangePasswordService) Execute(ctx context.Context, userID string, passwords dto.ChangePassword) error {
 	f := func(ctx context.Context) error {
-		user, err := s.userRepository.GetByID(ctx, entity.UserID(userID))
+		user, err := s.userRepository.GetForUpdate(ctx, entity.UserID(userID))
 		if isEntityNotFound(err) {
 			// Пользователя удалили, а access-токен ещё жив: сессия недействительна
 			return domain.ErrWrongAccessToken("userID", userID, "reason", "user not found")

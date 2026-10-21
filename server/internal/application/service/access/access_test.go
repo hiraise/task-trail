@@ -16,6 +16,7 @@ import (
 	"task-trail/internal/infrastructure/service/linktoken"
 	"task-trail/test/clock"
 	"task-trail/test/mocks"
+	"task-trail/test/txtest"
 
 	"go.uber.org/mock/gomock"
 )
@@ -82,31 +83,15 @@ func newModule(t *testing.T) (*access.AccessModule, *deps) {
 	return module, d
 }
 
-type txKey struct{}
-
 // expectTx выполняет сценарий транзакции с пометкой в контексте: по ней видно,
 // какие вызовы шли внутри транзакции (inTx), а какие — после неё (outsideTx).
 func (d *deps) expectTx() {
-	d.tx.EXPECT().DoWithTx(gomock.Any(), gomock.Any()).DoAndReturn(
-		func(ctx context.Context, fn func(ctx context.Context) error) error {
-			return fn(context.WithValue(ctx, txKey{}, true))
-		})
-}
-
-type txMatcher bool
-
-func (m txMatcher) Matches(x any) bool {
-	ctx, ok := x.(context.Context)
-	return ok && (ctx.Value(txKey{}) != nil) == bool(m)
-}
-
-func (m txMatcher) String() string {
-	return fmt.Sprintf("контекст внутри транзакции: %v", bool(m))
+	txtest.Expect(d.tx)
 }
 
 var (
-	inTx      = txMatcher(true)
-	outsideTx = txMatcher(false)
+	inTx      = txtest.InTx
+	outsideTx = txtest.OutsideTx
 )
 
 // expectSession — выдача новой пары токенов: новый refresh-токен пишется в базу.

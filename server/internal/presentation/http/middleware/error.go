@@ -9,6 +9,7 @@ import (
 	"task-trail/internal/domain"
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/pkg/logger"
+	"task-trail/internal/presentation/http/v1/request"
 	"task-trail/internal/presentation/http/v1/response"
 
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,8 @@ var apiErrorFor = map[domain.ErrorCode]response.ApiError{
 	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "аккаунт с этой почтой уже есть, нужно войти"},
 	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "почта не подключена"},
 	domain.MailSendFailed:     {Status: http.StatusBadGateway, Code: response.CodeMailSendFailed, Message: "SMTP не принял письмо"},
+	domain.FileTooLarge:       {Status: http.StatusUnprocessableEntity, Code: response.CodeFileTooLarge, Message: "файл больше допустимого"},
+	domain.FileTypeNotAllowed: {Status: http.StatusUnprocessableEntity, Code: response.CodeFileTypeNotAllowed, Message: "тип файла не подходит"},
 
 	domain.RefreshTokenNotFound: {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "нет сессии"},
 	domain.RefreshTokenWrong:    {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
@@ -94,7 +97,10 @@ func validationError(err error) *response.ApiError {
 	apiErr := response.NewApiErr(http.StatusUnprocessableEntity, response.CodeValidationFailed, "данные не прошли проверку")
 	var fieldErrs validator.ValidationErrors
 	var typeErr *json.UnmarshalTypeError
+	var bindErrs request.FieldErrors
 	switch {
+	case errors.As(err, &bindErrs):
+		apiErr.Details = bindErrs
 	case errors.As(err, &fieldErrs):
 		apiErr.Details = make(map[string]string, len(fieldErrs))
 		for _, fe := range fieldErrs {

@@ -3,7 +3,6 @@ package persistent
 import (
 	"context"
 	"errors"
-	"fmt"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/factory"
@@ -57,21 +56,47 @@ func (r *PGUserRepository) Update(ctx context.Context, entity *entity.UserAccoun
 }
 
 func (r *PGUserRepository) GetByEmail(ctx context.Context, email entity.Email) (*entity.UserAccount, error) {
-	return r.getOne(ctx, "email", email)
+	return r.getOne(ctx, `SELECT `+userColumns+` FROM users WHERE email = $1 AND deleted_at IS NULL`, email)
 }
 
 func (r *PGUserRepository) GetByID(ctx context.Context, id entity.UserID) (*entity.UserAccount, error) {
-	return r.getOne(ctx, "id", id)
+	return r.getOne(ctx, `SELECT `+userColumns+` FROM users WHERE id = $1 AND deleted_at IS NULL`, id)
 }
 
-func (r *PGUserRepository) getOne(ctx context.Context, fieldName string, value any) (*entity.UserAccount, error) {
-	query := fmt.Sprintf(`
-		SELECT id, email, password_hash, username, avatar_id, is_admin, verified_at, created_at, updated_at
+func (r *PGUserRepository) GetForUpdate(ctx context.Context, id entity.UserID) (*entity.UserAccount, error) {
+	return r.getOne(ctx, `SELECT `+userColumns+` FROM users WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`, id)
+}
+
+// GetVisible: общий проект или задача автора в проекте viewer — только в неудалённых
+// проектах (ADR-0001); удалённые задачи автора не показывают.
+func (r *PGUserRepository) GetVisible(ctx context.Context, id entity.UserID, viewer entity.UserID) (*entity.UserAccount, error) {
+	query := `
+		SELECT ` + userColumns + `
 		FROM users
-		WHERE %s = $1 AND deleted_at IS NULL
-		`,
-		fieldName,
-	)
+		WHERE id = $1 AND deleted_at IS NULL AND (
+			id = $2
+			OR EXISTS (
+				SELECT 1
+				FROM project_members mine
+				JOIN project_members theirs ON theirs.project_id = mine.project_id
+				JOIN projects p ON p.id = mine.project_id AND p.deleted_at IS NULL
+				WHERE mine.user_id = $2 AND theirs.user_id = users.id
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM tasks t
+				JOIN project_members mine ON mine.project_id = t.project_id AND mine.user_id = $2
+				JOIN projects p ON p.id = t.project_id AND p.deleted_at IS NULL
+				WHERE t.author_id = users.id AND t.deleted_at IS NULL
+			)
+		)`
+	return r.getOne(ctx, query, id, viewer)
+}
+
+const userColumns = `id, email, password_hash, username, avatar_id, is_admin, verified_at, created_at, updated_at`
+
+// getOne читает одного пользователя запросом, который выбирает колонки userColumns.
+func (r *PGUserRepository) getOne(ctx context.Context, query string, args ...any) (*entity.UserAccount, error) {
 	var id, email, passwordHash string
 	var username, avatarID *string
 	var isAdmin bool
@@ -79,7 +104,7 @@ func (r *PGUserRepository) getOne(ctx context.Context, fieldName string, value a
 	var createdAt, updatedAt time.Time
 
 	if err := r.getDb(ctx).
-		QueryRow(ctx, query, value).
+		QueryRow(ctx, query, args...).
 		Scan(&id, &email, &passwordHash, &username, &avatarID, &isAdmin, &verifiedAt, &createdAt, &updatedAt); err != nil {
 		return nil, r.handleError(err)
 	}

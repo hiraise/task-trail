@@ -40,12 +40,17 @@ func (f *UserFactory) Restore(
 	createdAt time.Time,
 	updatedAt time.Time,
 ) *entity.UserAccount {
+	var avatar *entity.FileID
+	if avatarID != nil {
+		fileID := entity.FileID(*avatarID)
+		avatar = &fileID
+	}
 	return &entity.UserAccount{
 		ID:           entity.UserID(id),
 		Email:        entity.Email(email),
 		PasswordHash: passwordHash,
 		Username:     username,
-		AvatarID:     avatarID,
+		AvatarID:     avatar,
 		IsAdmin:      isAdmin,
 		VerifiedAt:   verifiedAt,
 		CreatedAt:    createdAt,

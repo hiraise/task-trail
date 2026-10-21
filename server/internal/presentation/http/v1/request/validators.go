@@ -9,12 +9,25 @@ import (
 
 // RegisterValidators добавляет проверки, которых нет в валидаторе:
 //   - maxbytes=N — строка не длиннее N байт в UTF-8 (пароль и предел bcrypt);
-//   - httpurl — полный адрес http(s) без параметров и якоря: от него строятся ссылки (ADR-0015).
+//   - httpurl — полный адрес http(s) без параметров и якоря: от него строятся ссылки (ADR-0015);
+//   - значения полей Optional и обязательные поля, которые могут быть null.
 func RegisterValidators(v *validator.Validate) error {
 	if err := v.RegisterValidation("maxbytes", maxBytes); err != nil {
 		return err
 	}
-	return v.RegisterValidation("httpurl", httpURL)
+	if err := v.RegisterValidation("httpurl", httpURL); err != nil {
+		return err
+	}
+	v.RegisterCustomTypeFunc(optionalValue[string], Optional[string]{})
+	v.RegisterStructValidation(requireUsername, updateCurrentUserReq{})
+	return nil
+}
+
+// requireUsername: имя обязательно в запросе, null — убрать имя (UpdateCurrentUserRequest в контракте).
+func requireUsername(sl validator.StructLevel) {
+	if r := sl.Current().Interface().(updateCurrentUserReq); !r.Username.Set {
+		sl.ReportError(r.Username, "username", "Username", "required", "")
+	}
 }
 
 func maxBytes(fl validator.FieldLevel) bool {

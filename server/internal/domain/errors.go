@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"fmt"
 	"runtime"
 	"strconv"
@@ -29,6 +30,10 @@ const (
 	MailDisabled ErrorCode = "MAIL_DISABLED"
 	// SMTP не принял письмо: не подключился, отказал во входе или в отправке
 	MailSendFailed ErrorCode = "MAIL_SEND_FAILED"
+
+	// Файл больше допустимого или не того типа (ADR-0013)
+	FileTooLarge       ErrorCode = "FILE_TOO_LARGE"
+	FileTypeNotAllowed ErrorCode = "FILE_TYPE_NOT_ALLOWED"
 
 	RefreshTokenNotFound ErrorCode = "REFRESH_TOKEN_NOT_FOUND"
 	RefreshTokenWrong    ErrorCode = "WRONG_REFRESH_TOKEN"
@@ -68,6 +73,12 @@ func (e *DomainError) Error() string {
 
 func (e *DomainError) Unwrap() error {
 	return e.sourceErr
+}
+
+// HasCode сообщает, что err — DomainError с кодом code.
+func HasCode(err error, code ErrorCode) bool {
+	var e *DomainError
+	return errors.As(err, &e) && e.Code == code
 }
 
 func Wrap(err error, background error) error {
@@ -131,6 +142,14 @@ func ErrMailDisabled(data ...any) *DomainError {
 
 func ErrMailSendFailed(sourceErr error, data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, MailSendFailed, sourceErr, data...)
+}
+
+func ErrFileTooLarge(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, FileTooLarge, nil, data...)
+}
+
+func ErrFileTypeNotAllowed(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, FileTypeNotAllowed, nil, data...)
 }
 
 func ErrPasswordCompareFailed(sourceErr error, data ...any) *DomainError {
