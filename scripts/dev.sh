@@ -29,6 +29,9 @@ usage() {
   down            остановить, данные сохраняются
   reset           остановить и стереть базу
   logs [сервис]   логи: server, web, postgres, mailpit
+
+Ветки:
+  cleanup         убрать worktree и ветки, чьи PR уже слиты
 EOF
 }
 
@@ -198,6 +201,45 @@ stand_up() {
 EOF
 }
 
+# Убирает worktree веток, чей PR слит (CLAUDE.md, «Ветки и PR»): исходники остаются в истории git.
+# Ветка слита, если её последний коммит — последний коммит слитого PR; так видно и слияние
+# без merge-коммита. Основную папку, текущий worktree и папки с незакоммиченными правками
+# не трогает. Перед кириллицей — ${var}: bash 3.2 в локали C иначе берёт её байт в имя переменной.
+cleanup() (
+	if ! command -v gh >/dev/null 2>&1; then
+		echo "Нужен GitHub CLI (gh): по нему видно, что PR ветки слит" >&2
+		exit 1
+	fi
+	cd "$ROOT"
+	git fetch -q --prune origin
+	local main_tree here tree branch head pr removed=0
+	main_tree=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
+	here=$(git rev-parse --show-toplevel)
+	while IFS=$'\t' read -r tree branch; do
+		if [ "$tree" = "$main_tree" ] || [ "$tree" = "$here" ]; then
+			continue
+		fi
+		head=$(git rev-parse "refs/heads/$branch")
+		pr=$(gh pr list --state merged --head "$branch" --json number,headRefOid \
+			--jq ".[] | select(.headRefOid == \"$head\") | .number" | head -1)
+		[ -n "$pr" ] || continue
+		if [ -n "$(git -C "$tree" status --porcelain)" ]; then
+			echo "Оставлен ${tree}: в нём незакоммиченные правки" >&2
+			continue
+		fi
+		if ! git worktree remove "$tree"; then
+			echo "Не удалось убрать ${tree}" >&2
+			continue
+		fi
+		git branch -q -D "$branch"
+		echo "Убран $tree и ветка ${branch} (PR #${pr})"
+		removed=$((removed + 1))
+	done < <(git worktree list --porcelain |
+		awk '/^worktree /{tree=substr($0, 10)} /^branch refs\/heads\//{print tree "\t" substr($0, 19)}')
+	git worktree prune
+	echo "== cleanup: убрано worktree — $removed"
+)
+
 case "${1:-}" in
 check)
 	rules
@@ -225,6 +267,7 @@ logs)
 		"${COMPOSE[@]}" logs --tail=200 "$@"
 	fi
 	;;
+cleanup) cleanup ;;
 "" | -h | --help | help) usage ;;
 *)
 	echo "Неизвестная команда: $1" >&2

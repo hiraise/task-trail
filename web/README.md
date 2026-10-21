@@ -53,6 +53,11 @@ src/
 └── styles/              # глобальные стили и переменные дизайна
 ```
 
+Дерево маршрутов `src/routeTree.gen.ts` генерирует плагин TanStack Router в Vite. Добавил, убрал
+или переименовал файл в `routes/` — перегенерируй дерево (`npx vite build` или `npm run dev`)
+и закоммить его: `npm run build` сначала проверяет типы и на устаревшем дереве падает с ошибкой
+`not assignable to parameter of type 'keyof FileRoutesByPath'`.
+
 ## Лицензия
 
 [MIT](../LICENSE).

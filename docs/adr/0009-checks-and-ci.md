@@ -21,3 +21,7 @@
 ## Последствия
 
 Новая проверка добавляется в `scripts/dev.sh` или `scripts/rules.mjs`, а не в workflow.
+
+## Проверка
+
+`scripts/rules.mjs` — каждое `uses:` в `.github/workflows/` закреплено по SHA с версией в комментарии.

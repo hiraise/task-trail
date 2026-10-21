@@ -1,0 +1,31 @@
+# Обновления зависимостей (ADR-0021). Каждый PR Dependabot проходит CI; обновление без смены
+# поведения ADR не требует (ADR-0006). Мажорные версии приходят отдельными PR.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /server
+    schedule:
+      interval: weekly
+    groups:
+      server:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    groups:
+      web:
+        update-types: [minor, patch]
+        # Новая версия генератора меняет типы — отдельный PR, типы перегенерирует агент (ADR-0020)
+        exclude-patterns:
+          - '@hey-api/openapi-ts'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns:
+          - '*'
