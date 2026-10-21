@@ -1,6 +1,6 @@
 # ADR-0006: Стек: Go, Gin и PostgreSQL на сервере; React, TypeScript и Vite в вебе
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** `server/go.mod`, `web/package.json`, импорты в `web/src/`
 

@@ -1,6 +1,6 @@
 # ADR-0005: Один репозиторий: сервер, веб-клиент и контракт API `api/openapi.yaml`
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** `api/`, HTTP-слой `server/internal/presentation/`, клиент API `web/src/infrastructure/`
 
