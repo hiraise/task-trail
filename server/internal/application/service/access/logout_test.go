@@ -3,170 +3,82 @@ package access_test
 import (
 	"context"
 	"errors"
-	"task-trail/internal/application/dto"
-	"task-trail/internal/application/service/access"
-	"task-trail/internal/domain"
-
 	"testing"
+	"time"
+
+	"task-trail/internal/domain"
+	"task-trail/internal/domain/entity"
 
 	"go.uber.org/mock/gomock"
 )
 
-func TestLogoutService(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+func TestLogoutRevokesToken(t *testing.T) {
+	module, d := newModule(t)
+	d.expectVerify("rt")
+	d.expectTx()
+	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).Return(activeToken(), nil)
+	d.tokens.EXPECT().Update(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, rt *entity.RefreshToken) error {
+		if rt.RevokedAt == nil || !rt.RevokedAt.Equal(now) {
+			t.Errorf("отозванный токен: %+v", rt)
+		}
+		return nil
+	})
 
-	type args struct {
-		ctx context.Context
-		rt  string
+	if err := module.Logout.Execute(context.Background(), "rt"); err != nil {
+		t.Fatal(err)
 	}
-	ctx := context.Background()
-	a := args{
-		ctx: ctx,
-		rt:  "rt",
-	}
+}
 
-	tests := []struct {
-		name        string
-		service     func(ctrl *gomock.Controller) *access.LogoutService
-		args        args
-		want        dto.SuccessLogin
-		wantErr     bool
-		wantErrCode domain.ErrorCode
+// Выход с украденным токеном закрывает все сессии пользователя.
+func TestLogoutReusedToken(t *testing.T) {
+	module, d := newModule(t)
+	d.expectVerify("rt")
+	d.expectTx()
+	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).Return(token(at(now.Add(-time.Hour)), nil, now.Add(time.Hour)), nil)
+	d.tokens.EXPECT().RevokeAll(outsideTx, userID, now).Return(nil)
+
+	if err := module.Logout.Execute(context.Background(), "rt"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Закрывать нечего — выход всё равно успешен.
+func TestLogoutNothingToRevoke(t *testing.T) {
+	cases := []struct {
+		name  string
+		token *entity.RefreshToken
+		err   error
 	}{
-		// success logout
-		{
-			name: "success logout",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.LogoutService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
-				deps.refreshTokenRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil)
-				return module.Logout
-			},
-			wantErr: false,
-		},
-		// received RT is invalid
-		{
-			name: "received RT is invalid",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.LogoutService {
-				module, deps := MockUseCase(ctrl)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return("", "", domain.ErrWrongRefreshToken())
-				return module.Logout
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenWrong,
-		},
-		// received RT is expired
-		{
-			name: "received RT is expired",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.LogoutService {
-				module, deps := MockUseCase(ctrl)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return("", "", domain.ErrRefreshTokenExpired())
-
-				return module.Logout
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenExpired,
-		},
-		// stored RT is not found
-		{
-			name: "stored RT is not found",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.LogoutService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, domain.ErrEntityNotFound(0, nil))
-				return module.Logout
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenNotFound,
-		},
-		// failed to get stored RT
-		{
-			name: "failed to get stored RT",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.LogoutService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, domain.ErrRepoInternal(0, nil))
-				return module.Logout
-			},
-			wantErr:     true,
-			wantErrCode: domain.RepoInternal,
-		},
-		// stored RT is already used
-		{
-			name: "stored RT is already used",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.LogoutService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, true), nil)
-				return module.Logout
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenAlreadyUsed,
-		},
-		// stored RT is expired
-		{
-			name: "stored RT is expired",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.LogoutService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(true, false), nil)
-				return module.Logout
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenExpired,
-		},
-		// failed to revoke stored RT
-		{
-			name: "failed to revoke stored RT",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.LogoutService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
-				deps.refreshTokenRepo.EXPECT().Update(ctx, gomock.Any()).Return(domain.ErrRepoInternal(0, nil))
-				return module.Logout
-			},
-			wantErr:     true,
-			wantErrCode: domain.RepoInternal,
-		},
+		{"только что обменян", token(at(now.Add(-time.Second)), nil, now.Add(time.Hour)), nil},
+		{"уже закрыт", token(nil, at(now.Add(-time.Hour)), now.Add(time.Hour)), nil},
+		{"истёк", token(nil, nil, now.Add(-time.Hour)), nil},
+		{"нет в базе", nil, domain.ErrEntityNotFound(0, nil)},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			service := tt.service(ctrl)
-			err := service.Execute(tt.args.ctx, tt.args.rt)
-			if tt.wantErr {
-				var e *domain.DomainError
-				if err == nil {
-					t.Errorf("expected error but got nil")
-					return
-				}
-				if !errors.As(err, &e) {
-					t.Errorf("expected domain error, got %T", err)
-					return
-				}
-				if e.Code != tt.wantErrCode {
-					t.Errorf("unexpected error Code: got %s, want %s", e.Code, tt.wantErrCode)
-				}
-			} else {
-				if err != nil {
-					t.Errorf("unexpected error: %v", err)
-				}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			module, d := newModule(t)
+			d.expectVerify("rt")
+			d.expectTx()
+			d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).Return(c.token, c.err)
+			if err := module.Logout.Execute(context.Background(), "rt"); err != nil {
+				t.Fatal(err)
 			}
 		})
 	}
+	t.Run("неверный JWT", func(t *testing.T) {
+		module, d := newModule(t)
+		d.jwt.EXPECT().VerifyRefreshToken("rt").Return("", "", domain.ErrRefreshTokenExpired())
+		if err := module.Logout.Execute(context.Background(), "rt"); err != nil {
+			t.Fatal(err)
+		}
+	})
+}
+
+func TestLogoutRepositoryError(t *testing.T) {
+	module, d := newModule(t)
+	d.expectVerify("rt")
+	d.expectTx()
+	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).Return(nil, domain.ErrRepoInternal(0, errors.New("connection reset")))
+
+	requireCode(t, module.Logout.Execute(context.Background(), "rt"), domain.RepoInternal)
 }

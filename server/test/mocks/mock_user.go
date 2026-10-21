@@ -41,6 +41,21 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Any mocks base method.
+func (m *MockUserRepository) Any(ctx context.Context) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Any", ctx)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Any indicates an expected call of Any.
+func (mr *MockUserRepositoryMockRecorder) Any(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Any", reflect.TypeOf((*MockUserRepository)(nil).Any), ctx)
+}
+
 // Create mocks base method.
 func (m *MockUserRepository) Create(ctx context.Context, arg1 *entity.UserAccount) error {
 	m.ctrl.T.Helper()
@@ -53,21 +68,6 @@ func (m *MockUserRepository) Create(ctx context.Context, arg1 *entity.UserAccoun
 func (mr *MockUserRepositoryMockRecorder) Create(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserRepository)(nil).Create), ctx, arg1)
-}
-
-// ExistsByEmail mocks base method.
-func (m *MockUserRepository) ExistsByEmail(ctx context.Context, email entity.Email) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExistsByEmail", ctx, email)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ExistsByEmail indicates an expected call of ExistsByEmail.
-func (mr *MockUserRepositoryMockRecorder) ExistsByEmail(ctx, email any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsByEmail", reflect.TypeOf((*MockUserRepository)(nil).ExistsByEmail), ctx, email)
 }
 
 // GetByEmail mocks base method.
@@ -98,6 +98,20 @@ func (m *MockUserRepository) GetByID(ctx context.Context, id entity.UserID) (*en
 func (mr *MockUserRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockUserRepository)(nil).GetByID), ctx, id)
+}
+
+// LockRegistration mocks base method.
+func (m *MockUserRepository) LockRegistration(ctx context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LockRegistration", ctx)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LockRegistration indicates an expected call of LockRegistration.
+func (mr *MockUserRepositoryMockRecorder) LockRegistration(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LockRegistration", reflect.TypeOf((*MockUserRepository)(nil).LockRegistration), ctx)
 }
 
 // Update mocks base method.

@@ -2,7 +2,6 @@ package access
 
 import (
 	"context"
-	"errors"
 	"task-trail/internal/application/transaction"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
@@ -10,8 +9,11 @@ import (
 	"task-trail/internal/domain/service"
 )
 
+// LogoutService закрывает сессию refresh-токена. Недействительный токен — не ошибка:
+// выход всё равно удаляет cookie, а закрывать нечего.
 type LogoutService struct {
 	txManager              transaction.TxManager
+	clock                  service.Clock
 	refreshTokenRepository repository.RefreshTokenRepository
 	tokenService           service.AccessTokenService
 }
@@ -19,33 +21,33 @@ type LogoutService struct {
 func (s *LogoutService) Execute(ctx context.Context, rt string) error {
 	u, r, err := s.tokenService.VerifyRefreshToken(rt)
 	if err != nil {
-		return err
+		return nil
 	}
 	rtID := entity.RefreshTokenID(r)
 	userID := entity.UserID(u)
+	now := s.clock.Now()
 	f := func(ctx context.Context) error {
-		oldToken, err := s.refreshTokenRepository.GetUserToken(ctx, rtID, userID)
+		token, err := getUserToken(ctx, s.refreshTokenRepository, rtID, userID)
 		if err != nil {
-			var e *domain.DomainError
-			if errors.As(err, &e) {
-				if e.Code == domain.EntityNotFound {
-					return domain.ErrRefreshTokenNotFound()
-				}
-			}
 			return err
 		}
-		if err := oldToken.Validate(); err != nil {
-			// TODO(этап 1): повторное использование отозванного токена — признак кражи: отзывать
-			// все refresh-токены пользователя отдельной транзакцией, иначе отзыв откатится вместе с ошибкой.
-			return err
+		switch token.State(now) {
+		case entity.RefreshTokenActive:
+			token.Revoke(now)
+			return s.refreshTokenRepository.Update(ctx, token)
+		case entity.RefreshTokenReused:
+			return domain.ErrRefreshTokenReused("tokenID", rtID, "userID", userID)
 		}
-
-		oldToken.Use()
-		if err := s.refreshTokenRepository.Update(ctx, oldToken); err != nil {
-			return err
-		}
+		// Только что обменянный, отозванный или истёкший токен закрывать не нужно
 		return nil
 	}
-	return s.txManager.DoWithTx(ctx, f)
-
+	err = s.txManager.DoWithTx(ctx, f)
+	switch {
+	case isReuse(err):
+		// Кража: выход удался, но закрываем и все остальные сессии пользователя
+		return s.refreshTokenRepository.RevokeAll(ctx, userID, now)
+	case isNotFound(err):
+		return nil
+	}
+	return err
 }

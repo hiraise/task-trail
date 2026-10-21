@@ -1,8 +1,9 @@
 # TaskTrail — сервер
 
-API на Go: Gin, pgx, PostgreSQL. Сейчас реализован модуль доступа — регистрация с подтверждением
-почты, вход, обновление токенов, выход, сброс и смена пароля (`/v1/access/*`). Проекты, задачи
-и остальное — по плану в [корневом README](../README.md).
+API на Go: Gin, pgx, PostgreSQL, контракт — [`api/openapi.yaml`](../api/openapi.yaml). Сейчас
+реализован доступ: первый аккаунт, вход, обновление сессии, выход и смена пароля (`/v1/auth/*`),
+настройки для веба до входа (`/v1/settings/public`). Сброс пароля, приглашения, проекты, задачи
+и остальное — по плану в [docs/roadmap.md](../docs/roadmap.md).
 
 Стек — [ADR-0006](../docs/adr/0006-tech-stack.md), устройство кода —
 [ADR-0007](../docs/adr/0007-server-architecture.md), процесс разработки — [CLAUDE.md](../CLAUDE.md).
@@ -18,9 +19,15 @@ go run ./cmd/app    # запуск
 make mock           # пересоздать моки в test/mocks после изменения интерфейсов
 ```
 
+Первый аккаунт, созданный через API, становится администратором сервиса, после него регистрация
+закрыта ([ADR-0016](../docs/adr/0016-invite-only-signup-first-admin.md)). Создайте его сразу
+после запуска, до того как открыть сервер в интернет: иначе его займёт первый, кто дойдёт до сервера.
+
 Проверки сервера — `scripts/dev.sh server` из корня репозитория. Для интеграционных тестов
-репозиториев он поднимает временный PostgreSQL в Docker и передаёт адрес в `TEST_PG_URL`;
-без него `go test` такие тесты пропускает (`test/testdb`).
+он поднимает временный PostgreSQL в Docker и передаёт адрес в `TEST_PG_URL`; без него `go test`
+такие тесты пропускает (`test/testdb`). На этой базе работают тесты репозиториев и тесты
+обработчиков: `test/apitest` собирает сервер, как `internal/app`, с фиксированными часами
+и ходит в него запросами с cookie, сверяя каждый ответ с контрактом.
 
 ## Переменные окружения
 
@@ -35,15 +42,10 @@ make mock           # пересоздать моки в test/mocks после �
 | `APP_ROOT_PATH` | нет | пусто или `/api` | префикс путей API за прокси: от него считаются пути cookie и Swagger |
 | `APP_DEBUG` | нет | `false` | подробные логи |
 
-Временно, пока почта и Swagger не перешли в настройки администратора (шаг 3 этапа 1,
-[ADR-0014](../docs/adr/0014-service-administrator.md), [ADR-0017](../docs/adr/0017-mail-in-admin-ui.md)):
+Временно, пока Swagger не перешёл под вход администратора (шаг 3.3 этапа 1,
+[ADR-0014](../docs/adr/0014-service-administrator.md)):
 
 | Переменная | Обязательна | Пример или значение по умолчанию | Что задаёт |
 | --- | --- | --- | --- |
-| `SMTP_HOST`, `SMTP_PORT` | да | `localhost`, `1025` | SMTP-сервер для писем |
-| `SMTP_USER`, `SMTP_PASSWORD` | да | `noreply@example.com`, пусто | вход на SMTP |
-| `SMTP_SENDER` | нет | `TaskTrail <noreply@example.com>` | отправитель; по умолчанию `SMTP_USER` |
-| `FRONTEND_VERIFY_URL` | да | `http://localhost:3000/auth/confirm?token=` | ссылка подтверждения почты, токен дописывается в конец |
-| `FRONTEND_RESET_PASSWORD_URL` | да | `http://localhost:3000/auth/reset?token=` | ссылка сброса пароля, токен дописывается в конец |
 | `SWAGGER_ENABLED` | нет | `true` | Swagger по адресу `/docs/` |
 | `SWAGGER_LOGIN`, `SWAGGER_PASSWORD` | нет | `root`, `root` | Basic-авторизация Swagger |

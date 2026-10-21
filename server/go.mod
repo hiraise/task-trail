@@ -17,7 +17,6 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1
 	github.com/swaggo/swag v1.16.6
-	github.com/wneessen/go-mail v0.8.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.58.0
 )

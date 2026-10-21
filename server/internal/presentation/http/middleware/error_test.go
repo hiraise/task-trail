@@ -35,7 +35,7 @@ type changePasswordReq struct {
 func engine(method, path string, handler gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	e := gin.New()
-	middleware.Setup(e, id.New(), contextmanager.NewGin("at", "rt", clock.New(time.Now())), nopLogger{})
+	middleware.Setup(e, id.New(), contextmanager.NewGin("at", "rt", "", clock.New(time.Now())), nopLogger{})
 	e.Handle(method, path, handler)
 	return e
 }

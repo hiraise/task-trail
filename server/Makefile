@@ -8,10 +8,9 @@ mock:
 
 	mockgen -source=internal/domain/service/password/password.go -destination=test/mocks/mock_password.go -package=mocks -package=mocks -mock_names=Service=MockPasswordService
 	mockgen -source=internal/domain/service/access_token.go -destination=test/mocks/mock_access_token.go -package=mocks -mock_names=Service=MockAccessTokenService
-	mockgen -source=internal/domain/repository/confirmation_token.go -destination=test/mocks/mock_confirmation_token.go -package=mocks -mock_names=Service=MockConfirmationTokenRepository
 	mockgen -source=internal/domain/repository/refresh_token.go -destination=test/mocks/mock_refresh_token.go -package=mocks -mock_names=Service=MockRefreshTokenRepository
 	mockgen -source=internal/domain/repository/user.go -destination=test/mocks/mock_user.go -package=mocks -mock_names=Service=MockUserRepository
-	mockgen -source=internal/domain/service/access_notifier.go -destination=test/mocks/mock_access_notifier.go -package=mocks -mock_names=Service=MockAccessNotifier
+	mockgen -source=internal/domain/repository/settings.go -destination=test/mocks/mock_settings.go -package=mocks -mock_names=Service=MockSettingsRepository
 	mockgen -source=internal/domain/service/id_generator.go -destination=test/mocks/mock_id_generator.go -package=mocks -mock_names=Service=MockIdGenerator
 	mockgen -source=internal/application/transaction/transaction.go -destination=test/mocks/mock_transaction.go -package=mocks -mock_names=Service=MockTxManager
 

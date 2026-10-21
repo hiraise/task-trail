@@ -1,11 +1,8 @@
 package http
 
 import (
-	"net/http"
 	"task-trail/config"
 	"task-trail/internal/application/service/access"
-	"task-trail/internal/customerrors"
-
 	"task-trail/internal/pkg/contextmanager"
 	v1 "task-trail/internal/presentation/http/v1"
 
@@ -30,27 +27,13 @@ import (
 // @name at
 
 func NewRouter(
-
 	app *gin.Engine,
 	cfg *config.Config,
 	contextmanager *contextmanager.GinContextManager,
-	errHandler customerrors.ErrorHandler,
 	authMW gin.HandlerFunc,
 	accessModule *access.AccessModule,
 ) {
-	v1.NewRouter(
-		app,
-		cfg,
-		contextmanager,
-		errHandler,
-		authMW,
-		accessModule,
-	)
-
-	app.GET("/", func(c *gin.Context) {
-		// TODO: add api info
-		c.JSON(http.StatusOK, gin.H{"message": "kek", "status": http.StatusOK})
-	})
+	v1.NewRouter(app, contextmanager, authMW, accessModule)
 	if cfg.Docs.Enabled {
 		authMiddleware := gin.BasicAuth(gin.Accounts{
 			cfg.Docs.Login: cfg.Docs.Password, // логин и пароль

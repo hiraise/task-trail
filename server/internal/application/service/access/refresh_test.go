@@ -3,210 +3,120 @@ package access_test
 import (
 	"context"
 	"errors"
-	"reflect"
-	"task-trail/internal/application/dto"
-	"task-trail/internal/application/service/access"
-	"task-trail/internal/domain"
-	"task-trail/internal/domain/service"
-
 	"testing"
+	"time"
+
+	"task-trail/internal/domain"
+	"task-trail/internal/domain/entity"
 
 	"go.uber.org/mock/gomock"
 )
 
-func TestRefreshService(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+func at(t time.Time) *time.Time { return &t }
 
-	type args struct {
-		ctx context.Context
-		rt  string
-	}
-	ctx := context.Background()
-	a := args{
-		ctx: ctx,
-		rt:  "rt",
-	}
+func token(rotatedAt, revokedAt *time.Time, expiredAt time.Time) *entity.RefreshToken {
+	return &entity.RefreshToken{ID: tokenID, UserID: userID, ExpiredAt: expiredAt, RotatedAt: rotatedAt, RevokedAt: revokedAt}
+}
 
-	tests := []struct {
-		name        string
-		service     func(ctrl *gomock.Controller) *access.RefreshService
-		args        args
-		want        dto.SuccessLogin
-		wantErr     bool
-		wantErrCode domain.ErrorCode
+func activeToken() *entity.RefreshToken { return token(nil, nil, now.Add(time.Hour)) }
+
+func (d *deps) expectVerify(rt string) {
+	d.jwt.EXPECT().VerifyRefreshToken(rt).Return(string(userID), string(tokenID), nil)
+}
+
+// Действующий токен обменивается один раз: отмечается обменянным, выдаётся новая пара.
+func TestRefreshActiveToken(t *testing.T) {
+	module, d := newModule(t)
+	d.expectVerify("rt")
+	d.expectTx()
+	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).Return(activeToken(), nil)
+	d.tokens.EXPECT().Update(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, rt *entity.RefreshToken) error {
+		if rt.RotatedAt == nil || !rt.RotatedAt.Equal(now) || rt.RevokedAt != nil {
+			t.Errorf("обменянный токен: %+v", rt)
+		}
+		return nil
+	})
+	d.expectSession()
+
+	tokens, err := module.Refresh.Execute(context.Background(), "rt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tokens.UserID != userID || tokens.RefreshToken.Token != "refresh" {
+		t.Fatalf("токены: %+v", tokens)
+	}
+}
+
+// Тот же токен в течение 30 секунд после обмена — параллельный запрос другой вкладки:
+// он тоже получает новую пару, а время обмена не сдвигается.
+func TestRefreshJustRotatedToken(t *testing.T) {
+	module, d := newModule(t)
+	d.expectVerify("rt")
+	d.expectTx()
+	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).
+		Return(token(at(now.Add(-entity.RefreshTokenReuseGrace)), nil, now.Add(time.Hour)), nil)
+	d.expectSession()
+
+	if _, err := module.Refresh.Execute(context.Background(), "rt"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Позже — кража: все токены пользователя отзываются после транзакции, иначе отзыв
+// откатился бы вместе с ошибкой.
+func TestRefreshReusedToken(t *testing.T) {
+	module, d := newModule(t)
+	d.expectVerify("rt")
+	d.expectTx()
+	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).
+		Return(token(at(now.Add(-entity.RefreshTokenReuseGrace-time.Second)), nil, now.Add(time.Hour)), nil)
+	d.tokens.EXPECT().RevokeAll(outsideTx, userID, now).Return(nil)
+
+	_, err := module.Refresh.Execute(context.Background(), "rt")
+	requireCode(t, err, domain.RefreshTokenReused)
+}
+
+// Не удалось отозвать токены после кражи — ошибка сервера, а не тихий 401.
+func TestRefreshReusedTokenRevokeFailed(t *testing.T) {
+	module, d := newModule(t)
+	d.expectVerify("rt")
+	d.expectTx()
+	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).
+		Return(token(at(now.Add(-time.Hour)), nil, now.Add(time.Hour)), nil)
+	d.tokens.EXPECT().RevokeAll(outsideTx, userID, now).Return(domain.ErrRepoInternal(0, errors.New("connection reset")))
+
+	_, err := module.Refresh.Execute(context.Background(), "rt")
+	requireCode(t, err, domain.RepoInternal)
+}
+
+func TestRefreshRejectedTokens(t *testing.T) {
+	cases := []struct {
+		name  string
+		token *entity.RefreshToken
+		err   error
+		code  domain.ErrorCode
 	}{
-		// success refresh
-		{
-			name: "succes refresh",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
-				deps.refreshTokenRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
-				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(service.IssuedToken{}, service.IssuedToken{}, nil)
-				deps.refreshTokenRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil)
-				return module.Refresh
-			},
-			wantErr: false,
-			want:    dto.SuccessLogin{UserID: TEST_USER_ID, AccessToken: service.IssuedToken{}, RefreshToken: service.IssuedToken{}},
-		},
-		// received is RT invalid
-		{
-			name: "received is RT invalid",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return("", "", domain.ErrWrongRefreshToken())
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenWrong,
-		},
-		// received RT is expired
-		{
-			name: "received RT is expired",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return("", "", domain.ErrRefreshTokenExpired())
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenExpired,
-		},
-		// received RT not found
-		{
-			name: "received RT not found",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, domain.ErrEntityNotFound(0, nil))
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenNotFound,
-		},
-		// failed to get stored RT
-		{
-			name: "failed to get stored RT",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, domain.ErrRepoInternal(0, nil))
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.RepoInternal,
-		},
-		// stored RT is used
-		{
-			name: "stored RT is used",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, true), nil)
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenAlreadyUsed,
-		},
-		// stored RT is expired
-		{
-			name: "stored RT is expired",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(true, false), nil)
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.RefreshTokenExpired,
-		},
-		// failed to create new RT
-		{
-			name: "failed to create new RT",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
-				deps.refreshTokenRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(domain.ErrRepoInternal(0, nil))
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.RepoInternal,
-		},
-		// failed to generate new pair
-		{
-			name: "failed to generate new pair",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
-				deps.refreshTokenRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
-				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(service.IssuedToken{}, service.IssuedToken{}, domain.ErrTokenGenerateFailed(nil))
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.TokenGenerationFailed,
-		},
-		// failed to revoke stored RT
-		{
-			name: "failed to revoke stored RT",
-			args: a,
-			service: func(ctrl *gomock.Controller) *access.RefreshService {
-				module, deps := MockUseCase(ctrl)
-				mockTx(ctx, deps.txManager)
-				deps.accessTokenService.EXPECT().VerifyRefreshToken(gomock.Any()).Return(TEST_USER_ID, "jti", nil)
-				deps.refreshTokenRepo.EXPECT().GetUserToken(gomock.Any(), gomock.Any(), gomock.Any()).Return(getTestRefreshToken(false, false), nil)
-				deps.refreshTokenRepo.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
-				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(service.IssuedToken{}, service.IssuedToken{}, nil)
-				deps.refreshTokenRepo.EXPECT().Update(ctx, gomock.Any()).Return(domain.ErrRepoInternal(0, nil))
-				return module.Refresh
-			},
-			wantErr:     true,
-			wantErrCode: domain.RepoInternal,
-		},
+		{"сессия закрыта", token(nil, at(now.Add(-time.Hour)), now.Add(time.Hour)), nil, domain.RefreshTokenRevoked},
+		{"истёк", token(nil, nil, now), nil, domain.RefreshTokenExpired},
+		{"нет в базе", nil, domain.ErrEntityNotFound(0, nil), domain.RefreshTokenNotFound},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			service := tt.service(ctrl)
-			got, err := service.Execute(tt.args.ctx, tt.args.rt)
-			if tt.wantErr {
-				var e *domain.DomainError
-				if err == nil {
-					t.Errorf("expected error but got nil")
-					return
-				}
-				if !errors.As(err, &e) {
-					t.Errorf("expected domain error, got %T", err)
-					return
-				}
-				if e.Code != tt.wantErrCode {
-					t.Errorf("unexpected error Code: got %s, want %s", e.Code, tt.wantErrCode)
-				}
-			} else {
-				if err != nil {
-					t.Errorf("unexpected error: %v", err)
-				}
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("got = %v, want %v", got, tt.want)
-			}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			module, d := newModule(t)
+			d.expectVerify("rt")
+			d.expectTx()
+			d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).Return(c.token, c.err)
+
+			_, err := module.Refresh.Execute(context.Background(), "rt")
+			requireCode(t, err, c.code)
 		})
 	}
+}
+
+func TestRefreshInvalidJWT(t *testing.T) {
+	module, d := newModule(t)
+	d.jwt.EXPECT().VerifyRefreshToken("rt").Return("", "", domain.ErrWrongRefreshToken())
+
+	_, err := module.Refresh.Execute(context.Background(), "rt")
+	requireCode(t, err, domain.RefreshTokenWrong)
 }
