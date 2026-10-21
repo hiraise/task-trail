@@ -10,6 +10,7 @@
 
 | Путь | Что там |
 | --- | --- |
+| `api/openapi.yaml` | Контракт API (OpenAPI 3.1) — источник истины для сервера и веба |
 | `server/` | API на Go (Gin, PostgreSQL); история перенесена из `hiraise/tt-backend` |
 | `web/` | Веб-клиент на React и TypeScript (Vite); история перенесена из `hiraise/tt-frontend` |
 | `docs/adr/` | Архитектурные решения — [индекс](docs/adr/README.md) |

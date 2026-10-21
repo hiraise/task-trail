@@ -1,0 +1,1459 @@
+openapi: 3.1.0
+info:
+  title: TaskTrail API
+  version: 1.0.0
+  license:
+    name: MIT
+    identifier: MIT
+  description: |
+    Контракт API TaskTrail — источник истины для сервера и веба (ADR-0005).
+    Общие правила — ADR-0018: ID — строки UUID, время — ISO 8601 в UTC, пустое значение — `null`,
+    изменение отвечает изменённым ресурсом, ошибка — `Error` с кодом из `ErrorCode`.
+
+    Сессия — две cookie с флагами HttpOnly, Secure и SameSite=Lax:
+    `at` — access-токен, путь `/`; `rt` — refresh-токен, путь `/v1/auth/`, чтобы его получали
+    только эндпоинты доступа, а не весь API. Пути cookie считаются от префикса API (`APP_ROOT_PATH`).
+
+    ID в пути или в параметре запроса не в формате UUID — `404 NOT_FOUND`. Любая операция может
+    ответить `500 INTERNAL`. Ключи `details` в ошибке проверки — пути полей запроса, как в JSON:
+    `newPassword`, `emails[3]`.
+
+    Роли в проекте (ADR-0003): `owner` — владелец, `admin` — администратор, `member` — участник.
+    Администратор сервиса (`isAdmin`, ADR-0014) — отдельный признак пользователя, доступа
+    к чужим проектам он не даёт.
+servers:
+  - url: http://localhost:3000/api
+    description: локальный стенд, `scripts/dev.sh up`
+  - url: http://localhost:8080
+    description: сервер напрямую
+security:
+  - cookieAuth: []
+tags:
+  - name: auth
+    description: вход, сессия, пароль, первый аккаунт и приглашения (ADR-0016, ADR-0017)
+  - name: users
+    description: текущий пользователь и другие пользователи
+  - name: projects
+    description: проекты и участники
+  - name: tasks
+    description: задачи и их статусы (ADR-0002)
+  - name: files
+    description: файлы (ADR-0013)
+  - name: admin
+    description: настройки сервиса и пользователи — только администратору сервиса (ADR-0014, ADR-0015)
+
+paths:
+  /v1/settings/public:
+    get:
+      tags: [auth]
+      operationId: getPublicSettings
+      summary: Настройки, нужные вебу до входа
+      security: []
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Открыта ли регистрация и включена ли почта
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublicSettings" }
+
+  /v1/auth/register:
+    post:
+      tags: [auth]
+      operationId: register
+      summary: Создать первый аккаунт
+      description: |
+        Работает, только пока в сервисе нет пользователей. Первый аккаунт становится
+        администратором сервиса, `serviceUrl` сохраняется как адрес сервиса (ADR-0015).
+        После создания пользователь сразу входит: ответ ставит cookie сессии.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "201":
+          description: Аккаунт создан, сессия открыта
+          headers:
+            Set-Cookie: { $ref: "#/components/headers/SessionCookies" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentUser" }
+        "409":
+          description: "`REGISTRATION_CLOSED` — первый аккаунт уже создан"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/auth/login:
+    post:
+      tags: [auth]
+      operationId: login
+      summary: Войти
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Credentials" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Сессия открыта
+          headers:
+            Set-Cookie: { $ref: "#/components/headers/SessionCookies" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentUser" }
+        "401":
+          description: "`INVALID_CREDENTIALS` — неверная почта или пароль"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/auth/refresh:
+    post:
+      tags: [auth]
+      operationId: refreshSession
+      summary: Обновить сессию
+      description: |
+        Читает cookie `rt` и выдаёт новую пару cookie. Тот же refresh-токен в течение 30 секунд
+        после обновления — это параллельный запрос из другой вкладки: он тоже получает новую пару.
+        Позже повторное использование считается кражей и отзывает все токены пользователя.
+      security:
+        - refreshCookie: []
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Сессия обновлена
+          headers:
+            Set-Cookie: { $ref: "#/components/headers/SessionCookies" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /v1/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      summary: Выйти
+      description: Отзывает refresh-токен из cookie `rt` и удаляет обе cookie, даже если токен недействителен.
+      security:
+        - refreshCookie: []
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Сессия закрыта
+          headers:
+            Set-Cookie: { $ref: "#/components/headers/SessionCookies" }
+
+  /v1/auth/check:
+    get:
+      tags: [auth]
+      operationId: checkSession
+      summary: Проверить, что сессия действует
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Пользователь вошёл
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /v1/auth/password/change:
+    post:
+      tags: [auth]
+      operationId: changePassword
+      summary: Сменить пароль
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangePasswordRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Пароль изменён
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422":
+          description: |
+            `WRONG_PASSWORD` — неверный текущий пароль; `PASSWORD_SAME_AS_OLD` — новый пароль
+            совпадает с текущим; `VALIDATION_FAILED` — данные не прошли проверку
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/auth/password/forgot:
+    post:
+      tags: [auth]
+      operationId: forgotPassword
+      summary: Прислать ссылку сброса пароля
+      description: |
+        Отправляет письмо со ссылкой сброса сразу в запросе (ADR-0017). Если почта
+        не зарегистрирована, отвечает `204` и письма не шлёт. Время ответа и `MAIL_SEND_FAILED`
+        всё же могут выдать, что почта зарегистрирована: это цена того, что человек узнаёт
+        о неотправленном письме.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ForgotPasswordRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Письмо отправлено или почта не зарегистрирована
+        "409":
+          description: "`MAIL_DISABLED` — почта не настроена, ссылку выдаёт администратор (ADR-0017)"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "502": { $ref: "#/components/responses/MailSendFailed" }
+
+  /v1/auth/password/reset:
+    post:
+      tags: [auth]
+      operationId: resetPassword
+      summary: Задать новый пароль по ссылке сброса
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ResetPasswordRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Пароль изменён, все сессии пользователя закрыты
+        "422":
+          description: "`LINK_INVALID` — ссылка неверна, использована или истекла; `VALIDATION_FAILED`"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/auth/invitations/lookup:
+    post:
+      tags: [auth]
+      operationId: lookupInvitation
+      summary: Узнать, куда ведёт ссылка приглашения
+      description: Токен передаётся в теле, а не в адресе, чтобы не попасть в логи (ADR-0018).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InvitationTokenRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Приглашение действует
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InvitationInfo" }
+        "409": { $ref: "#/components/responses/InvitationAccepted" }
+        "422": { $ref: "#/components/responses/LinkInvalid" }
+
+  /v1/auth/invitations/accept:
+    post:
+      tags: [auth]
+      operationId: acceptInvitation
+      summary: Принять приглашение и создать аккаунт
+      description: |
+        Создаёт аккаунт с почтой из приглашения и сразу открывает сессию. Все действующие
+        приглашения этой почты становятся участием с ролью `member` (ADR-0016).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AcceptInvitationRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "201":
+          description: Аккаунт создан, сессия открыта
+          headers:
+            Set-Cookie: { $ref: "#/components/headers/SessionCookies" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentUser" }
+        "409": { $ref: "#/components/responses/InvitationAccepted" }
+        "422": { $ref: "#/components/responses/LinkInvalid" }
+
+  /v1/users/me:
+    get:
+      tags: [users]
+      operationId: getCurrentUser
+      summary: Текущий пользователь
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Текущий пользователь
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentUser" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    patch:
+      tags: [users]
+      operationId: updateCurrentUser
+      summary: Изменить имя текущего пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateCurrentUserRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Пользователь изменён
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentUser" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/users/me/avatar:
+    patch:
+      tags: [users]
+      operationId: uploadAvatar
+      summary: Загрузить аватарку
+      description: |
+        JPEG, PNG или WebP до 5 МБ; тип определяется по содержимому файла (ADR-0013).
+        Прежняя аватарка помечается удалённой.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  contentMediaType: application/octet-stream
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Аватарка заменена
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentUser" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422":
+          description: "`FILE_TOO_LARGE`, `FILE_TYPE_NOT_ALLOWED` или `VALIDATION_FAILED`"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/users/me/tasks:
+    get:
+      tags: [users]
+      operationId: listCurrentUserTasks
+      summary: Задачи, назначенные на текущего пользователя
+      description: Во всех проектах пользователя, кроме удалённых.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Задачи
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /v1/users/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: [users]
+      operationId: getUser
+      summary: Пользователь из ваших проектов
+      description: |
+        Виден, если у вас есть общий проект или он автор задачи в вашем проекте — так автор
+        отображается и после выхода из проекта.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Пользователь
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/files/{fileId}:
+    parameters:
+      - name: fileId
+        in: path
+        required: true
+        schema: { $ref: "#/components/schemas/Uuid" }
+    get:
+      tags: [files]
+      operationId: getFile
+      summary: Содержимое файла
+      description: |
+        Аватарка отдаётся без входа: ID случайный, а `<img>` не умеет обновить сессию.
+        Вложение — только участникам его проекта (ADR-0013).
+      security:
+        - {}
+        - cookieAuth: []
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Файл
+          headers:
+            Cache-Control:
+              description: "`private, max-age=31536000, immutable` — файл по ID не меняется"
+              schema: { type: string }
+            X-Content-Type-Options:
+              description: "`nosniff`"
+              schema: { type: string }
+            Content-Disposition:
+              description: "`attachment` для всего, кроме JPEG, PNG и WebP"
+              schema: { type: string }
+          content:
+            "*/*":
+              schema:
+                description: Тип — сохранённый при загрузке MIME-тип файла
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/projects:
+    get:
+      tags: [projects]
+      operationId: listProjects
+      summary: Проекты, где пользователь участник
+      description: Любой вошедший пользователь.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Проекты
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Project" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      tags: [projects]
+      operationId: createProject
+      summary: Создать проект
+      description: |
+        Любой вошедший пользователь; создатель становится владельцем. Почты из `emails`
+        приглашаются как в `addProjectMembers`, с тем же временем ответа.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateProjectRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "201":
+          description: Проект создан
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectCreated" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/projects/candidates:
+    get:
+      tags: [projects]
+      operationId: listProjectCandidates
+      summary: Кого можно позвать в проект
+      description: |
+        Пользователи, с которыми у текущего есть общий проект. Без `projectId` — любой вошедший
+        пользователь. С `projectId` — без участников этого проекта, роль в нём: `owner` или `admin`.
+      parameters:
+        - name: projectId
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/Uuid" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Кандидаты
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/User" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/projects/{projectId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      tags: [projects]
+      operationId: getProject
+      summary: Проект и роль текущего пользователя в нём
+      description: "Роль: любая в проекте."
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Проект
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectDetails" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [projects]
+      operationId: updateProject
+      summary: Изменить название или описание
+      description: "Роль: `owner` или `admin`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateProjectRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Проект изменён
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectDetails" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+    delete:
+      tags: [projects]
+      operationId: deleteProject
+      summary: Удалить проект
+      description: "Роль: `owner`. Удаление мягкое (ADR-0001)."
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Проект удалён
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/projects/{projectId}/members:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      tags: [projects]
+      operationId: listProjectMembers
+      summary: Участники проекта
+      description: "Роль: любая в проекте."
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Участники
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Member" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      tags: [projects]
+      operationId: addProjectMembers
+      summary: Позвать в проект по почте
+      description: |
+        Роль: `owner` или `admin`. Зарегистрированная почта сразу становится участником
+        с ролью `member`, незарегистрированная получает приглашение (ADR-0016). Результат —
+        по каждой почте в порядке запроса. Письма уходят параллельно, не дольше 10 секунд
+        каждое, поэтому ответ может занять до 15 секунд: тайм-аут клиента — не меньше 20 секунд.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddMembersRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Результат по каждой почте
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/InvitationResult" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/projects/{projectId}/members/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+      - $ref: "#/components/parameters/UserId"
+    patch:
+      tags: [projects]
+      operationId: changeProjectMemberRole
+      summary: Сменить роль участника
+      description: "Роль: `owner`. Назначает `admin` или `member`; роль владельца не передаётся."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeMemberRoleRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Роль изменена
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Member" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+    delete:
+      tags: [projects]
+      operationId: removeProjectMember
+      summary: Исключить участника
+      description: |
+        Роль: `owner` исключает любого, кроме себя; `admin` — только участников с ролью `member`.
+        Задачи исключённого в этом проекте остаются без исполнителя.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Участник исключён
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/projects/{projectId}/leave:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    delete:
+      tags: [projects]
+      operationId: leaveProject
+      summary: Выйти из проекта
+      description: "Роль: `admin` или `member`. Задачи вышедшего в этом проекте остаются без исполнителя."
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Пользователь больше не участник
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`OWNER_CANNOT_LEAVE` — владелец не может выйти, только удалить проект"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/projects/{projectId}/tasks:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      tags: [tasks]
+      operationId: listProjectTasks
+      summary: Задачи проекта
+      description: "Роль: любая в проекте."
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Задачи
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/task-statuses:
+    get:
+      tags: [tasks]
+      operationId: listTaskStatuses
+      summary: Статусы задач
+      description: Любой вошедший пользователь. Набор фиксирован (ADR-0003, ADR-0004) и одинаков во всех проектах.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Статусы в порядке работы над задачей
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TaskStatus" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /v1/tasks:
+    post:
+      tags: [tasks]
+      operationId: createTask
+      summary: Создать задачу
+      description: "Роль: любая в проекте. Статус — `open`, автор — текущий пользователь."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateTaskRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "201":
+          description: Задача создана
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/AssigneeInvalid" }
+
+  /v1/tasks/{taskId}:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    get:
+      tags: [tasks]
+      operationId: getTask
+      summary: Задача
+      description: "Роль: любая в проекте задачи."
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Задача
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [tasks]
+      operationId: updateTask
+      summary: Изменить название или описание
+      description: "Роль: любая в проекте задачи."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateTaskRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Задача изменена
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+    delete:
+      tags: [tasks]
+      operationId: deleteTask
+      summary: Удалить задачу
+      description: "Роль: любая в проекте задачи. Удаление мягкое."
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Задача удалена
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/tasks/{taskId}/status:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    patch:
+      tags: [tasks]
+      operationId: changeTaskStatus
+      summary: Сменить статус
+      description: "Роль: любая в проекте задачи."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeTaskStatusRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Статус изменён
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/tasks/{taskId}/assignee:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    patch:
+      tags: [tasks]
+      operationId: changeTaskAssignee
+      summary: Сменить исполнителя
+      description: "Роль: любая в проекте задачи. Исполнитель — участник проекта; `assigneeId: null` снимает исполнителя."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeTaskAssigneeRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Исполнитель изменён
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/AssigneeInvalid" }
+
+  /v1/tasks/{taskId}/project:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    patch:
+      tags: [tasks]
+      operationId: moveTask
+      summary: Перенести задачу в другой проект
+      description: |
+        Роль: любая в обоих проектах. Если исполнитель не участник нового проекта, задача
+        остаётся без исполнителя. Статус сохраняется.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MoveTaskRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Задача перенесена
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/admin/settings:
+    get:
+      tags: [admin]
+      operationId: getServiceSettings
+      summary: Настройки сервиса
+      description: Только администратору сервиса.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Настройки
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceSettings" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    patch:
+      tags: [admin]
+      operationId: updateServiceSettings
+      summary: Изменить адрес сервиса
+      description: Только администратору сервиса.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateServiceSettingsRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Настройки изменены
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceSettings" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/admin/settings/mail:
+    put:
+      tags: [admin]
+      operationId: saveMailSettings
+      summary: Подключить почту или изменить её настройки
+      description: |
+        Только администратору сервиса.
+        Перед сохранением сервер подключается к SMTP с этими настройками, не дольше 10 секунд
+        (ADR-0017). Поле `password` не передано — остаётся сохранённый пароль. `SECRET_REQUIRED`
+        возвращается, если задан `username`, а пароля нет: он не передан и либо не сохранён,
+        либо сменились сервер или порт (ADR-0015).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MailSettingsRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Почта подключена
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ServiceSettings" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422":
+          description: "`SECRET_REQUIRED` — нужно ввести пароль заново; `VALIDATION_FAILED`"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "502":
+          description: "`MAIL_CONNECTION_FAILED` — не удалось подключиться к SMTP, настройки не сохранены"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    delete:
+      tags: [admin]
+      operationId: disableMail
+      summary: Отключить почту
+      description: |
+        Только администратору сервиса. Настройки SMTP и пароль удаляются.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Почта отключена
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/admin/settings/mail/test:
+    post:
+      tags: [admin]
+      operationId: sendTestMail
+      summary: Отправить тестовое письмо себе
+      description: Только администратору сервиса.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Письмо отправлено на почту администратора
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: "`MAIL_DISABLED` — почта не подключена"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "502": { $ref: "#/components/responses/MailSendFailed" }
+
+  /v1/admin/users:
+    get:
+      tags: [admin]
+      operationId: listUsers
+      summary: Все пользователи сервиса
+      description: Только администратору сервиса.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Пользователи
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AdminUser" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/admin/users/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    patch:
+      tags: [admin]
+      operationId: updateUserAdminFlag
+      summary: Назначить или снять администратора сервиса
+      description: Только администратору сервиса.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateAdminUserRequest" }
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Пользователь изменён
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminUser" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+        "409":
+          description: "`LAST_ADMIN` — нельзя снять последнего администратора"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/admin/users/{userId}/password-reset-link:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    post:
+      tags: [admin]
+      operationId: createPasswordResetLink
+      summary: Получить ссылку сброса пароля для пользователя
+      description: |
+        Только администратору сервиса. Нужна, когда почта не подключена (ADR-0017). Администратор передаёт ссылку сам.
+      responses:
+        default: { $ref: "#/components/responses/Internal" }
+        "201":
+          description: Ссылка создана
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PasswordResetLink" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: at
+      description: access-токен, ставится входом, регистрацией и обновлением сессии
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: rt
+      description: refresh-токен, путь cookie — `/v1/auth/`
+
+  headers:
+    SessionCookies:
+      description: "`at` и `rt` — новые значения или удаление; флаги — в описании API"
+      schema: { type: string }
+
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
+    TaskId:
+      name: taskId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
+
+  responses:
+    Unauthenticated:
+      description: "`UNAUTHENTICATED` — нет входа или сессия истекла"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: "`FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: "`NOT_FOUND` — ресурса нет или пользователь не участник его проекта"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    ValidationFailed:
+      description: "`VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    AssigneeInvalid:
+      description: "`ASSIGNEE_NOT_MEMBER` — исполнитель не участник проекта; `VALIDATION_FAILED`"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    LinkInvalid:
+      description: "`LINK_INVALID` — ссылка неверна или истекла; `VALIDATION_FAILED`"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    InvitationAccepted:
+      description: "`INVITATION_ACCEPTED` — аккаунт с этой почтой уже есть, нужно войти"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Internal:
+      description: "`INTERNAL` — ошибка сервера"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    MailSendFailed:
+      description: "`MAIL_SEND_FAILED` — SMTP не принял письмо"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    Uuid:
+      type: string
+      format: uuid
+    DateTime:
+      type: string
+      format: date-time
+      description: ISO 8601 в UTC
+    Email:
+      type: string
+      format: email
+      maxLength: 254
+      description: Сервер приводит почту к нижнему регистру и обрезает пробелы по краям (ADR-0016)
+    Password:
+      type: string
+      minLength: 8
+      maxLength: 72
+      description: |
+        От 8 символов и не длиннее 72 байт в UTF-8 — предел bcrypt; русская буква занимает
+        2 байта. Длиннее — `422 VALIDATION_FAILED`.
+    Username:
+      type: string
+      minLength: 1
+      maxLength: 100
+
+    ErrorCode:
+      type: string
+      enum:
+        - UNAUTHENTICATED
+        - INVALID_CREDENTIALS
+        - FORBIDDEN
+        - NOT_FOUND
+        - VALIDATION_FAILED
+        - REGISTRATION_CLOSED
+        - WRONG_PASSWORD
+        - PASSWORD_SAME_AS_OLD
+        - LINK_INVALID
+        - INVITATION_ACCEPTED
+        - ASSIGNEE_NOT_MEMBER
+        - OWNER_CANNOT_LEAVE
+        - LAST_ADMIN
+        - FILE_TOO_LARGE
+        - FILE_TYPE_NOT_ALLOWED
+        - MAIL_DISABLED
+        - MAIL_SEND_FAILED
+        - MAIL_CONNECTION_FAILED
+        - SECRET_REQUIRED
+        - INTERNAL
+    Error:
+      type: object
+      required: [code, message, details]
+      properties:
+        code: { $ref: "#/components/schemas/ErrorCode" }
+        message:
+          type: string
+          description: Для логов и отладки, не для показа пользователю
+        details:
+          type: [object, "null"]
+          description: Поле запроса → что с ним не так; только для `VALIDATION_FAILED`
+          additionalProperties: { type: string }
+
+    PublicSettings:
+      type: object
+      required: [registrationOpen, mailEnabled]
+      properties:
+        registrationOpen:
+          type: boolean
+          description: Пользователей ещё нет — можно создать первый аккаунт
+        mailEnabled:
+          type: boolean
+          description: Почта подключена — работает восстановление пароля по почте
+
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email: { $ref: "#/components/schemas/Email" }
+        password: { $ref: "#/components/schemas/Password" }
+    RegisterRequest:
+      type: object
+      required: [email, password, username, serviceUrl]
+      properties:
+        email: { $ref: "#/components/schemas/Email" }
+        password: { $ref: "#/components/schemas/Password" }
+        username: { $ref: "#/components/schemas/Username" }
+        serviceUrl:
+          type: string
+          format: uri
+          description: Адрес веба с путём, например `https://example.com/tasktrail` (ADR-0015)
+    ChangePasswordRequest:
+      type: object
+      required: [oldPassword, newPassword]
+      properties:
+        oldPassword: { $ref: "#/components/schemas/Password" }
+        newPassword: { $ref: "#/components/schemas/Password" }
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { $ref: "#/components/schemas/Email" }
+    ResetPasswordRequest:
+      type: object
+      required: [token, password]
+      properties:
+        token: { type: string, minLength: 1 }
+        password: { $ref: "#/components/schemas/Password" }
+    InvitationTokenRequest:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string, minLength: 1 }
+    InvitationInfo:
+      type: object
+      required: [email, projectName, invitedBy]
+      properties:
+        email: { $ref: "#/components/schemas/Email" }
+        projectName: { type: string }
+        invitedBy:
+          type: string
+          description: Имя пригласившего, а если его нет — почта
+    AcceptInvitationRequest:
+      type: object
+      required: [token, username, password]
+      properties:
+        token: { type: string, minLength: 1 }
+        username: { $ref: "#/components/schemas/Username" }
+        password: { $ref: "#/components/schemas/Password" }
+
+    User:
+      type: object
+      required: [id, email, username, avatarId]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        email: { $ref: "#/components/schemas/Email" }
+        username:
+          type: [string, "null"]
+          maxLength: 100
+        avatarId:
+          type: [string, "null"]
+          format: uuid
+          description: ID файла аватарки для `GET /v1/files/{fileId}`
+    CurrentUser:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          required: [isAdmin]
+          properties:
+            isAdmin:
+              type: boolean
+              description: Администратор сервиса (ADR-0014)
+    UpdateCurrentUserRequest:
+      type: object
+      required: [username]
+      properties:
+        username:
+          oneOf:
+            - $ref: "#/components/schemas/Username"
+            - type: "null"
+
+    ProjectRole:
+      type: string
+      enum: [owner, admin, member]
+    Project:
+      type: object
+      required: [id, name, description, createdAt, tasksCount]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string, minLength: 1, maxLength: 254 }
+        description: { type: [string, "null"] }
+        createdAt: { $ref: "#/components/schemas/DateTime" }
+        tasksCount: { type: integer, minimum: 0 }
+    ProjectDetails:
+      allOf:
+        - $ref: "#/components/schemas/Project"
+        - type: object
+          required: [role]
+          properties:
+            role:
+              $ref: "#/components/schemas/ProjectRole"
+              description: Роль текущего пользователя в проекте
+    CreateProjectRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 254 }
+        description: { type: [string, "null"] }
+        emails:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/Email" }
+    ProjectCreated:
+      type: object
+      required: [project, invitations]
+      properties:
+        project: { $ref: "#/components/schemas/ProjectDetails" }
+        invitations:
+          type: array
+          items: { $ref: "#/components/schemas/InvitationResult" }
+    UpdateProjectRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 254 }
+        description: { type: [string, "null"] }
+    Member:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          required: [role]
+          properties:
+            role: { $ref: "#/components/schemas/ProjectRole" }
+    ChangeMemberRoleRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [admin, member]
+    AddMembersRequest:
+      type: object
+      required: [emails]
+      properties:
+        emails:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/Email" }
+    InvitationResult:
+      type: object
+      required: [email, result, inviteUrl]
+      properties:
+        email: { $ref: "#/components/schemas/Email" }
+        result:
+          type: string
+          enum: [added, invited, already_member, mail_failed]
+          description: |
+            `added` — аккаунт есть, человек стал участником; `invited` — создано приглашение;
+            `already_member` — уже участник; `mail_failed` — приглашение создано, но письмо
+            не ушло, повторное приглашение отправит новое (ADR-0017)
+        inviteUrl:
+          type: [string, "null"]
+          format: uri
+          description: Ссылка приглашения — только при `invited` и выключенной почте (ADR-0017)
+
+    TaskStatusId:
+      type: string
+      enum: [open, in_progress, in_review, done]
+    TaskStatus:
+      type: object
+      required: [id, name, isDefault, isResolved]
+      properties:
+        id: { $ref: "#/components/schemas/TaskStatusId" }
+        name:
+          type: string
+          description: Название для интерфейса — «Открыта», «В работе», «На проверке», «Готово»
+        isDefault:
+          type: boolean
+          description: Статус новой задачи — только у `open`
+        isResolved:
+          type: boolean
+          description: Задача выполнена — только у `done`
+    Task:
+      type: object
+      required: [id, projectId, name, description, statusId, authorId, assigneeId, createdAt, updatedAt]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        projectId: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string, minLength: 1, maxLength: 254 }
+        description: { type: [string, "null"] }
+        statusId: { $ref: "#/components/schemas/TaskStatusId" }
+        authorId: { $ref: "#/components/schemas/Uuid" }
+        assigneeId:
+          type: [string, "null"]
+          format: uuid
+        createdAt: { $ref: "#/components/schemas/DateTime" }
+        updatedAt: { $ref: "#/components/schemas/DateTime" }
+    CreateTaskRequest:
+      type: object
+      required: [projectId, name]
+      properties:
+        projectId: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string, minLength: 1, maxLength: 254 }
+        description: { type: [string, "null"] }
+        assigneeId:
+          type: [string, "null"]
+          format: uuid
+    UpdateTaskRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 254 }
+        description: { type: [string, "null"] }
+    ChangeTaskStatusRequest:
+      type: object
+      required: [statusId]
+      properties:
+        statusId: { $ref: "#/components/schemas/TaskStatusId" }
+    MoveTaskRequest:
+      type: object
+      required: [projectId]
+      properties:
+        projectId: { $ref: "#/components/schemas/Uuid" }
+    ChangeTaskAssigneeRequest:
+      type: object
+      required: [assigneeId]
+      properties:
+        assigneeId:
+          type: [string, "null"]
+          format: uuid
+
+    ServiceSettings:
+      type: object
+      required: [serviceUrl, mail]
+      properties:
+        serviceUrl:
+          type: string
+          format: uri
+          description: Адрес веба с путём; от него строятся ссылки в письмах и приглашениях
+        mail:
+          description: Настройки SMTP или `null`, если почта не подключена
+          oneOf:
+            - $ref: "#/components/schemas/MailSettings"
+            - type: "null"
+    UpdateServiceSettingsRequest:
+      type: object
+      required: [serviceUrl]
+      properties:
+        serviceUrl:
+          type: string
+          format: uri
+    MailEncryption:
+      type: string
+      enum: [none, starttls, tls]
+    MailSettings:
+      type: object
+      required: [host, port, encryption, sender, username, passwordSet]
+      properties:
+        host: { type: string, minLength: 1 }
+        port: { type: integer, minimum: 1, maximum: 65535 }
+        encryption: { $ref: "#/components/schemas/MailEncryption" }
+        sender:
+          type: string
+          description: Отправитель, например `TaskTrail <noreply@example.com>`
+        username: { type: [string, "null"] }
+        passwordSet:
+          type: boolean
+          description: Пароль сохранён; сам пароль API не отдаёт (ADR-0015)
+    MailSettingsRequest:
+      type: object
+      required: [host, port, encryption, sender]
+      properties:
+        host: { type: string, minLength: 1 }
+        port: { type: integer, minimum: 1, maximum: 65535 }
+        encryption: { $ref: "#/components/schemas/MailEncryption" }
+        sender: { type: string, minLength: 1 }
+        username:
+          type: [string, "null"]
+          description: "`null` — без входа на SMTP"
+        password:
+          type: [string, "null"]
+          description: Не передан — остаётся сохранённый; `null` — удалить пароль
+    AdminUser:
+      allOf:
+        - $ref: "#/components/schemas/User"
+        - type: object
+          required: [isAdmin, createdAt]
+          properties:
+            isAdmin: { type: boolean }
+            createdAt: { $ref: "#/components/schemas/DateTime" }
+    UpdateAdminUserRequest:
+      type: object
+      required: [isAdmin]
+      properties:
+        isAdmin: { type: boolean }
+    PasswordResetLink:
+      type: object
+      required: [url, expiresAt]
+      properties:
+        url:
+          type: string
+          format: uri
+        expiresAt: { $ref: "#/components/schemas/DateTime" }
