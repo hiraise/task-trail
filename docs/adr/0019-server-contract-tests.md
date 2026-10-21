@@ -1,6 +1,6 @@
 # ADR-0019: Ответы сервера проверяются по контракту в тестах через kin-openapi
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** `server/test/contract/`, тесты обработчиков в `server/internal/presentation/http/v1/`, `server/go.mod`, `server/docker/Dockerfile`, `api/openapi.yaml`
 

@@ -1,6 +1,6 @@
 # ADR-0020: Типы API в вебе генерируются из контракта через @hey-api/openapi-ts
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** `web/src/infrastructure/api/generated/`, `web/openapi-ts.config.ts`, `web/package.json`, `web/src/infrastructure/repositories/`, `scripts/dev.sh`
 
