@@ -17,7 +17,9 @@
   и поиск — заглушки. Веб ходит в старый контракт `/v1/auth/*`: адреса —
   `web/src/infrastructure/config/apiRoutes.ts`.
 - Контракт `api/openapi.yaml` описан (шаг 1 этапа 1), соглашения — [ADR-0018](adr/0018-api-conventions.md).
-  Сервер и веб ему пока не соответствуют.
+  Проверка контракта готова (шаг 2): помощник `server/test/contract` для тестов сервера
+  ([ADR-0019](adr/0019-server-contract-tests.md)) и типы веба `web/src/infrastructure/api/generated/`
+  ([ADR-0020](adr/0020-web-api-types.md)). Сервер и веб контракту пока не соответствуют.
 - На стенде пока работает эталон старого API (`LEGACY_API_COMMIT` в `scripts/dev.sh`): с ним
   писался веб. Что на нём не работает — [README](../README.md), «Локальный стенд».
 
@@ -29,11 +31,9 @@
    Меняя API дальше, меняй контракт в том же PR (ADR-0005). Эталон старого API для сверки
    поведения — `git show 71b514e:server/docs/swagger.yaml` и обработчики
    `git show 71b514e:server/internal/controller/http/v1/<файл>.go`.
-2. **Проверка контракта.** Типы веба генерируются из контракта, ответы сервера проверяются по нему
-   тестами, всё — в `scripts/dev.sh check` ([ADR-0005](adr/0005-monorepo-api-contract.md),
-   [ADR-0009](adr/0009-checks-and-ci.md)). Генератор типов и валидатор OpenAPI — новые
-   зависимости, каждая через ADR. Пока проверки нет, проверяй контракт вручную:
-   `npx --yes @redocly/cli@1 lint api/openapi.yaml`.
+2. ~~**Проверка контракта.**~~ Готово: ADR-0019 и ADR-0020. Каждый новый тест обработчика сервера
+   проверяет ответы через `contract.Load(t).Check(...)`; после изменения контракта — `npm run api:types`
+   в `web/`.
 3. **Доступ.**
    - Приведи эндпоинты доступа к контракту: пути `/v1/auth/*`, ответы и коды ошибок по ADR-0018.
      `middleware/error.go` отдаёт `{ code, message, details }` и на непредвиденную ошибку тоже,

@@ -155,10 +155,58 @@ function checkDeviceSplit() {
   }
 }
 
+// Контракт API (ADR-0019, ADR-0020): kin-openapi и server/test/ — только в тестах сервера,
+// тесты обработчиков v1 проверяют ответы по контракту, сгенерированные типы веба импортирует
+// только слой infrastructure и наружу их не переэкспортирует
+function checkContract() {
+  const withoutComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  for (const path of FILES.filter((file) => file.startsWith("server/") && file.endsWith(".go"))) {
+    const code = withoutComments(read(path));
+    if (!path.endsWith("_test.go") && !path.startsWith("server/test/")) {
+      if (code.includes('"github.com/getkin/kin-openapi')) {
+        errors.push(`${path}: kin-openapi импортируется только в тестах и server/test/ (ADR-0019)`);
+      }
+      if (code.includes('"task-trail/test/')) {
+        errors.push(`${path}: server/test/ импортируется только из тестов — иначе kin-openapi попадёт в бинарник (ADR-0019)`);
+      }
+    }
+    if (dirname(path) === "server/internal/presentation/http/v1" && path.endsWith("_test.go") && !code.includes("contract.Load(")) {
+      errors.push(`${path}: тест обработчика проверяет ответы по контракту — contract.Load(t).Check(...) (ADR-0019)`);
+    }
+  }
+  // Сгенерированный тип с именем глобального заслонил бы его: `Error`, `Date`, `File`…
+  const globals = new Set(["Array", "Blob", "Boolean", "Date", "Error", "File", "FormData", "Function", "Headers",
+    "JSON", "Map", "Number", "Object", "Promise", "Record", "RegExp", "Request", "Response", "Set", "String",
+    "Symbol", "URL"]);
+  const schemas = /^ {2}schemas:\n([\s\S]*?)(?=^\S|^ {2}\S|(?![\s\S]))/m.exec(read("api/openapi.yaml"))?.[1] ?? "";
+  for (const [, name] of schemas.matchAll(/^ {4}([A-Za-z0-9_]+):/gm)) {
+    if (globals.has(name)) errors.push(`api/openapi.yaml: схема ${name} заслонит глобальный тип TypeScript в вебе — переименуй (ADR-0020)`);
+  }
+
+  // Путь импорта разрешается относительно файла: и `@/infrastructure/api/generated`,
+  // и `./generated` из соседнего index.ts ведут в одну папку
+  const generated = "web/src/infrastructure/api/generated";
+  const resolveSpec = (file, spec) =>
+    spec.startsWith("@/") ? `web/src/${spec.slice(2)}` : spec.startsWith(".") ? posix.join(posix.dirname(file), spec) : null;
+  const statementRe = /\b(import|export)\b[^;'"]*?\bfrom\s+["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']/g;
+  for (const path of FILES.filter((file) => file.startsWith("web/src/") && /\.(ts|tsx)$/.test(file) && !file.startsWith(`${generated}/`))) {
+    for (const [statement, keyword = "import", fromSpec, dynamicSpec] of withoutComments(read(path)).matchAll(statementRe)) {
+      const target = resolveSpec(path, fromSpec ?? dynamicSpec);
+      if (target !== generated && !target?.startsWith(`${generated}/`)) continue;
+      if (!path.startsWith("web/src/infrastructure/")) {
+        errors.push(`${path}: типы из ${generated}/ импортирует только слой infrastructure (ADR-0020)`);
+      } else if (keyword === "export") {
+        errors.push(`${path}: типы из ${generated}/ не переэкспортируются — иначе они уйдут из infrastructure (ADR-0020): ${statement.trim()}`);
+      }
+    }
+  }
+}
+
 checkAdr();
 checkLinks();
 checkWebImports();
 checkDeviceSplit();
+checkContract();
 
 for (const hint of hints) console.log(`подсказка: ${hint}`);
 if (errors.length > 0) {
