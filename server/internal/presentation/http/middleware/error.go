@@ -54,7 +54,8 @@ func proccessDomainError(e *domain.DomainError, l logger.Logger, reqID string) *
 		domain.RefreshTokenExpired,
 		domain.AccessTokenExpired,
 		domain.AccessTokenNotFound,
-		domain.AccessTokenWrong:
+		domain.AccessTokenWrong,
+		domain.ParseTokenFailed:
 
 		l.Warn(string(e.Code), args...)
 		return response.NewApiErr(http.StatusUnauthorized, "invalid token")

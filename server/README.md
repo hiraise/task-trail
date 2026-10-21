@@ -1,50 +1,54 @@
-# TaskTrail Backend API
+# TaskTrail — сервер
 
-![MIT License](https://img.shields.io/github/license/hiraise/tt-backend)
-[![codecov](https://codecov.io/gh/hiraise/tt-backend/graph/badge.svg?token=WD2LRZ5R1I)](https://codecov.io/gh/hiraise/tt-backend)
+API на Go: Gin, pgx, PostgreSQL. Сейчас реализован модуль доступа — регистрация с подтверждением
+почты, вход, обновление токенов, выход, сброс и смена пароля (`/v1/access/*`). Проекты, задачи
+и остальное — по плану в [корневом README](../README.md).
 
-Backend of the [TaskTrail](https://github.com/hiraise/task-trail) project, built with Go.
+Стек — [ADR-0006](../docs/adr/0006-tech-stack.md), устройство кода —
+[ADR-0007](../docs/adr/0007-server-architecture.md), процесс разработки — [CLAUDE.md](../CLAUDE.md).
 
-## 🚀 Features
+## Запуск и проверки
 
-_Coming soon_
+Нужен Go (версия — в `go.mod`) и PostgreSQL. Сервер читает переменные окружения и файл `.env`
+из ближайшей родительской папки. Слушает порт 8080 или порт из переменной `PORT`.
 
-## 🧱 Technologies
+```bash
+go run ./cmd/app    # запуск
+make mock           # пересоздать моки в test/mocks после изменения интерфейсов
+```
 
-- [Gin](https://github.com/gin-gonic/gin) — High-performance HTTP web framework
-- [pgx](https://github.com/jackc/pgx) — PostgreSQL driver and toolkit
-- [Docker](https://www.docker.com/) — Containerized environment
-- [golangci-lint](https://github.com/golangci/golangci-lint) — Linting
+Проверки сервера — `scripts/dev.sh server` из корня репозитория.
 
-## 🛠 Installation
+## Переменные окружения
 
-_Coming soon_
+«Да» в колонке «Обязательна» значит, что переменная должна быть задана, иначе сервер не запустится;
+значение при этом может быть пустым.
 
-## 🛠 Environment
-
-| Environment Variable                | Example Value          | Description |
-| ------------------------------------ | --------------------- | ----------- |
-| **APP SETTINGS**                     |                       |             |
-| `APP_DEBUG`                          | `true`                | Enable debug mode |
-| `APP_ROOT_PATH`                      | `8080`                | Port on which the app will run. Can be empty; defaults to 8080 |
-| **DATABASE SETTINGS**                |                       |             |
-| `PG_MIGRATION_ENABLED`               | `true`                | When enabled, automatically applies all migrations to DB. Can be empty; defaults to false |
-| `PG_MIGRATION_PATH`                  | `"file://migrations"` | Migration folder path. Can be empty; required id PG_MIGRATION_ENABLED is true |
-| `PG_CONNECTION_STRING`               | `postgresql://login:password@address:5432/db_name` | PostgreSQL connection string |
-| `PG_MAX_POOL_SIZE`                   | `10`                  | Maximum number of simultaneous PostgreSQL connections |
-| **AUTHENTICATION SETTINGS**          |                       |             |
-| `AUTH_ACCESS_TOKEN_SECRET`           | `s3cr3tK3y!@#2025$%^&*()_+aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890` | Secret for creating access tokens |
-| `AUTH_ACCESS_TOKEN_LIFETIME_MIN`     | `5`                   | Access token lifetime in minutes |
-| `AUTH_REFRESH_TOKEN_SECRET`          | `s3cr3tK3y!@#2025$%^&*()_+aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890` | Secret for creating refresh tokens (should differ from access token secret) |
-| `AUTH_REFRESH_TOKEN_LIFETIME_MIN`    | `1440`                | Refresh token lifetime in minutes |
-| `AUTH_TOKEN_ISSUER`                  | `example.com`         | [Issuer claim](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.1) |
-| **SMTP SETTINGS**                    |                       |             |
-| `SMTP_HOST`                          | `mail.example.com`    | SMTP server host |
-| `SMTP_PORT`                          | `587`                 | SMTP server port |
-| `SMTP_USER`                          | `noreply@example.com` | SMTP server authentication email |
-| `SMTP_PASSWORD`                      | `password123`         | SMTP server authentication password |
-| `SMTP_SENDER`                        | `TaskTrail <noreply@example.com>` | Sender email and name. Can be empty; defaults to `SMTP_USER` |
-| **REDIRECT SETTINGS**                |                       |             |
-| `FRONTEND_URL`                       | `https://tasktrail.com`    | Base URL for the frontend application, used for redirection purposes |
-| `FRONTEND_VERIFY_URL`                | `https://tasktrail.com/auth/verify?token=` | URL template for user account verification, with the `token` parameter appended dynamically |
-| `FRONTEND_RESET_PASSWORD_URL`        | `https://tasktrail.com/auth/reset?token=` | URL template for password reset functionality, with the `token` parameter appended dynamically |
+| Переменная | Обязательна | Пример или значение по умолчанию | Что задаёт |
+| --- | --- | --- | --- |
+| `APP_DEBUG` | да | `true` | подробные логи |
+| `APP_ROOT_PATH` | да | пусто или `/tasktrail/api` | префикс путей API: от него считаются путь cookie обновления токена и Swagger |
+| `PG_CONNECTION_STRING` | да | `postgresql://user:password@localhost:5432/tasktrail` | подключение к PostgreSQL |
+| `PG_MAX_POOL_SIZE` | да | `10` | максимум одновременных подключений к базе |
+| `PG_MIGRATION_ENABLED` | нет | `false` | применять миграции при запуске |
+| `PG_MIGRATION_PATH` | при включённых миграциях | `file://migrations` | папка миграций |
+| `AUTH_ACCESS_TOKEN_SECRET` | да | длинная случайная строка | секрет access-токенов |
+| `AUTH_ACCESS_TOKEN_LIFETIME_MIN` | да | `5` | время жизни access-токена, минут |
+| `AUTH_ACCESS_TOKEN_NAME` | нет | `at` | имя cookie access-токена |
+| `AUTH_REFRESH_TOKEN_SECRET` | да | другая длинная случайная строка | секрет refresh-токенов; должен отличаться от секрета access-токенов |
+| `AUTH_REFRESH_TOKEN_LIFETIME_MIN` | да | `1440` | время жизни refresh-токена, минут |
+| `AUTH_REFRESH_TOKEN_NAME` | нет | `rt` | имя cookie refresh-токена |
+| `AUTH_TOKEN_ISSUER` | да | `tasktrail.local` | поле [iss](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.1) в токенах |
+| `AUTH_CONFIRMATION_TOKEN_LIFETIME_MIN` | да | `60` | время жизни ссылок из писем: подтверждение почты, сброс пароля |
+| `SMTP_HOST` | да | `localhost` | SMTP-сервер для писем |
+| `SMTP_PORT` | да | `1025` | порт SMTP |
+| `SMTP_USER` | да | `noreply@example.com` | логин SMTP |
+| `SMTP_PASSWORD` | да | | пароль SMTP |
+| `SMTP_SENDER` | нет | `TaskTrail <noreply@example.com>` | отправитель; по умолчанию `SMTP_USER` |
+| `FRONTEND_URL` | да | `http://localhost:3000` | адрес веб-клиента |
+| `FRONTEND_VERIFY_URL` | да | `http://localhost:3000/auth/confirm?token=` | ссылка подтверждения почты, токен дописывается в конец |
+| `FRONTEND_RESET_PASSWORD_URL` | да | `http://localhost:3000/auth/reset?token=` | ссылка сброса пароля, токен дописывается в конец |
+| `FRONTEND_PROJECT_URL` | да | `http://localhost:3000/projects/` | ссылка на проект в письмах |
+| `SWAGGER_ENABLED` | нет | `true` | Swagger по адресу `/docs/` |
+| `SWAGGER_LOGIN`, `SWAGGER_PASSWORD` | нет | `root`, `root` | Basic-авторизация Swagger; поменяйте, если сервер доступен не только вам |
+| `S3_ENABLED` | нет | `true` | хранилище файлов S3. Код S3 удалён при переработке — ставьте `false`, иначе потребуются все `S3_*` |

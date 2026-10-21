@@ -87,8 +87,7 @@ func Run(cfg *config.Config) {
 	httpServer.Use(recoveryMW)
 	httpServer.Use(errorMW)
 	http.NewRouter(httpServer, cfg, contextManager, errHandler, authMW, accesModule)
-	// tasks.CleanupRefreshTokens(tokenRepo, logger)
-	// tasks.CleanupEmailTokens(emailTokenRepo, logger)
+	// TODO(этап 1): периодически удалять просроченные и отозванные refresh- и confirmation-токены.
 	if err := httpServer.Run(); err != nil {
 		logger.Error("http server start failed", "error", err.Error())
 		os.Exit(1)
