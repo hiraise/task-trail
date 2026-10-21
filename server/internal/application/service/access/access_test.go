@@ -2,7 +2,6 @@ package access_test
 
 import (
 	"context"
-	"fmt"
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/factory"
@@ -75,15 +74,6 @@ func mockTx(ctx context.Context, txManager mocks.MockTxManager) {
 				return f(ctx)
 			},
 		)
-}
-
-func mockHashPwd(s mocks.MockPasswordService, failed bool) {
-	if failed {
-		s.EXPECT().HashPassword(gomock.Any()).Return("", fmt.Errorf("hash failed"))
-	} else {
-		s.EXPECT().HashPassword(gomock.Any()).Return("hashedPassword", nil)
-	}
-
 }
 
 func getTestUser(verified bool, withPassword bool) *entity.UserAccount {

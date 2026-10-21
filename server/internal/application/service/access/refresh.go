@@ -42,12 +42,8 @@ func (s *RefreshService) Execute(ctx context.Context, rt string) (dto.SuccessLog
 			return err
 		}
 		if err := oldToken.Validate(); err != nil {
-			var e *domain.DomainError
-			if errors.As(err, &e) {
-				if e.Code == domain.RefreshTokenAlreadyUsed {
-					// TODO: Revoke all
-				}
-			}
+			// TODO(этап 1): повторное использование отозванного токена — признак кражи: отзывать
+			// все refresh-токены пользователя отдельной транзакцией, иначе отзыв откатится вместе с ошибкой.
 			return err
 		}
 

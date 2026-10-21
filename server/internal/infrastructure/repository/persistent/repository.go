@@ -79,41 +79,6 @@ func (r *PgRepository) insert(ctx context.Context, table string, data map[string
 	return nil
 }
 
-func (r *PgRepository) updateByID(ctx context.Context, table string, id string, data map[string]any) error {
-	if len(data) == 0 {
-		return errors.New("insert: data map is empty")
-	}
-
-	rows := make([]string, 0, len(data))
-	values := make([]any, 0, len(data)+1)
-	i := 1
-	for k, v := range data {
-		rows = append(rows, fmt.Sprintf("%s = $%d", k, i))
-		values = append(values, v)
-		i++
-	}
-	values = append(values, id)
-
-	query := fmt.Sprintf("UPDATE %s SET %s WHERE id = $%d AND deleted_at IS NULL;", table, strings.Join(rows, ", "), i)
-
-	tag, err := r.getDb(ctx).Exec(ctx, query, values...)
-	if err != nil {
-		return r.handleError(err)
-	}
-	if tag.RowsAffected() == 0 {
-		return domain.ErrEntityNotFound(2, nil)
-	}
-	return nil
-}
-
-func (r *PgRepository) ensureInTransaction(ctx context.Context) error {
-	db := r.getDb(ctx)
-	if _, ok := db.(pgx.Tx); ok {
-		return nil
-	}
-	return domain.ErrRepoInternal(2, fmt.Errorf("this operation can be execute only in transaction"))
-}
-
 func ScanRows[T any](rows pgx.Rows, f func(row pgx.Rows) (*T, error)) ([]*T, error) {
 	defer rows.Close()
 

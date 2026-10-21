@@ -17,7 +17,6 @@ type JWTTokenService struct {
 	atSecret   []byte
 	atLifeTime time.Duration
 	rtSecret   []byte
-	rtLifetime time.Duration
 	iss        string
 	uuidGen    *id.UUIDGenerator
 }
@@ -99,7 +98,7 @@ func (s *JWTTokenService) VerifyAccessToken(token string) (string, error) {
 	}
 	userID, err := s.extractClaim(claims, "sub")
 	if err != nil {
-		return "", domain.FailedToParseToken(err, claims)
+		return "", domain.FailedToParseToken(err, "claims", claims)
 	}
 	return userID, nil
 }
@@ -113,11 +112,11 @@ func (s *JWTTokenService) VerifyRefreshToken(token string) (string, string, erro
 	}
 	userID, err := s.extractClaim(claims, "sub")
 	if err != nil {
-		return "", "", domain.FailedToParseToken(err, claims)
+		return "", "", domain.FailedToParseToken(err, "claims", claims)
 	}
 	jti, err := s.extractClaim(claims, "jti")
 	if err != nil {
-		return "", "", domain.FailedToParseToken(err, claims)
+		return "", "", domain.FailedToParseToken(err, "claims", claims)
 	}
 	return userID, jti, nil
 }
