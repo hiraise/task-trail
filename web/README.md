@@ -116,27 +116,19 @@ src/
 
 ### Prerequisites
 
-- **Node.js** (v18 or higher)
-- **npm** (v9 or higher)
+- **Node.js** 22
+- **npm** (v10 or higher)
 
 ### Installation
 
-1.  **Clone the repository:**
+The client lives in `web/` of the [TaskTrail repository](https://github.com/hiraise/task-trail).
+Install dependencies from `web/`:
 
-    ```bash
-    git clone https://github.com/SergeyRusinovich/tt-frontend-v2.git
-    ```
+```bash
+npm ci
+```
 
-2.  **Navigate to the project directory:**
-
-    ```bash
-    cd tt-frontend-v2
-    ```
-
-3.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
+Repository-wide checks (`scripts/dev.sh`) are described in the [root README](../README.md).
 
 ### Running the Development Server
 
@@ -148,7 +140,7 @@ npm run dev
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
-> The dev server proxies `/api` requests to `http://localhost:8080` (backend).
+> The API address is taken from `VITE_API_URL` at build time (default `http://localhost:8080`).
 
 ### Building for Production
 
@@ -164,43 +156,15 @@ Output will be in the `dist` directory.
 npm run preview
 ```
 
-## Contributing
+## Development process and roadmap
 
-Contributions are welcome! If you'd like to contribute, please follow these steps:
-
-1.  **Fork the repository.**
-2.  **Create a new branch:**
-    ```bash
-    git checkout -b feature/your-feature-name
-    ```
-3.  **Make your changes and commit them:**
-    ```bash
-    git commit -m "feat: Add your new feature"
-    ```
-4.  **Push to your branch:**
-    ```bash
-    git push origin feature/your-feature-name
-    ```
-5.  **Open a pull request** against the `main` branch.
-
-## Roadmap
-
-- [x] Authentication system (login, signup, password recovery, confirmation)
-- [x] Route protection with auth guard
-- [x] Kanban board with drag-and-drop
-- [x] User profile page with avatar management
-- [x] Full project management (CRUD operations, member management)
-- [x] Complete task management (create, edit, assign, comment, status tracking)
-- [x] Global search functionality
-- [x] Responsive mobile and desktop layouts
-- [ ] Real-time collaboration features
-- [ ] Notifications system
-- [ ] Task attachments and file management
-- [ ] Advanced project analytics and reporting
+The project is developed by AI agents under the rules in [CLAUDE.md](../CLAUDE.md); the plan is in
+the [root README](../README.md). Boards, comments and search are UI-only for now: they show mock
+data until the server provides them.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](../LICENSE) file for details.
 
 ## Architecture Overview
 
