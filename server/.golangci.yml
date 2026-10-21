@@ -1,0 +1,5 @@
+# Линтер сервера (ADR-0009). Версия golangci-lint закреплена в scripts/dev.sh.
+version: "2"
+
+linters:
+  default: standard
