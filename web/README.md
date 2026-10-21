@@ -17,7 +17,7 @@ SPA на React и TypeScript: вход и регистрация, проекты
 
 ```bash
 npm ci            # зависимости по package-lock.json
-npm run dev       # dev-сервер на http://localhost:3000
+npm run dev       # dev-сервер на http://localhost:5173 (3000 занят локальным стендом)
 npm run lint      # ESLint
 npm run test:run  # тесты Vitest
 npm run build     # проверка типов и сборка в dist/
@@ -37,7 +37,7 @@ npm run preview   # просмотр собранной версии
 
 ## Структура `src/`
 
-```
+```text
 src/
 ├── routes/              # маршруты TanStack Router: _main/ — после входа, auth/ — вход и регистрация
 ├── application/         # сценарии, DTO и payload-ы запросов

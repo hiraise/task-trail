@@ -33,7 +33,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    // Порт 3000 занят локальным стендом (stand/compose.yaml)
+    port: 5173,
   },
   test: {
     environment: "jsdom",

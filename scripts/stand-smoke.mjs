@@ -1,5 +1,8 @@
 // Дымовая проверка поднятого стенда (ADR-0010): ходит в API через /api, как браузер.
-// Регистрация с письмом из Mailpit, вход, обновление токена, проект. Запуск: scripts/dev.sh smoke.
+// Регистрация с письмом из Mailpit, вход, проверка сессии так же, как её делает веб, обновление
+// токена, проект. Запуск: scripts/dev.sh smoke (нужен --experimental-strip-types для схемы веба).
+import { createUser } from "../web/src/domain/models/User.ts";
+
 const WEB = "http://localhost:3000";
 const MAIL = "http://localhost:8025";
 const email = `smoke-${Date.now()}@tasktrail.local`;
@@ -65,7 +68,18 @@ try {
   }
   await api("POST", "/v1/auth/login", { email, password });
   check(cookies.get("rt")?.path === "/api/v1/auth/refresh", "cookie обновления токена — на путь /api/v1/auth/refresh");
+
+  // Как checkAuthStatusUseCase в вебе: сессия есть, только если /auth/check ответил
+  // и текущий пользователь разобрался схемой User — иначе веб вернёт на страницу входа
   await api("GET", "/v1/auth/check");
+  const me = await api("GET", "/v1/users/me");
+  try {
+    createUser(me);
+    check(true, "веб принимает текущего пользователя (схема User из web/src)");
+  } catch (error) {
+    const issues = error.issues?.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
+    check(false, `веб не примет текущего пользователя и вернёт на вход: ${issues ?? error.message}`);
+  }
   await api("POST", "/v1/auth/refresh");
 
   const project = await api("POST", "/v1/projects", { name: "Дымовой проект", description: "scripts/dev.sh smoke" });

@@ -108,14 +108,19 @@ server() (
 	"$GOLANGCI_LINT" run ./...
 )
 
-web() (
+# Зависимости веба ставятся заново, если package.json или package-lock.json новее установленных
+ensure_web_deps() (
 	cd "$ROOT/web"
-	# Зависимости ставятся заново, если package.json или package-lock.json новее установленных
 	local installed=node_modules/.package-lock.json
 	if [ ! -f "$installed" ] || [ package-lock.json -nt "$installed" ] || [ package.json -nt "$installed" ]; then
 		echo "== web: npm ci"
 		npm ci --no-audit --no-fund
 	fi
+)
+
+web() (
+	ensure_web_deps
+	cd "$ROOT/web"
 	echo "== web: линтер"
 	npm run lint
 	echo "== web: тесты"
@@ -126,6 +131,10 @@ web() (
 
 # Docker нужен стенду. На macOS Docker Desktop запускается сам, если ещё не запущен.
 ensure_docker() {
+	if ! command -v docker >/dev/null 2>&1; then
+		echo "Команды docker нет: поставь Docker и повтори команду" >&2
+		exit 1
+	fi
 	docker info >/dev/null 2>&1 && return
 	if [ "$(uname -s)" = Darwin ] && [ -d /Applications/Docker.app ]; then
 		echo "== Docker: запускаю Docker Desktop"
@@ -136,7 +145,8 @@ ensure_docker() {
 			sleep 2
 		done
 	fi
-	echo "Docker не запущен: запусти его и повтори команду" >&2
+	echo "Docker недоступен:" >&2
+	docker info 2>&1 >/dev/null | head -3 >&2 || true
 	exit 1
 }
 
@@ -144,6 +154,10 @@ ensure_docker() {
 prepare_stand() {
 	local legacy="$STAND/legacy"
 	if [ "$(cat "$legacy/COMMIT" 2>/dev/null)" != "$LEGACY_API_COMMIT" ]; then
+		if ! git -C "$ROOT" cat-file -e "$LEGACY_API_COMMIT^{commit}" 2>/dev/null; then
+			echo "В клоне нет коммита эталона ${LEGACY_API_COMMIT:0:7} — клон неполный: git fetch --unshallow" >&2
+			exit 1
+		fi
 		echo "== стенд: выгружаю сервер ${LEGACY_API_COMMIT:0:7} из истории"
 		rm -rf "$legacy"
 		mkdir -p "$legacy"
@@ -186,12 +200,21 @@ rules) rules ;;
 server) server ;;
 web) web ;;
 up) stand_up ;;
-smoke) node "$ROOT/scripts/stand-smoke.mjs" ;;
+smoke)
+	# Схема веба импортируется из TypeScript: нужны зависимости веба и снятие типов в Node
+	ensure_web_deps
+	node --experimental-strip-types --disable-warning=ExperimentalWarning "$ROOT/scripts/stand-smoke.mjs"
+	;;
 down) "${COMPOSE[@]}" down ;;
 reset) "${COMPOSE[@]}" down --volumes ;;
 logs)
 	shift
-	"${COMPOSE[@]}" logs --follow "$@"
+	# В терминале — следить за логами; в скрипте или у агента — последние 200 строк и выйти
+	if [ -t 1 ]; then
+		"${COMPOSE[@]}" logs --follow --tail=200 "$@"
+	else
+		"${COMPOSE[@]}" logs --tail=200 "$@"
+	fi
 	;;
 "" | -h | --help | help) usage ;;
 *)

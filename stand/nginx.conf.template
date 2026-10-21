@@ -8,9 +8,18 @@ server {
     proxy_set_header Host $host;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
+    # Срезанный префикс: по нему Gin строит адреса своих редиректов (например, на путь без «/» в конце)
+    proxy_set_header X-Forwarded-Prefix /api;
+  }
+
+  # Файлы сборки с хешем в имени: несуществующий — 404, а не index.html вместо скрипта
+  location /assets/ {
+    try_files $uri =404;
   }
 
   location / {
+    # index.html не кешируется: после пересборки браузер сразу получает новые имена файлов сборки
+    add_header Cache-Control "no-cache";
     try_files $uri $uri/ /index.html;
   }
 }
