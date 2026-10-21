@@ -1,3 +1,6 @@
+// Package config читает переменные окружения сервера (ADR-0015): обязательны только
+// PG_CONNECTION_STRING и APP_SECRET, у остальных есть значения по умолчанию. То, что
+// администратор захочет поменять, — настройки в интерфейсе, а не переменные окружения.
 package config
 
 import (
@@ -9,33 +12,27 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type AppConfig struct {
-	Debug    bool   `env:"APP_DEBUG,required"`
-	RootPath string `env:"APP_ROOT_PATH,required"`
+// MinSecretLength — минимальная длина APP_SECRET: из него выводятся ключи подписи токенов
+// и шифрования секретов, короткий секрет подбирается по одному перехваченному токену.
+const MinSecretLength = 32
+
+type App struct {
+	Secret   string `env:"APP_SECRET,required,notEmpty"`
+	Port     string `env:"PORT" envDefault:"8080"`
+	RootPath string `env:"APP_ROOT_PATH"`
+	Debug    bool   `env:"APP_DEBUG" envDefault:"false"`
 }
 
-type PGConfig struct {
-	ConnString       string `env:"PG_CONNECTION_STRING,required"`
-	MaxPoolSize      int    `env:"PG_MAX_POOL_SIZE,required"`
-	MigrationEnabled bool   `env:"PG_MIGRATION_ENABLED" envDefault:"false"`
-	MigrationPath    string `env:"PG_MIGRATION_PATH"`
+type PG struct {
+	ConnString string `env:"PG_CONNECTION_STRING,required,notEmpty"`
 }
 
+// Docs, SMTP и Frontend — временно, до переноса почты в настройки администратора
+// и Swagger под вход администратора (шаг 3 этапа 1, ADR-0014, ADR-0017).
 type Docs struct {
 	Enabled  bool   `env:"SWAGGER_ENABLED" envDefault:"true"`
 	Login    string `env:"SWAGGER_LOGIN" envDefault:"root"`
 	Password string `env:"SWAGGER_PASSWORD" envDefault:"root"`
-}
-
-type AuthConfig struct {
-	ATSecret    string `env:"AUTH_ACCESS_TOKEN_SECRET,required"`
-	ATLifeMin   int    `env:"AUTH_ACCESS_TOKEN_LIFETIME_MIN,required"`
-	ATName      string `env:"AUTH_ACCESS_TOKEN_NAME" envDefault:"at"`
-	RTSecret    string `env:"AUTH_REFRESH_TOKEN_SECRET,required"`
-	RTLifeMin   int    `env:"AUTH_REFRESH_TOKEN_LIFETIME_MIN,required"`
-	RTName      string `env:"AUTH_REFRESH_TOKEN_NAME" envDefault:"rt"`
-	TokenIssuer string `env:"AUTH_TOKEN_ISSUER,required"`
-	CTLifeMin   int    `env:"AUTH_CONFIRMATION_TOKEN_LIFETIME_MIN,required"`
 }
 
 type SMTP struct {
@@ -47,38 +44,35 @@ type SMTP struct {
 }
 
 type Frontend struct {
-	URL              string `env:"FRONTEND_URL,required"`
 	VerifyURL        string `env:"FRONTEND_VERIFY_URL,required"`
 	ResetPasswordURL string `env:"FRONTEND_RESET_PASSWORD_URL,required"`
-	ProjectURL       string `env:"FRONTEND_PROJECT_URL,required"`
 }
 
 type Config struct {
-	App      AppConfig
-	PG       PGConfig
-	Auth     AuthConfig
+	App      App
+	PG       PG
 	Docs     Docs
 	SMTP     SMTP
 	Frontend Frontend
 }
 
 func New() (*Config, error) {
-	path, _ := findProjectRoot()
-	if err := godotenv.Load(path + "/.env"); err != nil {
-		fmt.Println(".env file not found. Variables will be taken from environment")
+	if path, ok := findProjectRoot(); ok {
+		if err := godotenv.Load(filepath.Join(path, ".env")); err != nil {
+			return nil, err
+		}
 	}
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
 		return nil, err
 	}
-	if cfg.PG.MigrationEnabled {
-		if cfg.PG.MigrationPath == "" {
-			return nil, fmt.Errorf("PG_MIGRATION_PATH required if PG_MIGRATION_ENABLED")
-		}
+	if len(cfg.App.Secret) < MinSecretLength {
+		return nil, fmt.Errorf("APP_SECRET короче %d символов: задай случайную строку, например openssl rand -hex 32", MinSecretLength)
 	}
 	return cfg, nil
 }
 
+// findProjectRoot ищет .env вверх от рабочей папки: удобно для запуска из любой папки репозитория.
 func findProjectRoot() (string, bool) {
 	dir, _ := os.Getwd()
 	for dir != "/" {

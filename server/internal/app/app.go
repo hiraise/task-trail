@@ -7,7 +7,9 @@ import (
 	"task-trail/internal/customerrors"
 	"task-trail/internal/domain/factory"
 	"task-trail/internal/infrastructure/repository/persistent"
+	"task-trail/internal/infrastructure/service/clock"
 	"task-trail/internal/infrastructure/service/id"
+	"task-trail/internal/infrastructure/service/keys"
 	notification "task-trail/internal/infrastructure/service/notification/access"
 	"task-trail/internal/infrastructure/service/notification/provider/email"
 	"task-trail/internal/infrastructure/service/password"
@@ -17,25 +19,33 @@ import (
 	"task-trail/internal/pkg/postgres"
 	"task-trail/internal/presentation/http"
 	"task-trail/internal/presentation/http/middleware"
+	"task-trail/migrations"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
+)
+
+// Значения, которые не настраиваются (ADR-0015): администратору менять их незачем,
+// а переменная окружения на каждое — лишняя настройка при установке.
+const (
+	accessTokenLifetime       = 15 * time.Minute
+	refreshTokenLifetime      = 30 * 24 * time.Hour
+	confirmationTokenLifetime = time.Hour
+	accessTokenCookie         = "at"
+	refreshTokenCookie        = "rt"
+	tokenIssuer               = "tasktrail"
+	pgMaxPoolSize             = 10
+	passwordHashCost          = 12
 )
 
 func Run(cfg *config.Config) {
 	logger := slogger.New(cfg.App.Debug, true)
 	logger1 := slogger.New(cfg.App.Debug, false)
-	// migrate
-	if cfg.PG.MigrationEnabled {
-		if err := postgres.Migrate(cfg.PG.ConnString, cfg.PG.MigrationPath, logger); err != nil {
-			logger.Error("db migration error", "error", err.Error())
-			os.Exit(1)
-		}
+	if err := postgres.Migrate(cfg.PG.ConnString, migrations.FS, logger); err != nil {
+		logger.Error("db migration error", "error", err.Error())
+		os.Exit(1)
 	}
-	// init db
-	opts := []postgres.Option{postgres.MaxPoolSize(cfg.PG.MaxPoolSize)}
-	pg, err := postgres.New(cfg.PG.ConnString, logger, opts...)
+	pg, err := postgres.New(cfg.PG.ConnString, logger, postgres.MaxPoolSize(pgMaxPoolSize))
 	if err != nil {
 		logger.Error("postgres connection error", "error", err.Error())
 		os.Exit(1)
@@ -43,24 +53,26 @@ func Run(cfg *config.Config) {
 	defer pg.Close()
 
 	// init services
-	pwdService := password.New(12)
+	pwdService := password.New(passwordHashCost)
 	idGen := id.New()
+	systemClock := clock.New()
 	accessTokenService := token.New(
-		cfg.Auth.ATSecret,
-		time.Duration(cfg.Auth.ATLifeMin)*time.Minute,
-		cfg.Auth.RTSecret,
-		cfg.Auth.TokenIssuer,
+		keys.Derive(cfg.App.Secret, keys.AccessToken),
+		accessTokenLifetime,
+		keys.Derive(cfg.App.Secret, keys.RefreshToken),
+		tokenIssuer,
 		idGen,
+		systemClock,
 	)
 	errHandler := customerrors.NewErrHander()
-	contextManager := contextmanager.NewGin(cfg.Auth.ATName, cfg.Auth.RTName)
+	contextManager := contextmanager.NewGin(accessTokenCookie, refreshTokenCookie, systemClock)
 	smtp := email.New(logger, cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.User, cfg.SMTP.Password, cfg.SMTP.Sender)
 	accessNotifier := notification.NewSmtpAccessNotifier(smtp, idGen, cfg.Frontend.VerifyURL, cfg.Frontend.ResetPasswordURL)
 
 	// FACTORIES
 	userFactory := factory.NewUserFactory(idGen)
-	rtFactory := factory.NewRTFactory(idGen, time.Duration(cfg.Auth.RTLifeMin)*time.Minute)
-	ctFactory := factory.NewCTFactory(idGen, time.Duration(cfg.Auth.CTLifeMin)*time.Minute)
+	rtFactory := factory.NewRTFactory(idGen, refreshTokenLifetime)
+	ctFactory := factory.NewCTFactory(idGen, confirmationTokenLifetime)
 	txManager := persistent.NewPgTxManager(pg.Pool)
 	// REPOSITORIES
 	userRepo := persistent.NewUserRepo(pg.Pool, userFactory)
@@ -68,23 +80,12 @@ func Run(cfg *config.Config) {
 	rtRepo := persistent.NewRefreshTokenRepo(pg.Pool, rtFactory)
 	accesModule := access.New(txManager, userRepo, userFactory, pwdService, ctFactory, ctRepo, accessNotifier, rtFactory, rtRepo, accessTokenService)
 
-	recoveryMW := middleware.NewRecovery(logger1, contextManager)
-	requestMW := middleware.NewRequest(idGen, contextManager)
-	logMW := middleware.NewResponseLog(logger1, contextManager)
-	authMW := middleware.NewAuth(accessTokenService, contextManager)
-	errorMW := middleware.NewError(logger1, contextManager)
-	// init http server
 	httpServer := gin.New()
-	binding.EnableDecoderDisallowUnknownFields = true
-	httpServer.Use(requestMW)
-	httpServer.Use(logMW)
-	httpServer.Use(recoveryMW)
-	httpServer.Use(errorMW)
-	http.NewRouter(httpServer, cfg, contextManager, errHandler, authMW, accesModule)
+	middleware.Setup(httpServer, idGen, contextManager, logger1)
+	http.NewRouter(httpServer, cfg, contextManager, errHandler, middleware.NewAuth(accessTokenService, contextManager), accesModule)
 	// TODO(этап 1): периодически удалять просроченные и отозванные refresh- и confirmation-токены.
-	if err := httpServer.Run(); err != nil {
+	if err := httpServer.Run(":" + cfg.App.Port); err != nil {
 		logger.Error("http server start failed", "error", err.Error())
 		os.Exit(1)
 	}
-
 }

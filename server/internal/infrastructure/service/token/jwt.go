@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"task-trail/internal/application/dto"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
+	"task-trail/internal/domain/service"
 	"task-trail/internal/infrastructure/service/id"
 	"time"
 
@@ -19,38 +19,43 @@ type JWTTokenService struct {
 	rtSecret   []byte
 	iss        string
 	uuidGen    *id.UUIDGenerator
+	clock      service.Clock
 }
 
+// New принимает ключи подписи access- и refresh-токенов: они разные, чтобы refresh-токен
+// нельзя было выдать за access-токен (ключи — keys.Derive из APP_SECRET).
 func New(
-	atSecret string,
-	atLifeMin time.Duration,
-	rtSecret string,
+	atKey []byte,
+	atLifetime time.Duration,
+	rtKey []byte,
 	tokenIssuer string,
 	uuidGenerator *id.UUIDGenerator,
+	clock service.Clock,
 ) *JWTTokenService {
 	return &JWTTokenService{
-		atSecret:   []byte(atSecret),
-		atLifeTime: atLifeMin,
-		rtSecret:   []byte(rtSecret),
+		atSecret:   atKey,
+		atLifeTime: atLifetime,
+		rtSecret:   rtKey,
 		iss:        tokenIssuer,
 		uuidGen:    uuidGenerator,
+		clock:      clock,
 	}
 }
 
-func (s *JWTTokenService) GenerateTokensPair(userID entity.UserID, rtEntity *entity.RefreshToken) (dto.AccessToken, dto.RefreshToken, error) {
+func (s *JWTTokenService) GenerateTokensPair(userID entity.UserID, rtEntity *entity.RefreshToken) (service.IssuedToken, service.IssuedToken, error) {
 	at, err := s.GenerateAccessToken(userID)
 	if err != nil {
-		return dto.AccessToken{}, dto.RefreshToken{}, err
+		return service.IssuedToken{}, service.IssuedToken{}, err
 	}
 	rt, err := s.GenerateRefreshToken(userID, rtEntity)
 	if err != nil {
-		return dto.AccessToken{}, dto.RefreshToken{}, err
+		return service.IssuedToken{}, service.IssuedToken{}, err
 	}
 	return at, rt, nil
 }
 
-func (s *JWTTokenService) GenerateAccessToken(userID entity.UserID) (dto.AccessToken, error) {
-	exp := time.Now().Add(s.atLifeTime)
+func (s *JWTTokenService) GenerateAccessToken(userID entity.UserID) (service.IssuedToken, error) {
+	exp := s.clock.Now().Add(s.atLifeTime)
 	claims := jwt.MapClaims{
 		"sub": userID,
 		"exp": exp.Unix(),
@@ -58,12 +63,12 @@ func (s *JWTTokenService) GenerateAccessToken(userID entity.UserID) (dto.AccessT
 	}
 	t, err := s.genToken(claims, s.atSecret)
 	if err != nil {
-		return dto.AccessToken{}, err
+		return service.IssuedToken{}, err
 	}
-	return dto.AccessToken{Token: t, ExpiredAt: exp}, nil
+	return service.IssuedToken{Token: t, ExpiredAt: exp}, nil
 }
 
-func (s *JWTTokenService) GenerateRefreshToken(userID entity.UserID, rtEntity *entity.RefreshToken) (dto.RefreshToken, error) {
+func (s *JWTTokenService) GenerateRefreshToken(userID entity.UserID, rtEntity *entity.RefreshToken) (service.IssuedToken, error) {
 	claims := jwt.MapClaims{
 		"sub": userID,
 		"exp": rtEntity.ExpiredAt.Unix(),
@@ -72,9 +77,9 @@ func (s *JWTTokenService) GenerateRefreshToken(userID entity.UserID, rtEntity *e
 	}
 	t, err := s.genToken(claims, s.rtSecret)
 	if err != nil {
-		return dto.RefreshToken{}, err
+		return service.IssuedToken{}, err
 	}
-	return dto.RefreshToken{Token: t, ExpiredAt: rtEntity.ExpiredAt}, nil
+	return service.IssuedToken{Token: t, ExpiredAt: rtEntity.ExpiredAt}, nil
 
 }
 
@@ -124,7 +129,7 @@ func (s *JWTTokenService) VerifyRefreshToken(token string) (string, string, erro
 func (s *JWTTokenService) verifyToken(token string, secret []byte) (jwt.MapClaims, error) {
 	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
 		return secret, nil
-	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}), jwt.WithTimeFunc(s.clock.Now))
 	if err != nil {
 		return nil, err
 	}

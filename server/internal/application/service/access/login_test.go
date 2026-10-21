@@ -7,6 +7,7 @@ import (
 	"task-trail/internal/application/dto"
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/domain"
+	"task-trail/internal/domain/service"
 
 	"testing"
 
@@ -49,11 +50,11 @@ func TestLoginService(t *testing.T) {
 				deps.userRepo.EXPECT().GetByEmail(ctx, gomock.Any()).Return(getTestUser(true, true), nil)
 				deps.passwordService.EXPECT().ComparePassword(gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.refreshTokenRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
-				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(dto.AccessToken{}, dto.RefreshToken{}, nil)
+				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(service.IssuedToken{}, service.IssuedToken{}, nil)
 				return module.Login
 			},
 			wantErr: false,
-			want:    dto.SuccessLogin{UserID: TEST_USER_ID, AccessToken: dto.AccessToken{}, RefreshToken: dto.RefreshToken{}},
+			want:    dto.SuccessLogin{UserID: TEST_USER_ID, AccessToken: service.IssuedToken{}, RefreshToken: service.IssuedToken{}},
 		},
 		// wrong email
 		{
@@ -159,7 +160,7 @@ func TestLoginService(t *testing.T) {
 				deps.userRepo.EXPECT().GetByEmail(ctx, gomock.Any()).Return(getTestUser(true, true), nil)
 				deps.passwordService.EXPECT().ComparePassword(gomock.Any(), gomock.Any()).Return(true, nil)
 				deps.refreshTokenRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
-				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(dto.AccessToken{}, dto.RefreshToken{}, domain.ErrTokenGenerateFailed(nil))
+				deps.accessTokenService.EXPECT().GenerateTokensPair(gomock.Any(), gomock.Any()).Return(service.IssuedToken{}, service.IssuedToken{}, domain.ErrTokenGenerateFailed(nil))
 				return module.Login
 			},
 			wantErr:     true,

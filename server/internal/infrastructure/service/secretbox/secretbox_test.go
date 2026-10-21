@@ -1,0 +1,50 @@
+package secretbox
+
+import (
+	"bytes"
+	"testing"
+
+	"task-trail/internal/infrastructure/service/keys"
+)
+
+func box(t *testing.T, secret string) *Box {
+	t.Helper()
+	b, err := New(keys.Derive(secret, keys.SecretBox))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
+}
+
+func TestSealOpen(t *testing.T) {
+	b := box(t, "0123456789abcdef0123456789abcdef")
+	sealed, err := b.Seal([]byte("smtp-password"), "mail")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(sealed, []byte("smtp-password")) {
+		t.Fatal("секрет виден в шифротексте")
+	}
+	opened, err := b.Open(sealed, "mail")
+	if err != nil || string(opened) != "smtp-password" {
+		t.Fatalf("расшифровано %q, ошибка %v", opened, err)
+	}
+	again, _ := b.Seal([]byte("smtp-password"), "mail")
+	if bytes.Equal(sealed, again) {
+		t.Error("одинаковые секреты дали одинаковый шифротекст: nonce не случайный")
+	}
+}
+
+func TestOpenFails(t *testing.T) {
+	b := box(t, "0123456789abcdef0123456789abcdef")
+	sealed, _ := b.Seal([]byte("smtp-password"), "mail")
+	if _, err := b.Open(sealed, "other"); err == nil {
+		t.Error("секрет одной настройки расшифрован как секрет другой")
+	}
+	if _, err := box(t, "another-secret-another-secret-123").Open(sealed, "mail"); err == nil {
+		t.Error("секрет расшифрован с другим APP_SECRET")
+	}
+	if _, err := b.Open([]byte("short"), "mail"); err == nil {
+		t.Error("обрывок расшифрован")
+	}
+}
