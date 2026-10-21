@@ -1,6 +1,6 @@
 # ADR-0012: Почта подключается по желанию
 
-- **Статус:** Принято
+- **Статус:** Заменено [ADR-0017](0017-mail-in-admin-ui.md)
 - **Дата:** 2026-10-21
 - **Затрагивает:** `server/config/config.go`, `server/cmd/`, `server/internal/app/`, `server/internal/infrastructure/service/notification/`, `server/internal/presentation/http/v1/`, `web/src/presentation/features/auth/`, `web/src/presentation/features/projects/`, приглашения и настройки в контракте API
 

@@ -1,6 +1,6 @@
 # ADR-0011: Новые пользователи приходят по приглашению
 
-- **Статус:** Принято
+- **Статус:** Заменено [ADR-0016](0016-invite-only-signup-first-admin.md)
 - **Дата:** 2026-10-21
 - **Затрагивает:** `server/internal/application/service/`, `server/internal/domain/entity/`, `server/internal/presentation/http/v1/`, `server/migrations/`, `web/src/presentation/features/auth/`, `web/src/presentation/features/projects/`, доступ и участники в контракте API
 
