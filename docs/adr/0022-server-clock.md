@@ -1,6 +1,6 @@
 # ADR-0022: Текущее время сервер берёт из `Clock`, а не из `time.Now()`
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** вызовы `time.Now`, `time.Since`, `time.Until` в `server/internal/`, сущности и фабрики в `server/internal/domain/`, сборка модулей в `server/internal/app/`
 

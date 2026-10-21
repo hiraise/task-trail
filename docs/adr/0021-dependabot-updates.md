@@ -1,6 +1,6 @@
 # ADR-0021: Обновления зависимостей и действий GitHub предлагает Dependabot
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** `.github/dependabot.yml`, `server/go.mod`, `web/package.json`, `.github/workflows/`
 
