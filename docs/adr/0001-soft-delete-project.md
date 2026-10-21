@@ -1,26 +1,22 @@
-# ADR 0001: Soft delete project
+# ADR-0001: Проект удаляется мягко: `deleted_at` у проекта и у всех его сущностей
 
-Date: 2025-09-15  
-Status: Active
+- **Статус:** Принято
+- **Дата:** 2025-09-15
+- **Затрагивает:** репозитории проектов и задач в `server/internal/infrastructure/repository/persistent/`, `server/migrations/`
 
-## Context
+## Контекст
 
-We want to:
+Удалённые проекты нужны для разбора и метрик, но пользователи не должны видеть ни их,
+ни то, что к ним относится.
 
-- Preserve deleted entities for analysis and metrics.  
-- Soft delete projects and all related entities.  
-- Block access to deleted entities through the repository layer.
+## Решение
 
-## Solution
+- Удаление проекта проставляет `deleted_at` проекту и всем связанным сущностям: задачам,
+  а также ролям и статусам, пока они были таблицами (с [ADR-0003](0003-fixed-roles-and-statuses.md) — строки в записях).
+- Связи пользователей с удалённым проектом (`project_members`) сохраняются.
+- Любой запрос репозитория к проекту или его сущности фильтрует `deleted_at IS NULL`.
+- При доступе к сущности проекта сам проект не проверяется: она помечена вместе с ним.
 
-1. Mark the project as deleted (field `deleted_at`).  
-2. Mark all related entities (project roles, tasks, statuses) as deleted (field `deleted_at`).  
-3. Keep relations between users and the deleted project.  
-4. Implement deleted state validation in the repository layer:  
-    - Any request to a project or its related entities checks `deleted_at IS NULL`.  
-    - No need to check the project when accessing related entities, since all related entities are also marked as deleted when the project is deleted.
+## Последствия
 
-## Consequences
-
-\+ Deleted projects and related entities are preserved in the database for auditing and metrics.  
-\- Queries and database operations may be slightly more complex due to filtering on `deleted_at`.  
+Удалённые данные остаются в базе; запросы чуть сложнее из-за фильтра по `deleted_at`.

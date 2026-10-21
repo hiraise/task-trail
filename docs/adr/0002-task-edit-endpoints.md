@@ -1,26 +1,22 @@
-# ADR 0002: Edit task
+# ADR-0002: Задача меняется отдельным эндпоинтом на каждую операцию
 
-Date: 2025-09-15  
-Status: Active
+- **Статус:** Принято
+- **Дата:** 2025-09-15
+- **Затрагивает:** эндпоинты задач в `server/internal/presentation/http/v1/`, контракт API
 
-## Context
+## Контекст
 
-Required and API to manipulate tasks state. Considered:
+Задачу нужно редактировать, переводить по статусам, переназначать и переносить между проектами.
 
-- one endpoint to edit task, change status, project and assignee.
-- multiple enpoints, one per operation.
+## Решение
 
-## Solution
+- Каждая операция с задачей — свой эндпоинт: изменить текст, сменить статус,
+  сменить исполнителя, перенести в другой проект.
 
-Create mupltiple endpoints:
+## Последствия
 
-- Edit task text
-- Change status
-- Change assignee
-- Change project
+Эндпоинтов больше, зато каждый отвечает за одно действие, а логи читаются проще.
 
-## Consequences
+## Альтернативы
 
-\+ Each endpoint is simple and have one responsibility.  
-\+ Clean and more readable logs.  
-\- More endpoints.  
+- Один эндпоинт на все изменения задачи — отклонён: он отвечает сразу за всё, а в логах не видно, что именно меняли.

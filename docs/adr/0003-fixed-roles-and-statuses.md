@@ -1,23 +1,22 @@
-# ADR 0002: Simplify access model
+# ADR-0003: Доступ по трём фиксированным ролям, статусы задач фиксированы, идентификаторы — UUID
 
-Date: 2025-10-26  
-Status: Active
+- **Статус:** Принято
+- **Дата:** 2025-10-26
+- **Затрагивает:** `server/migrations/`, проверки доступа в `server/internal/`, роли и статусы в контракте API
 
-## Context
+## Контекст
 
-The current permissions model is redundant. Dynamic role editing is useless in the current stage of the project. Also as task statuses. Considered:
+Модель прав с настраиваемыми ролями и статусами оказалась избыточной: редактировать их
+на этом этапе проекта никому не нужно.
 
-- Simplify project design
-- Keep current design.
+## Решение
 
-## Solution
+- Права отдельно не хранятся: доступ определяется ролью участника проекта.
+- Ролей три, они фиксированы: владелец, администратор, участник. Роль хранится строкой
+  в `project_members.role`.
+- Статусы задач фиксированы и хранятся строкой в `tasks.status`.
+- Идентификаторы сущностей — UUID.
 
-- Remove permissions, granting access based on user role.
-- Make three constant roles (Owner, Admin, Member) and store they as VARCHAR in db (table `project_mambers`).
-- Make task statuses constant and store ther as VARCHAR in `tasks` table.
-- Change id type to UUID.
+## Последствия
 
-## Consequences
-
-\+ Project will become easier.
-\- The existing database and all migrations will be lost.
+Прежние база и миграции не переносятся: миграции объединены в `server/migrations/000001_init.*`.
