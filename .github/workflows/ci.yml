@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  # Новый коммит в PR отменяет устаревший прогон; прогоны main доводятся до конца
+  # Новый коммит в PR отменяет устаревший прогон; уже запущенный прогон main не прерывается
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:

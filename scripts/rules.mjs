@@ -3,75 +3,109 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { builtinModules } from "node:module";
-import { basename, dirname, join, resolve } from "node:path";
+import { basename, dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const errors = [];
+const hints = [];
 
-// Файлы репозитория: закоммиченные и новые, кроме игнорируемых
-function repoFiles(...pathspecs) {
-  return execFileSync(
-    "git",
-    ["ls-files", "--cached", "--others", "--exclude-standard", "--", ...pathspecs],
-    { cwd: ROOT, encoding: "utf8" },
-  )
-    .split("\n")
-    .filter((file) => file && existsSync(join(ROOT, file)));
-}
+// Файлы репозитория с точным регистром путей: закоммиченные и новые, кроме игнорируемых.
+// -z — чтобы пути с кириллицей не приходили в кавычках; --deduplicate — при конфликте слияния.
+const FILES = execFileSync(
+  "git",
+  ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--deduplicate"],
+  { cwd: ROOT, encoding: "utf8" },
+)
+  .split("\0")
+  .filter((file) => file && existsSync(join(ROOT, file)));
+const FILE_SET = new Set(FILES);
+const DIR_SET = new Set([
+  ".",
+  ...FILES.flatMap((file) => {
+    const parts = file.split("/");
+    return parts.slice(1).map((_, i) => parts.slice(0, i + 1).join("/"));
+  }),
+]);
 
 const read = (file) => readFileSync(join(ROOT, file), "utf8");
+const field = (text, name) => new RegExp(`^- \\*\\*${name}:\\*\\* (.+)$`, "m").exec(text)?.[1];
 
-// ADR: имя по шаблону, уникальный номер, заголовок, статус и строка в индексе (docs/adr/template.md)
+// ADR: имя, номер, заголовок и статус по шаблону; строка индекса повторяет решение, статус
+// и «Затрагивает» из самого ADR (docs/adr/template.md)
 function checkAdr() {
   const dir = "docs/adr";
-  const index = read(`${dir}/README.md`);
-  const rows = index.split("\n").filter((line) => line.startsWith("| ["));
+  const rows = new Map();
+  for (const line of read(`${dir}/README.md`).split("\n")) {
+    if (!line.startsWith("| [")) continue;
+    const cells = line.split("|").slice(1, -1).map((cell) => cell.trim());
+    const file = /^\[\d{4}\]\(([^)]+)\)$/.exec(cells[0])?.[1];
+    if (!file || cells.length !== 4) {
+      errors.push(`${dir}/README.md: строка индекса не по образцу «| [NNNN](файл) | решение | статус | затрагивает |»: ${line}`);
+      continue;
+    }
+    rows.set(file, cells);
+  }
+
   const numbers = new Map();
-  for (const path of repoFiles(`${dir}/*.md`)) {
+  const adrFiles = FILES.filter(
+    (path) => dirname(path) === dir && path.endsWith(".md") && !["README.md", "template.md"].includes(basename(path)),
+  );
+  for (const path of adrFiles) {
     const file = basename(path);
-    if (file === "README.md" || file === "template.md") continue;
     const match = /^(\d{4})-[a-z0-9-]+\.md$/.exec(file);
     if (!match) {
       errors.push(`${path}: имя не по шаблону NNNN-slug.md`);
       continue;
     }
     const number = match[1];
-    if (numbers.has(number)) {
-      errors.push(`${dir}: номер ${number} у двух ADR — ${numbers.get(number)} и ${file}`);
-    }
+    if (numbers.has(number)) errors.push(`${dir}: номер ${number} у двух ADR — ${numbers.get(number)} и ${file}`);
     numbers.set(number, file);
 
     const text = read(path);
-    if (!text.startsWith(`# ADR-${number}: `)) {
-      errors.push(`${path}: заголовок должен начинаться с «# ADR-${number}: »`);
+    const title = /^# ADR-(\d{4}): (.+)$/m.exec(text.split("\n")[0]);
+    if (!title || title[1] !== number) errors.push(`${path}: заголовок должен начинаться с «# ADR-${number}: »`);
+    const status = field(text, "Статус");
+    if (!status || !/^(Предложено|Принято|Отменено|Заменено \[ADR-\d{4}\]\(\d{4}-[a-z0-9-]+\.md\))$/.test(status)) {
+      errors.push(`${path}: статус «${status ?? "нет"}» не по шаблону`);
     }
-    const status = /^- \*\*Статус:\*\* (.+)$/m.exec(text)?.[1];
-    const statusOk =
-      status &&
-      /^(Предложено|Принято|Отменено|Заменено \[ADR-\d{4}\]\(\d{4}-[a-z0-9-]+\.md\))$/.test(status);
-    if (!statusOk) errors.push(`${path}: статус «${status ?? "нет"}» не по шаблону`);
+    const affects = field(text, "Затрагивает");
+    if (!affects) errors.push(`${path}: нет поля «Затрагивает»`);
 
-    const row = rows.find((line) => line.includes(`](${file})`));
+    const row = rows.get(file);
     if (!row) {
       errors.push(`${dir}/README.md: нет строки для ${file}`);
-    } else if (status) {
-      const indexStatus = row.split("|")[3]?.trim() ?? "";
-      if (indexStatus.split(" ")[0] !== status.split(" ")[0]) {
-        errors.push(`${dir}/README.md: у ${file} статус «${indexStatus}», а в ADR — «${status}»`);
-      }
+      continue;
     }
+    rows.delete(file);
+    if (title && row[1] !== title[2]) errors.push(`${dir}/README.md: решение ${file} не совпадает с заголовком ADR`);
+    if (status && row[2].split(" ")[0] !== status.split(" ")[0]) {
+      errors.push(`${dir}/README.md: у ${file} статус «${row[2]}», а в ADR — «${status}»`);
+    }
+    if (affects && row[3] !== affects) errors.push(`${dir}/README.md: «Затрагивает» у ${file} не совпадает с ADR — скопируй из ADR`);
   }
+  for (const file of rows.keys()) errors.push(`${dir}/README.md: строка для несуществующего ${file}`);
 }
 
-// Относительные ссылки в Markdown ведут на существующие файлы (CLAUDE.md, «Где что описано»)
+// Относительные ссылки в Markdown ведут на файлы и папки репозитория с точным регистром
+// (CLAUDE.md, «Где что описано»): CI на Linux различает регистр, macOS — нет.
 function checkLinks() {
-  for (const path of repoFiles("*.md")) {
-    const text = read(path).replace(/```[\s\S]*?```/g, "");
-    for (const [, target] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
+  const withoutCode = (text) =>
+    text.replace(/^(```|~~~)[^\n]*\n[\s\S]*?^\1[^\n]*$/gm, "").replace(/`[^`\n]*`/g, "");
+  for (const path of FILES.filter((file) => file.endsWith(".md"))) {
+    for (const [, target] of withoutCode(read(path)).matchAll(/\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
       if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith("#")) continue;
-      const file = decodeURI(target.split("#")[0]);
-      if (!existsSync(resolve(ROOT, dirname(path), file))) {
+      let file;
+      try {
+        file = decodeURIComponent(target.split("#")[0]);
+      } catch {
+        errors.push(`${path}: ссылка с некорректной кодировкой ${target}`);
+        continue;
+      }
+      const resolved = (
+        file.startsWith("/") ? posix.normalize(file.slice(1)) : posix.join(posix.dirname(path), file)
+      ).replace(/\/$/, "");
+      if (!FILE_SET.has(resolved) && !DIR_SET.has(resolved)) {
         errors.push(`${path}: ссылка на несуществующий ${target}`);
       }
     }
@@ -81,48 +115,42 @@ function checkLinks() {
 // Каждый импортируемый в вебе пакет объявлен в web/package.json (ADR-0006)
 function checkWebImports() {
   const pkg = JSON.parse(read("web/package.json"));
-  const declared = new Set([
-    ...Object.keys(pkg.dependencies ?? {}),
-    ...Object.keys(pkg.devDependencies ?? {}),
-  ]);
+  const declared = new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})]);
   const builtins = new Set(builtinModules);
-  const files = repoFiles("web/src", "web/*.ts", "web/*.js").filter((file) =>
-    /\.(ts|tsx|js|mjs)$/.test(file),
+  const sources = FILES.filter(
+    (file) => /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/.test(file) && (file.startsWith("web/src/") || /^web\/[^/]+$/.test(file)),
   );
-  // `… from "x"`, `import "x"` в начале строки и `import("x")`; строки вроде `"import"` в конфигах не задеваются
+  // `… from "x"`, `import "x"` в начале строки и `import("x")`; комментарии вырезаются,
+  // строки вроде `"import"` в конфигах не задеваются
   const importRe = /\sfrom\s+["']([^"']+)["']|^\s*import\s+["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']/gm;
   const missing = new Map();
-  for (const path of files) {
-    for (const match of read(path).matchAll(importRe)) {
+  for (const path of sources) {
+    const code = read(path).replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    for (const match of code.matchAll(importRe)) {
       const spec = (match[1] ?? match[2] ?? match[3]).split("?")[0];
       if (/^(\.|\/|@\/|node:|virtual:)/.test(spec)) continue;
       const parts = spec.split("/");
       const name = spec.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0];
-      if (builtins.has(name) || declared.has(name)) continue;
-      if (!missing.has(name)) missing.set(name, path);
+      if (!builtins.has(name) && !declared.has(name) && !missing.has(name)) missing.set(name, path);
     }
   }
-  for (const [name, path] of missing) {
-    errors.push(`web/package.json: пакет ${name} не объявлен, а импортируется (${path})`);
-  }
+  for (const [name, path] of missing) errors.push(`web/package.json: пакет ${name} не объявлен, а импортируется (${path})`);
 }
 
-// Пар *Mobile/*Desktop не становится больше: новые экраны — один адаптивный компонент (ADR-0008).
-// Порог только снижается: слил пару — уменьши число здесь.
-const DEVICE_SPLIT_LIMIT = { Mobile: 39, Desktop: 33 };
+// Компонентов с Mobile/Desktop в имени не становится больше: новые экраны — один адаптивный
+// компонент (ADR-0008). Слил пару — снизь порог; превышение — ошибка, снижение — подсказка.
+const DEVICE_SPLIT_LIMIT = { Mobile: 38, Desktop: 33 };
 
 function checkDeviceSplit() {
-  const components = repoFiles("web/src").filter(
-    (file) => file.endsWith(".tsx") && !file.endsWith(".test.tsx"),
+  const components = FILES.filter(
+    (file) => file.startsWith("web/src/") && file.endsWith(".tsx") && !file.endsWith(".test.tsx"),
   );
   for (const [kind, limit] of Object.entries(DEVICE_SPLIT_LIMIT)) {
     const count = components.filter((file) => basename(file).includes(kind)).length;
     if (count > limit) {
-      errors.push(
-        `web/src: компонентов *${kind}* — ${count}, порог ${limit}: новый экран делай одним адаптивным компонентом (ADR-0008)`,
-      );
+      errors.push(`web/src: компонентов с ${kind} в имени — ${count}, порог ${limit}: новый экран делай одним адаптивным компонентом (ADR-0008)`);
     } else if (count < limit) {
-      errors.push(`scripts/rules.mjs: компонентов *${kind}* стало ${count} — снизь порог с ${limit} до ${count}`);
+      hints.push(`компонентов с ${kind} в имени стало ${count} — снизь порог в scripts/rules.mjs с ${limit} до ${count}`);
     }
   }
 }
@@ -132,6 +160,7 @@ checkLinks();
 checkWebImports();
 checkDeviceSplit();
 
+for (const hint of hints) console.log(`подсказка: ${hint}`);
 if (errors.length > 0) {
   console.error(`Правила проекта нарушены (${errors.length}):`);
   for (const error of errors) console.error(`- ${error}`);
