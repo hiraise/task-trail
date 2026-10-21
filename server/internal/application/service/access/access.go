@@ -9,90 +9,75 @@ import (
 )
 
 type AccessModule struct {
-	Registration         *RegistrationService
-	Login                *LoginService
-	Verify               *VerifyAccountService
-	ResetPassword        *ResetPasswordService
-	ConfirmResetPassword *ConfirmResetPasswordService
-	Refresh              *RefreshService
-	ResendVerification   *ResendVerificationService
-	ChangePassword       *ChangePasswordService
-	Logout               *LogoutService
+	Registration   *RegistrationService
+	Login          *LoginService
+	Refresh        *RefreshService
+	Logout         *LogoutService
+	ChangePassword *ChangePasswordService
+	PublicSettings *PublicSettingsService
+	Cleanup        *CleanupService
 }
 
-func New(
-	txManager transaction.TxManager,
-	userRepo repository.UserRepository,
-	userFactory *factory.UserFactory,
-	pwdService password.PasswordService,
-	confirmTokenFactory *factory.ConfirmationTokenFactory,
-	confirmTokenRepo repository.ConfirmationTokenRepository,
-	notifier service.AccessNotifier,
-	refreshTokenFactory *factory.RefreshTokenFactory,
-	refreshTokenRepo repository.RefreshTokenRepository,
-	accessTokenService service.AccessTokenService,
+// Deps — зависимости модуля доступа.
+type Deps struct {
+	TxManager           transaction.TxManager
+	Clock               service.Clock
+	UserRepo            repository.UserRepository
+	UserFactory         *factory.UserFactory
+	PasswordService     password.PasswordService
+	RefreshTokenFactory *factory.RefreshTokenFactory
+	RefreshTokenRepo    repository.RefreshTokenRepository
+	AccessTokenService  service.AccessTokenService
+	SettingsRepo        repository.SettingsRepository
+}
 
-) *AccessModule {
+func New(d Deps) *AccessModule {
+	sessions := &sessionOpener{
+		factory:      d.RefreshTokenFactory,
+		repository:   d.RefreshTokenRepo,
+		tokenService: d.AccessTokenService,
+	}
 	return &AccessModule{
 		Registration: &RegistrationService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			userFactory:     userFactory,
-			pwdHasher:       pwdService,
-			tokenFactory:    confirmTokenFactory,
-			tokenRepository: confirmTokenRepo,
-			notifier:        notifier,
+			txManager:          d.TxManager,
+			userRepository:     d.UserRepo,
+			userFactory:        d.UserFactory,
+			pwdHasher:          d.PasswordService,
+			settingsRepository: d.SettingsRepo,
+			sessions:           sessions,
 		},
 		Login: &LoginService{
-			txManager:              txManager,
-			userRepository:         userRepo,
-			refreshTokenRepository: refreshTokenRepo,
-			refreshTokenFactory:    refreshTokenFactory,
-			pwdComparator:          pwdService,
-			tokenService:           accessTokenService,
-		},
-		Verify: &VerifyAccountService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			tokenRepository: confirmTokenRepo,
-		},
-		ResetPassword: &ResetPasswordService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			tokenFactory:    confirmTokenFactory,
-			tokenRepository: confirmTokenRepo,
-			notifier:        notifier,
-		},
-		ConfirmResetPassword: &ConfirmResetPasswordService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			pwdService:      pwdService,
-			tokenRepository: confirmTokenRepo,
+			txManager:      d.TxManager,
+			userRepository: d.UserRepo,
+			pwdComparator:  d.PasswordService,
+			sessions:       sessions,
 		},
 		Refresh: &RefreshService{
-			txManager:              txManager,
-			userRepository:         userRepo,
-			refreshTokenRepository: refreshTokenRepo,
-			refreshTokenFactory:    refreshTokenFactory,
-			pwdComparator:          pwdService,
-			tokenService:           accessTokenService,
-		},
-		ResendVerification: &ResendVerificationService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			tokenFactory:    confirmTokenFactory,
-			tokenRepository: confirmTokenRepo,
-			notifier:        notifier,
-		},
-		ChangePassword: &ChangePasswordService{
-			txManager:      txManager,
-			userRepository: userRepo,
-			pwdService:     pwdService,
+			txManager:              d.TxManager,
+			clock:                  d.Clock,
+			refreshTokenRepository: d.RefreshTokenRepo,
+			tokenService:           d.AccessTokenService,
+			sessions:               sessions,
 		},
 		Logout: &LogoutService{
-			txManager:              txManager,
-			refreshTokenRepository: refreshTokenRepo,
-			tokenService:           accessTokenService,
+			txManager:              d.TxManager,
+			clock:                  d.Clock,
+			refreshTokenRepository: d.RefreshTokenRepo,
+			tokenService:           d.AccessTokenService,
+		},
+		ChangePassword: &ChangePasswordService{
+			txManager:      d.TxManager,
+			clock:          d.Clock,
+			userRepository: d.UserRepo,
+			pwdService:     d.PasswordService,
+		},
+		PublicSettings: &PublicSettingsService{
+			userRepository:     d.UserRepo,
+			settingsRepository: d.SettingsRepo,
+		},
+		Cleanup: &CleanupService{
+			clock:                  d.Clock,
+			refreshTokenRepository: d.RefreshTokenRepo,
 		},
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"task-trail/internal/infrastructure/service/id"
 	"task-trail/internal/pkg/contextmanager"
 	"task-trail/internal/pkg/logger"
+	"task-trail/internal/presentation/http/v1/request"
 	"task-trail/internal/presentation/http/v1/response"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +36,9 @@ func Setup(engine *gin.Engine, ids *id.UUIDGenerator, m *contextmanager.GinConte
 func configureBinding() {
 	binding.EnableDecoderDisallowUnknownFields = true
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		if err := request.RegisterValidators(v); err != nil {
+			panic(err)
+		}
 		v.RegisterTagNameFunc(func(field reflect.StructField) string {
 			name, _, _ := strings.Cut(field.Tag.Get("json"), ",")
 			switch name {

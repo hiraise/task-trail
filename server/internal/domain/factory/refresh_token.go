@@ -8,25 +8,28 @@ import (
 
 type RefreshTokenFactory struct {
 	idGenerator   service.IDGenerator
+	clock         service.Clock
 	tokenLifetime time.Duration
 }
 
-func NewRTFactory(idGenerator service.IDGenerator, tokenLifeTime time.Duration) *RefreshTokenFactory {
-	return &RefreshTokenFactory{idGenerator: idGenerator, tokenLifetime: tokenLifeTime}
+func NewRTFactory(idGenerator service.IDGenerator, clock service.Clock, tokenLifeTime time.Duration) *RefreshTokenFactory {
+	return &RefreshTokenFactory{idGenerator: idGenerator, clock: clock, tokenLifetime: tokenLifeTime}
 }
+
 func (f *RefreshTokenFactory) NewToken(userID entity.UserID) *entity.RefreshToken {
-	return entity.NewRefreshToken(
-		entity.RefreshTokenID(f.idGenerator.Generate()),
-		userID,
-		time.Now().Add(f.tokenLifetime),
-		nil,
-	)
+	return &entity.RefreshToken{
+		ID:        entity.RefreshTokenID(f.idGenerator.Generate()),
+		UserID:    userID,
+		ExpiredAt: f.clock.Now().Add(f.tokenLifetime),
+	}
 }
-func (f *RefreshTokenFactory) Restore(id string, userID string, expiredAt time.Time, revoked_at *time.Time) *entity.RefreshToken {
+
+func (f *RefreshTokenFactory) Restore(id string, userID string, expiredAt time.Time, rotatedAt *time.Time, revokedAt *time.Time) *entity.RefreshToken {
 	return &entity.RefreshToken{
 		ID:        entity.RefreshTokenID(id),
 		UserID:    entity.UserID(userID),
 		ExpiredAt: expiredAt,
-		RevokedAt: revoked_at,
+		RotatedAt: rotatedAt,
+		RevokedAt: revokedAt,
 	}
 }

@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 	entity "task-trail/internal/domain/entity"
+	time "time"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -55,19 +56,48 @@ func (mr *MockRefreshTokenRepositoryMockRecorder) Create(ctx, arg1 any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRefreshTokenRepository)(nil).Create), ctx, arg1)
 }
 
-// GetUserToken mocks base method.
-func (m *MockRefreshTokenRepository) GetUserToken(ctx context.Context, tokenID entity.RefreshTokenID, userID entity.UserID) (*entity.RefreshToken, error) {
+// DeleteExpired mocks base method.
+func (m *MockRefreshTokenRepository) DeleteExpired(ctx context.Context, now time.Time) (int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserToken", ctx, tokenID, userID)
+	ret := m.ctrl.Call(m, "DeleteExpired", ctx, now)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteExpired indicates an expected call of DeleteExpired.
+func (mr *MockRefreshTokenRepositoryMockRecorder) DeleteExpired(ctx, now any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExpired", reflect.TypeOf((*MockRefreshTokenRepository)(nil).DeleteExpired), ctx, now)
+}
+
+// GetForUpdate mocks base method.
+func (m *MockRefreshTokenRepository) GetForUpdate(ctx context.Context, tokenID entity.RefreshTokenID, userID entity.UserID) (*entity.RefreshToken, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetForUpdate", ctx, tokenID, userID)
 	ret0, _ := ret[0].(*entity.RefreshToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserToken indicates an expected call of GetUserToken.
-func (mr *MockRefreshTokenRepositoryMockRecorder) GetUserToken(ctx, tokenID, userID any) *gomock.Call {
+// GetForUpdate indicates an expected call of GetForUpdate.
+func (mr *MockRefreshTokenRepositoryMockRecorder) GetForUpdate(ctx, tokenID, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserToken", reflect.TypeOf((*MockRefreshTokenRepository)(nil).GetUserToken), ctx, tokenID, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetForUpdate", reflect.TypeOf((*MockRefreshTokenRepository)(nil).GetForUpdate), ctx, tokenID, userID)
+}
+
+// RevokeAll mocks base method.
+func (m *MockRefreshTokenRepository) RevokeAll(ctx context.Context, userID entity.UserID, now time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RevokeAll", ctx, userID, now)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RevokeAll indicates an expected call of RevokeAll.
+func (mr *MockRefreshTokenRepositoryMockRecorder) RevokeAll(ctx, userID, now any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RevokeAll", reflect.TypeOf((*MockRefreshTokenRepository)(nil).RevokeAll), ctx, userID, now)
 }
 
 // Update mocks base method.

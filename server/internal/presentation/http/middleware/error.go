@@ -32,29 +32,22 @@ func NewError(l logger.Logger, m *contextmanager.GinContextManager) gin.HandlerF
 // apiErrorFor — что отвечает API на ошибку домена. Ошибки клиента пишутся в лог как
 // предупреждения, всё, чего нет в таблице, — как ошибка сервера с ответом INTERNAL.
 var apiErrorFor = map[domain.ErrorCode]response.ApiError{
-	domain.PasswordNotSet: {Status: http.StatusUnauthorized, Code: response.CodeInvalidCredentials, Message: "неверная почта или пароль"},
-	domain.UserUnverified: {Status: http.StatusUnauthorized, Code: response.CodeInvalidCredentials, Message: "неверная почта или пароль"},
-	domain.WrongPassword:  {Status: http.StatusUnauthorized, Code: response.CodeInvalidCredentials, Message: "неверная почта или пароль"},
-	domain.WrongEmail:     {Status: http.StatusUnauthorized, Code: response.CodeInvalidCredentials, Message: "неверная почта или пароль"},
-
-	domain.RefreshTokenAlreadyUsed: {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
-	domain.RefreshTokenNotFound:    {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "нет сессии"},
-	domain.RefreshTokenWrong:       {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
-	domain.RefreshTokenExpired:     {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия истекла"},
-	domain.AccessTokenNotFound:     {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "нужен вход"},
-	domain.AccessTokenWrong:        {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
-	domain.AccessTokenExpired:      {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия истекла"},
-	domain.ParseTokenFailed:        {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
-
-	domain.ConfirmationTokenWrong:       {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "ссылка неверна"},
-	domain.ConfirmationTokenAlreadyUsed: {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "ссылка уже использована"},
-	domain.ConfirmationTokenExpired:     {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "ссылка истекла"},
-	domain.UserAlreadyVerified:          {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "почта уже подтверждена"},
-
-	// Регистрация открыта только для первого аккаунта (ADR-0016): занятая почта значит, что он уже есть
-	domain.EmailAlreadyExists: {Status: http.StatusConflict, Code: response.CodeRegistrationClosed, Message: "регистрация закрыта"},
+	domain.InvalidCredentials: {Status: http.StatusUnauthorized, Code: response.CodeInvalidCredentials, Message: "неверная почта или пароль"},
+	domain.WrongPassword:      {Status: http.StatusUnprocessableEntity, Code: response.CodeWrongPassword, Message: "неверный текущий пароль"},
 	domain.PasswordSameAsOld:  {Status: http.StatusUnprocessableEntity, Code: response.CodePasswordSameAsOld, Message: "новый пароль совпадает с текущим"},
-	domain.EntityNotFound:     {Status: http.StatusNotFound, Code: response.CodeNotFound, Message: "не найдено"},
+	domain.RegistrationClosed: {Status: http.StatusConflict, Code: response.CodeRegistrationClosed, Message: "регистрация закрыта: первый аккаунт уже создан"},
+
+	domain.RefreshTokenNotFound: {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "нет сессии"},
+	domain.RefreshTokenWrong:    {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
+	domain.RefreshTokenRevoked:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия закрыта"},
+	domain.RefreshTokenReused:   {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
+	domain.RefreshTokenExpired:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия истекла"},
+	domain.AccessTokenNotFound:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "нужен вход"},
+	domain.AccessTokenWrong:     {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
+	domain.AccessTokenExpired:   {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия истекла"},
+	domain.ParseTokenFailed:     {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
+
+	domain.EntityNotFound: {Status: http.StatusNotFound, Code: response.CodeNotFound, Message: "не найдено"},
 }
 
 func toAPIError(err error, l logger.Logger, reqID string) *response.ApiError {
@@ -129,6 +122,10 @@ func messageForTag(fe validator.FieldError) string {
 		return fmt.Sprintf("не короче %s", fe.Param())
 	case "max":
 		return fmt.Sprintf("не длиннее %s", fe.Param())
+	case "maxbytes":
+		return fmt.Sprintf("не длиннее %s байт в UTF-8", fe.Param())
+	case "httpurl":
+		return "нужен адрес http(s) без параметров"
 	default:
 		return "недопустимое значение"
 	}

@@ -1,20 +1,21 @@
 package app
 
 import (
+	"context"
 	"os"
 	"task-trail/config"
 	"task-trail/internal/application/service/access"
-	"task-trail/internal/customerrors"
 	"task-trail/internal/domain/factory"
+	"task-trail/internal/domain/service"
 	"task-trail/internal/infrastructure/repository/persistent"
 	"task-trail/internal/infrastructure/service/clock"
 	"task-trail/internal/infrastructure/service/id"
 	"task-trail/internal/infrastructure/service/keys"
-	notification "task-trail/internal/infrastructure/service/notification/access"
-	"task-trail/internal/infrastructure/service/notification/provider/email"
 	"task-trail/internal/infrastructure/service/password"
+	"task-trail/internal/infrastructure/service/secretbox"
 	"task-trail/internal/infrastructure/service/token"
 	"task-trail/internal/pkg/contextmanager"
+	"task-trail/internal/pkg/logger"
 	slogger "task-trail/internal/pkg/logger/slog"
 	"task-trail/internal/pkg/postgres"
 	"task-trail/internal/presentation/http"
@@ -23,20 +24,80 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Значения, которые не настраиваются (ADR-0015): администратору менять их незачем,
 // а переменная окружения на каждое — лишняя настройка при установке.
 const (
-	accessTokenLifetime       = 15 * time.Minute
-	refreshTokenLifetime      = 30 * 24 * time.Hour
-	confirmationTokenLifetime = time.Hour
-	accessTokenCookie         = "at"
-	refreshTokenCookie        = "rt"
-	tokenIssuer               = "tasktrail"
-	pgMaxPoolSize             = 10
-	passwordHashCost          = 12
+	accessTokenLifetime  = 15 * time.Minute
+	refreshTokenLifetime = 30 * 24 * time.Hour
+	tokenCleanupInterval = time.Hour
+	accessTokenCookie    = "at"
+	refreshTokenCookie   = "rt"
+	tokenIssuer          = "tasktrail"
+	pgMaxPoolSize        = 10
+	passwordHashCost     = 12
 )
+
+// Server — HTTP-движок с модулями. Run запускает его, тесты обработчиков собирают так же.
+type Server struct {
+	Engine *gin.Engine
+	Access *access.AccessModule
+}
+
+type options struct {
+	passwordHashCost int
+}
+
+type Option func(*options)
+
+// WithPasswordHashCost задаёт стоимость bcrypt. Только для тестов: с боевой стоимостью
+// каждый вход в тесте занимает доли секунды.
+func WithPasswordHashCost(cost int) Option {
+	return func(o *options) { o.passwordHashCost = cost }
+}
+
+// New собирает сервер на базе pool. Часы clk — системные в Run и фиксированные в тестах (ADR-0022).
+func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Logger, opts ...Option) (*Server, error) {
+	o := options{passwordHashCost: passwordHashCost}
+	for _, opt := range opts {
+		opt(&o)
+	}
+	idGen := id.New()
+	box, err := secretbox.New(keys.Derive(cfg.App.Secret, keys.SecretBox))
+	if err != nil {
+		return nil, err
+	}
+	accessTokenService := token.New(
+		keys.Derive(cfg.App.Secret, keys.AccessToken),
+		accessTokenLifetime,
+		keys.Derive(cfg.App.Secret, keys.RefreshToken),
+		tokenIssuer,
+		idGen,
+		clk,
+	)
+	contextManager := contextmanager.NewGin(accessTokenCookie, refreshTokenCookie, cfg.App.RootPath, clk)
+
+	userFactory := factory.NewUserFactory(idGen, clk)
+	rtFactory := factory.NewRTFactory(idGen, clk, refreshTokenLifetime)
+	accessModule := access.New(access.Deps{
+		TxManager:           persistent.NewPgTxManager(pool),
+		Clock:               clk,
+		UserRepo:            persistent.NewUserRepo(pool, userFactory),
+		UserFactory:         userFactory,
+		PasswordService:     password.New(o.passwordHashCost),
+		RefreshTokenFactory: rtFactory,
+		RefreshTokenRepo:    persistent.NewRefreshTokenRepo(pool, rtFactory),
+		AccessTokenService:  accessTokenService,
+		SettingsRepo:        persistent.NewSettingsRepo(pool, box),
+	})
+
+	engine := gin.New()
+	middleware.Setup(engine, idGen, contextManager, l)
+	http.NewRouter(engine, cfg, contextManager, middleware.NewAuth(accessTokenService, contextManager), accessModule)
+	return &Server{Engine: engine, Access: accessModule}, nil
+}
 
 func Run(cfg *config.Config) {
 	logger := slogger.New(cfg.App.Debug, true)
@@ -52,40 +113,33 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	// init services
-	pwdService := password.New(passwordHashCost)
-	idGen := id.New()
-	systemClock := clock.New()
-	accessTokenService := token.New(
-		keys.Derive(cfg.App.Secret, keys.AccessToken),
-		accessTokenLifetime,
-		keys.Derive(cfg.App.Secret, keys.RefreshToken),
-		tokenIssuer,
-		idGen,
-		systemClock,
-	)
-	errHandler := customerrors.NewErrHander()
-	contextManager := contextmanager.NewGin(accessTokenCookie, refreshTokenCookie, systemClock)
-	smtp := email.New(logger, cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.User, cfg.SMTP.Password, cfg.SMTP.Sender)
-	accessNotifier := notification.NewSmtpAccessNotifier(smtp, idGen, cfg.Frontend.VerifyURL, cfg.Frontend.ResetPasswordURL)
-
-	// FACTORIES
-	userFactory := factory.NewUserFactory(idGen)
-	rtFactory := factory.NewRTFactory(idGen, refreshTokenLifetime)
-	ctFactory := factory.NewCTFactory(idGen, confirmationTokenLifetime)
-	txManager := persistent.NewPgTxManager(pg.Pool)
-	// REPOSITORIES
-	userRepo := persistent.NewUserRepo(pg.Pool, userFactory)
-	ctRepo := persistent.NewConfirmationTokenRepo(pg.Pool, ctFactory)
-	rtRepo := persistent.NewRefreshTokenRepo(pg.Pool, rtFactory)
-	accesModule := access.New(txManager, userRepo, userFactory, pwdService, ctFactory, ctRepo, accessNotifier, rtFactory, rtRepo, accessTokenService)
-
-	httpServer := gin.New()
-	middleware.Setup(httpServer, idGen, contextManager, logger1)
-	http.NewRouter(httpServer, cfg, contextManager, errHandler, middleware.NewAuth(accessTokenService, contextManager), accesModule)
-	// TODO(этап 1): периодически удалять просроченные и отозванные refresh- и confirmation-токены.
-	if err := httpServer.Run(":" + cfg.App.Port); err != nil {
+	server, err := New(pg.Pool, cfg, clock.New(), logger1)
+	if err != nil {
+		logger.Error("server setup failed", "error", err.Error())
+		os.Exit(1)
+	}
+	go cleanupTokens(context.Background(), server.Access.Cleanup, logger, tokenCleanupInterval)
+	if err := server.Engine.Run(":" + cfg.App.Port); err != nil {
 		logger.Error("http server start failed", "error", err.Error())
 		os.Exit(1)
+	}
+}
+
+// cleanupTokens удаляет истёкшие refresh-токены при запуске и затем раз в interval,
+// пока ctx не отменён.
+func cleanupTokens(ctx context.Context, cleanup *access.CleanupService, l logger.Logger, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		if deleted, err := cleanup.Execute(ctx); err != nil {
+			l.Error("token cleanup failed", "error", err.Error())
+		} else if deleted > 0 {
+			l.Info("expired tokens deleted", "count", deleted)
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
 	}
 }

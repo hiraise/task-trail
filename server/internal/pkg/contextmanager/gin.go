@@ -8,44 +8,58 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Gin interface {
-	DeleteAccessToken(c *gin.Context, name string)
-	DeleteTokens(c *gin.Context, refreshPath string)
-	SetTokens(c *gin.Context, at service.IssuedToken, rt service.IssuedToken, refreshPath string)
-	SetUserID(c *gin.Context, userID string)
-	GetUserID(c *gin.Context) (string, error)
-	SetRequestID(c *gin.Context)
-	GetRequestID(c *gin.Context) string
-}
+// Пути cookie сессии — от префикса API (контракт): access-токен уходит во весь API,
+// refresh-токен — только эндпоинтам доступа.
+const (
+	accessTokenPath  = "/"
+	refreshTokenPath = "/v1/auth/"
+	// legacyRefreshTokenPath — путь cookie refresh-токена у старого API. Такая cookie
+	// с более точным путём уходит первой и заслоняет новую, поэтому её удаляем.
+	legacyRefreshTokenPath = "/v1/auth/refresh"
+)
 
 type GinContextManager struct {
-	ATName string
-	RTName string
-	clock  service.Clock
+	ATName       string
+	RTName       string
+	clock        service.Clock
+	atPath       string
+	rtPath       string
+	legacyRTPath string
 }
 
-func NewGin(atName string, rtName string, clock service.Clock) *GinContextManager {
-	return &GinContextManager{ATName: atName, RTName: rtName, clock: clock}
+// NewGin принимает префикс API (APP_ROOT_PATH): от него считаются пути cookie.
+func NewGin(atName string, rtName string, rootPath string, clock service.Clock) *GinContextManager {
+	return &GinContextManager{
+		ATName:       atName,
+		RTName:       rtName,
+		clock:        clock,
+		atPath:       rootPath + accessTokenPath,
+		rtPath:       rootPath + refreshTokenPath,
+		legacyRTPath: rootPath + legacyRefreshTokenPath,
+	}
 }
 
-func (m *GinContextManager) DeleteAccessToken(c *gin.Context, name string) {
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(name, "", -1, "/", "", true, true)
+func (m *GinContextManager) DeleteAccessToken(c *gin.Context) {
+	m.setCookie(c, m.ATName, "", -1, m.atPath)
 }
 
-func (m *GinContextManager) DeleteTokens(c *gin.Context, refreshPath string) {
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(m.ATName, "", -1, "/", "", true, true)
-	c.SetCookie(m.RTName, "", -1, refreshPath, "", true, true)
+// DeleteTokens закрывает сессию в браузере: удаляет обе cookie и cookie старого API.
+func (m *GinContextManager) DeleteTokens(c *gin.Context) {
+	m.setCookie(c, m.ATName, "", -1, m.atPath)
+	m.setCookie(c, m.RTName, "", -1, m.rtPath)
+	m.setCookie(c, m.RTName, "", -1, m.legacyRTPath)
 }
 
-func (m *GinContextManager) SetTokens(c *gin.Context, at service.IssuedToken, rt service.IssuedToken, refreshPath string) {
-	c.SetSameSite(http.SameSiteLaxMode)
+func (m *GinContextManager) SetTokens(c *gin.Context, at service.IssuedToken, rt service.IssuedToken) {
 	now := m.clock.Now()
-	atTime := int(at.ExpiredAt.Sub(now).Seconds())
-	rtTime := int(rt.ExpiredAt.Sub(now).Seconds())
-	c.SetCookie(m.ATName, at.Token, atTime, "/", "", true, true)
-	c.SetCookie(m.RTName, rt.Token, rtTime, refreshPath, "", true, true)
+	m.setCookie(c, m.ATName, at.Token, int(at.ExpiredAt.Sub(now).Seconds()), m.atPath)
+	m.setCookie(c, m.RTName, rt.Token, int(rt.ExpiredAt.Sub(now).Seconds()), m.rtPath)
+	m.setCookie(c, m.RTName, "", -1, m.legacyRTPath)
+}
+
+func (m *GinContextManager) setCookie(c *gin.Context, name, value string, maxAge int, path string) {
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie(name, value, maxAge, path, "", true, true)
 }
 
 func (m *GinContextManager) SetUserID(c *gin.Context, userID string) {
@@ -69,5 +83,4 @@ func (m *GinContextManager) SetRequestID(c *gin.Context, id string) {
 // return request id or nil if not found
 func (m *GinContextManager) GetRequestID(c *gin.Context) string {
 	return c.Keys["reqID"].(string)
-
 }

@@ -2,134 +2,120 @@ package access_test
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"testing"
+	"time"
+
 	"task-trail/internal/application/service/access"
+	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/factory"
+	"task-trail/internal/domain/service"
 	"task-trail/internal/infrastructure/service/id"
+	"task-trail/test/clock"
 	"task-trail/test/mocks"
-	"time"
 
 	"go.uber.org/mock/gomock"
 )
 
-const TEST_USER_ID = "0c5c37ac-3ef6-4b2d-9e2b-547f1fd2378c"
-const TEST_PASSWORD = "password"
-const TEST_PASSWORD_HASH = "$2a$12$BformSW810v/6JNmJJchqO4tnE4gsqgvx/U2oEwI9TW541zRfZR4m"
-const TEST_EMAIL = "test@test.test"
-const RT_LIFETIME = time.Duration(10 * time.Minute)
+const (
+	userID       = entity.UserID("0c5c37ac-3ef6-4b2d-9e2b-547f1fd2378c")
+	tokenID      = entity.RefreshTokenID("8a3e1f40-2b8c-4d6e-9f1a-3c5b7d9e0f12")
+	email        = entity.Email("ivan@example.com")
+	passwordHash = "$2a$12$hash"
+	rtLifetime   = 30 * 24 * time.Hour
+)
 
-type testDeps struct {
-	txManager             mocks.MockTxManager
-	userRepo              mocks.MockUserRepository
-	refreshTokenRepo      mocks.MockRefreshTokenRepository
-	confirmationTokenRepo mocks.MockConfirmationTokenRepository
-	notifier              mocks.MockAccessNotifier
-	passwordService       mocks.MockPasswordService
-	accessTokenService    mocks.MockAccessTokenService
-	idGenerator           *id.UUIDGenerator
+var now = time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)
+
+type deps struct {
+	tx        *mocks.MockTxManager
+	users     *mocks.MockUserRepository
+	tokens    *mocks.MockRefreshTokenRepository
+	settings  *mocks.MockSettingsRepository
+	passwords *mocks.MockPasswordService
+	jwt       *mocks.MockAccessTokenService
 }
 
-func MockUseCase(ctrl *gomock.Controller) (*access.AccessModule, *testDeps) {
-	refreshTokenRepo := mocks.NewMockRefreshTokenRepository(ctrl)
-	confirmationTokenRepo := mocks.NewMockConfirmationTokenRepository(ctrl)
-	userRepo := mocks.NewMockUserRepository(ctrl)
-	txManager := mocks.NewMockTxManager(ctrl)
-	notifier := mocks.NewMockAccessNotifier(ctrl)
-	accessTokenService := mocks.NewMockAccessTokenService(ctrl)
-	passwordService := mocks.NewMockPasswordService(ctrl)
-	idGenerator := id.New()
-
-	userFactory := factory.NewUserFactory(idGenerator)
-	confirmationTokenFactory := factory.NewCTFactory(idGenerator, RT_LIFETIME)
-	refreshTokenFactory := factory.NewRTFactory(idGenerator, RT_LIFETIME)
-	module := access.New(
-		txManager,
-		userRepo,
-		userFactory,
-		passwordService,
-		confirmationTokenFactory,
-		confirmationTokenRepo,
-		notifier,
-		refreshTokenFactory,
-		refreshTokenRepo,
-		accessTokenService)
-
-	deps := &testDeps{
-		txManager:             *txManager,
-		userRepo:              *userRepo,
-		refreshTokenRepo:      *refreshTokenRepo,
-		confirmationTokenRepo: *confirmationTokenRepo,
-		notifier:              *notifier,
-		passwordService:       *passwordService,
-		accessTokenService:    *accessTokenService,
-		idGenerator:           idGenerator,
+func newModule(t *testing.T) (*access.AccessModule, *deps) {
+	ctrl := gomock.NewController(t)
+	d := &deps{
+		tx:        mocks.NewMockTxManager(ctrl),
+		users:     mocks.NewMockUserRepository(ctrl),
+		tokens:    mocks.NewMockRefreshTokenRepository(ctrl),
+		settings:  mocks.NewMockSettingsRepository(ctrl),
+		passwords: mocks.NewMockPasswordService(ctrl),
+		jwt:       mocks.NewMockAccessTokenService(ctrl),
 	}
-	return module, deps
+	clk := clock.New(now)
+	idGen := id.New()
+	userFactory := factory.NewUserFactory(idGen, clk)
+	rtFactory := factory.NewRTFactory(idGen, clk, rtLifetime)
+	module := access.New(access.Deps{
+		TxManager:           d.tx,
+		Clock:               clk,
+		UserRepo:            d.users,
+		UserFactory:         userFactory,
+		PasswordService:     d.passwords,
+		RefreshTokenFactory: rtFactory,
+		RefreshTokenRepo:    d.tokens,
+		AccessTokenService:  d.jwt,
+		SettingsRepo:        d.settings,
+	})
+	return module, d
 }
 
-func mockTx(ctx context.Context, txManager mocks.MockTxManager) {
-	txManager.EXPECT().DoWithTx(ctx, gomock.Any()).
-		DoAndReturn(
-			func(ctx context.Context, f func(ctx context.Context) error) error {
-				return f(ctx)
-			},
-		)
+type txKey struct{}
+
+// expectTx выполняет сценарий транзакции с пометкой в контексте: по ней видно,
+// какие вызовы шли внутри транзакции (inTx), а какие — после неё (outsideTx).
+func (d *deps) expectTx() {
+	d.tx.EXPECT().DoWithTx(gomock.Any(), gomock.Any()).DoAndReturn(
+		func(ctx context.Context, fn func(ctx context.Context) error) error {
+			return fn(context.WithValue(ctx, txKey{}, true))
+		})
 }
 
-func getTestUser(verified bool, withPassword bool) *entity.UserAccount {
-	var hash *string
-	if withPassword {
-		h := TEST_PASSWORD_HASH
-		hash = &h
-	}
-	user := &entity.UserAccount{ID: entity.UserID(TEST_USER_ID), Email: entity.Email(TEST_EMAIL), PasswordHash: hash}
-	if verified {
-		t := time.Now()
-		user.VerifiedAt = &t
-	}
-	return user
+type txMatcher bool
+
+func (m txMatcher) Matches(x any) bool {
+	ctx, ok := x.(context.Context)
+	return ok && (ctx.Value(txKey{}) != nil) == bool(m)
 }
 
-func getTestRefreshToken(expired bool, used bool) *entity.RefreshToken {
-	now := time.Now()
-	var expiredAt time.Time
-	if expired {
-		expiredAt = now.Add(-time.Hour)
-	} else {
-		expiredAt = now.Add(RT_LIFETIME)
-	}
-
-	var revokedAt *time.Time
-	if used {
-		revokedAt = &now
-	}
-
-	return &entity.RefreshToken{
-		ID:        entity.RefreshTokenID("rtID"),
-		UserID:    entity.UserID(TEST_USER_ID),
-		ExpiredAt: expiredAt,
-		RevokedAt: revokedAt,
-	}
+func (m txMatcher) String() string {
+	return fmt.Sprintf("контекст внутри транзакции: %v", bool(m))
 }
 
-func getTestConfirmationToken(purpose entity.ConfirmationTokenPurpose, expired bool, used bool) *entity.ConfirmationToken {
-	now := time.Now()
-	var expiredAt time.Time
-	if expired {
-		expiredAt = now.Add(-time.Hour)
-	} else {
-		expiredAt = now.Add(RT_LIFETIME)
-	}
+var (
+	inTx      = txMatcher(true)
+	outsideTx = txMatcher(false)
+)
 
-	var usedAt *time.Time
-	if used {
-		usedAt = &now
-	}
-	return &entity.ConfirmationToken{
-		ID:        entity.ConfirmationTokenID("ctID"),
-		UserID:    entity.UserID(TEST_USER_ID),
-		Purpose:   purpose,
-		ExpiredAt: expiredAt,
-		UsedAt:    usedAt,
+// expectSession — выдача новой пары токенов: новый refresh-токен пишется в базу.
+func (d *deps) expectSession() {
+	d.tokens.EXPECT().Create(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, rt *entity.RefreshToken) error {
+		if rt.UserID != userID || !rt.ExpiredAt.Equal(now.Add(rtLifetime)) || rt.RotatedAt != nil || rt.RevokedAt != nil {
+			return fmt.Errorf("новый refresh-токен: %+v", rt)
+		}
+		return nil
+	})
+	d.jwt.EXPECT().GenerateTokensPair(userID, gomock.Any()).Return(issued("access"), issued("refresh"), nil)
+}
+
+func issued(token string) service.IssuedToken {
+	return service.IssuedToken{Token: token, ExpiredAt: now}
+}
+
+func user() *entity.UserAccount {
+	return &entity.UserAccount{ID: userID, Email: email, PasswordHash: passwordHash}
+}
+
+func requireCode(t *testing.T, err error, code domain.ErrorCode) {
+	t.Helper()
+	var e *domain.DomainError
+	if !errors.As(err, &e) || e.Code != code {
+		t.Fatalf("ожидалась ошибка %s, получено %v", code, err)
 	}
 }

@@ -27,33 +27,17 @@ type PG struct {
 	ConnString string `env:"PG_CONNECTION_STRING,required,notEmpty"`
 }
 
-// Docs, SMTP и Frontend — временно, до переноса почты в настройки администратора
-// и Swagger под вход администратора (шаг 3 этапа 1, ADR-0014, ADR-0017).
+// Docs — временно, до Swagger под входом администратора (шаг 3.3 этапа 1, ADR-0014).
 type Docs struct {
 	Enabled  bool   `env:"SWAGGER_ENABLED" envDefault:"true"`
 	Login    string `env:"SWAGGER_LOGIN" envDefault:"root"`
 	Password string `env:"SWAGGER_PASSWORD" envDefault:"root"`
 }
 
-type SMTP struct {
-	Host     string `env:"SMTP_HOST,required"`
-	Port     int    `env:"SMTP_PORT,required"`
-	User     string `env:"SMTP_USER,required"`
-	Password string `env:"SMTP_PASSWORD,required"`
-	Sender   string `env:"SMTP_SENDER"`
-}
-
-type Frontend struct {
-	VerifyURL        string `env:"FRONTEND_VERIFY_URL,required"`
-	ResetPasswordURL string `env:"FRONTEND_RESET_PASSWORD_URL,required"`
-}
-
 type Config struct {
-	App      App
-	PG       PG
-	Docs     Docs
-	SMTP     SMTP
-	Frontend Frontend
+	App  App
+	PG   PG
+	Docs Docs
 }
 
 func New() (*Config, error) {
