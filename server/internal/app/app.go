@@ -55,12 +55,6 @@ func Run(cfg *config.Config) {
 	errHandler := customerrors.NewErrHander()
 	contextManager := contextmanager.NewGin(cfg.Auth.ATName, cfg.Auth.RTName)
 	smtp := email.New(logger, cfg.SMTP.Host, cfg.SMTP.Port, cfg.SMTP.User, cfg.SMTP.Password, cfg.SMTP.Sender)
-	// TODO: storage selector! if s3 diabled then use local storage
-	// storage, err := s3.New(cfg.S3.AccessKey, cfg.S3.SecretKey, cfg.S3.UploadURL, cfg.S3.PublicURL, cfg.S3.Bucket)
-	// if err != nil {
-	// 	logger.Error("s3 storage initialization error", "error", err.Error())
-	// 	os.Exit(1)
-	// }
 	accessNotifier := notification.NewSmtpAccessNotifier(smtp, idGen, cfg.Frontend.VerifyURL, cfg.Frontend.ResetPasswordURL)
 
 	// FACTORIES
