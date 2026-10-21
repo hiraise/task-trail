@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.titleWapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title > span {
+  white-space: pre;
+}
+
+.taskDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100vh;
+  background: var(--bg-primary-contrast);
+}
+
+.header {
+  background-color: var(--bg-primary);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding-top: 32px;
+  padding-bottom: 16px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  background-color: var(--bg-primary);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+  padding-left: 20px;
+  padding-right: 20px;
+}

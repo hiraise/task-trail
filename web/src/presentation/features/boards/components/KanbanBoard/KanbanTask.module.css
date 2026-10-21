@@ -1,0 +1,51 @@
+/* Styles for KanbanTaskItem */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background-color: var(--bg-secondary-2);
+  border-left: 2px solid var(--border-accent);
+
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  touch-action: none;
+}
+
+.taskId {
+  color: var(--text-secondary);
+}
+
+.container > span {
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 400;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* Styles for CreateTask */
+.createTaskContainer {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0px;
+  opacity: 55%;
+}
+
+.createTaskContainer:hover {
+  cursor: pointer;
+}
+
+.createTaskContainer > span {
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500px;
+}

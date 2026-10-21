@@ -1,0 +1,51 @@
+.taskItem {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease-in-out, scale 0.2s ease-in-out;
+}
+
+.taskItem:hover {
+  background-color: var(--grey);
+  cursor: pointer;
+  border-radius: 12px;
+}
+
+.taskItem:active {
+  scale: 0.98;
+}
+
+.taskWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.description {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.9);
+  opacity: 0.6;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--grey);
+  flex-shrink: 0;
+}

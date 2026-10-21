@@ -1,0 +1,34 @@
+import type { ComponentType, SVGProps } from "react";
+
+import { ASSETS } from "@/shared/config/assets";
+import { ROUTES } from "@/shared/config/routes";
+import { TEXTS } from "@/shared/locales/texts";
+
+export interface NavItem {
+  href: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  label: string;
+}
+
+export const navItems: NavItem[] = [
+  {
+    href: ROUTES.projects,
+    icon: ASSETS.icons.project,
+    label: TEXTS.navBar.projects,
+  },
+  {
+    href: ROUTES.boards,
+    icon: ASSETS.icons.board,
+    label: TEXTS.navBar.boards,
+  },
+  {
+    href: ROUTES.tasks,
+    icon: ASSETS.icons.task,
+    label: TEXTS.navBar.tasks,
+  },
+  {
+    href: ROUTES.profile,
+    icon: ASSETS.icons.profile,
+    label: TEXTS.navBar.profile,
+  },
+];

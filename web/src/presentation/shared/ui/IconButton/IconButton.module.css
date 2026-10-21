@@ -1,0 +1,44 @@
+.iconButton {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  cursor: pointer;
+  color: var(--icon-button-color, var(--icon-grey));
+}
+
+.iconButton:hover {
+  color: var(--icon-button-hover-color, var(--foreground));
+}
+
+/* Primary variant */
+.iconButton--primary {
+  --icon-button-color: var(--icon-grey);
+  --icon-button-hover-color: var(--foreground);
+}
+
+/* Ghost variant */
+.iconButton--ghost {
+  --icon-button-color: var(--background);
+  --icon-button-hover-color: var(--icon-grey);
+}
+
+/* Danger variant */
+.iconButton--danger {
+  --icon-button-color: var(--background);
+  --icon-button-hover-color: #e81818;
+}
+
+.iconButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Hover only for capable devices */
+@media (hover: hover) and (pointer: fine) {
+  .iconButton:not(:disabled):hover {
+    cursor: pointer;
+  }
+}

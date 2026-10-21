@@ -1,0 +1,16 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  background-color: var(--bg-secondary);
+  padding: 20px;
+  width: 100vw;
+  height: 100vh;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}

@@ -1,0 +1,99 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+
+import { toast } from "sonner";
+
+import type { Task } from "@/domain/models/Task";
+import type { ProjectId, TaskId } from "@/domain/types";
+import { logger } from "@/infrastructure/config/clientLogger";
+import { taskRepository } from "@/infrastructure/repositories";
+import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+
+interface DeleteTaskContext {
+  previousTaskDetails: Task | undefined;
+  previousTasks: Task[] | undefined;
+  taskId: TaskId;
+  projectId: ProjectId;
+}
+
+/**
+ * Custom hook for deleting a task with optimistic updates and error handling.
+ *
+ * Implements optimistic UI updates by immediately removing the task from the cache
+ * before the server request completes. If the deletion fails, the previous state
+ * is restored.
+ *
+ * @param projectId - The ID of the project containing the task to delete
+ *
+ * @returns A mutation object from React Query with the following behavior:
+ * - `mutationFn`: Calls the task repository to delete the task
+ * - `onMutate`: Cancels related queries, stores previous state, and optimistically removes the task
+ * - `onSuccess`: Logs success, shows success toast, and redirects to project page after 300ms delay
+ * - `onError`: Restores previous state, logs error details, and shows error toast
+ *
+ * @example
+ * ```typescript
+ * const deleteTask = useDeleteTask(projectId);
+ * deleteTask.mutate(taskId);
+ * ```
+ */
+export function useDeleteTask(projectId: ProjectId) {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation<void, Error, TaskId, DeleteTaskContext>({
+    mutationFn: (taskId) => taskRepository.delete(taskId),
+    onMutate: async (taskId) => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task.all });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task.detail(taskId) });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.project.tasks(projectId) });
+
+      const previousTaskDetails = queryClient.getQueryData<Task>(QUERY_KEYS.task.detail(taskId));
+      const previousTasks = queryClient.getQueryData<Task[]>(QUERY_KEYS.project.tasks(projectId));
+
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.task.detail(taskId) });
+
+      queryClient.setQueryData<Task[]>(QUERY_KEYS.project.tasks(projectId), (old) =>
+        old?.filter((task) => task.id !== taskId),
+      );
+
+      return {
+        previousTaskDetails,
+        previousTasks,
+        taskId,
+        projectId,
+      };
+    },
+    onSuccess: async (_, taskId) => {
+      logger.info("Task deleted successfully", { taskId, projectId });
+
+      toast.success("Task deleted successfully");
+
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      navigate({ to: "/projects/$id", params: { id: projectId }, replace: true });
+    },
+    onError: (error, taskId, context) => {
+      if (context?.previousTaskDetails) {
+        queryClient.setQueryData(
+          QUERY_KEYS.task.detail(context.taskId),
+          context.previousTaskDetails,
+        );
+      }
+      if (context?.previousTasks) {
+        queryClient.setQueryData(
+          QUERY_KEYS.project.tasks(context.projectId),
+          context.previousTasks,
+        );
+      }
+
+      logger.error("Failed to delete task", {
+        taskId,
+        projectId: context?.projectId,
+        error,
+        timestamp: new Date().toISOString(),
+      });
+
+      toast.error(`Failed to delete task: ${error.message}`);
+    },
+  });
+}

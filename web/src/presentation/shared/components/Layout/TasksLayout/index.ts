@@ -1,0 +1,1 @@
+export { TasksDesktopTemplate } from "./TasksDesktopTemplate";

@@ -1,0 +1,28 @@
+.topBar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--bg-primary);
+  flex: 1;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  border: none;
+  border-radius: 12px;
+  width: 54px;
+  height: 54px;
+  color: var(--icon-secondary);
+}

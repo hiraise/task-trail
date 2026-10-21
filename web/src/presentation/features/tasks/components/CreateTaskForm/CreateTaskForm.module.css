@@ -1,0 +1,12 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 16px;
+}
+
+.inputFields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

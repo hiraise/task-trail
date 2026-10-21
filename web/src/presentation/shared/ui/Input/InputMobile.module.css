@@ -1,0 +1,47 @@
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input {
+  border-radius: 8px;
+  height: 40px;
+  gap: 8px;
+  padding: 12px 6px 12px 12px;
+  background-color: var(--bg-secondary);
+  caret-color: var(--text-accent);
+  border: none;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:disabled {
+    color: var(--text-secondary);
+    cursor: not-allowed;
+  }
+
+  &:-webkit-autofill {
+    background-color: var(--bg-secondary) !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--bg-secondary) inset;
+    color: inherit;
+  }
+  &:-moz-autofill {
+    background-color: var(--bg-secondary) !important;
+    box-shadow: 0 0 0px 1000px var(--bg-secondary) inset;
+    color: inherit;
+  }
+}
+
+.input.error {
+  border: 1px solid var(--border-critical);
+}
+
+.suffixWrapper {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  right: 6px;
+  top: 4px;
+}

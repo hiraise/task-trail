@@ -1,0 +1,4 @@
+.error {
+  vertical-align: middle;
+  color: var(--text-critical);
+}
