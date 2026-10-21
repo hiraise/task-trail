@@ -64,6 +64,9 @@ export default defineConfig([
     // TanStack Router auto-generated route tree
     "src/routeTree.gen.ts",
 
+    // Типы API, сгенерированные из api/openapi.yaml (ADR-0020)
+    "src/infrastructure/api/generated/**",
+
     // Dependencies
     "node_modules/**",
 

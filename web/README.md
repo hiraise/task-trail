@@ -13,7 +13,7 @@ SPA на React и TypeScript: вход и регистрация, проекты
 
 ## Запуск
 
-Нужен Node.js 22. Команды — из папки `web/`:
+Нужен Node.js — версия в `engines` в `package.json`. Команды — из папки `web/`:
 
 ```bash
 npm ci            # зависимости по package-lock.json
@@ -21,6 +21,7 @@ npm run dev       # dev-сервер на http://localhost:5173 (3000 занят
 npm run lint      # ESLint
 npm run test:run  # тесты Vitest
 npm run build     # проверка типов и сборка в dist/
+npm run api:types # типы API из ../api/openapi.yaml — после каждого изменения контракта
 npm run preview   # просмотр собранной версии
 ```
 
@@ -42,7 +43,7 @@ src/
 ├── routes/              # маршруты TanStack Router: _main/ — после входа, auth/ — вход и регистрация
 ├── application/         # сценарии, DTO и payload-ы запросов
 ├── domain/              # модели, интерфейсы репозиториев, типы
-├── infrastructure/      # HTTP-клиент, адреса API, репозитории API
+├── infrastructure/      # HTTP-клиент, адреса API, репозитории API; api/generated — типы из контракта
 ├── presentation/
 │   ├── app/             # провайдеры и компоненты уровня приложения
 │   ├── features/        # экраны и компоненты по разделам: auth, boards, projects, tasks, user

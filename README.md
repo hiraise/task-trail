@@ -20,12 +20,12 @@
 
 ## Разработка
 
-Нужны Go (версия — в `server/go.mod`), Node.js 22 и Docker.
+Нужны Go (версия — в `server/go.mod`), Node.js (версия — `engines` в `web/package.json`) и Docker.
 
 ```bash
 scripts/dev.sh check    # всё, что проверяет CI: правила, сервер, веб
 scripts/dev.sh server   # только сервер: vet, тесты, golangci-lint
-scripts/dev.sh web      # только веб: линтер, тесты, типы и сборка
+scripts/dev.sh web      # только веб: типы API из контракта, линтер, тесты, типы и сборка
 ```
 
 Переменные окружения сервера — в [server/README.md](server/README.md), веба — в [web/README.md](web/README.md).

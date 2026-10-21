@@ -72,8 +72,10 @@ ADR не нужен для исправления ошибок, правок и�
 
 - Задача не считается выполненной, пока не проходит `scripts/dev.sh check` и не зелёный CI
   в её PR ([ADR-0009](docs/adr/0009-checks-and-ci.md)). `check` — правила проекта
-  (`scripts/dev.sh rules`), сервер (vet, тесты, golangci-lint) и веб (линтер, тесты, типы, сборка).
-- Нужны Go (версия — `server/go.mod`), Node.js 22 и, для стенда и интеграционных тестов, Docker.
+  (`scripts/dev.sh rules`), сервер (vet, тесты с проверкой ответов по контракту, golangci-lint)
+  и веб (сверка типов API с контрактом, линтер, тесты, типы, сборка).
+- Нужны Go (версия — `server/go.mod`), Node.js (версия — `engines` в `web/package.json`) и, для стенда
+  и интеграционных тестов, Docker.
   Docker Desktop агент запускает сам, когда он нужен.
 - Локальный стенд — `scripts/dev.sh up|smoke|down|reset|logs`; что на нём работает и как войти —
   README, «Локальный стенд». После `up` прогони `smoke`.

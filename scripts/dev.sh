@@ -20,8 +20,8 @@ usage() {
 Проверки (их же запускает CI):
   check   всё сразу: rules, server, web
   rules   правила проекта: ADR, ссылки в документации, зависимости и экраны веба
-  server  сервер: go vet, тесты с -race, golangci-lint
-  web     веб: линтер, тесты, проверка типов и сборка
+  server  сервер: go vet, тесты с -race (и ответы по контракту), golangci-lint
+  web     веб: типы API из контракта, линтер, тесты, проверка типов и сборка
 
 Локальный стенд в Docker:
   up              собрать и запустить: веб, сервер, PostgreSQL, перехватчик почты
@@ -121,6 +121,15 @@ ensure_web_deps() (
 web() (
 	ensure_web_deps
 	cd "$ROOT/web"
+	echo "== web: типы API совпадают с контрактом (ADR-0020)"
+	local generated=src/infrastructure/api/generated fresh
+	fresh=$(mktemp -d)
+	trap 'rm -rf "$fresh"' EXIT
+	API_TYPES_OUT="$fresh" npm run --silent api:types
+	if ! diff -r "$fresh" "$generated"; then
+		echo "Типы в web/$generated устарели: выполни в web/ npm run api:types и закоммить результат" >&2
+		exit 1
+	fi
 	echo "== web: линтер"
 	npm run lint
 	echo "== web: тесты"

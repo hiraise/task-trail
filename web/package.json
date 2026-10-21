@@ -3,13 +3,17 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "api:types": "openapi-ts --silent"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -34,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@hey-api/openapi-ts": "0.99.0",
     "@tanstack/react-query-devtools": "^5.100.9",
     "@tanstack/react-router-devtools": "^1.166.13",
     "@tanstack/router-plugin": "^1.167.35",

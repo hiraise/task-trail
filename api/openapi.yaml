@@ -8,7 +8,7 @@ info:
   description: |
     Контракт API TaskTrail — источник истины для сервера и веба (ADR-0005).
     Общие правила — ADR-0018: ID — строки UUID, время — ISO 8601 в UTC, пустое значение — `null`,
-    изменение отвечает изменённым ресурсом, ошибка — `Error` с кодом из `ErrorCode`.
+    изменение отвечает изменённым ресурсом, ошибка — `ApiError` с кодом из `ErrorCode`.
 
     Сессия — две cookie с флагами HttpOnly, Secure и SameSite=Lax:
     `at` — access-токен, путь `/`; `rt` — refresh-токен, путь `/v1/auth/`, чтобы его получали
@@ -50,7 +50,7 @@ paths:
       summary: Настройки, нужные вебу до входа
       security: []
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Открыта ли регистрация и включена ли почта
           content:
@@ -73,7 +73,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/RegisterRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "201":
           description: Аккаунт создан, сессия открыта
           headers:
@@ -85,7 +85,7 @@ paths:
           description: "`REGISTRATION_CLOSED` — первый аккаунт уже создан"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/auth/login:
@@ -100,7 +100,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/Credentials" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Сессия открыта
           headers:
@@ -112,7 +112,7 @@ paths:
           description: "`INVALID_CREDENTIALS` — неверная почта или пароль"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/auth/refresh:
@@ -127,7 +127,7 @@ paths:
       security:
         - refreshCookie: []
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Сессия обновлена
           headers:
@@ -143,7 +143,7 @@ paths:
       security:
         - refreshCookie: []
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Сессия закрыта
           headers:
@@ -155,7 +155,7 @@ paths:
       operationId: checkSession
       summary: Проверить, что сессия действует
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Пользователь вошёл
         "401": { $ref: "#/components/responses/Unauthenticated" }
@@ -171,7 +171,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/ChangePasswordRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Пароль изменён
         "401": { $ref: "#/components/responses/Unauthenticated" }
@@ -181,7 +181,7 @@ paths:
             совпадает с текущим; `VALIDATION_FAILED` — данные не прошли проверку
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
 
   /v1/auth/password/forgot:
     post:
@@ -200,14 +200,14 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/ForgotPasswordRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Письмо отправлено или почта не зарегистрирована
         "409":
           description: "`MAIL_DISABLED` — почта не настроена, ссылку выдаёт администратор (ADR-0017)"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
         "502": { $ref: "#/components/responses/MailSendFailed" }
 
@@ -223,14 +223,14 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/ResetPasswordRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Пароль изменён, все сессии пользователя закрыты
         "422":
           description: "`LINK_INVALID` — ссылка неверна, использована или истекла; `VALIDATION_FAILED`"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
 
   /v1/auth/invitations/lookup:
     post:
@@ -245,7 +245,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/InvitationTokenRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Приглашение действует
           content:
@@ -269,7 +269,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/AcceptInvitationRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "201":
           description: Аккаунт создан, сессия открыта
           headers:
@@ -286,7 +286,7 @@ paths:
       operationId: getCurrentUser
       summary: Текущий пользователь
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Текущий пользователь
           content:
@@ -303,7 +303,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/UpdateCurrentUserRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Пользователь изменён
           content:
@@ -332,7 +332,7 @@ paths:
                   type: string
                   contentMediaType: application/octet-stream
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Аватарка заменена
           content:
@@ -343,7 +343,7 @@ paths:
           description: "`FILE_TOO_LARGE`, `FILE_TYPE_NOT_ALLOWED` или `VALIDATION_FAILED`"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
 
   /v1/users/me/tasks:
     get:
@@ -352,7 +352,7 @@ paths:
       summary: Задачи, назначенные на текущего пользователя
       description: Во всех проектах пользователя, кроме удалённых.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Задачи
           content:
@@ -373,7 +373,7 @@ paths:
         Виден, если у вас есть общий проект или он автор задачи в вашем проекте — так автор
         отображается и после выхода из проекта.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Пользователь
           content:
@@ -399,7 +399,7 @@ paths:
         - {}
         - cookieAuth: []
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Файл
           headers:
@@ -425,7 +425,7 @@ paths:
       summary: Проекты, где пользователь участник
       description: Любой вошедший пользователь.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Проекты
           content:
@@ -447,7 +447,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/CreateProjectRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "201":
           description: Проект создан
           content:
@@ -470,7 +470,7 @@ paths:
           required: false
           schema: { $ref: "#/components/schemas/Uuid" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Кандидаты
           content:
@@ -491,7 +491,7 @@ paths:
       summary: Проект и роль текущего пользователя в нём
       description: "Роль: любая в проекте."
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Проект
           content:
@@ -510,7 +510,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/UpdateProjectRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Проект изменён
           content:
@@ -526,7 +526,7 @@ paths:
       summary: Удалить проект
       description: "Роль: `owner`. Удаление мягкое (ADR-0001)."
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Проект удалён
         "401": { $ref: "#/components/responses/Unauthenticated" }
@@ -542,7 +542,7 @@ paths:
       summary: Участники проекта
       description: "Роль: любая в проекте."
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Участники
           content:
@@ -567,7 +567,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/AddMembersRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Результат по каждой почте
           content:
@@ -595,7 +595,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/ChangeMemberRoleRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Роль изменена
           content:
@@ -613,7 +613,7 @@ paths:
         Роль: `owner` исключает любого, кроме себя; `admin` — только участников с ролью `member`.
         Задачи исключённого в этом проекте остаются без исполнителя.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Участник исключён
         "401": { $ref: "#/components/responses/Unauthenticated" }
@@ -629,7 +629,7 @@ paths:
       summary: Выйти из проекта
       description: "Роль: `admin` или `member`. Задачи вышедшего в этом проекте остаются без исполнителя."
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Пользователь больше не участник
         "401": { $ref: "#/components/responses/Unauthenticated" }
@@ -638,7 +638,7 @@ paths:
           description: "`OWNER_CANNOT_LEAVE` — владелец не может выйти, только удалить проект"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
 
   /v1/projects/{projectId}/tasks:
     parameters:
@@ -649,7 +649,7 @@ paths:
       summary: Задачи проекта
       description: "Роль: любая в проекте."
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Задачи
           content:
@@ -667,7 +667,7 @@ paths:
       summary: Статусы задач
       description: Любой вошедший пользователь. Набор фиксирован (ADR-0003, ADR-0004) и одинаков во всех проектах.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Статусы в порядке работы над задачей
           content:
@@ -689,7 +689,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/CreateTaskRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "201":
           description: Задача создана
           content:
@@ -708,7 +708,7 @@ paths:
       summary: Задача
       description: "Роль: любая в проекте задачи."
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Задача
           content:
@@ -727,7 +727,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/UpdateTaskRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Задача изменена
           content:
@@ -742,7 +742,7 @@ paths:
       summary: Удалить задачу
       description: "Роль: любая в проекте задачи. Удаление мягкое."
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Задача удалена
         "401": { $ref: "#/components/responses/Unauthenticated" }
@@ -762,7 +762,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/ChangeTaskStatusRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Статус изменён
           content:
@@ -786,7 +786,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/ChangeTaskAssigneeRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Исполнитель изменён
           content:
@@ -812,7 +812,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/MoveTaskRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Задача перенесена
           content:
@@ -829,7 +829,7 @@ paths:
       summary: Настройки сервиса
       description: Только администратору сервиса.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Настройки
           content:
@@ -848,7 +848,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/UpdateServiceSettingsRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Настройки изменены
           content:
@@ -875,7 +875,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/MailSettingsRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Почта подключена
           content:
@@ -887,12 +887,12 @@ paths:
           description: "`SECRET_REQUIRED` — нужно ввести пароль заново; `VALIDATION_FAILED`"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
         "502":
           description: "`MAIL_CONNECTION_FAILED` — не удалось подключиться к SMTP, настройки не сохранены"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
     delete:
       tags: [admin]
       operationId: disableMail
@@ -900,7 +900,7 @@ paths:
       description: |
         Только администратору сервиса. Настройки SMTP и пароль удаляются.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Почта отключена
         "401": { $ref: "#/components/responses/Unauthenticated" }
@@ -913,7 +913,7 @@ paths:
       summary: Отправить тестовое письмо себе
       description: Только администратору сервиса.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Письмо отправлено на почту администратора
         "401": { $ref: "#/components/responses/Unauthenticated" }
@@ -922,7 +922,7 @@ paths:
           description: "`MAIL_DISABLED` — почта не подключена"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
         "502": { $ref: "#/components/responses/MailSendFailed" }
 
   /v1/admin/users:
@@ -932,7 +932,7 @@ paths:
       summary: Все пользователи сервиса
       description: Только администратору сервиса.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Пользователи
           content:
@@ -957,7 +957,7 @@ paths:
           application/json:
             schema: { $ref: "#/components/schemas/UpdateAdminUserRequest" }
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "200":
           description: Пользователь изменён
           content:
@@ -971,7 +971,7 @@ paths:
           description: "`LAST_ADMIN` — нельзя снять последнего администратора"
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/Error" }
+              schema: { $ref: "#/components/schemas/ApiError" }
 
   /v1/admin/users/{userId}/password-reset-link:
     parameters:
@@ -983,7 +983,7 @@ paths:
       description: |
         Только администратору сервиса. Нужна, когда почта не подключена (ADR-0017). Администратор передаёт ссылку сам.
       responses:
-        default: { $ref: "#/components/responses/Internal" }
+        "500": { $ref: "#/components/responses/Internal" }
         "201":
           description: Ссылка создана
           content:
@@ -1009,6 +1009,7 @@ components:
   headers:
     SessionCookies:
       description: "`at` и `rt` — новые значения или удаление; флаги — в описании API"
+      required: true
       schema: { type: string }
 
   parameters:
@@ -1033,47 +1034,47 @@ components:
       description: "`UNAUTHENTICATED` — нет входа или сессия истекла"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
     Forbidden:
       description: "`FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
     NotFound:
       description: "`NOT_FOUND` — ресурса нет или пользователь не участник его проекта"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
     ValidationFailed:
       description: "`VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
     AssigneeInvalid:
       description: "`ASSIGNEE_NOT_MEMBER` — исполнитель не участник проекта; `VALIDATION_FAILED`"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
     LinkInvalid:
       description: "`LINK_INVALID` — ссылка неверна или истекла; `VALIDATION_FAILED`"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
     InvitationAccepted:
       description: "`INVITATION_ACCEPTED` — аккаунт с этой почтой уже есть, нужно войти"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
     Internal:
       description: "`INTERNAL` — ошибка сервера"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
     MailSendFailed:
       description: "`MAIL_SEND_FAILED` — SMTP не принял письмо"
       content:
         application/json:
-          schema: { $ref: "#/components/schemas/Error" }
+          schema: { $ref: "#/components/schemas/ApiError" }
 
   schemas:
     Uuid:
@@ -1123,7 +1124,7 @@ components:
         - MAIL_CONNECTION_FAILED
         - SECRET_REQUIRED
         - INTERNAL
-    Error:
+    ApiError:
       type: object
       required: [code, message, details]
       properties:
