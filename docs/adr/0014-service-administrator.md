@@ -1,6 +1,6 @@
 # ADR-0014: Сервисом управляет администратор сервиса
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** таблица `users` в `server/migrations/`, проверки доступа в `server/internal/`, `server/internal/presentation/http/v1/`, `server/internal/presentation/http/router.go`, раздел администратора в `web/src/presentation/features/`, администрирование в контракте API
 

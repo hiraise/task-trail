@@ -1,6 +1,6 @@
 # ADR-0017: Почту подключает администратор в интерфейсе сервиса
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** `server/internal/infrastructure/service/notification/`, `server/internal/app/`, `server/cmd/`, `server/internal/presentation/http/v1/`, `web/src/presentation/features/auth/`, `web/src/presentation/features/projects/`, раздел администратора в `web/src/presentation/features/`, `scripts/dev.sh`, почта, приглашения и настройки в контракте API
 - **Заменяет:** [ADR-0012](0012-optional-mail.md)

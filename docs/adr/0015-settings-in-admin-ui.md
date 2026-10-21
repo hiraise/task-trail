@@ -1,6 +1,6 @@
 # ADR-0015: Настройки сервиса — в интерфейсе администратора, в окружении — только то, без чего сервер не запустится
 
-- **Статус:** Предложено
+- **Статус:** Принято
 - **Дата:** 2026-10-21
 - **Затрагивает:** `server/config/config.go`, `server/internal/app/`, `server/internal/infrastructure/`, `server/internal/presentation/http/v1/`, `server/migrations/`, `server/README.md`, `stand/compose.yaml`, `scripts/dev.sh`, раздел администратора в `web/src/presentation/features/`, настройки в контракте API
 
