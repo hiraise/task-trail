@@ -16,7 +16,8 @@
   (как `access.New`).
 - `internal/infrastructure` — PostgreSQL, JWT, почта; `internal/presentation` — HTTP (Gin).
 - `domain` не импортирует `application`, `infrastructure` и `presentation`;
-  `application` не импортирует `infrastructure` и `presentation`.
+  `application` не импортирует `infrastructure` и `presentation`. Тестам (`_test.go`) можно:
+  они собирают сценарий с настоящими вспомогательными сервисами, например генератором ID.
 - Правила и инварианты — в методах сущностей, а не в обработчиках HTTP и не в SQL.
 - Сценарий, меняющий данные, выполняется в `TxManager.DoWithTx`.
 - Сценарий возвращает `DomainError` с кодом; HTTP-статус по коду выбирает
@@ -26,5 +27,5 @@
 
 ## Проверка
 
-Проверка импортов появится в `scripts/rules.mjs` после исправления единственного нарушения:
-`internal/domain/service/access_token.go` импортирует `internal/application/dto`.
+Проверка импортов появится в `scripts/rules.mjs` после исправления единственного нарушения
+в коде (не в тестах): `internal/domain/service/access_token.go` импортирует `internal/application/dto`.

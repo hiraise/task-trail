@@ -12,7 +12,7 @@
 | `server/` | API на Go (Gin, PostgreSQL); история перенесена из `hiraise/tt-backend` |
 | `web/` | Веб-клиент на React и TypeScript (Vite); история перенесена из `hiraise/tt-frontend` |
 | `docs/adr/` | Архитектурные решения — [индекс](docs/adr/README.md) |
-| `scripts/dev.sh` | Проверки и запуск |
+| `scripts/dev.sh` | Проверки; запуск локального стенда появится вторым PR этапа 0 |
 | `CLAUDE.md` | Правила работы для AI-агентов |
 
 ## Разработка
