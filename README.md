@@ -30,6 +30,13 @@ scripts/dev.sh web      # только веб: типы API из контрак�
 
 Переменные окружения сервера — в [server/README.md](server/README.md), веба — в [web/README.md](web/README.md).
 
+В VS Code те же команды — в Terminal → Run Task: стенд, проверка, правила проекта
+([.vscode/tasks.json](.vscode/tasks.json)).
+
+Каждая задача — своя ветка и, если сессий несколько, свой `git worktree` рядом с репозиторием.
+`scripts/dev.sh cleanup` убирает worktree и ветки, чьи PR уже слиты. Обновления зависимостей
+раз в неделю предлагает Dependabot ([ADR-0021](docs/adr/0021-dependabot-updates.md)).
+
 ## Локальный стенд
 
 ```bash

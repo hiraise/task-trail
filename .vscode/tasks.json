@@ -1,0 +1,51 @@
+{
+    // Terminal → Run Task… (⇧⌘B — сразу «поднять стенд»). Вся логика — в scripts/dev.sh
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "TaskTrail: поднять стенд",
+            "type": "shell",
+            "command": "./scripts/dev.sh up",
+            "group": { "kind": "build", "isDefault": true },
+            "problemMatcher": []
+        },
+        {
+            "label": "TaskTrail: дымовая проверка стенда",
+            "type": "shell",
+            "command": "./scripts/dev.sh smoke",
+            "problemMatcher": []
+        },
+        {
+            "label": "TaskTrail: логи стенда",
+            "type": "shell",
+            "command": "./scripts/dev.sh logs",
+            "presentation": { "panel": "dedicated" },
+            "problemMatcher": []
+        },
+        {
+            "label": "TaskTrail: остановить стенд",
+            "type": "shell",
+            "command": "./scripts/dev.sh down",
+            "problemMatcher": []
+        },
+        {
+            "label": "TaskTrail: проверка (правила, сервер, веб)",
+            "type": "shell",
+            "command": "./scripts/dev.sh check",
+            "group": { "kind": "test", "isDefault": true },
+            "problemMatcher": []
+        },
+        {
+            "label": "TaskTrail: правила проекта",
+            "type": "shell",
+            "command": "./scripts/dev.sh rules",
+            "problemMatcher": []
+        },
+        {
+            "label": "TaskTrail: убрать worktree слитых PR",
+            "type": "shell",
+            "command": "./scripts/dev.sh cleanup",
+            "problemMatcher": []
+        }
+    ]
+}

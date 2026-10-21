@@ -87,6 +87,51 @@ function checkAdr() {
   for (const file of rows.keys()) errors.push(`${dir}/README.md: строка для несуществующего ${file}`);
 }
 
+// Номер нового ADR могли занять параллельные сессии (docs/adr/template.md): ADR этой ветки, которых
+// нет в origin/main, сверяются с main, с ветками origin и с локальными ветками других worktree,
+// ещё не влитыми в main. Ветки origin видны после git fetch; в CI origin/main нет — проверка молчит.
+function checkAdrNumbers() {
+  const git = (...args) =>
+    execFileSync("git", args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+  const succeeds = (...args) => {
+    try {
+      git(...args);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+  if (!succeeds("rev-parse", "-q", "--verify", "origin/main^{commit}")) return;
+
+  const dir = "docs/adr";
+  const numberOf = (file) => /^(\d{4})-[a-z0-9-]+\.md$/.exec(file)?.[1];
+  const adrsIn = (ref) => git("ls-tree", "--name-only", ref, `${dir}/`).split("\n").map((path) => basename(path)).filter(numberOf);
+  const inMain = new Set(adrsIn("origin/main"));
+  const mine = new Map(); // номер → новый ADR этой ветки
+  for (const path of FILES.filter((file) => dirname(file) === dir)) {
+    const file = basename(path);
+    if (numberOf(file) && !inMain.has(file)) mine.set(numberOf(file), file);
+  }
+  if (mine.size === 0) return;
+
+  const conflict = (other, where) => {
+    const own = mine.get(numberOf(other));
+    if (own && own !== other) {
+      errors.push(`${dir}/${own}: номер ${numberOf(other)} занят в ${where} (${other}) — кому он остаётся, в ${dir}/template.md`);
+    }
+  };
+  for (const file of inMain) conflict(file, "origin/main");
+
+  const current = git("branch", "--show-current").trim();
+  const refs = git("for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes/origin").split("\n");
+  for (const ref of refs) {
+    if (!ref || ["origin", "origin/HEAD", current, `origin/${current}`].includes(ref)) continue;
+    // Ветка влита в main или вся вошла в эту ветку — её ADR не чужие
+    if (succeeds("merge-base", "--is-ancestor", ref, "origin/main") || succeeds("merge-base", "--is-ancestor", ref, "HEAD")) continue;
+    for (const file of adrsIn(ref)) if (!inMain.has(file)) conflict(file, `ветке ${ref}`);
+  }
+}
+
 // Относительные ссылки в Markdown ведут на файлы и папки репозитория с точным регистром
 // (CLAUDE.md, «Где что описано»): CI на Linux различает регистр, macOS — нет.
 function checkLinks() {
@@ -155,6 +200,108 @@ function checkDeviceSplit() {
   }
 }
 
+// Цвета, тени и шрифты — из переменных web/src/styles/ (ADR-0008). Объявлений с цветом значением
+// в CSS вне web/src/styles/ не становится больше: убрал — снизь порог. Шрифт — только переменной.
+const STYLE_LITERAL_LIMIT = 21;
+
+function checkStyleTokens() {
+  const colorRe =
+    /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\(|\b(?:black|white|red|green|blue|gray|grey|silver|orange|yellow|purple|pink|brown|navy|teal)\b/i;
+  const literals = [];
+  const sheets = FILES.filter((file) => file.startsWith("web/src/") && file.endsWith(".css") && !file.startsWith("web/src/styles/"));
+  for (const path of sheets) {
+    const css = read(path).replace(/\/\*[\s\S]*?\*\//g, "");
+    for (const [declaration, property, value] of css.matchAll(/([a-z-]+)\s*:\s*([^;{}]+)(?=[;}])/g)) {
+      const literal = value.replace(/var\([^)]*\)/g, "");
+      if (property === "font-family" && !/^(var\(.*\)|inherit)$/.test(value.trim())) {
+        errors.push(`${path}: шрифт — переменной из web/src/styles/, а не значением (ADR-0008): ${declaration.trim()}`);
+      } else if (colorRe.test(literal)) {
+        literals.push(`${path}: ${declaration.trim()}`);
+      }
+    }
+  }
+  if (literals.length > STYLE_LITERAL_LIMIT) {
+    errors.push(
+      `web/src: цветов и теней значениями в CSS — ${literals.length}, порог ${STYLE_LITERAL_LIMIT}: бери переменные ` +
+        `из web/src/styles/globals.css, новой нет — добавь её туда (ADR-0008). Все такие объявления:\n  ${literals.join("\n  ")}`,
+    );
+  } else if (literals.length < STYLE_LITERAL_LIMIT) {
+    hints.push(`цветов и теней значениями в CSS стало ${literals.length} — снизь порог в scripts/rules.mjs с ${STYLE_LITERAL_LIMIT} до ${literals.length}`);
+  }
+}
+
+// Действия GitHub закреплены по SHA коммита с версией в комментарии (ADR-0009)
+function checkPinnedActions() {
+  for (const path of FILES.filter((file) => /^\.github\/workflows\/[^/]+\.ya?ml$/.test(file))) {
+    read(path)
+      .split("\n")
+      .forEach((line, i) => {
+        const uses = /^\s*(?:-\s+)?uses:\s*["']?([^\s"']+)["']?(.*)$/.exec(line);
+        if (!uses || uses[1].startsWith("./")) return;
+        if (!/@[0-9a-f]{40}$/.test(uses[1]) || !/^\s+#\s*v?\d/.test(uses[2])) {
+          errors.push(`${path}:${i + 1}: действие закрепляй по SHA с версией в комментарии — uses: <действие>@<SHA из 40 символов> # vX.Y.Z (ADR-0009)`);
+        }
+      });
+  }
+}
+
+// Порты стенда слушают только 127.0.0.1 (ADR-0010): стенд не виден из сети
+function checkStandPorts() {
+  const path = "stand/compose.yaml";
+  if (!FILE_SET.has(path)) return;
+  const wrong = (i, port) => errors.push(`${path}:${i + 1}: порт ${port} — только на 127.0.0.1, в короткой записи "127.0.0.1:<порт>:<порт>" (ADR-0010)`);
+  let portsIndent = null; // отступ ключа ports:, пока идёт его список
+  read(path)
+    .split("\n")
+    .forEach((line, i) => {
+      const indent = line.search(/\S/);
+      if (indent < 0 || line.trim().startsWith("#")) return;
+      if (portsIndent !== null && indent <= portsIndent) portsIndent = null;
+      if (/^\s*network_mode:\s*["']?host/.test(line)) errors.push(`${path}:${i + 1}: network_mode: host открывает порты стенда в сеть (ADR-0010)`);
+      const inline = /^\s*ports:\s*\[(.*)\]/.exec(line);
+      if (inline) {
+        for (const port of inline[1].split(",").map((item) => item.trim().replace(/^["']|["']$/g, ""))) {
+          if (port && !port.startsWith("127.0.0.1:")) wrong(i, port);
+        }
+      } else if (/^\s*ports:\s*$/.test(line)) {
+        portsIndent = indent;
+      } else if (portsIndent !== null) {
+        const port = /^\s*-\s*["']?([^"'\s#]+)/.exec(line)?.[1];
+        if (port && !port.startsWith("127.0.0.1:")) wrong(i, port);
+      }
+    });
+}
+
+// Текущее время сервер берёт из Clock (ADR-0022): time.Now, time.Since и time.Until — только
+// в реализации Clock, в тестах и для замера длительности в middleware/log.go. Остальных вызовов
+// не становится больше: перевёл на Clock — снизь порог.
+const TIME_CALL_LIMIT = 14;
+
+function checkClock() {
+  const allowed = (path) =>
+    path.endsWith("_test.go") ||
+    path.startsWith("server/test/") ||
+    path.startsWith("server/internal/infrastructure/service/clock/") ||
+    path === "server/internal/presentation/http/middleware/log.go";
+  const calls = [];
+  for (const path of FILES.filter((file) => file.startsWith("server/") && file.endsWith(".go") && !allowed(file))) {
+    // Комментарии вырезаются с сохранением переводов строк, чтобы номера строк совпадали
+    const code = read(path).replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ""));
+    code.split("\n").forEach((line, i) => {
+      const callCount = line.replace(/\/\/.*$/, "").match(/\btime\.(?:Now|Since|Until)\(/g)?.length ?? 0;
+      for (let n = 0; n < callCount; n++) calls.push(`${path}:${i + 1}`);
+    });
+  }
+  if (calls.length > TIME_CALL_LIMIT) {
+    errors.push(
+      `server: вызовов time.Now/Since/Until вне Clock — ${calls.length}, порог ${TIME_CALL_LIMIT}: бери время из Clock (ADR-0022). ` +
+        `Все вызовы:\n  ${calls.join("\n  ")}`,
+    );
+  } else if (calls.length < TIME_CALL_LIMIT) {
+    hints.push(`вызовов time.Now/Since/Until вне Clock стало ${calls.length} — снизь порог в scripts/rules.mjs с ${TIME_CALL_LIMIT} до ${calls.length}`);
+  }
+}
+
 // Контракт API (ADR-0019, ADR-0020): kin-openapi и server/test/ — только в тестах сервера,
 // тесты обработчиков v1 проверяют ответы по контракту, сгенерированные типы веба импортирует
 // только слой infrastructure и наружу их не переэкспортирует
@@ -203,6 +350,11 @@ function checkContract() {
 }
 
 checkAdr();
+checkAdrNumbers();
+checkStyleTokens();
+checkPinnedActions();
+checkStandPorts();
+checkClock();
 checkLinks();
 checkWebImports();
 checkDeviceSplit();
