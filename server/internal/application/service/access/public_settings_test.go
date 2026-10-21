@@ -33,10 +33,13 @@ func TestPublicSettings(t *testing.T) {
 	}
 }
 
-func TestCleanupDeletesExpiredTokens(t *testing.T) {
+// Очистка удаляет истёкшие refresh-токены, ссылки сброса и приглашения и считает всё вместе.
+func TestCleanupDeletesExpired(t *testing.T) {
 	module, d := newModule(t)
 	d.tokens.EXPECT().DeleteExpired(gomock.Any(), now).Return(int64(3), nil)
-	if deleted, err := module.Cleanup.Execute(context.Background()); err != nil || deleted != 3 {
+	d.resets.EXPECT().DeleteExpired(gomock.Any(), now).Return(int64(2), nil)
+	d.invitations.EXPECT().DeleteExpired(gomock.Any(), now).Return(int64(1), nil)
+	if deleted, err := module.Cleanup.Execute(context.Background()); err != nil || deleted != 6 {
 		t.Fatalf("удалено %d, %v", deleted, err)
 	}
 }

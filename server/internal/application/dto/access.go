@@ -3,6 +3,7 @@ package dto
 import (
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/service"
+	"time"
 )
 
 type Register struct {
@@ -38,4 +39,29 @@ type Session struct {
 type PublicSettings struct {
 	RegistrationOpen bool
 	MailEnabled      bool
+}
+
+type ResetPassword struct {
+	Token    string
+	Password string
+}
+
+// ResetLink — ссылка сброса пароля и момент, когда она истекает.
+type ResetLink struct {
+	URL       string
+	ExpiresAt time.Time
+}
+
+type AcceptInvitation struct {
+	Token    string
+	Username string
+	Password string
+}
+
+// InvitationInfo — что человек видит по ссылке приглашения до принятия.
+type InvitationInfo struct {
+	Email       entity.Email
+	ProjectName string
+	// InvitedBy — имя пригласившего, а если его нет — почта.
+	InvitedBy string
 }

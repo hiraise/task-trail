@@ -2,7 +2,6 @@ package access
 
 import (
 	"context"
-	"errors"
 	"task-trail/internal/application/dto"
 	"task-trail/internal/application/transaction"
 	"task-trail/internal/domain"
@@ -23,11 +22,10 @@ func (s *LoginService) Execute(ctx context.Context, credentials dto.Credentials)
 	var session dto.Session
 	f := func(ctx context.Context) error {
 		user, err := s.userRepository.GetByEmail(ctx, email)
+		if isEntityNotFound(err) {
+			return domain.ErrInvalidCredentials("email", email, "reason", "no such user")
+		}
 		if err != nil {
-			var e *domain.DomainError
-			if errors.As(err, &e) && e.Code == domain.EntityNotFound {
-				return domain.ErrInvalidCredentials("email", email, "reason", "no such user")
-			}
 			return err
 		}
 		equal, err := s.pwdComparator.ComparePassword(credentials.Password, user.PasswordHash)

@@ -27,17 +27,9 @@ type PG struct {
 	ConnString string `env:"PG_CONNECTION_STRING,required,notEmpty"`
 }
 
-// Docs — временно, до Swagger под входом администратора (шаг 3.3 этапа 1, ADR-0014).
-type Docs struct {
-	Enabled  bool   `env:"SWAGGER_ENABLED" envDefault:"true"`
-	Login    string `env:"SWAGGER_LOGIN" envDefault:"root"`
-	Password string `env:"SWAGGER_PASSWORD" envDefault:"root"`
-}
-
 type Config struct {
-	App  App
-	PG   PG
-	Docs Docs
+	App App
+	PG  PG
 }
 
 func New() (*Config, error) {

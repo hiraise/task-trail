@@ -349,6 +349,13 @@ function checkContract() {
   }
 }
 
+// Контракт — один файл (ADR-0023): сервер встраивает api/openapi.yaml модулем api/, копии не нужны
+function checkContractCopies() {
+  for (const path of FILES.filter((file) => basename(file) === "openapi.yaml" && file !== "api/openapi.yaml")) {
+    errors.push(`${path}: копия контракта — сервер берёт api/openapi.yaml из модуля api/ (ADR-0023)`);
+  }
+}
+
 // Слои сервера (ADR-0007): domain не импортирует application, infrastructure и presentation,
 // application — infrastructure и presentation. Тестам можно: они собирают сценарий целиком.
 function checkServerLayers() {
@@ -378,6 +385,7 @@ checkLinks();
 checkWebImports();
 checkDeviceSplit();
 checkContract();
+checkContractCopies();
 checkServerLayers();
 
 for (const hint of hints) console.log(`подсказка: ${hint}`);

@@ -13,6 +13,7 @@ import (
 	"task-trail/internal/domain/factory"
 	"task-trail/internal/domain/service"
 	"task-trail/internal/infrastructure/service/id"
+	"task-trail/internal/infrastructure/service/linktoken"
 	"task-trail/test/clock"
 	"task-trail/test/mocks"
 
@@ -25,43 +26,58 @@ const (
 	email        = entity.Email("ivan@example.com")
 	passwordHash = "$2a$12$hash"
 	rtLifetime   = 30 * 24 * time.Hour
+	// resetLifetime — срок ссылки сброса пароля
+	resetLifetime = 24 * time.Hour
 )
 
 var now = time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)
 
 type deps struct {
-	tx        *mocks.MockTxManager
-	users     *mocks.MockUserRepository
-	tokens    *mocks.MockRefreshTokenRepository
-	settings  *mocks.MockSettingsRepository
-	passwords *mocks.MockPasswordService
-	jwt       *mocks.MockAccessTokenService
+	tx          *mocks.MockTxManager
+	users       *mocks.MockUserRepository
+	tokens      *mocks.MockRefreshTokenRepository
+	settings    *mocks.MockSettingsRepository
+	passwords   *mocks.MockPasswordService
+	jwt         *mocks.MockAccessTokenService
+	resets      *mocks.MockPasswordResetRepository
+	invitations *mocks.MockInvitationRepository
+	members     *mocks.MockProjectMemberRepository
+	mailer      *mocks.MockMailer
 }
 
 func newModule(t *testing.T) (*access.AccessModule, *deps) {
 	ctrl := gomock.NewController(t)
 	d := &deps{
-		tx:        mocks.NewMockTxManager(ctrl),
-		users:     mocks.NewMockUserRepository(ctrl),
-		tokens:    mocks.NewMockRefreshTokenRepository(ctrl),
-		settings:  mocks.NewMockSettingsRepository(ctrl),
-		passwords: mocks.NewMockPasswordService(ctrl),
-		jwt:       mocks.NewMockAccessTokenService(ctrl),
+		tx:          mocks.NewMockTxManager(ctrl),
+		users:       mocks.NewMockUserRepository(ctrl),
+		tokens:      mocks.NewMockRefreshTokenRepository(ctrl),
+		settings:    mocks.NewMockSettingsRepository(ctrl),
+		passwords:   mocks.NewMockPasswordService(ctrl),
+		jwt:         mocks.NewMockAccessTokenService(ctrl),
+		resets:      mocks.NewMockPasswordResetRepository(ctrl),
+		invitations: mocks.NewMockInvitationRepository(ctrl),
+		members:     mocks.NewMockProjectMemberRepository(ctrl),
+		mailer:      mocks.NewMockMailer(ctrl),
 	}
 	clk := clock.New(now)
 	idGen := id.New()
 	userFactory := factory.NewUserFactory(idGen, clk)
 	rtFactory := factory.NewRTFactory(idGen, clk, rtLifetime)
 	module := access.New(access.Deps{
-		TxManager:           d.tx,
-		Clock:               clk,
-		UserRepo:            d.users,
-		UserFactory:         userFactory,
-		PasswordService:     d.passwords,
-		RefreshTokenFactory: rtFactory,
-		RefreshTokenRepo:    d.tokens,
-		AccessTokenService:  d.jwt,
-		SettingsRepo:        d.settings,
+		TxManager:            d.tx,
+		Clock:                clk,
+		UserRepo:             d.users,
+		UserFactory:          userFactory,
+		PasswordService:      d.passwords,
+		RefreshTokenFactory:  rtFactory,
+		RefreshTokenRepo:     d.tokens,
+		AccessTokenService:   d.jwt,
+		SettingsRepo:         d.settings,
+		PasswordResetFactory: factory.NewPasswordResetFactory(linktoken.New(), clk, resetLifetime),
+		PasswordResetRepo:    d.resets,
+		InvitationRepo:       d.invitations,
+		ProjectMemberRepo:    d.members,
+		Mailer:               d.mailer,
 	})
 	return module, d
 }
