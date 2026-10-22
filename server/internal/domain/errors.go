@@ -22,6 +22,8 @@ const (
 	Forbidden ErrorCode = "FORBIDDEN"
 	// Владелец не выходит из проекта, а удаляет его
 	OwnerCannotLeave ErrorCode = "OWNER_CANNOT_LEAVE"
+	// Исполнитель задачи — не участник её проекта
+	AssigneeNotMember ErrorCode = "ASSIGNEE_NOT_MEMBER"
 
 	// Ссылка приглашения или сброса пароля неверна, использована или истекла
 	LinkInvalid ErrorCode = "LINK_INVALID"
@@ -132,6 +134,10 @@ func ErrForbidden(data ...any) *DomainError {
 
 func ErrOwnerCannotLeave(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, OwnerCannotLeave, nil, data...)
+}
+
+func ErrAssigneeNotMember(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, AssigneeNotMember, nil, data...)
 }
 
 func ErrLinkInvalid(data ...any) *DomainError {

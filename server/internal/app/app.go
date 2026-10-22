@@ -7,6 +7,7 @@ import (
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/application/service/file"
 	"task-trail/internal/application/service/project"
+	"task-trail/internal/application/service/task"
 	"task-trail/internal/application/service/user"
 	"task-trail/internal/domain/factory"
 	"task-trail/internal/domain/service"
@@ -60,6 +61,7 @@ type Server struct {
 	User    *user.UserModule
 	File    *file.FileModule
 	Project *project.ProjectModule
+	Task    *task.TaskModule
 }
 
 type options struct {
@@ -101,6 +103,8 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	userRepo := persistent.NewUserRepo(pool, userFactory)
 	fileRepo := persistent.NewFileRepo(pool)
 	memberRepo := persistent.NewProjectMemberRepo(pool, userFactory)
+	projectRepo := persistent.NewProjectRepo(pool)
+	taskRepo := persistent.NewTaskRepo(pool)
 	invitationRepo := persistent.NewInvitationRepo(pool)
 	settingsRepo := persistent.NewSettingsRepo(pool, box)
 	mailer := notification.NewSMTP(clk)
@@ -138,15 +142,23 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	projectModule := project.New(project.Deps{
 		TxManager:         txManager,
 		Clock:             clk,
-		ProjectRepo:       persistent.NewProjectRepo(pool),
+		ProjectRepo:       projectRepo,
 		ProjectFactory:    factory.NewProjectFactory(idGen, clk),
 		MemberRepo:        memberRepo,
 		UserRepo:          userRepo,
-		TaskRepo:          persistent.NewTaskRepo(pool),
+		TaskRepo:          taskRepo,
 		InvitationRepo:    invitationRepo,
 		InvitationFactory: factory.NewInvitationFactory(idGen, linktoken.New(), clk, invitationLifetime),
 		SettingsRepo:      settingsRepo,
 		Mailer:            mailer,
+	})
+	taskModule := task.New(task.Deps{
+		TxManager:   txManager,
+		Clock:       clk,
+		ProjectRepo: projectRepo,
+		MemberRepo:  memberRepo,
+		TaskRepo:    taskRepo,
+		TaskFactory: factory.NewTaskFactory(idGen, clk),
 	})
 
 	engine := gin.New()
@@ -154,8 +166,8 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	http.NewRouter(engine, contextManager,
 		middleware.NewAuth(accessTokenService, contextManager),
 		middleware.NewAdmin(accessModule.AdminCheck, contextManager),
-		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule})
-	return &Server{Engine: engine, Access: accessModule, User: userModule, File: fileModule, Project: projectModule}, nil
+		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule})
+	return &Server{Engine: engine, Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule}, nil
 }
 
 func Run(cfg *config.Config) {

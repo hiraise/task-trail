@@ -16,6 +16,7 @@ const (
 	CodeLinkInvalid        ErrorCode = "LINK_INVALID"
 	CodeInvitationAccepted ErrorCode = "INVITATION_ACCEPTED"
 	CodeOwnerCannotLeave   ErrorCode = "OWNER_CANNOT_LEAVE"
+	CodeAssigneeNotMember  ErrorCode = "ASSIGNEE_NOT_MEMBER"
 	CodeMailDisabled       ErrorCode = "MAIL_DISABLED"
 	CodeMailSendFailed     ErrorCode = "MAIL_SEND_FAILED"
 	CodeFileTooLarge       ErrorCode = "FILE_TOO_LARGE"

@@ -4,6 +4,7 @@ import (
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/application/service/file"
 	"task-trail/internal/application/service/project"
+	"task-trail/internal/application/service/task"
 	"task-trail/internal/application/service/user"
 	"task-trail/internal/pkg/contextmanager"
 
@@ -16,6 +17,7 @@ type Modules struct {
 	User    *user.UserModule
 	File    *file.FileModule
 	Project *project.ProjectModule
+	Task    *task.TaskModule
 }
 
 func NewRouter(
@@ -29,4 +31,5 @@ func NewRouter(
 	NewUserRouter(g, modules.User, authMW, cm)
 	NewFileRouter(g, modules.File)
 	NewProjectRouter(g, modules.Project, authMW, cm)
+	NewTaskRouter(g, modules.Task, authMW, cm)
 }

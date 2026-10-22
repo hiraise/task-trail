@@ -366,7 +366,7 @@ paths:
       tags: [users]
       operationId: listCurrentUserTasks
       summary: Задачи, назначенные на текущего пользователя
-      description: Во всех проектах пользователя, кроме удалённых.
+      description: Во всех проектах пользователя, кроме удалённых; новые первыми.
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "200":
@@ -439,7 +439,7 @@ paths:
       tags: [projects]
       operationId: listProjects
       summary: Проекты, где пользователь участник
-      description: Любой вошедший пользователь.
+      description: Любой вошедший пользователь. Новые первыми.
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "200":
@@ -663,7 +663,7 @@ paths:
       tags: [tasks]
       operationId: listProjectTasks
       summary: Задачи проекта
-      description: "Роль: любая в проекте."
+      description: "Роль: любая в проекте. Новые первыми."
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "200":

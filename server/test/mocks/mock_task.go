@@ -42,6 +42,79 @@ func (m *MockTaskRepository) EXPECT() *MockTaskRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockTaskRepository) Create(ctx context.Context, task *entity.Task) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, task)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockTaskRepositoryMockRecorder) Create(ctx, task any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTaskRepository)(nil).Create), ctx, task)
+}
+
+// Get mocks base method.
+func (m *MockTaskRepository) Get(ctx context.Context, id entity.TaskID) (*entity.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, id)
+	ret0, _ := ret[0].(*entity.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockTaskRepositoryMockRecorder) Get(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTaskRepository)(nil).Get), ctx, id)
+}
+
+// ListAssigned mocks base method.
+func (m *MockTaskRepository) ListAssigned(ctx context.Context, userID entity.UserID) ([]*entity.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListAssigned", ctx, userID)
+	ret0, _ := ret[0].([]*entity.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListAssigned indicates an expected call of ListAssigned.
+func (mr *MockTaskRepositoryMockRecorder) ListAssigned(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAssigned", reflect.TypeOf((*MockTaskRepository)(nil).ListAssigned), ctx, userID)
+}
+
+// ListInProject mocks base method.
+func (m *MockTaskRepository) ListInProject(ctx context.Context, projectID entity.ProjectID) ([]*entity.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListInProject", ctx, projectID)
+	ret0, _ := ret[0].([]*entity.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListInProject indicates an expected call of ListInProject.
+func (mr *MockTaskRepositoryMockRecorder) ListInProject(ctx, projectID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInProject", reflect.TypeOf((*MockTaskRepository)(nil).ListInProject), ctx, projectID)
+}
+
+// SoftDelete mocks base method.
+func (m *MockTaskRepository) SoftDelete(ctx context.Context, id entity.TaskID, now time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SoftDelete", ctx, id, now)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SoftDelete indicates an expected call of SoftDelete.
+func (mr *MockTaskRepositoryMockRecorder) SoftDelete(ctx, id, now any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SoftDelete", reflect.TypeOf((*MockTaskRepository)(nil).SoftDelete), ctx, id, now)
+}
+
 // UnassignInProject mocks base method.
 func (m *MockTaskRepository) UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) error {
 	m.ctrl.T.Helper()
@@ -54,4 +127,18 @@ func (m *MockTaskRepository) UnassignInProject(ctx context.Context, projectID en
 func (mr *MockTaskRepositoryMockRecorder) UnassignInProject(ctx, projectID, userID, now any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnassignInProject", reflect.TypeOf((*MockTaskRepository)(nil).UnassignInProject), ctx, projectID, userID, now)
+}
+
+// Update mocks base method.
+func (m *MockTaskRepository) Update(ctx context.Context, task *entity.Task) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, task)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockTaskRepositoryMockRecorder) Update(ctx, task any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockTaskRepository)(nil).Update), ctx, task)
 }

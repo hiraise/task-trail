@@ -218,19 +218,6 @@ func (s *Server) RemoveMember(projectID, userID string) {
 	}
 }
 
-// CreateTask создаёт задачу прямо в базе — до API задач (шаг 4.3) — и возвращает её ID.
-func (s *Server) CreateTask(projectID, authorID, name string) string {
-	s.t.Helper()
-	taskID := id.New().Generate()
-	_, err := s.Pool.Exec(context.Background(),
-		`INSERT INTO tasks (id, project_id, author_id, name, status) VALUES ($1, $2, $3, $4, 'open')`,
-		taskID, projectID, authorID, name)
-	if err != nil {
-		s.t.Fatal(err)
-	}
-	return taskID
-}
-
 // Invite приглашает email в проект от inviterID и возвращает токен ссылки. Приглашение
 // пишется прямо в базу, без письма и проверки ролей, — как его создаёт POST /v1/projects/{id}/members.
 func (s *Server) Invite(projectID, email, inviterID string) string {
