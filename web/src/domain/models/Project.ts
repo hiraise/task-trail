@@ -3,14 +3,14 @@ import type { ProjectId, ProjectRole } from "../types";
 export interface Project {
   id: ProjectId;
   name: string;
-  /** Описания нет — undefined */
+  /** undefined when there is no description */
   description?: string;
-  /** ISO 8601 в UTC */
+  /** ISO 8601 in UTC */
   createdAt: string;
   tasksCount: number;
 }
 
-/** Проект и роль текущего пользователя в нём. */
+/** A project and the current user's role in it. */
 export interface ProjectDetails extends Project {
   role: ProjectRole;
 }

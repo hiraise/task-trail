@@ -11,8 +11,8 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// GetSettingsService — адрес сервиса и настройки почты; пароль SMTP не отдаётся, только
-// признак, что он сохранён (ADR-0015).
+// GetSettingsService returns the service address and mail settings; the SMTP password is not returned, only
+// a flag that it is saved (ADR-0015).
 type GetSettingsService struct {
 	settings repository.SettingsRepository
 }
@@ -21,8 +21,8 @@ func (s *GetSettingsService) Execute(ctx context.Context) (dto.ServiceSettings, 
 	return current(ctx, s.settings)
 }
 
-// UpdateServiceURLService меняет адрес сервиса: от него строятся ссылки в письмах и ответах
-// API (ADR-0015). Ссылки, выданные раньше, ведут на прежний адрес.
+// UpdateServiceURLService changes the service address: links in emails and API responses are built
+// from it (ADR-0015). Links issued earlier lead to the previous address.
 type UpdateServiceURLService struct {
 	settings repository.SettingsRepository
 }
@@ -34,10 +34,10 @@ func (s *UpdateServiceURLService) Execute(ctx context.Context, serviceURL string
 	return current(ctx, s.settings)
 }
 
-// SaveMailService подключает почту или меняет её настройки (ADR-0017). Настройки сохраняются,
-// только если с ними удалось подключиться к SMTP. Транзакции нет: проверка идёт до 10 секунд,
-// а встречные сохранения и так не смешиваются — каждое пишет настройки целиком, и сохранённый
-// пароль берётся только вместе с сервером и портом, для которых его ввели.
+// SaveMailService configures mail or changes its settings (ADR-0017). Settings are saved
+// only if connecting to SMTP with them succeeded. There is no transaction: the check takes up to 10 seconds,
+// and concurrent saves do not mix anyway: each writes the whole settings, and the saved
+// password is used only with the server and port it was entered for.
 type SaveMailService struct {
 	settings repository.SettingsRepository
 	mailer   service.Mailer
@@ -53,7 +53,7 @@ func (s *SaveMailService) Execute(ctx context.Context, data dto.MailSettings) (d
 		Password:   data.Password,
 	}
 	if mail.Username == nil {
-		// Без входа на SMTP пароль не нужен: ни введённый, ни сохранённый
+		// Without SMTP authentication no password is needed: neither entered nor saved
 		mail.Password = nil
 	} else if !data.PasswordSet {
 		saved, err := s.settings.GetMail(ctx)
@@ -73,7 +73,7 @@ func (s *SaveMailService) Execute(ctx context.Context, data dto.MailSettings) (d
 	return current(ctx, s.settings)
 }
 
-// DisableMailService отключает почту: настройки SMTP и пароль удаляются (ADR-0017).
+// DisableMailService disables mail: the SMTP settings and password are deleted (ADR-0017).
 type DisableMailService struct {
 	settings repository.SettingsRepository
 }
@@ -82,8 +82,8 @@ func (s *DisableMailService) Execute(ctx context.Context) error {
 	return s.settings.DeleteMail(ctx)
 }
 
-// SendTestMailService отправляет тестовое письмо на почту администратора, который попросил
-// (ADR-0017). Без почты — MAIL_DISABLED, отказ SMTP — MAIL_SEND_FAILED.
+// SendTestMailService sends a test email to the administrator who requested it
+// (ADR-0017). Without mail: MAIL_DISABLED; an SMTP rejection: MAIL_SEND_FAILED.
 type SendTestMailService struct {
 	users    repository.UserRepository
 	settings repository.SettingsRepository
@@ -100,7 +100,7 @@ func (s *SendTestMailService) Execute(ctx context.Context, adminID string) error
 	}
 	admin, err := s.users.GetByID(ctx, entity.UserID(adminID))
 	if domain.HasCode(err, domain.EntityNotFound) {
-		// Администратора удалили, а access-токен ещё жив: сессия недействительна
+		// The administrator was deleted but the access token is still alive: the session is invalid
 		return domain.ErrWrongAccessToken("userID", adminID, "reason", "user not found")
 	}
 	if err != nil {

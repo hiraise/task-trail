@@ -14,13 +14,13 @@ import { MAIL_REQUEST_TIMEOUT_MS } from "../http/timeouts";
 
 import { toInvitationResult, toProject, toProjectDetails } from "./mappers";
 
-// Ошибки приходят из HttpClient уже как AppError с кодом API (http/apiError.ts).
+// Errors arrive from HttpClient already as AppError with the API code (http/apiError.ts).
 const createProjectRepository = (http: HttpClient): ProjectRepository => ({
   findById: async (id) => toProjectDetails(await http.get<ProjectDetails>(API_ROUTES.PROJECT_BY_ID(id))),
 
   findAll: async () => (await http.get<Project[]>(API_ROUTES.PROJECTS)).map(toProject),
 
-  // Почты из emails зовутся в проект в том же запросе, письма уходят сразу — тайм-аут длиннее
+  // Addresses from emails are invited in the same request and emails go out at once — a longer timeout
   create: async ({ name, description, emails }) => {
     const body: CreateProjectRequest = { name, description: description ?? null, emails };
     const created = await http.post<ProjectCreated>(API_ROUTES.PROJECTS, body, {

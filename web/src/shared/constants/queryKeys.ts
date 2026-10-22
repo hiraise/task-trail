@@ -21,7 +21,7 @@ export const QUERY_KEYS = {
   settings: {
     public: ["settings", "public"] as const,
   },
-  /** Раздел администратора сервиса (ADR-0014) */
+  /** Service admin section (ADR-0014) */
   admin: {
     settings: ["admin", "settings"] as const,
     users: ["admin", "users"] as const,
@@ -32,10 +32,10 @@ export const QUERY_KEYS = {
   },
   task: {
     all: ["task"] as const,
-    /** Задачи, назначенные на текущего пользователя */
+    /** Tasks assigned to the current user */
     mine: ["task", "mine"] as const,
     detail: (id: TaskId) => ["task", id] as const,
-    /** Статусы задач: набор общий для всех проектов */
+    /** Task statuses: one set shared by all projects */
     statuses: ["task-statuses"] as const,
   },
   project: {

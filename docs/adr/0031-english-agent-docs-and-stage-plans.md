@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-10-22
-- **Affects:** `CLAUDE.md`, `docs/adr/`, `docs/roadmap.md`, `docs/plans/`, `docs/design-system.md`, `.claude/skills/`, `server/README.md`, `web/README.md`, code comments and developer-facing strings in `server/`, `web/`, `scripts/`, commit messages and PRs, ADR checks in `scripts/rules.mjs`
+- **Affects:** `CLAUDE.md`, `docs/adr/`, `docs/roadmap.md`, `docs/plans/`, `docs/design-system.md`, `.claude/skills/`, `server/README.md`, `web/README.md`, code comments and developer-facing strings in `server/`, `web/`, `scripts/`, commit messages and PRs, ADR and comment-language checks in `scripts/rules.mjs`
 
 ## Context
 
@@ -40,7 +40,10 @@ translates them before stage 2, step 1. Git history before this ADR stays in Rus
 
 ## Verification
 
-`scripts/rules.mjs` checks ADR fields and statuses by their English names.
+- `scripts/rules.mjs` checks ADR fields and statuses by their English names.
+- `checkCommentLanguage()` in `scripts/rules.mjs` fails on Cyrillic in code comments (`//` and `/* */`
+  in Go, TS, JS and CSS; `#` in shell, YAML, `Makefile`, `Dockerfile*` and `stand/*.template`; `--`
+  in SQL) and in `summary` and `description` of `api/openapi.yaml`. String literals are not checked.
 
 ## Alternatives
 

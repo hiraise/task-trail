@@ -30,7 +30,7 @@ func sign(t *testing.T, secret string, claims jwt.MapClaims) string {
 	t.Helper()
 	signed, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
 	if err != nil {
-		t.Fatalf("подпись токена: %v", err)
+		t.Fatalf("signing the token: %v", err)
 	}
 	return signed
 }
@@ -39,12 +39,12 @@ func requireCode(t *testing.T, err error, code domain.ErrorCode) {
 	t.Helper()
 	var domainErr *domain.DomainError
 	if !errors.As(err, &domainErr) || domainErr.Code != code {
-		t.Fatalf("ожидалась ошибка %s, получено %v", code, err)
+		t.Fatalf("expected error %s, got %v", code, err)
 	}
 }
 
-// Токен с нашей подписью, но без строкового sub или jti раньше ронял обработчик паникой
-// в domain.NewErr; теперь это ошибка PARSE_TOKEN_FAILED.
+// A token with our signature but without a string sub or jti used to crash the handler with a panic
+// in domain.NewErr; now it is a PARSE_TOKEN_FAILED error.
 func TestVerifyTokenWithBrokenClaims(t *testing.T) {
 	service := newService(clock.New(start))
 	exp := start.Add(time.Minute).Unix()
@@ -65,35 +65,35 @@ func TestVerifyValidTokens(t *testing.T) {
 
 	userID, err := service.VerifyAccessToken(sign(t, atSecret, jwt.MapClaims{"exp": exp, "sub": "user"}))
 	if err != nil || userID != "user" {
-		t.Fatalf("access-токен: получено %q, %v", userID, err)
+		t.Fatalf("access token: got %q, %v", userID, err)
 	}
 
 	userID, jti, err := service.VerifyRefreshToken(sign(t, rtSecret, jwt.MapClaims{"exp": exp, "sub": "user", "jti": "token"}))
 	if err != nil || userID != "user" || jti != "token" {
-		t.Fatalf("refresh-токен: получено %q, %q, %v", userID, jti, err)
+		t.Fatalf("refresh token: got %q, %q, %v", userID, jti, err)
 	}
 }
 
-// Срок токена считается по часам сервера (ADR-0022): и при выдаче, и при проверке.
+// Token expiry follows the server clock (ADR-0022): both when issuing and when verifying.
 func TestTokenLifetimeFollowsClock(t *testing.T) {
 	c := clock.New(start)
 	service := newService(c)
 
 	at, err := service.GenerateAccessToken("user")
 	if err != nil {
-		t.Fatalf("выдача access-токена: %v", err)
+		t.Fatalf("issuing the access token: %v", err)
 	}
 	if !at.ExpiredAt.Equal(start.Add(time.Minute)) {
-		t.Fatalf("срок access-токена %v, ожидался %v", at.ExpiredAt, start.Add(time.Minute))
+		t.Fatalf("access token expiry %v, expected %v", at.ExpiredAt, start.Add(time.Minute))
 	}
 	rt, err := service.GenerateRefreshToken("user", &entity.RefreshToken{ID: "token", ExpiredAt: start.Add(time.Hour)})
 	if err != nil {
-		t.Fatalf("выдача refresh-токена: %v", err)
+		t.Fatalf("issuing the refresh token: %v", err)
 	}
 
 	c.Advance(59 * time.Second)
 	if _, err := service.VerifyAccessToken(at.Token); err != nil {
-		t.Fatalf("access-токен до истечения срока: %v", err)
+		t.Fatalf("access token before expiry: %v", err)
 	}
 
 	c.Advance(2 * time.Second)

@@ -1,9 +1,9 @@
-/** Тайм-аут запроса к API по умолчанию. */
+/** Default API request timeout. */
 export const REQUEST_TIMEOUT_MS = 5_000;
 
 /**
- * Тайм-аут запросов, которые шлют письма в самом запросе (ADR-0017): сброс пароля, участники,
- * создание проекта, настройки почты. Сервер ждёт SMTP до 10 секунд и отвечает до 15 —
- * контракт просит клиента ждать не меньше 20 секунд (addProjectMembers в api/openapi.yaml).
+ * Timeout for requests that send emails within the request (ADR-0017): password reset, members,
+ * project creation, mail settings. The server waits for SMTP up to 10 seconds and responds within 15 —
+ * the contract asks the client to wait at least 20 seconds (addProjectMembers in api/openapi.yaml).
  */
 export const MAIL_REQUEST_TIMEOUT_MS = 20_000;

@@ -10,7 +10,7 @@ import { canInviteMembers } from "@/shared/utils/userRole";
 import { MemberGroups } from "../components";
 import { useAddMembers, useProject, useProjectMembers } from "../hooks";
 
-/** Участники проекта — страница телефона; шире участники показаны на странице проекта. */
+/** Project members — a phone page; wider, members are shown on the project page. */
 export function ProjectMembersPage() {
   const { id: projectId } = useParams({ from: "/_main/projects/$id/members" });
 

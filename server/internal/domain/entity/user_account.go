@@ -11,8 +11,8 @@ type UserID string
 
 type Email string
 
-// NewEmail приводит почту к нижнему регистру и обрезает пробелы по краям — до сравнения
-// и до записи (ADR-0016): так Ivan@Example.com и ivan@example.com — один аккаунт.
+// NewEmail lowercases the email and trims surrounding spaces — before comparison
+// and before saving (ADR-0016): so Ivan@Example.com and ivan@example.com are one account.
 func NewEmail(raw string) Email {
 	return Email(strings.ToLower(strings.TrimSpace(raw)))
 }
@@ -22,9 +22,9 @@ type UserAccount struct {
 	Email        Email
 	PasswordHash string
 	Username     *string
-	// AvatarID — ID файла аватарки (ADR-0013) или nil.
+	// AvatarID — the avatar file ID (ADR-0013) or nil.
 	AvatarID *FileID
-	// IsAdmin — администратор сервиса (ADR-0014).
+	// IsAdmin — a service administrator (ADR-0014).
 	IsAdmin    bool
 	VerifiedAt *time.Time
 	CreatedAt  time.Time
@@ -59,8 +59,8 @@ func (u *UserAccount) ChangePassword(newPassword string, pwdService password.Pas
 	return nil
 }
 
-// ResetPassword задаёт пароль по ссылке сброса: старый пароль человек не помнит, поэтому
-// и совпадение с ним не проверяется.
+// ResetPassword sets the password by a reset link: the person does not remember the old password, so
+// a match with it is not checked.
 func (u *UserAccount) ResetPassword(newPassword string, pwdHasher password.PasswordHasher, now time.Time) error {
 	newHash, err := pwdHasher.HashPassword(newPassword)
 	if err != nil {
@@ -71,14 +71,14 @@ func (u *UserAccount) ResetPassword(newPassword string, pwdHasher password.Passw
 	return nil
 }
 
-// Rename меняет имя; nil — имени нет, другим показывается почта (DisplayName).
+// Rename changes the name; nil — no name, others see the email (DisplayName).
 func (u *UserAccount) Rename(username *string, now time.Time) {
 	u.Username = username
 	u.UpdatedAt = now
 }
 
-// ReplaceAvatar ставит новую аватарку и возвращает прежнюю или nil: она больше не нужна,
-// её файл помечается удалённым (ADR-0013).
+// ReplaceAvatar sets a new avatar and returns the previous one or nil: it is no longer needed,
+// its file is marked deleted (ADR-0013).
 func (u *UserAccount) ReplaceAvatar(fileID FileID, now time.Time) (previous *FileID) {
 	previous = u.AvatarID
 	u.AvatarID = &fileID
@@ -86,9 +86,9 @@ func (u *UserAccount) ReplaceAvatar(fileID FileID, now time.Time) (previous *Fil
 	return previous
 }
 
-// SetAdmin назначает или снимает администратора сервиса (ADR-0014). admins — сколько
-// администраторов в сервисе сейчас: последнего снять нельзя, LAST_ADMIN. Считай их
-// под UserRepository.LockAdmins, иначе два встречных снятия оставят сервис без администраторов.
+// SetAdmin grants or removes service administrator rights (ADR-0014). admins — how many
+// administrators the service has now: the last one cannot be removed, LAST_ADMIN. Count them
+// under UserRepository.LockAdmins, otherwise two concurrent removals leave the service without administrators.
 func (u *UserAccount) SetAdmin(isAdmin bool, admins int, now time.Time) error {
 	if u.IsAdmin == isAdmin {
 		return nil
@@ -101,7 +101,7 @@ func (u *UserAccount) SetAdmin(isAdmin bool, admins int, now time.Time) error {
 	return nil
 }
 
-// DisplayName — как называть человека другим: имя, а если его нет — почта.
+// DisplayName — how to name the person to others: the name, or the email if there is none.
 func DisplayName(username *string, email Email) string {
 	if username != nil && *username != "" {
 		return *username

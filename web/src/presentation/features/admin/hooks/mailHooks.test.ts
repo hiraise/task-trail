@@ -32,7 +32,7 @@ const withMail: ServiceSettings = {
 };
 const withoutMail: ServiceSettings = { serviceUrl: "http://localhost:3000", mail: undefined };
 
-/** Кэш: настройки сервиса и публичные настройки, которые веб читает до входа. */
+/** Cache: service settings and public settings, which the web reads before sign-in. */
 function setup<T>(useHook: () => T, settings: ServiceSettings) {
   const queryClient = new QueryClient();
 
@@ -54,12 +54,12 @@ const isInvalidated = (queryClient: QueryClient, queryKey: readonly unknown[]) =
 
 const apiError = (code: ApiErrorCode) => new AppError(AppErrorType.SERVER, code, { code });
 
-describe("почта в настройках сервиса", () => {
+describe("mail in service settings", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("сохранение кладёт ответ в кэш и перечитывает mailEnabled", async () => {
+  it("saving puts the response into the cache and refetches mailEnabled", async () => {
     vi.mocked(adminRepository.saveMail).mockResolvedValue(withMail);
     const { queryClient, result } = setup(useSaveMailSettings, withoutMail);
 
@@ -71,7 +71,7 @@ describe("почта в настройках сервиса", () => {
     expect(isInvalidated(queryClient, QUERY_KEYS.settings.public)).toBe(true);
   });
 
-  it("отключение убирает почту из настроек и перечитывает mailEnabled", async () => {
+  it("disabling removes mail from the settings and refetches mailEnabled", async () => {
     vi.mocked(adminRepository.disableMail).mockResolvedValue();
     const { queryClient, result } = setup(useDisableMail, withMail);
 
@@ -82,7 +82,7 @@ describe("почта в настройках сервиса", () => {
     expect(isInvalidated(queryClient, QUERY_KEYS.settings.public)).toBe(true);
   });
 
-  it("тестовое письмо без почты — текст для администратора, настройки перечитываются", async () => {
+  it("test email without mail: a text for the administrator, settings are refetched", async () => {
     vi.mocked(adminRepository.sendTestMail).mockRejectedValue(apiError("MAIL_DISABLED"));
     const { queryClient, result } = setup(useSendTestMail, withMail);
 
@@ -94,7 +94,7 @@ describe("почта в настройках сервиса", () => {
     expect(isInvalidated(queryClient, QUERY_KEYS.settings.public)).toBe(true);
   });
 
-  it("SMTP не принял тестовое письмо — текст для администратора, а не «попробуйте позже»", async () => {
+  it("SMTP rejected the test email: a text for the administrator, not `try again later`", async () => {
     vi.mocked(adminRepository.sendTestMail).mockRejectedValue(apiError("MAIL_SEND_FAILED"));
     const { result } = setup(useSendTestMail, withMail);
 

@@ -12,11 +12,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Ключи pg_advisory_xact_lock.
+// Keys for pg_advisory_xact_lock.
 const (
-	// registrationLockKey — регистрация первого аккаунта (ADR-0016).
+	// registrationLockKey: registration of the first account (ADR-0016).
 	registrationLockKey int64 = 0x7461736b_00000001
-	// adminsLockKey — назначение и снятие администраторов сервиса (ADR-0014).
+	// adminsLockKey: granting and revoking service administrators (ADR-0014).
 	adminsLockKey int64 = 0x7461736b_00000002
 )
 
@@ -73,8 +73,8 @@ func (r *PGUserRepository) GetForUpdate(ctx context.Context, id entity.UserID) (
 	return r.getOne(ctx, `SELECT `+userColumns+` FROM users WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`, id)
 }
 
-// GetVisible: общий проект или задача автора в проекте viewer — только в неудалённых
-// проектах (ADR-0001); удалённые задачи автора не показывают.
+// GetVisible: a shared project, or a task authored by the user in a project of viewer — only in non-deleted
+// projects (ADR-0001); the author's deleted tasks do not count.
 func (r *PGUserRepository) GetVisible(ctx context.Context, id entity.UserID, viewer entity.UserID) (*entity.UserAccount, error) {
 	query := `
 		SELECT ` + userColumns + `
@@ -99,7 +99,7 @@ func (r *PGUserRepository) GetVisible(ctx context.Context, id entity.UserID, vie
 	return r.getOne(ctx, query, id, viewer)
 }
 
-// ListCandidates: люди из неудалённых проектов userID, кроме него самого и участников exclude.
+// ListCandidates: people from userID's non-deleted projects, except userID and the members in exclude.
 func (r *PGUserRepository) ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error) {
 	query := `
 		SELECT ` + userColumns + `
@@ -127,7 +127,7 @@ func (r *PGUserRepository) ListCandidates(ctx context.Context, userID entity.Use
 	return users, nil
 }
 
-// userColumns — колонки пользователя для scanUser; userColumnsOf — они же с псевдонимом таблицы.
+// userColumns are the user columns for scanUser; userColumnsOf is the same with a table alias.
 const userColumns = `id, email, password_hash, username, avatar_id, is_admin, verified_at, created_at, updated_at`
 
 func userColumnsOf(alias string) string {
@@ -135,7 +135,7 @@ func userColumnsOf(alias string) string {
 		alias + `.is_admin, ` + alias + `.verified_at, ` + alias + `.created_at, ` + alias + `.updated_at`
 }
 
-// getOne читает одного пользователя запросом, который выбирает колонки userColumns.
+// getOne reads one user with a query that selects the userColumns columns.
 func (r *PGUserRepository) getOne(ctx context.Context, query string, args ...any) (*entity.UserAccount, error) {
 	user, err := scanUser(r.getDb(ctx).QueryRow(ctx, query, args...), r.factory)
 	if err != nil {
@@ -144,7 +144,7 @@ func (r *PGUserRepository) getOne(ctx context.Context, query string, args ...any
 	return user, nil
 }
 
-// scanUser читает колонки userColumns и затем extra.
+// scanUser reads the userColumns columns and then extra.
 func scanUser(row pgx.Row, f *factory.UserFactory, extra ...any) (*entity.UserAccount, error) {
 	var id, email, passwordHash string
 	var username, avatarID *string
@@ -194,11 +194,11 @@ func (r *PGUserRepository) LockRegistration(ctx context.Context) error {
 	return r.advisoryLock(ctx, registrationLockKey, "LockRegistration")
 }
 
-// advisoryLock берёт pg_advisory_xact_lock с ключом key до конца транзакции; method — для ошибки.
+// advisoryLock takes pg_advisory_xact_lock with key until the end of the transaction; method is for the error.
 func (r *PGUserRepository) advisoryLock(ctx context.Context, key int64, method string) error {
 	if extractTx(ctx) == nil {
-		// Вне транзакции блокировка снимется сразу после запроса и ничего не защитит
-		return domain.ErrRepoInternal(1, errors.New(method+" вызван вне транзакции"))
+		// Outside a transaction the lock is released right after the query and protects nothing
+		return domain.ErrRepoInternal(1, errors.New(method+" called outside a transaction"))
 	}
 	if _, err := r.getDb(ctx).Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, key); err != nil {
 		return r.handleError(err)

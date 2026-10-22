@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-// Optional — поле тела запроса, которое можно не передать или передать null (ADR-0018:
-// пустое значение — null). Set — поле есть в запросе; Value — nil, если пришёл null.
+// Optional is a request body field that may be omitted or set to null (ADR-0018:
+// an empty value is null). Set means the field is in the request; Value is nil if null came.
 //
-// Проверки из тега binding применяются к значению, когда оно не null: `binding:"omitnil,max=100"`.
-// Для этого каждый тип Optional[T] зарегистрирован в RegisterValidators (optionalValue[T]).
-// Обязательное поле, которое может быть null, проверяет проверка структуры запроса
-// (RegisterValidators): тег required не отличит отсутствие поля от null. Значение не того
-// типа encoding/json сообщает без имени поля: ответ — VALIDATION_FAILED с details null.
+// Checks from the binding tag apply to the value when it is not null: `binding:"omitnil,max=100"`.
+// For that, each Optional[T] type is registered in RegisterValidators (optionalValue[T]).
+// A required field that may be null is checked by the request struct validation
+// (RegisterValidators): the required tag cannot tell a missing field from null. encoding/json
+// reports a value of the wrong type without the field name: the response is VALIDATION_FAILED with details null.
 type Optional[T any] struct {
 	Set   bool
 	Value *T
@@ -35,13 +35,13 @@ func (o *Optional[T]) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// optionalValue отдаёт валидатору значение поля: nil при null и при отсутствии.
+// optionalValue gives the validator the field value: nil when null or missing.
 func optionalValue[T any](field reflect.Value) any {
 	return field.Interface().(Optional[T]).Value
 }
 
-// FieldErrors — ошибки проверки, найденные не валидатором: путь поля → что с ним не так.
-// Ответ — VALIDATION_FAILED с этими полями в details.
+// FieldErrors are validation errors found outside the validator: field path → what is wrong with it.
+// The response is VALIDATION_FAILED with these fields in details.
 type FieldErrors map[string]string
 
 func (e FieldErrors) Error() string {

@@ -27,20 +27,20 @@ describe("adminRepository.saveMail", () => {
     http.put.mockResolvedValue({ serviceUrl: "http://localhost:3000", mail: null });
   });
 
-  it("пароль не введён — поля password нет: сервер оставит сохранённый", async () => {
+  it("no password entered — no password field: the server keeps the saved one", async () => {
     await adminRepository.saveMail(mail);
 
     expect(sentBody()).toEqual(mail);
     expect(sentBody()).not.toHaveProperty("password");
   });
 
-  it("password: undefined — тоже без поля, а не null", async () => {
+  it("password: undefined — also no field, not null", async () => {
     await adminRepository.saveMail({ ...mail, password: undefined });
 
     expect(sentBody()).not.toHaveProperty("password");
   });
 
-  it("null удаляет пароль, строка — новый пароль", async () => {
+  it("null deletes the password, a string is a new password", async () => {
     await adminRepository.saveMail({ ...mail, password: null });
     expect(sentBody()).toHaveProperty("password", null);
 
@@ -48,13 +48,13 @@ describe("adminRepository.saveMail", () => {
     expect(http.put.mock.calls[1][1]).toHaveProperty("password", "secret");
   });
 
-  it("без входа на SMTP логин уходит как null", async () => {
+  it("without SMTP login the username is sent as null", async () => {
     await adminRepository.saveMail({ ...mail, username: null });
 
     expect(sentBody()).toHaveProperty("username", null);
   });
 
-  it("ждёт проверку SMTP дольше обычного запроса", async () => {
+  it("waits for the SMTP check longer than a regular request", async () => {
     await adminRepository.saveMail(mail);
 
     expect(http.put.mock.calls[0][2]).toEqual({ timeout: MAIL_REQUEST_TIMEOUT_MS });
@@ -62,7 +62,7 @@ describe("adminRepository.saveMail", () => {
 });
 
 describe("adminRepository.sendTestMail", () => {
-  it("письмо уходит в самом запросе — тайм-аут почты", async () => {
+  it("the email is sent within the request — mail timeout", async () => {
     http.post.mockResolvedValue(undefined);
 
     await adminRepository.sendTestMail();

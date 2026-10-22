@@ -7,7 +7,7 @@ import { ROUTES } from "@/shared/config/routes";
 import { queryClient } from "../../__root";
 
 export const Route = createFileRoute("/auth/signup/")({
-  // Регистрация открыта, только пока в сервисе нет пользователей (ADR-0016)
+  // Sign-up is open only while the service has no users (ADR-0016)
   beforeLoad: async () => {
     const settings = await queryClient.ensureQueryData(publicSettingsQuery);
 

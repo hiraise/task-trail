@@ -11,7 +11,7 @@ interface InlineFormButtonsProps {
   onCancel: () => void;
 }
 
-/** «Отменить» и «Сохранить» формы в карточке: видны, пока форма в фокусе или изменена. */
+/** "Cancel" and "Save" of a form in a card: visible while the form is focused or changed. */
 export function InlineFormButtons({ visible, submitDisabled, onCancel }: InlineFormButtonsProps) {
   return (
     <AnimatePresence mode="wait">

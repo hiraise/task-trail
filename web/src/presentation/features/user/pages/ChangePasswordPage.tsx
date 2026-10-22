@@ -3,7 +3,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { ChangePasswordForm } from "../components";
 
-/** Смена пароля отдельной страницей — с телефона; на десктопе та же форма стоит в профиле. */
+/** Password change as a separate page, from a phone; on a desktop the same form is in the profile. */
 export function ChangePasswordPage() {
   return (
     <PagesMobileTemplate topBarBackTitle={TEXTS.profile.changePassword2}>

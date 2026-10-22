@@ -12,19 +12,19 @@ import {
 const roles: ProjectRole[] = ["owner", "admin", "member"];
 const allowed = (check: (role: ProjectRole) => boolean) => roles.filter(check);
 
-describe("права по роли в проекте", () => {
-  it("проект меняют и зовут людей владелец и администратор", () => {
+describe("permissions by project role", () => {
+  it("the owner and admin edit the project and invite people", () => {
     expect(allowed(canEditProject)).toEqual(["owner", "admin"]);
     expect(allowed(canInviteMembers)).toEqual(["owner", "admin"]);
   });
 
-  it("удаляет проект и меняет роли только владелец, выйти может любой, кроме него", () => {
+  it("only the owner deletes the project and changes roles; anyone but the owner can leave", () => {
     expect(allowed(canDeleteProject)).toEqual(["owner"]);
     expect(allowed(canChangeRoles)).toEqual(["owner"]);
     expect(allowed(canLeaveProject)).toEqual(["admin", "member"]);
   });
 
-  it("владелец исключает любого, кроме владельца; администратор — только участников", () => {
+  it("the owner removes anyone but the owner; an admin removes only members", () => {
     expect(allowed((target) => canRemoveMember("owner", target))).toEqual(["admin", "member"]);
     expect(allowed((target) => canRemoveMember("admin", target))).toEqual(["member"]);
     expect(allowed((target) => canRemoveMember("member", target))).toEqual([]);

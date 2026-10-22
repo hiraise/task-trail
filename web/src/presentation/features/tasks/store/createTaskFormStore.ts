@@ -2,15 +2,15 @@ import { create } from "zustand";
 
 import type { ProjectId, UserId } from "@/domain/types";
 
-// Черновик новой задачи. Окна открываются стеком и показывается только верхнее: пока открыто
-// окно выбора проекта или ответственного, форма задачи размонтирована, поэтому её поля живут
-// здесь, а не в состоянии формы. Черновик стирается после создания задачи.
+// Draft of a new task. Modals open as a stack and only the top one is shown: while the project
+// or assignee picker is open, the task form is unmounted, so its fields live here rather than
+// in the form state. The draft is cleared after the task is created.
 
 interface CreateTaskFormState {
   name: string;
   description: string;
   projectId?: ProjectId;
-  /** Ответственный — участник выбранного проекта; не участник — форма его не показывает */
+  /** Assignee — a member of the selected project; a non-member is not shown by the form */
   assigneeId?: UserId;
   setName: (name: string) => void;
   setDescription: (description: string) => void;

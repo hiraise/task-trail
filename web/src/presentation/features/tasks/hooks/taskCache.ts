@@ -4,10 +4,10 @@ import type { Task } from "@/domain/models/Task";
 import type { ProjectId, TaskId } from "@/domain/types";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-// Изменение задачи сервер возвращает самой задачей (ADR-0018): её кладём в кэш как есть,
-// а списки, где она есть, перечитываем — порядок и состав списков решает сервер.
+// The server answers a task change with the task itself (ADR-0018): it goes into the cache as is,
+// and the lists containing it are refetched — the server decides list order and contents.
 
-/** Списки задач проекта и «Мои задачи»; `countChanged` — ещё число задач в карточках проекта. */
+/** Project task lists and "My tasks"; `countChanged` — also the task count on project cards. */
 export function invalidateTaskLists(
   queryClient: QueryClient,
   projectId: ProjectId,
@@ -22,13 +22,13 @@ export function invalidateTaskLists(
   }
 }
 
-/** Задача изменилась: страница задачи показывает ответ сервера, списки с ней перечитываются. */
+/** The task changed: the task page shows the server response, lists containing it are refetched. */
 export function storeTask(queryClient: QueryClient, task: Task): void {
   queryClient.setQueryData(QUERY_KEYS.task.detail(task.id), task);
   invalidateTaskLists(queryClient, task.projectId);
 }
 
-/** Задача из уже загруженных списков: задач проекта или «Моих задач». */
+/** The task from already loaded lists: project tasks or "My tasks". */
 export function findTaskInLists(queryClient: QueryClient, taskId: TaskId): Task | undefined {
   const lists = queryClient.getQueriesData<Task[]>({
     predicate: ({ queryKey: [entity, id, sub] }) =>

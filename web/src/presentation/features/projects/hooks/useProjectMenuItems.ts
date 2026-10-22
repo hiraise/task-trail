@@ -18,7 +18,7 @@ import { useDeleteProject } from "./useDeleteProject";
 import { useLeaveProject } from "./useLeaveProject";
 import { useProject } from "./useProject";
 
-/** Действия с проектом по роли текущего пользователя в нём (shared/utils/userRole.ts). */
+/** Project actions based on the current user's role in it (shared/utils/userRole.ts). */
 export const useProjectMenuItems = (projectId: ProjectId) => {
   const { data: project } = useProject(projectId);
   const { mutate: leave } = useLeaveProject();
@@ -64,7 +64,7 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
           title: project.name,
         });
 
-        // Архива на сервере ещё нет — этап 2 (docs/roadmap.md)
+        // The server has no archive yet — stage 2 (docs/roadmap.md)
         if (result) toast.warning(`Project id: ${result} moved to archive`);
       },
       isVisible: canArchiveProject(project.role),

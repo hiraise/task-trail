@@ -1,6 +1,6 @@
 import { ICONS } from "../../shared/config/icons";
 
-// Путь приложения (VITE_ROOT_PATH, web/README.md); без переменной — корень
+// App path (VITE_ROOT_PATH, web/README.md); the root when the variable is unset
 const basePath = import.meta.env.VITE_ROOT_PATH ?? "";
 
 function addBasePath(path: string) {

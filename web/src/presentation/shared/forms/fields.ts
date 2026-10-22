@@ -1,11 +1,11 @@
 import z from "zod";
 
-// Поля форм с теми же пределами, что в контракте (api/openapi.yaml, схемы Email, Password,
-// Username, Project, Task): веб не принимает то, что сервер отвергнет, и не строже сервера.
+// Form fields with the same limits as in the contract (api/openapi.yaml, schemas Email, Password,
+// Username, Project, Task): the web accepts nothing the server rejects and is not stricter than the server.
 
 const encoder = new TextEncoder();
 
-// bcrypt учитывает только 72 байта пароля; русская буква — 2 байта в UTF-8
+// bcrypt uses only 72 bytes of a password; a Cyrillic letter is 2 bytes in UTF-8
 const PASSWORD_MAX_BYTES = 72;
 
 export const emailField = z.email("Введите корректную почту").max(254, "Почта длиннее 254 символов");
@@ -24,25 +24,25 @@ export const usernameField = z
   .min(1, "Введите имя")
   .max(100, "Имя длиннее 100 символов");
 
-// Название проекта — 1–254 символа; пробелы по краям веб обрезает сам: сервер их не трогает
+// Project name: 1–254 characters; the web trims edge spaces itself, the server does not touch them
 export const projectNameField = z
   .string()
   .trim()
   .min(1, "Введите название проекта")
   .max(254, "Название длиннее 254 символов");
 
-// Описание в контракте без предела; пустое — описания нет
+// The contract sets no limit on the description; empty means no description
 export const projectDescriptionField = z.string().trim();
 
-// Название задачи — 1–254 символа, как у проекта; «Заполните поле» — текст макета
+// Task name: 1–254 characters, like a project; "Fill in the field" is the mockup text
 export const taskNameField = z
   .string()
   .trim()
   .min(1, "Заполните поле")
   .max(254, "Название длиннее 254 символов");
 
-// Описание задачи в контракте без предела; пустое — описания нет
+// The contract sets no limit on the task description; empty means no description
 export const taskDescriptionField = z.string().trim();
 
-/** Сколько почт за раз принимает сервер (AddMembersRequest, CreateProjectRequest). */
+/** How many emails the server accepts at once (AddMembersRequest, CreateProjectRequest). */
 export const MAX_INVITE_EMAILS = 50;

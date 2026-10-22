@@ -9,36 +9,36 @@ import (
 
 type FileID string
 
-// MaxAvatarSize — предел аватарки, 5 МБ. Тот же предел — в вебе и в прокси стенда (ADR-0013).
+// MaxAvatarSize — the avatar limit, 5 MB. The same limit is in the web and in the stand proxy (ADR-0013).
 const MaxAvatarSize = 5 << 20
 
-// maxFileNameLength — сколько символов исходного имени хранить: имя нужно только для
-// «Сохранить как», а длиннее его не пропустит ни одна файловая система.
+// maxFileNameLength — how many characters of the original name to keep: the name is needed only for
+// "Save as", and no file system accepts a longer one.
 const maxFileNameLength = 255
 
-// imageTypes — картинки, которые браузер показывает сам и не выполняет: аватаркой может быть
-// только такая, остальные файлы отдаются на скачивание (ADR-0013).
+// imageTypes — images the browser shows itself and does not execute: only these can be
+// an avatar, other files are served for download (ADR-0013).
 var imageTypes = map[string]bool{
 	"image/jpeg": true,
 	"image/png":  true,
 	"image/webp": true,
 }
 
-// File — загруженный файл. Содержимое лежит в хранилище под именем ID; исходное имя и тип —
-// только здесь: путь к файлу из данных пользователя не строится (ADR-0013).
+// File — an uploaded file. Contents lie in storage under the ID name; the original name and type are
+// only here: the file path is never built from user data (ADR-0013).
 type File struct {
 	ID FileID
-	// OriginalName — имя файла у пользователя, без пути.
+	// OriginalName — the user's file name, without a path.
 	OriginalName string
-	// MimeType — тип, определённый по содержимому, а не по заголовку запроса.
+	// MimeType — the type detected from the contents, not from the request header.
 	MimeType string
 	OwnerID  UserID
-	// CreatedAt — когда файл загружен. Файл по ID не меняется, поэтому это и время его изменения.
+	// CreatedAt — when the file was uploaded. A file never changes by ID, so this is also its update time.
 	CreatedAt time.Time
 }
 
-// CleanFileName оставляет от имени файла из запроса только само имя: некоторые браузеры
-// присылают путь вида C:\fakepath\photo.png.
+// CleanFileName keeps only the name itself from the file name in the request: some browsers
+// send a path like C:\fakepath\photo.png.
 func CleanFileName(name string) string {
 	if i := strings.LastIndexAny(name, `/\`); i >= 0 {
 		name = name[i+1:]
@@ -49,8 +49,8 @@ func CleanFileName(name string) string {
 	return name
 }
 
-// CheckAvatar проверяет, годится ли файл в аватарки: JPEG, PNG или WebP до 5 МБ (ADR-0013).
-// mimeType — тип, определённый по содержимому.
+// CheckAvatar checks whether the file can be an avatar: JPEG, PNG or WebP up to 5 MB (ADR-0013).
+// mimeType — the type detected from the contents.
 func CheckAvatar(size int64, mimeType string) error {
 	if size > MaxAvatarSize {
 		return domain.ErrFileTooLarge("size", size, "limit", MaxAvatarSize)
@@ -61,8 +61,8 @@ func CheckAvatar(size int64, mimeType string) error {
 	return nil
 }
 
-// IsImage — файл можно показать в браузере: JPEG, PNG или WebP. Остальное отдаётся
-// на скачивание, иначе HTML или SVG выполнит чужой скрипт на origin веба (ADR-0013).
+// IsImage — the file can be shown in the browser: JPEG, PNG or WebP. The rest is served
+// for download, otherwise HTML or SVG would run someone else's script on the web origin (ADR-0013).
 func (f *File) IsImage() bool {
 	return imageTypes[f.MimeType]
 }

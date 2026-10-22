@@ -16,7 +16,7 @@ import type { CreateProjectFormData } from "./schema";
 import { CreateProjectSchema } from "./schema";
 
 interface CreateProjectFormProps {
-  /** Закрыть окно формы: проект создан */
+  /** Close the form modal: the project is created */
   onSubmit: () => void;
 }
 
@@ -38,7 +38,7 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
     defaultValues: { name: store.name, description: store.description },
   });
 
-  // Поля — в черновике: окно выбора участников закрывает форму (createProjectFormStore.ts)
+  // Fields live in the draft: the member picker closes the form (createProjectFormStore.ts)
   const [name, description] = useWatch({ control, name: ["name", "description"] });
 
   useEffect(() => setName(name ?? ""), [name, setName]);
@@ -60,10 +60,10 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
 
       store.reset();
       onSubmit();
-      // Окно формы уже закрыто — результат приглашений можно показать своим окном
+      // The form modal is closed — the invitation result can be shown in its own modal
       reportInvitations(project.id, invitations);
     } catch {
-      // Ошибку показал useCreateProject
+      // useCreateProject has shown the error
     }
   };
 

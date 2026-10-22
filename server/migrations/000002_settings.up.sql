@@ -1,5 +1,5 @@
--- Настройки сервиса, которые администратор меняет в интерфейсе (ADR-0015).
--- value — настройка без секретов; secret — её секрет, зашифрованный ключом из APP_SECRET.
+-- Service settings the administrator changes in the UI (ADR-0015).
+-- value — a setting without secrets; secret — its secret, encrypted with a key from APP_SECRET.
 CREATE TABLE settings (
     key VARCHAR(64) PRIMARY KEY,
     value JSONB NOT NULL,

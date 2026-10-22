@@ -1,4 +1,4 @@
-/* Общая вёрстка форм экранов доступа: поля, затем кнопка и подпись под ней */
+/* Common layout of auth screen forms: fields, then a button and a caption under it */
 
 .form {
   display: flex;

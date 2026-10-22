@@ -14,9 +14,9 @@ import { useServiceSettings } from "./useServiceSettings";
 const texts = adminTexts.users;
 
 /**
- * Действия администратора с пользователем: назначить или снять администратора (с себя — после
- * подтверждения) и сброс пароля. С почтой — письмо и, на случай потерянного ящика, ссылка;
- * без почты — только ссылка (ADR-0017). Себе сброс не нужен: пароль меняют в профиле.
+ * Administrator actions on a user: grant or revoke administrator rights (for oneself, after
+ * confirmation) and password reset. With mail, an email and, in case the mailbox is lost, a link;
+ * without mail, only a link (ADR-0017). No reset for oneself: the password is changed in the profile.
  */
 export function useAdminUserMenuItems(user: AdminUser) {
   const { data: currentUser } = useGetCurrentUser();
@@ -72,7 +72,7 @@ export function useAdminUserMenuItems(user: AdminUser) {
 
           showPasswordResetLink({ name, link });
         } catch {
-          // Ошибку показал useCreatePasswordResetLink
+          // useCreatePasswordResetLink has shown the error
         }
       },
       isVisible: !isMe,

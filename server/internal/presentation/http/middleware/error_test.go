@@ -31,7 +31,7 @@ type changePasswordReq struct {
 	NewPassword string `json:"newPassword" binding:"required,min=8"`
 }
 
-// engine собирает движок, как сервер, и вешает handler на путь из контракта.
+// engine builds the engine like the server does and mounts handler on a path from the contract.
 func engine(method, path string, handler gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	e := gin.New()
@@ -62,12 +62,12 @@ func decode(t *testing.T, rec *httptest.ResponseRecorder) (code string, details 
 		Details map[string]string `json:"details"`
 	}
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
-		t.Fatalf("ответ не JSON: %v, тело %q", err, rec.Body.String())
+		t.Fatalf("response is not JSON: %v, body %q", err, rec.Body.String())
 	}
 	return body.Code, body.Details
 }
 
-// Неразборчивый, просроченный или чужой токен — ошибка клиента: 401 UNAUTHENTICATED, а не 500.
+// An unparsable, expired or foreign token is a client error: 401 UNAUTHENTICATED, not 500.
 func TestTokenErrorsAreUnauthenticated(t *testing.T) {
 	v := contract.Load(t)
 	for _, code := range []domain.ErrorCode{
@@ -82,25 +82,25 @@ func TestTokenErrorsAreUnauthenticated(t *testing.T) {
 			e := engine(http.MethodGet, "/v1/users/me", failWith(domain.NewErr(0, code, nil)))
 			req, rec := serve(t, e, http.MethodGet, "/v1/users/me", "")
 			if got, _ := decode(t, rec); rec.Code != http.StatusUnauthorized || got != "UNAUTHENTICATED" {
-				t.Errorf("ответ %d %s, ожидался 401 UNAUTHENTICATED", rec.Code, got)
+				t.Errorf("response %d %s, expected 401 UNAUTHENTICATED", rec.Code, got)
 			}
 			v.Check(t, req, rec)
 		})
 	}
 }
 
-// Ошибка без своего ответа и ошибка не из домена — 500 INTERNAL в формате контракта.
+// An error without its own response and a non-domain error are 500 INTERNAL in the contract format.
 func TestUnknownErrorsAreInternal(t *testing.T) {
 	v := contract.Load(t)
 	for name, err := range map[string]error{
-		"ошибка репозитория": domain.ErrRepoInternal(0, errors.New("connection reset")),
-		"не из домена":       errors.New("boom"),
+		"repository error":   domain.ErrRepoInternal(0, errors.New("connection reset")),
+		"not a domain error": errors.New("boom"),
 	} {
 		t.Run(name, func(t *testing.T) {
 			e := engine(http.MethodGet, "/v1/users/me", failWith(err))
 			req, rec := serve(t, e, http.MethodGet, "/v1/users/me", "")
 			if got, _ := decode(t, rec); rec.Code != http.StatusInternalServerError || got != "INTERNAL" {
-				t.Errorf("ответ %d %s, ожидался 500 INTERNAL", rec.Code, got)
+				t.Errorf("response %d %s, expected 500 INTERNAL", rec.Code, got)
 			}
 			v.Check(t, req, rec)
 		})
@@ -112,12 +112,12 @@ func TestPanicIsInternal(t *testing.T) {
 	e := engine(http.MethodGet, "/v1/users/me", func(*gin.Context) { panic("boom") })
 	req, rec := serve(t, e, http.MethodGet, "/v1/users/me", "")
 	if got, _ := decode(t, rec); rec.Code != http.StatusInternalServerError || got != "INTERNAL" {
-		t.Errorf("ответ %d %s, ожидался 500 INTERNAL", rec.Code, got)
+		t.Errorf("response %d %s, expected 500 INTERNAL", rec.Code, got)
 	}
 	v.Check(t, req, rec)
 }
 
-// Ключи details — имена полей из JSON запроса, как обещает контракт.
+// The details keys are field names from the request JSON, as the contract promises.
 func TestValidationDetails(t *testing.T) {
 	v := contract.Load(t)
 	bind := func(c *gin.Context) {
@@ -133,10 +133,10 @@ func TestValidationDetails(t *testing.T) {
 		body  string
 		field string
 	}{
-		{"короткий пароль", `{"oldPassword":"12345678","newPassword":"123"}`, "newPassword"},
-		{"нет поля", `{"oldPassword":"12345678"}`, "newPassword"},
-		{"лишнее поле", `{"oldPassword":"12345678","newPassword":"12345678","x":1}`, "x"},
-		{"неверный тип", `{"oldPassword":"12345678","newPassword":42}`, "newPassword"},
+		{"short password", `{"oldPassword":"12345678","newPassword":"123"}`, "newPassword"},
+		{"missing field", `{"oldPassword":"12345678"}`, "newPassword"},
+		{"unknown field", `{"oldPassword":"12345678","newPassword":"12345678","x":1}`, "x"},
+		{"wrong type", `{"oldPassword":"12345678","newPassword":42}`, "newPassword"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -144,10 +144,10 @@ func TestValidationDetails(t *testing.T) {
 			req, rec := serve(t, e, http.MethodPost, "/v1/auth/password/change", c.body)
 			code, details := decode(t, rec)
 			if rec.Code != http.StatusUnprocessableEntity || code != "VALIDATION_FAILED" {
-				t.Fatalf("ответ %d %s, ожидался 422 VALIDATION_FAILED", rec.Code, code)
+				t.Fatalf("response %d %s, expected 422 VALIDATION_FAILED", rec.Code, code)
 			}
 			if _, ok := details[c.field]; !ok {
-				t.Errorf("в details нет %q: %v", c.field, details)
+				t.Errorf("details lack %q: %v", c.field, details)
 			}
 			v.Check(t, req, rec)
 		})
@@ -158,6 +158,6 @@ func TestUnknownPathIsNotFound(t *testing.T) {
 	e := engine(http.MethodGet, "/v1/users/me", func(c *gin.Context) { c.Status(http.StatusNoContent) })
 	_, rec := serve(t, e, http.MethodGet, "/v1/nope", "")
 	if got, _ := decode(t, rec); rec.Code != http.StatusNotFound || got != "NOT_FOUND" {
-		t.Errorf("ответ %d %s, ожидался 404 NOT_FOUND", rec.Code, got)
+		t.Errorf("response %d %s, expected 404 NOT_FOUND", rec.Code, got)
 	}
 }

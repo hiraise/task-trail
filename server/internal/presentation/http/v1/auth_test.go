@@ -39,7 +39,7 @@ func registerBody(email string) map[string]string {
 	}
 }
 
-// registerAdmin создаёт первый аккаунт; сессия остаётся в cookie сервера s.
+// registerAdmin creates the first account; the session stays in the cookies of server s.
 func registerAdmin(t *testing.T, s *apitest.Server) currentUser {
 	t.Helper()
 	rec := s.Do(http.MethodPost, "/v1/auth/register", registerBody("admin@example.com"))
@@ -55,28 +55,28 @@ func login(t *testing.T, s *apitest.Server, email, pwd string) {
 
 func rtCookie(value string) *http.Cookie { return &http.Cookie{Name: "rt", Value: value} }
 
-// Пока пользователей нет, регистрация открыта; первый аккаунт — администратор, сразу входит,
-// почта приводится к норме, адрес сервиса сохраняется. Второй регистрации нет (ADR-0016).
+// While there are no users, registration is open; the first account is an administrator, signs in at once,
+// the email is normalized, the service address is saved. There is no second registration (ADR-0016).
 func TestRegisterFirstAccount(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 
 	rec := s.Do(http.MethodGet, "/v1/settings/public", nil)
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if got := apitest.Decode[publicSettings](t, rec); got != (publicSettings{RegistrationOpen: true}) {
-		t.Fatalf("настройки до регистрации: %+v", got)
+		t.Fatalf("settings before registration: %+v", got)
 	}
 
 	rec = s.Do(http.MethodPost, "/v1/auth/register", registerBody("  Admin@Example.COM "))
 	apitest.RequireStatus(t, rec, http.StatusCreated)
 	user := apitest.Decode[currentUser](t, rec)
 	if user.Email != "admin@example.com" || !user.IsAdmin || user.Username == nil || *user.Username != "Админ" || user.AvatarID != nil {
-		t.Fatalf("пользователь: %+v", user)
+		t.Fatalf("user: %+v", user)
 	}
 	if s.Cookie("at", "/v1/projects") == "" || s.Cookie("rt", "/v1/auth/refresh") == "" {
-		t.Fatal("после регистрации нет cookie сессии")
+		t.Fatal("no session cookie after registration")
 	}
 	if s.Cookie("rt", "/v1/projects") != "" {
-		t.Fatal("refresh-токен уходит не только эндпоинтам доступа")
+		t.Fatal("the refresh token is sent to more than the access endpoints")
 	}
 	apitest.RequireStatus(t, s.Do(http.MethodGet, "/v1/auth/check", nil), http.StatusNoContent)
 
@@ -85,18 +85,18 @@ func TestRegisterFirstAccount(t *testing.T) {
 		t.Fatal(err)
 	}
 	if serviceURL != "https://example.com/tasktrail" {
-		t.Fatalf("адрес сервиса %q", serviceURL)
+		t.Fatalf("service address %q", serviceURL)
 	}
 
 	rec = s.Do(http.MethodGet, "/v1/settings/public", nil)
 	if got := apitest.Decode[publicSettings](t, rec); got.RegistrationOpen {
-		t.Fatalf("регистрация открыта после первого аккаунта: %+v", got)
+		t.Fatalf("registration is open after the first account: %+v", got)
 	}
 	apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/register", registerBody("second@example.com")),
 		http.StatusConflict, "REGISTRATION_CLOSED")
 }
 
-// Одновременные регистрации не создают двух «первых»: проверка и создание — под блокировкой.
+// Concurrent registrations do not create two "first" accounts: the check and creation are under a lock.
 func TestRegisterRace(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	const attempts = 5
@@ -118,11 +118,11 @@ func TestRegisterRace(t *testing.T) {
 			created++
 		case http.StatusConflict:
 		default:
-			t.Errorf("ответ %d", code)
+			t.Errorf("response %d", code)
 		}
 	}
 	if created != 1 {
-		t.Fatalf("создано аккаунтов: %d", created)
+		t.Fatalf("accounts created: %d", created)
 	}
 }
 
@@ -131,14 +131,14 @@ func TestRegisterValidation(t *testing.T) {
 	cases := []struct {
 		name, field, value string
 	}{
-		{"почта", "email", "not-an-email"},
-		{"короткий пароль", "password", "1234567"},
-		// 37 русских букв — 74 байта: длиннее предела bcrypt, хотя символов меньше 72
-		{"пароль длиннее 72 байт", "password", strings.Repeat("я", 37)},
-		{"пустое имя", "username", ""},
-		{"длинное имя", "username", strings.Repeat("и", 101)},
-		{"адрес не http", "serviceUrl", "ftp://example.com"},
-		{"адрес без схемы", "serviceUrl", "example.com/tasktrail"},
+		{"email", "email", "not-an-email"},
+		{"short password", "password", "1234567"},
+		// 37 Cyrillic letters are 74 bytes: over the bcrypt limit, though fewer than 72 characters
+		{"password longer than 72 bytes", "password", strings.Repeat("я", 37)},
+		{"empty name", "username", ""},
+		{"long name", "username", strings.Repeat("и", 101)},
+		{"non-http address", "serviceUrl", "ftp://example.com"},
+		{"address without scheme", "serviceUrl", "example.com/tasktrail"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -146,19 +146,19 @@ func TestRegisterValidation(t *testing.T) {
 			body[c.field] = c.value
 			got := apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/register", body), http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 			if _, ok := got.Details[c.field]; !ok {
-				t.Errorf("в details нет %q: %v", c.field, got.Details)
+				t.Errorf("details lack %q: %v", c.field, got.Details)
 			}
 		})
 	}
-	t.Run("лишнее поле", func(t *testing.T) {
+	t.Run("unknown field", func(t *testing.T) {
 		got := apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/register",
 			`{"email":"a@b.cd","password":"password-1","username":"А","serviceUrl":"https://a.b","isAdmin":true}`),
 			http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 		if _, ok := got.Details["isAdmin"]; !ok {
-			t.Errorf("в details нет isAdmin: %v", got.Details)
+			t.Errorf("details lack isAdmin: %v", got.Details)
 		}
 	})
-	t.Run("пустое тело", func(t *testing.T) {
+	t.Run("empty body", func(t *testing.T) {
 		apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/register", nil), http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 	})
 }
@@ -170,25 +170,25 @@ func TestLogin(t *testing.T) {
 	rec := s.Do(http.MethodPost, "/v1/auth/login", map[string]string{"email": " ADMIN@example.com", "password": password})
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if got := apitest.Decode[currentUser](t, rec); !reflect.DeepEqual(got, admin) {
-		t.Fatalf("вошёл %+v, ожидался %+v", got, admin)
+		t.Fatalf("signed in as %+v, expected %+v", got, admin)
 	}
 
 	for name, body := range map[string]map[string]string{
-		"неверный пароль": {"email": "admin@example.com", "password": "wrong-password"},
-		"нет такой почты": {"email": "nobody@example.com", "password": password},
+		"wrong password": {"email": "admin@example.com", "password": "wrong-password"},
+		"unknown email":  {"email": "nobody@example.com", "password": password},
 	} {
 		t.Run(name, func(t *testing.T) {
 			apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/login", body), http.StatusUnauthorized, "INVALID_CREDENTIALS")
 		})
 	}
-	t.Run("пароль длиннее 72 байт", func(t *testing.T) {
+	t.Run("password longer than 72 bytes", func(t *testing.T) {
 		body := map[string]string{"email": "admin@example.com", "password": strings.Repeat("a", 73)}
 		apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/login", body), http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 	})
 }
 
-// Каждый refresh-токен обменивается один раз. Тот же токен в течение 30 секунд — параллельный
-// запрос другой вкладки, позже — кража: все сессии пользователя закрываются.
+// Each refresh token is exchanged once. The same token within 30 seconds is a parallel
+// request from another tab; later it is theft: all the user's sessions are revoked.
 func TestRefresh(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -197,7 +197,7 @@ func TestRefresh(t *testing.T) {
 	apitest.RequireStatus(t, s.Do(http.MethodPost, "/v1/auth/refresh", nil), http.StatusNoContent)
 	second := s.Cookie("rt", "/v1/auth/refresh")
 	if second == "" || second == first {
-		t.Fatal("обновление не выдало новый refresh-токен")
+		t.Fatal("refresh did not issue a new refresh token")
 	}
 
 	s.Clock.Advance(entity.RefreshTokenReuseGrace)
@@ -206,15 +206,15 @@ func TestRefresh(t *testing.T) {
 	s.Clock.Advance(time.Second)
 	apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/refresh", nil, rtCookie(first)), http.StatusUnauthorized, "UNAUTHENTICATED")
 	if s.Cookie("rt", "/v1/auth/refresh") != "" {
-		t.Error("после отказа cookie refresh-токена не удалена")
+		t.Error("refresh token cookie not deleted after rejection")
 	}
-	// Отзыв всех токенов пережил ошибку запроса: токен из «другой вкладки» тоже закрыт
+	// Revoking all tokens survived the request error: the token from the "other tab" is revoked too
 	apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/refresh", nil, rtCookie(second)), http.StatusUnauthorized, "UNAUTHENTICATED")
 
-	t.Run("без cookie", func(t *testing.T) {
+	t.Run("no cookie", func(t *testing.T) {
 		apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/refresh", nil), http.StatusUnauthorized, "UNAUTHENTICATED")
 	})
-	t.Run("истёк", func(t *testing.T) {
+	t.Run("expired", func(t *testing.T) {
 		login(t, s, "admin@example.com", password)
 		s.Clock.Advance(31 * 24 * time.Hour)
 		apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/refresh", nil, rtCookie(s.Cookie("rt", "/v1/auth/refresh"))),
@@ -222,18 +222,18 @@ func TestRefresh(t *testing.T) {
 	})
 }
 
-// Сбой базы — 500, а cookie сессии остаются: после восстановления вход не нужен.
+// A database failure is 500, and the session cookies stay: no sign-in needed after recovery.
 func TestRefreshKeepsCookiesOnServerError(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
 	s.Pool.Close()
 	apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/refresh", nil), http.StatusInternalServerError, "INTERNAL")
 	if s.Cookie("rt", "/v1/auth/refresh") == "" || s.Cookie("at", "/v1/projects") == "" {
-		t.Fatal("cookie сессии удалены из-за сбоя сервера")
+		t.Fatal("session cookies deleted because of a server failure")
 	}
 }
 
-// Access-токен живёт 15 минут, потом нужен обмен refresh-токена.
+// An access token lives 15 minutes, then the refresh token must be exchanged.
 func TestAccessTokenExpires(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -250,17 +250,17 @@ func TestLogout(t *testing.T) {
 
 	apitest.RequireStatus(t, s.Do(http.MethodPost, "/v1/auth/logout", nil), http.StatusNoContent)
 	if s.Cookie("at", "/v1/projects") != "" || s.Cookie("rt", "/v1/auth/refresh") != "" {
-		t.Fatal("выход не удалил cookie")
+		t.Fatal("logout did not delete the cookies")
 	}
 	apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/refresh", nil, rtCookie(rt)), http.StatusUnauthorized, "UNAUTHENTICATED")
 
-	// Нет сессии или токен недействителен — выход всё равно удаляет cookie
+	// No session or an invalid token — logout still deletes the cookies
 	apitest.RequireStatus(t, s.Do(http.MethodPost, "/v1/auth/logout", nil), http.StatusNoContent)
 	apitest.RequireStatus(t, s.Do(http.MethodPost, "/v1/auth/logout", nil, rtCookie("garbage")), http.StatusNoContent)
 	apitest.RequireStatus(t, s.Do(http.MethodPost, "/v1/auth/logout", nil, rtCookie(rt)), http.StatusNoContent)
 }
 
-// Выход с украденным токеном закрывает и сессию настоящего владельца.
+// Logout with a stolen token revokes the real owner's session too.
 func TestLogoutWithReusedToken(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -272,8 +272,8 @@ func TestLogoutWithReusedToken(t *testing.T) {
 	apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/refresh", nil), http.StatusUnauthorized, "UNAUTHENTICATED")
 }
 
-// Старый API ставил refresh-токен с путём /v1/auth/refresh. Такая cookie точнее новой
-// и ушла бы первой, поэтому вход её удаляет.
+// The old API set the refresh token with path /v1/auth/refresh. Such a cookie is more specific than the new one
+// and would be sent first, so sign-in deletes it.
 func TestLegacyRefreshCookieRemoved(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -298,7 +298,7 @@ func TestChangePassword(t *testing.T) {
 	got := apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/password/change", body(password, strings.Repeat("я", 37))),
 		http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 	if _, ok := got.Details["newPassword"]; !ok {
-		t.Errorf("в details нет newPassword: %v", got.Details)
+		t.Errorf("details lack newPassword: %v", got.Details)
 	}
 
 	apitest.RequireStatus(t, s.Do(http.MethodPost, "/v1/auth/password/change", body(password, "new-password")), http.StatusNoContent)
@@ -306,7 +306,7 @@ func TestChangePassword(t *testing.T) {
 	apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/login", map[string]string{"email": "admin@example.com", "password": password}),
 		http.StatusUnauthorized, "INVALID_CREDENTIALS")
 
-	t.Run("без входа", func(t *testing.T) {
+	t.Run("not signed in", func(t *testing.T) {
 		apitest.RequireStatus(t, s.Do(http.MethodPost, "/v1/auth/logout", nil), http.StatusNoContent)
 		apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/password/change", body("new-password", "other-password")),
 			http.StatusUnauthorized, "UNAUTHENTICATED")

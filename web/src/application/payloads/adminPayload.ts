@@ -5,7 +5,7 @@ export interface UpdateServiceUrlPayload {
   serviceUrl: string;
 }
 
-/** Поля `password` нет — остаётся сохранённый пароль, null — удалить (NewMailSettings) */
+/** No `password` field keeps the saved password, null deletes it (NewMailSettings) */
 export type SaveMailSettingsPayload = NewMailSettings;
 
 export interface ChangeServiceAdminPayload {

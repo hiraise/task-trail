@@ -7,9 +7,9 @@ import { toastError } from "@/shared/errors/errorMessage";
 import { authTexts } from "@/shared/locales/auth";
 
 /**
- * Смена пароля вошедшим пользователем. Куда идти после успеха, решает экран: на десктопе форма
- * стоит в профиле, на телефоне — отдельной страницей. `WRONG_PASSWORD` и `PASSWORD_SAME_AS_OLD`
- * приходят текстом из shared/locales/apiErrors.ts.
+ * Password change by a signed-in user. The screen decides where to go after success: on a desktop the form
+ * is in the profile, on a phone it is a separate page. `WRONG_PASSWORD` and `PASSWORD_SAME_AS_OLD`
+ * come as texts from shared/locales/apiErrors.ts.
  */
 export function useChangePassword() {
   return useMutation<void, Error, ChangePasswordPayload>({

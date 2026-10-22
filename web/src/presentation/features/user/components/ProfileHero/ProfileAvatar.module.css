@@ -13,7 +13,7 @@
   cursor: pointer;
 }
 
-/* С 768 px (presentation/shared/hooks/useDevice.ts) — большая аватарка без значка камеры */
+/* From 768 px (presentation/shared/hooks/useDevice.ts): a large avatar without the camera badge */
 @media (min-width: 768px) {
   .avatar {
     width: 160px;

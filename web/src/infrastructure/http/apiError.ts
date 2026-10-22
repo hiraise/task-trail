@@ -4,7 +4,7 @@ import { AppError, AppErrorType, type ApiErrorCode } from "@/shared/errors/types
 
 import type { ApiError, ErrorCode } from "../api/generated";
 
-// Коды веба и контракта — один набор: разошлись — сборка падает на этой строке
+// Web and contract codes are one set: if they diverge, the build fails on this line
 // (shared/errors/types.ts, ApiErrorCode).
 type SameSet<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 const codesMatchContract: SameSet<ErrorCode, ApiErrorCode> = true;
@@ -14,9 +14,9 @@ void codesMatchContract;
 const isApiError = (body: unknown): body is ApiError =>
   typeof body === "object" && body !== null && typeof (body as ApiError).code === "string";
 
-// Тип ошибки решает, кто её показывает: UNAUTHORIZED, NETWORK, TIMEOUT и UNKNOWN —
-// общий обработчик (shared/errors/globalErrors.ts), остальные — экран, который сделал запрос.
-// Неверный пароль при входе — тоже 401, но это ошибка формы, а не истёкшая сессия.
+// The error type decides who shows it: UNAUTHORIZED, NETWORK, TIMEOUT and UNKNOWN —
+// the global handler (shared/errors/globalErrors.ts), the rest — the screen that made the request.
+// A wrong password at sign-in is also 401, but it is a form error, not an expired session.
 const typeOf = (status: number, code?: ErrorCode): AppErrorType => {
   if (code === "UNAUTHENTICATED") return AppErrorType.UNAUTHORIZED;
   if (status === 401) return AppErrorType.AUTH;
@@ -27,7 +27,7 @@ const typeOf = (status: number, code?: ErrorCode): AppErrorType => {
   return AppErrorType.SERVER;
 };
 
-/** Переводит ошибку HTTP-клиента в AppError с кодом и подробностями из ApiError (ADR-0018). */
+/** Converts an HTTP client error into AppError with the code and details from ApiError (ADR-0018). */
 export function toAppError(error: unknown): AppError {
   if (error instanceof AppError) return error;
 

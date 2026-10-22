@@ -31,20 +31,20 @@ describe("ProfileHero", () => {
     mockLogout();
   });
 
-  it("показывает имя и почту", () => {
+  it("shows the name and the email", () => {
     render(<ProfileHero user={user} />);
 
     expect(screen.getByText("john_doe")).toBeInTheDocument();
     expect(screen.getByText(user.email)).toBeInTheDocument();
   });
 
-  it("без имени показывает начало почты", () => {
+  it("without a name shows the beginning of the email", () => {
     render(<ProfileHero user={{ ...user, username: null }} />);
 
     expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent("john");
   });
 
-  it("выходит из аккаунта по кнопке на обложке", async () => {
+  it("signs out with the button on the cover", async () => {
     const logout = vi.fn();
 
     mockLogout(logout);
@@ -56,7 +56,7 @@ describe("ProfileHero", () => {
     expect(logout).toHaveBeenCalledTimes(1);
   });
 
-  it("пока идёт выход, показывает спиннер и не даёт нажать ещё раз", () => {
+  it("while signing out shows a spinner and does not allow pressing again", () => {
     mockLogout(vi.fn(), true);
     render(<ProfileHero user={user} />);
 

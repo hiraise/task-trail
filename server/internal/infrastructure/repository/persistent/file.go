@@ -88,7 +88,7 @@ func (r *PGFileRepository) Known(ctx context.Context, ids []entity.FileID) (map[
 	return known, nil
 }
 
-// mark выполняет UPDATE одного файла; файла нет или отметка уже стоит — ENTITY_NOT_FOUND.
+// mark runs an UPDATE of one file; no such file or the mark is already set — ENTITY_NOT_FOUND.
 func (r *PGFileRepository) mark(ctx context.Context, query string, id entity.FileID, now time.Time) error {
 	tag, err := r.getDb(ctx).Exec(ctx, query, id, now)
 	if err != nil {

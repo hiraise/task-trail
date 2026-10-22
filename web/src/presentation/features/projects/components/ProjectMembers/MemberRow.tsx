@@ -18,8 +18,8 @@ interface MemberRowProps {
 }
 
 /**
- * Участник с действиями по роли текущего пользователя: на телефоне — нижняя панель по нажатию
- * на строку, шире — меню «…» при наведении.
+ * A member with actions based on the current user's role: on a phone — a bottom sheet on row tap,
+ * wider — a "…" menu on hover.
  */
 export function MemberRow({ member, projectId }: MemberRowProps) {
   const { menuItems } = useMembersMenuItems(member, projectId);

@@ -1,5 +1,5 @@
-/* До 767 px — плашка во всю ширину; с 768 px — подпись и значение в строку
-   (брейкпоинты — presentation/shared/hooks/useDevice.ts). */
+/* Up to 767 px — a full-width panel; from 768 px — label and value in one row
+   (breakpoints — presentation/shared/hooks/useDevice.ts). */
 .field {
   display: flex;
   flex-direction: column;

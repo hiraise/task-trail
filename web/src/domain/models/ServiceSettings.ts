@@ -1,23 +1,23 @@
-/** Шифрование соединения с SMTP (ADR-0017): нет, STARTTLS или TLS. */
+/** SMTP connection encryption (ADR-0017): none, STARTTLS or TLS. */
 export type MailEncryption = "none" | "starttls" | "tls";
 
-/** Сохранённые настройки SMTP. Сам пароль API не отдаёт — только признак, что он есть (ADR-0015). */
+/** Saved SMTP settings. The API never returns the password itself, only a flag that it is set (ADR-0015). */
 export interface MailSettings {
   host: string;
   port: number;
   encryption: MailEncryption;
-  /** Отправитель, например `TaskTrail <noreply@example.com>` */
+  /** Sender, for example `TaskTrail <noreply@example.com>` */
   sender: string;
-  /** Без входа на SMTP — undefined */
+  /** undefined when SMTP has no login */
   username?: string;
-  /** Пароль сохранён */
+  /** The password is saved */
   passwordSet: boolean;
 }
 
-/** Настройки сервиса — только администратору сервиса (ADR-0014, ADR-0015). */
+/** Service settings, for the service administrator only (ADR-0014, ADR-0015). */
 export interface ServiceSettings {
-  /** Адрес веба с путём, без `/` в конце; от него строятся ссылки в письмах и приглашениях */
+  /** Web address with path, without a trailing `/`; links in emails and invitations are built from it */
   serviceUrl: string;
-  /** Почта не подключена — undefined */
+  /** undefined when mail is not configured */
   mail?: MailSettings;
 }

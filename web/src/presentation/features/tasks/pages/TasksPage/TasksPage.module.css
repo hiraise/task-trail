@@ -1,5 +1,5 @@
-/* До 767 px — телефон: верхняя панель на сером, список под ней до нижней панели навигации.
-   С 768 px — заголовок с кнопкой и белая карточка (брейкпоинты — presentation/shared/hooks/useDevice.ts). */
+/* Up to 767 px — phone: top bar on grey, the list below it down to the bottom navigation bar.
+   From 768 px — a header with a button and a white card (breakpoints — presentation/shared/hooks/useDevice.ts). */
 .page {
   display: flex;
   flex-direction: column;

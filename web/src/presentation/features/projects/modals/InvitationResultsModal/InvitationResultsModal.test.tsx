@@ -41,7 +41,7 @@ describe("InvitationResultsModal", () => {
     } as unknown as ReturnType<typeof useAddMembers>);
   });
 
-  it("без почты показывает ссылку приглашения и копирует её", async () => {
+  it("without mail shows the invitation link and copies it", async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue();
 
@@ -58,7 +58,7 @@ describe("InvitationResultsModal", () => {
     expect(toast.success).toHaveBeenCalledWith("Ссылка скопирована");
   });
 
-  it("«Пригласить снова» зовёт только тех, кому письмо не ушло, и обновляет их строки", async () => {
+  it("\"Invite again\" re-invites only those whose email failed and updates their rows", async () => {
     const user = userEvent.setup();
 
     results = [

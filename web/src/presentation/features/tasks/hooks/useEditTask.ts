@@ -9,7 +9,7 @@ import { tasksTexts } from "@/shared/locales/tasks";
 
 import { storeTask } from "./taskCache";
 
-/** Меняет название или описание; сервер отвечает изменённой задачей (ADR-0018). */
+/** Changes the name or description; the server responds with the updated task (ADR-0018). */
 export function useEditTask() {
   const queryClient = useQueryClient();
 

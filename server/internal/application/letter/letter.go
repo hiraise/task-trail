@@ -1,5 +1,5 @@
-// Package letter — письма сервиса (ADR-0017): тема и текст. Сценарий собирает письмо
-// и отправляет его через service.Mailer сразу в запросе.
+// Package letter holds the service emails (ADR-0017): subject and text. A use case builds an email
+// and sends it via service.Mailer within the request.
 package letter
 
 import (
@@ -12,7 +12,7 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// PasswordReset — письмо со ссылкой сброса пароля; lifetime — сколько ссылка действует.
+// PasswordReset is an email with a password reset link; lifetime is how long the link is valid.
 func PasswordReset(to entity.Email, link string, lifetime time.Duration) service.Letter {
 	return service.Letter{
 		To:      to,
@@ -30,8 +30,8 @@ func PasswordReset(to entity.Email, link string, lifetime time.Duration) service
 	}
 }
 
-// Invitation — приглашение в проект почты без аккаунта (ADR-0016): по ссылке человек
-// задаёт имя и пароль. inviter — имя пригласившего, а если его нет — почта.
+// Invitation invites an email without an account to a project (ADR-0016): via the link the person
+// sets a name and password. inviter is the inviter's name, or their email if there is no name.
 func Invitation(to entity.Email, inviter, project, link string, lifetime time.Duration) service.Letter {
 	return service.Letter{
 		To:      to,
@@ -48,7 +48,7 @@ func Invitation(to entity.Email, inviter, project, link string, lifetime time.Du
 	}
 }
 
-// AddedToProject — извещение человеку с аккаунтом, которого сразу добавили в проект (ADR-0017).
+// AddedToProject notifies a person with an account who was added to a project right away (ADR-0017).
 func AddedToProject(to entity.Email, inviter, project, link string) service.Letter {
 	return service.Letter{
 		To:      to,
@@ -62,7 +62,7 @@ func AddedToProject(to entity.Email, inviter, project, link string) service.Lett
 	}
 }
 
-// MailTest — тестовое письмо администратору: почта подключена и письма доходят (ADR-0017).
+// MailTest is a test email to the administrator: mail is configured and emails are delivered (ADR-0017).
 func MailTest(to entity.Email) service.Letter {
 	return service.Letter{
 		To:      to,
@@ -75,8 +75,8 @@ func MailTest(to entity.Email) service.Letter {
 	}
 }
 
-// oneLine заменяет переводы строк и другие управляющие символы пробелами: тема письма —
-// одна строка заголовка.
+// oneLine replaces line breaks and other control characters with spaces: an email subject is
+// a single header line.
 func oneLine(s string) string {
 	return strings.Map(func(r rune) rune {
 		if unicode.IsControl(r) {
@@ -86,8 +86,8 @@ func oneLine(s string) string {
 	}, s)
 }
 
-// Duration называет срок по-русски: до двух суток — в часах («24 часа»), дольше — в днях
-// («7 дней»). Остаток меньше часа или дня отбрасывается.
+// Duration names a period in Russian: under two days in hours ("24 hours"), longer in days
+// ("7 days"). A remainder under an hour or a day is dropped.
 func Duration(d time.Duration) string {
 	if d < 48*time.Hour {
 		hours := int(d / time.Hour)
@@ -97,7 +97,7 @@ func Duration(d time.Duration) string {
 	return fmt.Sprintf("%d %s", days, plural(days, "день", "дня", "дней"))
 }
 
-// plural выбирает форму слова для числа n: 1 час, 2 часа, 5 часов, 21 час, 11 часов.
+// plural picks the Russian word form for n: one for 1, 21, 31; few for 2-4, 22-24; many otherwise, including 11-14.
 func plural(n int, one, few, many string) string {
 	switch n10, n100 := n%10, n%100; {
 	case n10 == 1 && n100 != 11:

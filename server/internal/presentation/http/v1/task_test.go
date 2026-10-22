@@ -34,7 +34,7 @@ type taskStatus struct {
 	IsResolved bool   `json:"isResolved"`
 }
 
-// createTask создаёт задачу от текущего пользователя; assignee — ID исполнителя или пусто.
+// createTask creates a task as the current user; assignee is the assignee ID or empty.
 func createTask(t *testing.T, s *apitest.Server, projectID, name, assignee string) task {
 	t.Helper()
 	body := map[string]any{"projectId": projectID, "name": name}
@@ -46,7 +46,7 @@ func createTask(t *testing.T, s *apitest.Server, projectID, name, assignee strin
 	return apitest.Decode[task](t, rec)
 }
 
-// changeTask отправляет изменение задачи и возвращает задачу из ответа.
+// changeTask sends a task change and returns the task from the response.
 func changeTask(t *testing.T, s *apitest.Server, path string, body any) task {
 	t.Helper()
 	rec := s.Do(http.MethodPatch, path, body)
@@ -74,7 +74,7 @@ func tasksCount(t *testing.T, s *apitest.Server, projectID string) int {
 
 func ptr(s string) *string { return &s }
 
-// Статусы фиксированы и идут в порядке работы над задачей (ADR-0003).
+// Statuses are fixed and follow the order of work on a task (ADR-0003).
 func TestTaskStatuses(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -88,14 +88,14 @@ func TestTaskStatuses(t *testing.T) {
 		{ID: "done", Name: "Готово", IsResolved: true},
 	}
 	if got := apitest.Decode[[]taskStatus](t, rec); !slices.Equal(got, want) {
-		t.Fatalf("статусы: %+v", got)
+		t.Fatalf("statuses: %+v", got)
 	}
 	anonymous(t, s)
 	apitest.RequireError(t, s.Do(http.MethodGet, "/v1/task-statuses", nil), http.StatusUnauthorized, "UNAUTHENTICATED")
 }
 
-// Любой участник создаёт задачу, меняет её по одной операции (ADR-0002) и удаляет мягко;
-// ответ на изменение — вся задача, время — в UTC.
+// Any member creates a task, changes it one operation at a time (ADR-0002) and soft-deletes it;
+// the change response is the whole task, time in UTC.
 func TestTaskLifecycle(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	admin := registerAdmin(t, s)
@@ -112,23 +112,23 @@ func TestTaskLifecycle(t *testing.T) {
 		AuthorID: ivan.ID, AssigneeID: &admin.ID, CreatedAt: "2026-10-21T12:00:00Z", UpdatedAt: "2026-10-21T12:00:00Z",
 	}
 	if !reflect.DeepEqual(button, want) {
-		t.Fatalf("задача: %+v", button)
+		t.Fatalf("task: %+v", button)
 	}
 	s.Clock.Advance(time.Minute)
 	form := createTask(t, s, design, "Форма", "")
 	if form.Description != nil || form.AssigneeID != nil {
-		t.Fatalf("задача без описания и исполнителя: %+v", form)
+		t.Fatalf("task without description and assignee: %+v", form)
 	}
 	rec = s.Do(http.MethodGet, "/v1/tasks/"+button.ID, nil)
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if got := apitest.Decode[task](t, rec); !reflect.DeepEqual(got, button) {
-		t.Fatalf("по ID: %+v", got)
+		t.Fatalf("by ID: %+v", got)
 	}
 	if got := listTasks(t, s, "/v1/projects/"+design+"/tasks"); !slices.Equal(got, []string{form.ID, button.ID}) {
-		t.Fatalf("задачи проекта: %v", got)
+		t.Fatalf("project tasks: %v", got)
 	}
 	if n := tasksCount(t, s, design); n != 2 {
-		t.Fatalf("задач в проекте: %d", n)
+		t.Fatalf("tasks in project: %d", n)
 	}
 
 	s.Clock.Advance(time.Minute)
@@ -136,28 +136,28 @@ func TestTaskLifecycle(t *testing.T) {
 	got := changeTask(t, s, path, map[string]any{"name": "Большая кнопка"})
 	want.Name, want.UpdatedAt = "Большая кнопка", "2026-10-21T12:02:00Z"
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("после переименования: %+v", got)
+		t.Fatalf("after rename: %+v", got)
 	}
 	got = changeTask(t, s, path, `{"description": null}`)
 	want.Description = nil
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("без описания: %+v", got)
+		t.Fatalf("without description: %+v", got)
 	}
 	got = changeTask(t, s, path+"/status", map[string]any{"statusId": "in_progress"})
 	want.StatusID = "in_progress"
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("после смены статуса: %+v", got)
+		t.Fatalf("after status change: %+v", got)
 	}
 	got = changeTask(t, s, path+"/assignee", `{"assigneeId": null}`)
 	want.AssigneeID = nil
 	if !reflect.DeepEqual(got, want) {
-		t.Fatalf("без исполнителя: %+v", got)
+		t.Fatalf("without assignee: %+v", got)
 	}
 	if got = changeTask(t, s, path+"/assignee", map[string]any{"assigneeId": ivan.ID}); got.AssigneeID == nil || *got.AssigneeID != ivan.ID {
-		t.Fatalf("исполнитель: %+v", got)
+		t.Fatalf("assignee: %+v", got)
 	}
 
-	// Исполнитель — только участник проекта
+	// Only a project member can be the assignee
 	login(t, s, "admin@example.com", password)
 	olga := signUp(t, s, createProject(t, s, "Чужой").Project.ID, "olga@example.com", "Ольга")
 	login(t, s, "ivan@example.com", password)
@@ -174,14 +174,14 @@ func TestTaskLifecycle(t *testing.T) {
 	apitest.RequireError(t, s.Do(http.MethodPatch, "/v1/tasks/"+form.ID+"/status", map[string]any{"statusId": "done"}),
 		http.StatusNotFound, "NOT_FOUND")
 	if got := listTasks(t, s, "/v1/projects/"+design+"/tasks"); !slices.Equal(got, []string{button.ID}) {
-		t.Fatalf("задачи после удаления: %v", got)
+		t.Fatalf("tasks after deletion: %v", got)
 	}
 	if n := tasksCount(t, s, design); n != 1 {
-		t.Fatalf("задач в проекте после удаления: %d", n)
+		t.Fatalf("tasks in project after deletion: %d", n)
 	}
 }
 
-// Не участник проекта задачу не видит и не меняет: 404, как будто её нет (ADR-0018).
+// A non-member neither sees nor changes the task: 404, as if it did not exist (ADR-0018).
 func TestTaskAccess(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -214,13 +214,13 @@ func TestTaskAccess(t *testing.T) {
 		}
 	}
 	if got := listTasks(t, s, "/v1/users/me/tasks"); len(got) != 0 {
-		t.Errorf("задачи чужого: %v", got)
+		t.Errorf("stranger's tasks: %v", got)
 	}
 
 	login(t, s, "admin@example.com", password)
 	rec := s.Do(http.MethodGet, path, nil)
 	if got := apitest.Decode[task](t, rec); !reflect.DeepEqual(got, button) {
-		t.Fatalf("задача изменилась: %+v", got)
+		t.Fatalf("task changed: %+v", got)
 	}
 	anonymous(t, s)
 	for _, p := range []string{path, "/v1/projects/" + design + "/tasks", "/v1/users/me/tasks"} {
@@ -258,19 +258,19 @@ func TestTaskValidation(t *testing.T) {
 	for _, c := range cases {
 		apiErr := apitest.RequireError(t, s.Do(c.method, c.path, c.body), http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 		if _, ok := apiErr.Details[c.field]; !ok {
-			t.Errorf("%s %s %v: в details нет %s: %v", c.method, c.path, c.body, c.field, apiErr.Details)
+			t.Errorf("%s %s %v: details lack %s: %v", c.method, c.path, c.body, c.field, apiErr.Details)
 		}
 	}
 
-	// UUID в теле — в любом регистре; в ответе — как в базе, строчными
+	// A UUID in the body may be in any case; in the response it is as in the database, lowercase
 	got := createTask(t, s, strings.ToUpper(design), "Кнопка", strings.ToUpper(admin.ID))
 	if got.ProjectID != design || *got.AssigneeID != admin.ID {
-		t.Fatalf("задача по ID в верхнем регистре: %+v", got)
+		t.Fatalf("task by uppercase ID: %+v", got)
 	}
 }
 
-// Переносит участник обоих проектов; статус сохраняется, исполнитель — если он участник
-// нового проекта.
+// A member of both projects moves the task; the status stays, the assignee stays if a member
+// of the new project.
 func TestMoveTask(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -291,41 +291,41 @@ func TestMoveTask(t *testing.T) {
 	s.Clock.Advance(time.Minute)
 	moved := changeTask(t, s, "/v1/tasks/"+button.ID+"/project", map[string]any{"projectId": backend})
 	if moved.ProjectID != backend || moved.AssigneeID != nil || moved.StatusID != "in_review" || moved.UpdatedAt != "2026-10-21T12:02:00Z" {
-		t.Fatalf("перенос, исполнитель не участник бэкенда: %+v", moved)
+		t.Fatalf("move, assignee not a backend member: %+v", moved)
 	}
 	if moved = changeTask(t, s, "/v1/tasks/"+form.ID+"/project", map[string]any{"projectId": backend}); moved.AssigneeID == nil || *moved.AssigneeID != anna.ID {
-		t.Fatalf("перенос, исполнитель участник бэкенда: %+v", moved)
+		t.Fatalf("move, assignee is a backend member: %+v", moved)
 	}
 	if got := listTasks(t, s, "/v1/projects/"+backend+"/tasks"); !slices.Equal(got, []string{form.ID, button.ID}) {
-		t.Fatalf("задачи бэкенда: %v", got)
+		t.Fatalf("backend tasks: %v", got)
 	}
 	if got := listTasks(t, s, "/v1/projects/"+design+"/tasks"); len(got) != 0 {
-		t.Fatalf("задачи дизайн-системы: %v", got)
+		t.Fatalf("design system tasks: %v", got)
 	}
 	if moved = changeTask(t, s, "/v1/tasks/"+form.ID+"/project", map[string]any{"projectId": backend}); moved.ProjectID != backend || *moved.AssigneeID != anna.ID {
-		t.Fatalf("перенос в тот же проект: %+v", moved)
+		t.Fatalf("move to the same project: %+v", moved)
 	}
 
-	// В проект, где вы не участник, и в удалённый — 404; задача остаётся на месте
+	// To a project you are not a member of, or a deleted one — 404; the task stays put
 	old := createProject(t, s, "Старый").Project.ID
 	apitest.RequireStatus(t, s.Do(http.MethodDelete, "/v1/projects/"+old, nil), http.StatusNoContent)
 	for _, target := range []string{personal, old, "5f0c1b52-8d4e-4a8b-9c7e-2b1d3f4a5c6e"} {
 		apitest.RequireError(t, s.Do(http.MethodPatch, "/v1/tasks/"+form.ID+"/project", map[string]any{"projectId": target}),
 			http.StatusNotFound, "NOT_FOUND")
 	}
-	// Иван — участник только дизайн-системы: перенесённую задачу он больше не видит
+	// Ivan is a member of the design system only: he no longer sees the moved task
 	login(t, s, "ivan@example.com", password)
 	apitest.RequireError(t, s.Do(http.MethodGet, "/v1/tasks/"+button.ID, nil), http.StatusNotFound, "NOT_FOUND")
 	login(t, s, "anna@example.com", password)
 	rec := s.Do(http.MethodGet, "/v1/tasks/"+form.ID, nil)
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if got := apitest.Decode[task](t, rec); got.ProjectID != backend {
-		t.Fatalf("задача после отказов: %+v", got)
+		t.Fatalf("task after rejections: %+v", got)
 	}
 }
 
-// Мои задачи — назначенные на меня во всех моих проектах, новые первыми; удалённые задачи
-// и задачи удалённых проектов — нет.
+// My tasks are those assigned to me in all my projects, newest first; deleted tasks
+// and tasks of deleted projects are excluded.
 func TestCurrentUserTasks(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	admin := registerAdmin(t, s)
@@ -346,18 +346,18 @@ func TestCurrentUserTasks(t *testing.T) {
 
 	login(t, s, "ivan@example.com", password)
 	if got := listTasks(t, s, "/v1/users/me/tasks"); !slices.Equal(got, []string{api.ID, button.ID}) {
-		t.Fatalf("задачи Ивана: %v", got)
+		t.Fatalf("Ivan's tasks: %v", got)
 	}
 	login(t, s, "admin@example.com", password)
 	apitest.RequireStatus(t, s.Do(http.MethodDelete, "/v1/projects/"+backend, nil), http.StatusNoContent)
 	login(t, s, "ivan@example.com", password)
 	if got := listTasks(t, s, "/v1/users/me/tasks"); !slices.Equal(got, []string{button.ID}) {
-		t.Fatalf("задачи Ивана после удаления проекта: %v", got)
+		t.Fatalf("Ivan's tasks after project deletion: %v", got)
 	}
 }
 
-// Задача меняется под блокировкой проекта: параллельные изменения не затирают друг друга,
-// а исполнителем не остаётся исключённый участник.
+// A task changes under the project lock: parallel changes do not overwrite each other,
+// and a removed member does not remain the assignee.
 func TestTaskConcurrentChanges(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -386,7 +386,7 @@ func TestTaskConcurrentChanges(t *testing.T) {
 			func() { s.Do(http.MethodPatch, path+"/status", map[string]any{"statusId": status}) },
 		)
 		if got := current(); got.Name != name || got.StatusID != status {
-			t.Fatalf("после %d-го круга: %+v", i, got)
+			t.Fatalf("after round %d: %+v", i, got)
 		}
 	}
 	s.RemoveMember(design, ivan.ID)
@@ -397,7 +397,7 @@ func TestTaskConcurrentChanges(t *testing.T) {
 			func() { s.Do(http.MethodDelete, "/v1/projects/"+design+"/members/"+ivan.ID, nil) },
 		)
 		if got := current(); got.AssigneeID != nil {
-			t.Fatalf("после %d-го круга исполнитель — исключённый участник: %+v", i, got)
+			t.Fatalf("after round %d the assignee is a removed member: %+v", i, got)
 		}
 	}
 }

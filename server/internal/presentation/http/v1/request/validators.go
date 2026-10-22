@@ -7,12 +7,12 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// RegisterValidators добавляет проверки, которых нет в валидаторе:
-//   - maxbytes=N — строка не длиннее N байт в UTF-8 (пароль и предел bcrypt);
-//   - httpurl — полный адрес http(s) без параметров и якоря: от него строятся ссылки (ADR-0015);
-//   - taskstatus — статус задачи из фиксированного набора (ADR-0003);
-//   - mailbox — отправитель письма: адрес почты, можно с именем (ADR-0017);
-//   - значения полей Optional и обязательные поля, которые могут быть null.
+// RegisterValidators adds checks the validator lacks:
+//   - maxbytes=N — a string of at most N bytes in UTF-8 (password and the bcrypt limit);
+//   - httpurl — a full http(s) address without query or fragment: links are built from it (ADR-0015);
+//   - taskstatus — a task status from the fixed set (ADR-0003);
+//   - mailbox — the mail sender: an email address, optionally with a name (ADR-0017);
+//   - values of Optional fields and required fields that may be null.
 func RegisterValidators(v *validator.Validate) error {
 	if err := v.RegisterValidation("maxbytes", maxBytes); err != nil {
 		return err
@@ -33,7 +33,7 @@ func RegisterValidators(v *validator.Validate) error {
 	return nil
 }
 
-// requireUsername: имя обязательно в запросе, null — убрать имя (UpdateCurrentUserRequest в контракте).
+// requireUsername: the name is required in the request, null removes the name (UpdateCurrentUserRequest in the contract).
 func requireUsername(sl validator.StructLevel) {
 	if r := sl.Current().Interface().(updateCurrentUserReq); !r.Username.Set {
 		sl.ReportError(r.Username, "username", "Username", "required", "")

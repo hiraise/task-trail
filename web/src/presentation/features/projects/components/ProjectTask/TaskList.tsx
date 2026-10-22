@@ -8,7 +8,7 @@ import styles from "./TaskList.module.css";
 
 interface TaskListProps {
   tasks: Task[];
-  /** Участники проекта: из них — ответственные задач */
+  /** Project members: task assignees are among them */
   members: ProjectMember[];
 }
 

@@ -10,7 +10,7 @@ interface TaskStatusListProps {
   onSelect: (statusId: TaskStatusId) => void;
 }
 
-/** Статусы задачи из общего набора (GET /v1/task-statuses) в порядке работы над задачей. */
+/** Task statuses from the shared set (GET /v1/task-statuses) in workflow order. */
 export function TaskStatusList({ selectedId, onSelect }: TaskStatusListProps) {
   const { data: statuses = [] } = useTaskStatuses();
 

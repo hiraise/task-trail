@@ -6,7 +6,7 @@ import { Icon } from "@/presentation/shared/ui";
 
 import styles from "./AuthLayout.module.css";
 
-/** Раскладка экранов доступа: шапка с логотипом и область экрана под ней. */
+/** Layout of auth screens: a header with the logo and the screen area below it. */
 export function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={styles.container}>

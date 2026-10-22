@@ -15,17 +15,17 @@ func TestRefreshTokenState(t *testing.T) {
 		token entity.RefreshToken
 		want  entity.RefreshTokenState
 	}{
-		{"действует", entity.RefreshToken{ExpiredAt: now.Add(time.Hour)}, entity.RefreshTokenActive},
-		{"истекает ровно сейчас", entity.RefreshToken{ExpiredAt: now}, entity.RefreshTokenExpired},
-		{"обменян ровно 30 секунд назад", entity.RefreshToken{ExpiredAt: now.Add(time.Hour), RotatedAt: at(-entity.RefreshTokenReuseGrace)}, entity.RefreshTokenJustRotated},
-		{"обменян чуть раньше 30 секунд", entity.RefreshToken{ExpiredAt: now.Add(time.Hour), RotatedAt: at(-entity.RefreshTokenReuseGrace - time.Nanosecond)}, entity.RefreshTokenReused},
-		{"сессия закрыта", entity.RefreshToken{ExpiredAt: now.Add(time.Hour), RotatedAt: at(-time.Second), RevokedAt: at(-time.Second)}, entity.RefreshTokenRevoked},
-		{"обменян и истёк", entity.RefreshToken{ExpiredAt: now.Add(-time.Second), RotatedAt: at(-time.Hour)}, entity.RefreshTokenExpired},
+		{"active", entity.RefreshToken{ExpiredAt: now.Add(time.Hour)}, entity.RefreshTokenActive},
+		{"expires exactly now", entity.RefreshToken{ExpiredAt: now}, entity.RefreshTokenExpired},
+		{"exchanged exactly 30 seconds ago", entity.RefreshToken{ExpiredAt: now.Add(time.Hour), RotatedAt: at(-entity.RefreshTokenReuseGrace)}, entity.RefreshTokenJustRotated},
+		{"exchanged just over 30 seconds ago", entity.RefreshToken{ExpiredAt: now.Add(time.Hour), RotatedAt: at(-entity.RefreshTokenReuseGrace - time.Nanosecond)}, entity.RefreshTokenReused},
+		{"session closed", entity.RefreshToken{ExpiredAt: now.Add(time.Hour), RotatedAt: at(-time.Second), RevokedAt: at(-time.Second)}, entity.RefreshTokenRevoked},
+		{"exchanged and expired", entity.RefreshToken{ExpiredAt: now.Add(-time.Second), RotatedAt: at(-time.Hour)}, entity.RefreshTokenExpired},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			if got := c.token.State(now); got != c.want {
-				t.Errorf("состояние %d, ожидалось %d", got, c.want)
+				t.Errorf("state %d, want %d", got, c.want)
 			}
 		})
 	}
@@ -33,6 +33,6 @@ func TestRefreshTokenState(t *testing.T) {
 
 func TestNewEmail(t *testing.T) {
 	if got := entity.NewEmail("  Ivan.Petrov@Example.COM\t"); got != "ivan.petrov@example.com" {
-		t.Errorf("получено %q", got)
+		t.Errorf("got %q", got)
 	}
 }

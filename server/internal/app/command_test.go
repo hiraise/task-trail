@@ -15,8 +15,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Команда печатает ссылку сброса для любой почты — тому, кто управляет сервером (ADR-0017);
-// по ссылке пароль меняется так же, как по ссылке из письма.
+// The command prints a reset link for any email — to whoever manages the server (ADR-0017);
+// the link changes the password the same way as a link from a letter.
 func TestPasswordResetLinkCommand(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	rec := s.Do(http.MethodPost, "/v1/auth/register", map[string]string{
@@ -25,19 +25,19 @@ func TestPasswordResetLinkCommand(t *testing.T) {
 	apitest.RequireStatus(t, rec, http.StatusCreated)
 	cfg := &config.Config{App: config.App{Secret: apitest.Secret}, PG: config.PG{ConnString: s.Pool.Config().ConnString()}}
 
-	// Gin в режиме отладки печатает маршруты в stdout процесса — в тесте это тот же буфер.
-	// Команда режим отладки выключает: в stdout — только ссылка
+	// Gin in debug mode prints routes to the process stdout — in the test it is the same buffer.
+	// The command turns debug mode off: stdout holds only the link
 	var stdout, stderr bytes.Buffer
 	gin.SetMode(gin.DebugMode)
 	previous := gin.DefaultWriter
 	gin.DefaultWriter = &stdout
 	t.Cleanup(func() { gin.DefaultWriter = previous })
 	if code := app.Command(cfg, []string{"password-reset-link", " Admin@Example.com"}, &stdout, &stderr); code != 0 {
-		t.Fatalf("код %d: %s", code, stderr.String())
+		t.Fatalf("code %d: %s", code, stderr.String())
 	}
 	link, rest, _ := strings.Cut(stdout.String(), "\n")
 	if !strings.HasPrefix(link, "https://example.com/tasktrail/auth/reset?token=") || rest != "" ||
-		!strings.Contains(stderr.String(), "Ссылка действует до") {
+		!strings.Contains(stderr.String(), "The link is valid until") {
 		t.Fatalf("stdout %q, stderr %q", stdout.String(), stderr.String())
 	}
 	u, err := url.Parse(link)
@@ -54,15 +54,15 @@ func TestPasswordResetLinkCommandErrors(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	cfg := &config.Config{App: config.App{Secret: apitest.Secret}, PG: config.PG{ConnString: s.Pool.Config().ConnString()}}
 	cases := map[string][]string{
-		"нет пользователя": {"password-reset-link", "nobody@example.com"},
-		"нет почты":        {"password-reset-link"},
-		"нет команды":      {"unknown"},
+		"no user":    {"password-reset-link", "nobody@example.com"},
+		"no email":   {"password-reset-link"},
+		"no command": {"unknown"},
 	}
 	for name, args := range cases {
 		t.Run(name, func(t *testing.T) {
 			var stdout, stderr bytes.Buffer
 			if code := app.Command(cfg, args, &stdout, &stderr); code == 0 || stdout.Len() != 0 || stderr.Len() == 0 {
-				t.Fatalf("код %d, stdout %q, stderr %q", code, stdout.String(), stderr.String())
+				t.Fatalf("code %d, stdout %q, stderr %q", code, stdout.String(), stderr.String())
 			}
 		})
 	}

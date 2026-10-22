@@ -58,16 +58,16 @@ function labels(user: AdminUser, settings: ServiceSettings) {
 
 const texts = adminTexts.users;
 
-describe("действия администратора с пользователем", () => {
-  it("с почтой — письмо для сброса и, на случай потерянного ящика, ссылка", () => {
+describe("administrator actions on a user", () => {
+  it("with mail: a reset email and, in case the mailbox is lost, a link", () => {
     expect(labels(anna, mailOn)).toEqual([texts.makeAdmin, texts.sendResetMail, texts.resetLink]);
   });
 
-  it("без почты — только ссылка сброса", () => {
+  it("without mail: only a reset link", () => {
     expect(labels(anna, mailOff)).toEqual([texts.makeAdmin, texts.resetLink]);
   });
 
-  it("администратора снимают; себе сброс пароля не предлагается", () => {
+  it("an administrator can be demoted; no password reset is offered for oneself", () => {
     expect(labels(me, mailOn)).toEqual([texts.removeAdmin]);
   });
 });

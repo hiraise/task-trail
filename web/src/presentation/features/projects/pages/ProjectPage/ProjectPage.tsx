@@ -12,9 +12,9 @@ import { useProjectDetail, useProjectMenuItems } from "../../hooks";
 import styles from "./ProjectPage.module.css";
 
 /**
- * Страница проекта. На телефоне — верхняя панель с меню проекта в нижней панели и участники
- * ссылкой на свою страницу; с 768 px — карточки, меню «…» у названия и участники списком.
- * Раскладку переключает CSS (ADR-0008).
+ * Project page. On a phone — a top bar with the project menu in a bottom sheet and members as
+ * a link to their own page; from 768 px — cards, a "…" menu next to the name and a member list.
+ * CSS switches the layout (ADR-0008).
  */
 export function ProjectPage() {
   const { id: projectId } = useParams({ from: "/_main/projects/$id/" });
@@ -55,7 +55,7 @@ export function ProjectPage() {
           </section>
         </div>
       ) : (
-        // Пока грузится — пустые карточки: экран не пустеет и не прыгает
+        // While loading — empty cards: the screen does not go blank or jump
         <div className={styles.sections} aria-busy="true">
           <section className={styles.section} />
           <section className={styles.section} />

@@ -8,8 +8,8 @@ import { useTask } from "./useTask";
 import { useTaskStatuses } from "./useTaskStatuses";
 
 /**
- * Страница задачи: задача, её проект с ролью текущего пользователя, статус и исполнитель.
- * Исполнитель — всегда участник проекта (контракт API), поэтому он берётся из участников.
+ * Task page: the task, its project with the current user's role, the status and the assignee.
+ * The assignee is always a project member (API contract), so it is taken from the members.
  */
 export function useTaskDetail(taskId: TaskId) {
   const taskQuery = useTask(taskId);

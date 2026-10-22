@@ -10,8 +10,8 @@ import { hasErrorCode } from "@/shared/errors/types";
 import { authTexts } from "@/shared/locales/auth";
 
 /**
- * Письмо со ссылкой сброса пароля. Без почты сервер отвечает `MAIL_DISABLED` — тогда
- * перечитываем публичные настройки, и экран показывает, что ссылку выдаёт администратор.
+ * An email with a password reset link. Without mail the server responds `MAIL_DISABLED`; then
+ * refetch the public settings, and the screen shows that the administrator issues the link.
  */
 export function useRecoveryPassword(options: { navigateOnSuccess?: boolean } = {}) {
   const { navigateOnSuccess = true } = options;

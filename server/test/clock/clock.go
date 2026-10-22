@@ -1,5 +1,5 @@
-// Package clock — фиксированные часы для тестов (ADR-0022): время стоит на месте,
-// пока тест не переведёт его вперёд.
+// Package clock is a fixed clock for tests (ADR-0022): time stands still
+// until the test moves it forward.
 package clock
 
 import (
@@ -12,7 +12,7 @@ type Fixed struct {
 	now time.Time
 }
 
-// New ставит часы на now.
+// New sets the clock to now.
 func New(now time.Time) *Fixed {
 	return &Fixed{now: now}
 }
@@ -23,7 +23,7 @@ func (c *Fixed) Now() time.Time {
 	return c.now
 }
 
-// Advance переводит часы вперёд на d.
+// Advance moves the clock forward by d.
 func (c *Fixed) Advance(d time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()

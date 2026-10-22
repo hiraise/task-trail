@@ -23,14 +23,14 @@ type ChangePassword struct {
 	NewPassword string
 }
 
-// Tokens — новая пара токенов сессии для cookie.
+// Tokens is a new pair of session tokens for cookies.
 type Tokens struct {
 	UserID       entity.UserID
 	AccessToken  service.IssuedToken
 	RefreshToken service.IssuedToken
 }
 
-// Session — открытая сессия: пользователь и его токены.
+// Session is an open session: the user and their tokens.
 type Session struct {
 	User *entity.UserAccount
 	Tokens
@@ -46,7 +46,7 @@ type ResetPassword struct {
 	Password string
 }
 
-// ResetLink — ссылка сброса пароля и момент, когда она истекает.
+// ResetLink is a password reset link and the moment it expires.
 type ResetLink struct {
 	URL       string
 	ExpiresAt time.Time
@@ -58,10 +58,10 @@ type AcceptInvitation struct {
 	Password string
 }
 
-// InvitationInfo — что человек видит по ссылке приглашения до принятия.
+// InvitationInfo is what a person sees via an invitation link before accepting it.
 type InvitationInfo struct {
 	Email       entity.Email
 	ProjectName string
-	// InvitedBy — имя пригласившего, а если его нет — почта.
+	// InvitedBy is the inviter's name, or their email if there is no name.
 	InvitedBy string
 }

@@ -9,7 +9,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { toastError } from "@/shared/errors/errorMessage";
 import { projectsTexts } from "@/shared/locales/projects";
 
-/** Выход из проекта (администратор или участник; владелец — OWNER_CANNOT_LEAVE). */
+/** Leaves the project (admin or member; owner — OWNER_CANNOT_LEAVE). */
 export function useLeaveProject() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();

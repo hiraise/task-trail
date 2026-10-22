@@ -9,7 +9,7 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// ListUsersService — все пользователи сервиса, по дате регистрации (ADR-0014).
+// ListUsersService returns all users of the service, by registration date (ADR-0014).
 type ListUsersService struct {
 	users repository.UserRepository
 }
@@ -18,16 +18,16 @@ func (s *ListUsersService) Execute(ctx context.Context) ([]*entity.UserAccount, 
 	return s.users.List(ctx)
 }
 
-// SetAdminService назначает и снимает администраторов сервиса (ADR-0014). Последнего снять
-// нельзя: подсчёт и снятие — под UserRepository.LockAdmins. Строка пользователя
-// блокируется, чтобы его параллельная смена имени или пароля не затёрла признак.
+// SetAdminService grants and revokes service administrator rights (ADR-0014). The last one cannot
+// be revoked: counting and revoking run under UserRepository.LockAdmins. The user row
+// is locked so that a parallel name or password change does not overwrite the flag.
 type SetAdminService struct {
 	txManager transaction.TxManager
 	clock     service.Clock
 	users     repository.UserRepository
 }
 
-// Execute возвращает ENTITY_NOT_FOUND, если такого пользователя нет.
+// Execute returns ENTITY_NOT_FOUND if there is no such user.
 func (s *SetAdminService) Execute(ctx context.Context, userID string, isAdmin bool) (*entity.UserAccount, error) {
 	var user *entity.UserAccount
 	f := func(ctx context.Context) error {

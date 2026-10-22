@@ -8,7 +8,7 @@ interface UserItemProps {
   avatarUrl?: string;
 }
 
-/** Кандидат в участники: аватарка, имя и почта; новая почта — только адрес. */
+/** A member candidate: avatar, name and email; a new email shows only the address. */
 export function UserItem({ email, username, avatarUrl }: UserItemProps) {
   const name = username?.trim();
 

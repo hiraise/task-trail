@@ -9,8 +9,8 @@ import { toastError } from "@/shared/errors/errorMessage";
 import { adminTexts } from "@/shared/locales/admin";
 
 /**
- * Адрес сервиса: от него строятся ссылки в письмах и приглашениях (ADR-0015). Сервер отбрасывает
- * `/` в конце и отвечает настройками целиком — их и показываем.
+ * Service URL: links in emails and invitations are built from it (ADR-0015). The server strips
+ * a trailing `/` and responds with all settings; those are shown.
  */
 export function useUpdateServiceUrl() {
   const queryClient = useQueryClient();

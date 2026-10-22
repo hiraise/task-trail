@@ -11,14 +11,14 @@ import type { ModalType } from "@/presentation/app";
 import { MODAL_TYPE, useGlobalModalContext } from "@/presentation/app";
 
 export interface ChangeStatusProps {
-  /** Текущий статус задачи */
+  /** Current task status */
   statusId?: TaskStatusId;
 }
 
 export interface SelectAssigneeProps {
-  /** Ответственный — из участников этого проекта; проекта нет — выбирать не из кого */
+  /** Assignee: from this project's members; no project, nobody to choose from */
   projectId?: ProjectId;
-  /** Текущий ответственный */
+  /** Current assignee */
   userId?: UserId;
 }
 
@@ -43,9 +43,9 @@ export interface MemberActionsProps {
 }
 
 export interface InviteUserProps {
-  /** Проект, куда зовут: кандидаты — без его участников. Без него — новый проект */
+  /** Project being invited to: candidates exclude its members. Without it, a new project */
   projectId?: ProjectId;
-  /** Почты, выбранные раньше */
+  /** Emails selected earlier */
   emails?: string[];
 }
 
@@ -63,7 +63,7 @@ export interface ActionProps {
 export interface ConfirmProps {
   title: string;
   description?: string;
-  /** Текст кнопки действия: «Отключить», «Снять права» */
+  /** Action button text: "Disable", "Revoke rights" */
   confirmText: string;
 }
 
@@ -72,7 +72,7 @@ export interface AdminUserActionsProps {
 }
 
 export interface PasswordResetLinkProps {
-  /** Кому ссылка: имя или почта */
+  /** Who the link is for: name or email */
   name: string;
   link: PasswordResetLink;
 }
@@ -114,7 +114,7 @@ export const useGlobalModals = () => {
     showDeleteItem: (props?: ActionProps) =>
       safeOpen<TaskId | ProjectId | UserId>(MODAL_TYPE.DELETE, { ...props }),
     showCropImage: (file?: File) => safeOpen<File>(MODAL_TYPE.CROP_IMAGE, { file }),
-    /** Согласие — `true`; отказ или закрытие — `undefined` */
+    /** Consent is `true`; refusal or closing is `undefined` */
     showConfirm: (props: ConfirmProps) => safeOpen<boolean>(MODAL_TYPE.CONFIRM, { ...props }),
 
     // Admin actions

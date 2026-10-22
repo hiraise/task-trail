@@ -14,7 +14,7 @@ interface ProfileAvatarProps {
   children: React.ReactNode;
 }
 
-/** Аватарка профиля: нажатие — выбрать картинку, обрезать и загрузить. */
+/** Profile avatar: a tap picks an image, crops and uploads it. */
 export function ProfileAvatar({ user, className, children }: ProfileAvatarProps) {
   const { mutate: updateAvatar } = useUploadAvatar();
   const { showCropImage } = useGlobalModals();

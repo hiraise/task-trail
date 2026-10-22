@@ -13,12 +13,12 @@ import { MAIL_REQUEST_TIMEOUT_MS } from "../http/timeouts";
 
 import { toInvitationResult, toProjectMember } from "./mappers";
 
-// Ошибки приходят из HttpClient уже как AppError с кодом API (http/apiError.ts).
+// Errors arrive from HttpClient already as AppError with the API code (http/apiError.ts).
 const createProjectMemberRepository = (http: HttpClient): ProjectMemberRepository => ({
   findByProjectId: async (projectId) =>
     (await http.get<Member[]>(API_ROUTES.PROJECT_MEMBERS(projectId))).map(toProjectMember),
 
-  // Письма приглашений уходят в самом запросе (ADR-0017) — тайм-аут длиннее
+  // Invitation emails are sent within the request (ADR-0017) — a longer timeout
   addByEmails: async (projectId, emails) => {
     const body: AddMembersRequest = { emails };
     const results = await http.post<InvitationResult[]>(API_ROUTES.PROJECT_MEMBERS(projectId), body, {

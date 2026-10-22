@@ -6,7 +6,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
 import { useCheckAuthStatus } from "../../auth/hooks";
 
-/** Текущий пользователь; запрашивается, только когда вход подтверждён. */
+/** The current user; requested only once sign-in is confirmed. */
 export function useGetCurrentUser() {
   const { isAuthenticated, authInitializing } = useCheckAuthStatus();
 

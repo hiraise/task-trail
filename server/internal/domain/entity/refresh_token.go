@@ -6,31 +6,31 @@ import (
 
 type RefreshTokenID string
 
-// RefreshTokenReuseGrace — сколько обменянный refresh-токен ещё годится: столько длится
-// параллельный запрос из другой вкладки с той же cookie. Позже его использование — кража
-// (контракт, POST /v1/auth/refresh).
+// RefreshTokenReuseGrace — how long an exchanged refresh token is still accepted: this is how long
+// a parallel request from another tab with the same cookie takes. Later use of it is theft
+// (contract, POST /v1/auth/refresh).
 const RefreshTokenReuseGrace = 30 * time.Second
 
 type RefreshToken struct {
 	ID        RefreshTokenID
 	UserID    UserID
 	ExpiredAt time.Time
-	// RotatedAt — когда токен обменяли на новую пару.
+	// RotatedAt — when the token was exchanged for a new pair.
 	RotatedAt *time.Time
-	// RevokedAt — когда сессию закрыли: выход или отзыв всех токенов пользователя.
+	// RevokedAt — when the session was closed: sign-out or revocation of all the user's tokens.
 	RevokedAt *time.Time
 }
 
 type RefreshTokenState int
 
 const (
-	// RefreshTokenActive — токен действует.
+	// RefreshTokenActive — the token is valid.
 	RefreshTokenActive RefreshTokenState = iota
-	// RefreshTokenJustRotated — токен обменяли не больше RefreshTokenReuseGrace назад:
-	// параллельный запрос тоже получает новую пару.
+	// RefreshTokenJustRotated — the token was exchanged no more than RefreshTokenReuseGrace ago:
+	// a parallel request also gets a new pair.
 	RefreshTokenJustRotated
-	// RefreshTokenReused — обменянный токен пришёл после окна: его копия у кого-то ещё,
-	// отзывай все токены пользователя.
+	// RefreshTokenReused — an exchanged token came after the window: someone else has a copy,
+	// revoke all the user's tokens.
 	RefreshTokenReused
 	RefreshTokenRevoked
 	RefreshTokenExpired
@@ -51,12 +51,12 @@ func (t *RefreshToken) State(now time.Time) RefreshTokenState {
 	}
 }
 
-// Rotate отмечает, что токен обменяли на новую пару.
+// Rotate marks that the token was exchanged for a new pair.
 func (t *RefreshToken) Rotate(now time.Time) {
 	t.RotatedAt = &now
 }
 
-// Revoke закрывает сессию токена.
+// Revoke closes the token's session.
 func (t *RefreshToken) Revoke(now time.Time) {
 	t.RevokedAt = &now
 }

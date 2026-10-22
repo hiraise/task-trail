@@ -1,14 +1,14 @@
--- Администратор сервиса (ADR-0014): первый аккаунт получает признак при регистрации.
+-- Service administrator (ADR-0014): the first account gets the flag at registration.
 ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT FALSE;
 
--- rotated_at — когда токен обменяли на новую пару: ещё 30 секунд он годится для параллельного
--- запроса из другой вкладки, позже его использование — кража (контракт, POST /v1/auth/refresh).
--- revoked_at — сессию закрыли: выход или отзыв всех токенов пользователя.
+-- rotated_at — when the token was exchanged for a new pair: for 30 more seconds it is accepted for a parallel
+-- request from another tab, later use of it is theft (contract, POST /v1/auth/refresh).
+-- revoked_at — the session was closed: sign-out or revocation of all the user's tokens.
 ALTER TABLE refresh_tokens ADD COLUMN rotated_at TIMESTAMP WITH TIME ZONE NULL;
 ALTER TABLE refresh_tokens ALTER COLUMN expired_at SET NOT NULL;
 CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 CREATE INDEX idx_refresh_tokens_expired_at ON refresh_tokens(expired_at);
 
--- Токены подтверждения почты и сброса пароля старого API. Подтверждения почты больше нет
--- (ADR-0016), токены ссылок сброса и приглашений хранятся хешами — своими таблицами.
+-- Email confirmation and password reset tokens of the old API. There is no email confirmation anymore
+-- (ADR-0016), reset link and invitation tokens are stored as hashes — in their own tables.
 DROP TABLE confirmation_tokens;

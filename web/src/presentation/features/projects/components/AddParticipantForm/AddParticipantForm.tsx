@@ -15,19 +15,19 @@ import { UsersList } from "../UsersList";
 import styles from "./AddParticipantForm.module.css";
 
 interface AddParticipantFormProps {
-  /** Проект, куда зовут; без него — новый проект */
+  /** The project people are invited to; without it — a new project */
   projectId?: ProjectId;
-  /** Почты, выбранные раньше */
+  /** Previously selected emails */
   initialEmails?: string[];
   onSubmit: (emails: string[]) => void;
 }
 
-// Почту сервер приводит к нижнему регистру и обрезает (ADR-0016) — веб сравнивает так же
+// The server lowercases and trims emails (ADR-0016) — the web compares them the same way
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 /**
- * Выбор, кого позвать: кандидаты из общих проектов и любая почта. Enter в поле добавляет
- * введённую почту к выбранным, кнопка зовёт всех выбранных вместе с введённой.
+ * Picks whom to invite: candidates from shared projects and any email. Enter in the field adds
+ * the typed email to the selection; the button invites all selected plus the typed one.
  */
 export function AddParticipantForm({
   projectId,

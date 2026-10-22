@@ -24,7 +24,7 @@ func register(t *testing.T, s *apitest.Server) user {
 	return apitest.Decode[user](t, rec)
 }
 
-// Swagger показывает контракт api/openapi.yaml (ADR-0005) и только администратору сервиса (ADR-0014).
+// Swagger shows the api/openapi.yaml contract (ADR-0005), and only to a service administrator (ADR-0014).
 func TestDocsForAdmin(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	register(t, s)
@@ -32,20 +32,20 @@ func TestDocsForAdmin(t *testing.T) {
 	rec := s.Get("/docs/")
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if !strings.Contains(rec.Body.String(), `<div id="swagger-ui">`) || !strings.HasPrefix(rec.Header().Get("Content-Type"), "text/html") {
-		t.Fatalf("страница Swagger: %s %q", rec.Header().Get("Content-Type"), rec.Body.String())
+		t.Fatalf("Swagger page: %s %q", rec.Header().Get("Content-Type"), rec.Body.String())
 	}
 	rec = s.Get("/docs/openapi.yaml")
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if !bytes.Equal(rec.Body.Bytes(), api.OpenAPI) || len(api.OpenAPI) == 0 {
-		t.Fatal("отдан не api/openapi.yaml")
+		t.Fatal("served something other than api/openapi.yaml")
 	}
 	if rec := s.Get("/docs/swagger-initializer.js"); !strings.Contains(rec.Body.String(), `url: "openapi.yaml"`) {
-		t.Fatalf("Swagger UI открывает не контракт: %s", rec.Body.String())
+		t.Fatalf("Swagger UI does not open the contract: %s", rec.Body.String())
 	}
 	rec = s.Get("/docs/swagger-ui-bundle.js")
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if rec.Body.Len() < 100_000 {
-		t.Fatalf("сборка Swagger UI: %d байт", rec.Body.Len())
+		t.Fatalf("Swagger UI build: %d bytes", rec.Body.Len())
 	}
 	apitest.RequireError(t, s.Get("/docs/nope.js"), http.StatusNotFound, "NOT_FOUND")
 }

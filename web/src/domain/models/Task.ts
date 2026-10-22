@@ -4,14 +4,14 @@ export interface Task {
   id: TaskId;
   projectId: ProjectId;
   name: string;
-  /** Описания нет — undefined */
+  /** undefined when there is no description */
   description?: string;
   statusId: TaskStatusId;
   authorId: UserId;
-  /** Исполнителя нет — undefined; исполнитель всегда участник проекта задачи */
+  /** undefined when unassigned; the assignee is always a member of the task's project */
   assigneeId?: UserId;
-  /** ISO 8601 в UTC */
+  /** ISO 8601 in UTC */
   createdAt: string;
-  /** ISO 8601 в UTC */
+  /** ISO 8601 in UTC */
   updatedAt: string;
 }

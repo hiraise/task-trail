@@ -12,8 +12,8 @@ import (
 	swaggerfiles "github.com/swaggo/files/v2"
 )
 
-// swaggerInitializer заменяет swagger-initializer.js из сборки Swagger UI: тот открывает
-// пример petstore, а этот — контракт рядом с собой.
+// swaggerInitializer replaces swagger-initializer.js from the Swagger UI build: that one opens
+// the petstore example, this one opens the contract next to it.
 const swaggerInitializer = `window.onload = function () {
   window.ui = SwaggerUIBundle({
     url: "openapi.yaml",
@@ -26,9 +26,9 @@ const swaggerInitializer = `window.onload = function () {
 };
 `
 
-// newDocsRouter отдаёт по /docs/ Swagger UI с контрактом api/openapi.yaml (ADR-0005) — всегда,
-// но только администратору сервиса (ADR-0014). «Try it out» ходит в API с cookie
-// администратора: сервер в контракте — относительный адрес «..» от openapi.yaml.
+// newDocsRouter serves Swagger UI with the api/openapi.yaml contract (ADR-0005) at /docs/ — always,
+// but only to a service administrator (ADR-0014). "Try it out" calls the API with the administrator's
+// cookie: the server in the contract is the relative address ".." from openapi.yaml.
 func newDocsRouter(router *gin.Engine, authMW, adminMW gin.HandlerFunc) {
 	router.GET("/docs/*file", authMW, adminMW, serveDocs)
 }
@@ -49,7 +49,7 @@ func serveDocs(c *gin.Context) {
 		c.Data(http.StatusOK, "text/javascript; charset=utf-8", []byte(swaggerInitializer))
 	default:
 		if _, err := fs.Stat(swaggerfiles.FS, file); err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, response.NewApiErr(http.StatusNotFound, response.CodeNotFound, "нет такого файла"))
+			c.AbortWithStatusJSON(http.StatusNotFound, response.NewApiErr(http.StatusNotFound, response.CodeNotFound, "no such file"))
 			return
 		}
 		c.FileFromFS(file, http.FS(swaggerfiles.FS))

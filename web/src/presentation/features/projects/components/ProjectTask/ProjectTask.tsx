@@ -7,7 +7,7 @@ import styles from "./ProjectTask.module.css";
 
 interface ProjectTaskProps {
   title: string;
-  /** Ответственный; нет — пустой кружок */
+  /** Assignee; none — an empty circle */
   assignee?: User;
 }
 

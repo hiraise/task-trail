@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// fileRoutes — содержимое файлов: GET /v1/files/{fileId} в контракте.
+// fileRoutes serve file contents: GET /v1/files/{fileId} in the contract.
 type fileRoutes struct {
 	services *file.FileModule
 }
 
-// get отдаёт файл без входа: сейчас все файлы — аватарки (ADR-0013).
+// get serves a file without sign-in: for now all files are avatars (ADR-0013).
 func (r *fileRoutes) get(c *gin.Context) {
 	fileID, err := pathID(c, "fileId")
 	if err != nil {
@@ -27,19 +27,19 @@ func (r *fileRoutes) get(c *gin.Context) {
 		return
 	}
 	defer func() { _ = content.Content.Close() }()
-	// Картинку браузер показывает, остальное — только скачивает: иначе HTML или SVG выполнит
-	// чужой скрипт на origin веба (ADR-0013)
+	// The browser displays an image and only downloads anything else: otherwise HTML or SVG would run
+	// a foreign script on the web origin (ADR-0013)
 	disposition := "attachment"
 	if content.File.IsImage() {
 		disposition = "inline"
 	}
-	// Имя — для «Сохранить как»; не по-английски оно уходит в виде filename*=utf-8''…
+	// The name is for "Save as"; a non-ASCII name is sent as filename*=utf-8''…
 	if named := mime.FormatMediaType(disposition, map[string]string{"filename": content.File.OriginalName}); content.File.OriginalName != "" && named != "" {
 		disposition = named
 	}
 	c.DataFromReader(http.StatusOK, content.Size, content.File.MimeType, content.Content, map[string]string{
 		"X-Content-Type-Options": "nosniff",
-		// Файл по ID не меняется
+		// A file never changes under its ID
 		"Cache-Control":       "private, max-age=31536000, immutable",
 		"Content-Disposition": disposition,
 	})

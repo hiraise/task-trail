@@ -8,7 +8,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { toastError } from "@/shared/errors/errorMessage";
 import { TEXTS } from "@/shared/locales/texts";
 
-/** Имя текущего пользователя; сервер отвечает изменённым пользователем (ADR-0018). */
+/** Name of the current user; the server responds with the updated user (ADR-0018). */
 export function useUpdateUser() {
   const queryClient = useQueryClient();
 

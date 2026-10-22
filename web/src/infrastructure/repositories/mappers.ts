@@ -24,8 +24,8 @@ import type {
 } from "../api/generated";
 import { fileUrl } from "../config/apiRoutes";
 
-// Ответы API приходят в типах из контракта (ADR-0020) и переводятся в модели domain здесь,
-// без проверки схемой: форму ответов сервера проверяют его тесты по контракту (ADR-0019).
+// API responses arrive in contract types (ADR-0020) and are mapped to domain models here,
+// without schema validation: the server's contract tests check the response shape (ADR-0019).
 
 export const toUser = (dto: UserDto): User => ({
   id: dto.id,

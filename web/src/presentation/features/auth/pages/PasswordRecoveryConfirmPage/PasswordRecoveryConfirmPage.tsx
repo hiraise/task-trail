@@ -11,7 +11,7 @@ import { useRecoveryPassword } from "../../hooks";
 
 import styles from "./PasswordRecoveryConfirmPage.module.css";
 
-/** «Проверьте вашу почту» после запроса ссылки сброса; почта — в параметре `email`. */
+/** "Check your email" after requesting a reset link; the email is in the `email` parameter. */
 export function PasswordRecoveryConfirmPage() {
   const { email } = useSearch({ from: "/auth/password-recovery/confirm" });
   const { mutate: recover } = useRecoveryPassword({ navigateOnSuccess: false });

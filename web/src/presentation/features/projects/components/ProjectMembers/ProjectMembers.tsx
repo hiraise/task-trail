@@ -17,8 +17,8 @@ interface ProjectMembersProps {
 }
 
 /**
- * Участники на странице проекта. На телефоне — аватарки и стрелка на страницу участников;
- * шире — список по группам с действиями, который можно свернуть в аватарки.
+ * Members on the project page. On a phone — avatars and an arrow to the members page;
+ * wider — a grouped list with actions that can be collapsed into avatars.
  */
 export function ProjectMembers({ projectId, members }: ProjectMembersProps) {
   const [isExpanded, setIsExpanded] = useState(true);

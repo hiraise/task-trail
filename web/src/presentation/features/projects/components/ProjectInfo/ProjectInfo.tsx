@@ -12,13 +12,13 @@ import styles from "./ProjectInfo.module.css";
 
 interface ProjectInfoProps {
   project: Project;
-  /** Имя владельца */
+  /** Owner's name */
   owner?: string;
-  /** Меню «…» шире телефона; на телефоне меню — в верхней панели страницы */
+  /** The "…" menu wider than a phone; on a phone the menu is in the page top bar */
   menuItems: MenuItem[];
 }
 
-/** Название, описание, владелец и дата создания. На телефоне длинное описание свёрнуто в 3 строки. */
+/** Name, description, owner and creation date. On a phone a long description is collapsed to 3 lines. */
 export function ProjectInfo({ project, owner, menuItems }: ProjectInfoProps) {
   const [isClamped, setIsClamped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);

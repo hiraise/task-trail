@@ -14,8 +14,8 @@ import (
 	"task-trail/internal/domain/service/password"
 )
 
-// findInvitation находит по токену ссылки действующее приглашение. Аккаунт с почтой
-// приглашения уже есть — INVITATION_ACCEPTED: ссылка ведёт на вход, даже если истекла (ADR-0016).
+// findInvitation finds an active invitation by the link token. If an account with the invitation
+// email already exists: INVITATION_ACCEPTED, the link leads to sign-in even if expired (ADR-0016).
 func findInvitation(
 	ctx context.Context,
 	invitations repository.InvitationRepository,
@@ -44,7 +44,7 @@ func findInvitation(
 	return details, nil
 }
 
-// InvitationLookupService показывает до принятия, куда ведёт ссылка приглашения.
+// InvitationLookupService shows where an invitation link leads before it is accepted.
 type InvitationLookupService struct {
 	clock                service.Clock
 	invitationRepository repository.InvitationRepository
@@ -63,8 +63,8 @@ func (s *InvitationLookupService) Execute(ctx context.Context, token string) (dt
 	}, nil
 }
 
-// AcceptInvitationService создаёт аккаунт по ссылке приглашения и сразу открывает сессию.
-// Все действующие приглашения этой почты становятся участием с ролью «участник» (ADR-0016).
+// AcceptInvitationService creates an account via an invitation link and opens a session right away.
+// All active invitations of this email become memberships with the "member" role (ADR-0016).
 type AcceptInvitationService struct {
 	txManager            transaction.TxManager
 	clock                service.Clock
@@ -78,7 +78,7 @@ type AcceptInvitationService struct {
 
 func (s *AcceptInvitationService) Execute(ctx context.Context, data dto.AcceptInvitation) (dto.Session, error) {
 	now := s.clock.Now()
-	// Ссылка проверяется до хеша пароля: bcrypt медленный, и на неверные ссылки его не тратим
+	// The link is checked before hashing the password: bcrypt is slow, so it is not wasted on invalid links
 	details, err := findInvitation(ctx, s.invitationRepository, s.userRepository, data.Token, now)
 	if err != nil {
 		return dto.Session{}, err
@@ -93,7 +93,7 @@ func (s *AcceptInvitationService) Execute(ctx context.Context, data dto.AcceptIn
 		user := s.userFactory.New(email, hash, data.Username)
 		if err := s.userRepository.Create(ctx, user); err != nil {
 			if isEntityAlreadyExists(err) {
-				// Параллельное принятие другой ссылки той же почты успело первым
+				// A parallel acceptance of another link for the same email got there first
 				return domain.ErrInvitationAccepted("invitationID", details.Invitation.ID, "reason", "concurrent accept")
 			}
 			return err

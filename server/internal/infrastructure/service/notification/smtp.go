@@ -1,4 +1,4 @@
-// Package notification отправляет письма через SMTP, который подключил администратор (ADR-0017).
+// Package notification sends emails through the SMTP server the administrator connected (ADR-0017).
 package notification
 
 import (
@@ -15,8 +15,8 @@ import (
 	"github.com/wneessen/go-mail"
 )
 
-// Timeout — сколько ждать ответа SMTP на каждом шаге. Письма уходят прямо в запросе API
-// (ADR-0017), а веб ждёт такие запросы не меньше 20 секунд (docs/roadmap.md, шаг 6 этапа 1).
+// Timeout is how long to wait for an SMTP reply at each step. Emails are sent right inside the API
+// request (ADR-0017), and the web waits for such requests at least 20 seconds (docs/roadmap.md, stage 1 step 6).
 const Timeout = 10 * time.Second
 
 type SMTP struct {
@@ -26,8 +26,8 @@ type SMTP struct {
 
 type Option func(*SMTP)
 
-// WithRootCAs задаёт корневые сертификаты для TLS вместо системных. Только для тестов:
-// их SMTP-сервер подписан своим сертификатом.
+// WithRootCAs sets the root certificates for TLS instead of the system ones. Tests only:
+// their SMTP server uses a self-signed certificate.
 func WithRootCAs(pool *x509.CertPool) Option {
 	return func(s *SMTP) { s.rootCAs = pool }
 }
@@ -40,8 +40,8 @@ func NewSMTP(clock service.Clock, opts ...Option) *SMTP {
 	return s
 }
 
-// Send подключается к SMTP по настройкам и отправляет письмо. Любой отказ — MAIL_SEND_FAILED
-// с причиной: её видно в логе сервера.
+// Send connects to SMTP with the settings and sends the email. Any failure is MAIL_SEND_FAILED
+// with a cause that shows up in the server log.
 func (s *SMTP) Send(ctx context.Context, settings *entity.MailSettings, letter service.Letter) error {
 	msg := mail.NewMsg(mail.WithNoDefaultUserAgent())
 	if err := msg.From(settings.Sender); err != nil {
@@ -65,10 +65,10 @@ func (s *SMTP) Send(ctx context.Context, settings *entity.MailSettings, letter s
 	return nil
 }
 
-// Check подключается к SMTP по настройкам: приветствие, шифрование, вход — и спрашивает,
-// примет ли сервер письмо от отправителя (MAIL FROM, затем RSET): так видно, что сервер
-// требует вход или не пускает чужой адрес отправителя. Письмо не уходит. Любой отказ —
-// MAIL_CONNECTION_FAILED с причиной для лога сервера.
+// Check connects to SMTP with the settings: greeting, encryption, sign-in — and asks whether
+// the server accepts mail from the sender (MAIL FROM, then RSET): this shows that the server
+// requires sign-in or rejects a foreign sender address. No email is sent. Any failure is
+// MAIL_CONNECTION_FAILED with a cause for the server log.
 func (s *SMTP) Check(ctx context.Context, settings *entity.MailSettings) error {
 	fail := func(err error, reason string) error {
 		return domain.ErrMailConnectionFailed(err, "reason", reason, "host", settings.Host, "port", settings.Port)
@@ -85,9 +85,9 @@ func (s *SMTP) Check(ctx context.Context, settings *entity.MailSettings) error {
 	if err != nil {
 		return fail(err, "connection or login failed")
 	}
-	// Отказ на QUIT проверку не портит: всё нужное сервер уже ответил
+	// A failure on QUIT does not spoil the check: the server has already answered everything needed
 	defer func() { _ = client.CloseWithSMTPClient(conn) }()
-	// Конверт — адрес без имени, как его отправляет go-mail
+	// The envelope uses the address without a name, as go-mail sends it
 	if err := conn.Mail((&netmail.Address{Address: sender.Address}).String()); err != nil {
 		return fail(err, "sender rejected")
 	}
@@ -103,7 +103,7 @@ func (s *SMTP) options(settings *entity.MailSettings) []mail.Option {
 	case entity.MailEncryptionTLS:
 		opts = append(opts, mail.WithSSL())
 	case entity.MailEncryptionSTARTTLS:
-		// Без STARTTLS у сервера письмо не уходит: пароль и ссылки открытым текстом не шлём
+		// If the server lacks STARTTLS, no email is sent: we do not send the password and links in plain text
 		opts = append(opts, mail.WithTLSPolicy(mail.TLSMandatory))
 	default:
 		opts = append(opts, mail.WithTLSPolicy(mail.NoTLS))
@@ -112,8 +112,8 @@ func (s *SMTP) options(settings *entity.MailSettings) []mail.Option {
 		opts = append(opts, mail.WithTLSConfig(&tls.Config{ServerName: settings.Host, RootCAs: s.rootCAs, MinVersion: tls.VersionTLS12}))
 	}
 	if settings.Username != nil {
-		// Без шифрования go-mail выбирает только способы входа, которые не передают пароль
-		// открытым текстом; PLAIN и LOGIN — только после TLS
+		// Without encryption go-mail picks only sign-in methods that do not send the password
+		// in plain text; PLAIN and LOGIN only after TLS
 		opts = append(opts, mail.WithSMTPAuth(mail.SMTPAuthAutoDiscover), mail.WithUsername(*settings.Username))
 		if settings.Password != nil {
 			opts = append(opts, mail.WithPassword(*settings.Password))

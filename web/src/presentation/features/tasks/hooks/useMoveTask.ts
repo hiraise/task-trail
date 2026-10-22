@@ -11,8 +11,8 @@ import { interpolate } from "@/shared/utils/interpolate";
 import { invalidateTaskLists, storeTask } from "./taskCache";
 
 /**
- * Переносит задачу в другой проект. Статус сохраняется; исполнитель, который не участник нового
- * проекта, снимается сервером — об этом говорит тост.
+ * Moves the task to another project. The status is kept; an assignee who is not a member of the new
+ * project is cleared by the server — a toast says so.
  */
 export function useMoveTask() {
   const queryClient = useQueryClient();
@@ -24,7 +24,7 @@ export function useMoveTask() {
       invalidateTaskLists(queryClient, task.projectId, { countChanged: true });
       invalidateTaskLists(queryClient, moved.projectId, { countChanged: true });
 
-      // Снятого ответственного легко не заметить — об этом предупреждение, а не обычный тост
+      // A cleared assignee is easy to miss — so this is a warning, not a regular toast
       if (task.assigneeId && !moved.assigneeId) {
         toast.warning(interpolate(tasksTexts.taskMovedUnassigned, { project: project.name }));
       } else {

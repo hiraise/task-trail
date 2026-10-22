@@ -37,12 +37,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Значения, которые не настраиваются (ADR-0015): администратору менять их незачем,
-// а переменная окружения на каждое — лишняя настройка при установке.
+// Values that are not configurable (ADR-0015): the administrator has no reason to change them,
+// and an environment variable for each is an extra setting at installation.
 const (
 	accessTokenLifetime  = 15 * time.Minute
 	refreshTokenLifetime = 30 * 24 * time.Hour
-	// Ссылку сброса из письма или от администратора человек может открыть не сразу
+	// A person may not open a reset link from a letter or from the administrator right away
 	passwordResetLifetime = 24 * time.Hour
 	cleanupInterval       = time.Hour
 	accessTokenCookie     = "at"
@@ -50,13 +50,13 @@ const (
 	tokenIssuer           = "tasktrail"
 	pgMaxPoolSize         = 10
 	passwordHashCost      = 12
-	// Файл на диске без записи в базе младше суток может быть загрузкой, которая ещё идёт (ADR-0013)
+	// A file on disk without a database record younger than a day may be an upload still in progress (ADR-0013)
 	orphanFileAge = 24 * time.Hour
-	// Приглашение в проект действует неделю (ADR-0016): срок называет письмо
+	// A project invitation is valid for a week (ADR-0016): the letter states the term
 	invitationLifetime = 7 * 24 * time.Hour
 )
 
-// Server — HTTP-движок с модулями. Run запускает его, тесты обработчиков собирают так же.
+// Server — the HTTP engine with modules. Run starts it, handler tests build it the same way.
 type Server struct {
 	Engine  *gin.Engine
 	Access  *access.AccessModule
@@ -74,19 +74,19 @@ type options struct {
 
 type Option func(*options)
 
-// WithPasswordHashCost задаёт стоимость bcrypt. Только для тестов: с боевой стоимостью
-// каждый вход в тесте занимает доли секунды.
+// WithPasswordHashCost sets the bcrypt cost. Tests only: with the production cost
+// every sign-in in a test takes a fraction of a second.
 func WithPasswordHashCost(cost int) Option {
 	return func(o *options) { o.passwordHashCost = cost }
 }
 
-// WithSMTPRootCAs задаёт корневые сертификаты для TLS почты вместо системных. Только для тестов:
-// их SMTP-сервер подписан своим сертификатом (notification.WithRootCAs).
+// WithSMTPRootCAs sets root certificates for mail TLS instead of the system ones. Tests only:
+// their SMTP server is signed with its own certificate (notification.WithRootCAs).
 func WithSMTPRootCAs(pool *x509.CertPool) Option {
 	return func(o *options) { o.smtpRootCAs = pool }
 }
 
-// New собирает сервер на базе pool. Часы clk — системные в Run и фиксированные в тестах (ADR-0022).
+// New builds the server on top of pool. The clock clk is the system one in Run and a fixed one in tests (ADR-0022).
 func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Logger, opts ...Option) (*Server, error) {
 	o := options{passwordHashCost: passwordHashCost}
 	for _, opt := range opts {
@@ -232,8 +232,8 @@ func Run(cfg *config.Config) {
 	}
 }
 
-// cleaner — периодическая очистка: истёкшие токены и приглашения, ненужные файлы.
-// done — что писать в лог, когда что-то удалено.
+// cleaner — a periodic cleanup: expired tokens and invitations, unneeded files.
+// done — what to log when something is deleted.
 type cleaner struct {
 	done    string
 	service interface {
@@ -241,8 +241,8 @@ type cleaner struct {
 	}
 }
 
-// cleanup запускает очистки при запуске сервера и затем раз в interval, пока ctx не отменён.
-// Сбой одной очистки не мешает остальным.
+// cleanup runs cleanups at server start and then once per interval until ctx is cancelled.
+// A failure of one cleanup does not stop the others.
 func cleanup(ctx context.Context, l logger.Logger, interval time.Duration, cleaners []cleaner) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()

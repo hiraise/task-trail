@@ -6,13 +6,13 @@ import (
 	"task-trail/internal/domain/entity"
 )
 
-// Upload — файл из запроса: имя у пользователя и содержимое.
+// Upload is a file from a request: the user's file name and the content.
 type Upload struct {
 	Name    string
 	Content []byte
 }
 
-// FileContent — файл для ответа. Content закрывает тот, кто его прочитал.
+// FileContent is a file for a response. Whoever reads Content closes it.
 type FileContent struct {
 	File    *entity.File
 	Content io.ReadCloser

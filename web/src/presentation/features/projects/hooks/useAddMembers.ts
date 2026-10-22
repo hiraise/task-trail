@@ -10,9 +10,9 @@ import { projectsTexts } from "@/shared/locales/projects";
 import { useInvitationReport } from "./useInvitationReport";
 
 /**
- * Зовёт людей в проект по почте. Зарегистрированные сразу становятся участниками, остальным
- * уходит приглашение (ADR-0016). Результат по каждой почте показывает useInvitationReport;
- * `report: false` — для окна результатов, которое само обновляет свой список.
+ * Invites people to the project by email. Registered users become members at once, the rest
+ * get an invitation (ADR-0016). useInvitationReport shows the result per email;
+ * `report: false` — for the results modal, which updates its own list.
  */
 export function useAddMembers({ report = true }: { report?: boolean } = {}) {
   const queryClient = useQueryClient();

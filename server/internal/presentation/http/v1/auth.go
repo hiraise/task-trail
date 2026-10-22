@@ -14,7 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// authRoutes — вход, сессия, пароль и приглашения: /v1/auth/* в контракте.
+// authRoutes are sign-in, session, password and invitations: /v1/auth/* in the contract.
 type authRoutes struct {
 	cm       *contextmanager.GinContextManager
 	services *access.AccessModule
@@ -60,7 +60,7 @@ func (r *authRoutes) refresh(c *gin.Context) {
 	}
 	tokens, err := r.services.Refresh.Execute(c, rt)
 	if err != nil {
-		// При сбое сервера сессия ещё может пригодиться: cookie удаляются, только если она недействительна
+		// On a server failure the session may still be useful: cookies are deleted only if it is invalid
 		if sessionInvalid(err) {
 			r.cm.DeleteTokens(c)
 		}
@@ -85,7 +85,7 @@ func sessionInvalid(err error) bool {
 	return false
 }
 
-// logout удаляет cookie всегда, даже если токен недействителен или его нет.
+// logout always deletes the cookies, even if the token is invalid or missing.
 func (r *authRoutes) logout(c *gin.Context) {
 	r.cm.DeleteTokens(c)
 	if rt, err := c.Cookie(r.cm.RTName); err == nil {

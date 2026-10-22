@@ -4,7 +4,7 @@ import { adminTexts } from "@/shared/locales/admin";
 import { ServiceUrlForm } from "../components";
 import { useServiceSettings } from "../hooks";
 
-/** Адрес сервиса отдельной страницей — с телефона; шире та же форма стоит в разделе. */
+/** Service URL as a separate page, from a phone; wider, the same form is in the section. */
 export function AdminServiceUrlPage() {
   const { data: settings } = useServiceSettings();
 

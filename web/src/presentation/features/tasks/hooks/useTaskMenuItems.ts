@@ -8,7 +8,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { useDeleteTask } from "./useDeleteTask";
 
-/** Действия с задачей: менять и удалять её может любой участник её проекта (контракт API). */
+/** Task actions: any member of the task's project can edit and delete it (API contract). */
 export const useTaskMenuItems = (task?: Task) => {
   const { mutate: deleteTask } = useDeleteTask();
   const { showEditTask, showMoveToArchive, showDeleteItem } = useGlobalModals();
@@ -30,7 +30,7 @@ export const useTaskMenuItems = (task?: Task) => {
       onClick: async () => {
         const result = await showMoveToArchive({ type: "task", id: task.id, title: task.name });
 
-        // Архива на сервере ещё нет — этап 2 (docs/roadmap.md)
+        // The server has no archive yet — stage 2 (docs/roadmap.md)
         if (result) toast.warning(`Task id: ${task.id} moved to archive`);
       },
       isVisible: true,

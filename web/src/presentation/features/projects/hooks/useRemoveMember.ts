@@ -7,7 +7,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { toastError } from "@/shared/errors/errorMessage";
 import { projectsTexts } from "@/shared/locales/projects";
 
-/** Исключает участника; его задачи в проекте остаются без исполнителя. */
+/** Removes a member; their tasks in the project are left unassigned. */
 export function useRemoveMember() {
   const queryClient = useQueryClient();
 

@@ -38,8 +38,8 @@ func insertTask(t *testing.T, pool *pgxpool.Pool, project entity.ProjectID, auth
 	return taskID
 }
 
-// Проект глазами участника: роль и число неудалённых задач; удалённый проект — вместе
-// с задачами — не находится (ADR-0001), а участие в нём сохраняется.
+// A project as a member sees it: the role and the number of non-deleted tasks; a deleted project, together
+// with its tasks, is not found (ADR-0001), while membership in it is kept.
 func TestProjectRepository(t *testing.T) {
 	pool := testdb.New(t)
 	ctx := context.Background()
@@ -80,14 +80,14 @@ func TestProjectRepository(t *testing.T) {
 	}
 	if p := view.Project; p.ID != design.ID || p.Name != "Дизайн-система" || *p.Description != "Компоненты" ||
 		!p.CreatedAt.Equal(now) || view.TasksCount != 1 || view.Role != entity.RoleMember {
-		t.Fatalf("проект глазами Ивана: %+v %+v", view, view.Project)
+		t.Fatalf("project as Ivan sees it: %+v %+v", view, view.Project)
 	}
 	_, err = repo.GetView(ctx, backend.ID, ivan.ID)
 	requireCode(t, err, domain.EntityNotFound)
 	list, err := repo.ListViews(ctx, anna.ID)
 	if err != nil || len(list) != 2 || list[0].Project.ID != backend.ID || list[1].Project.ID != design.ID ||
 		list[0].Role != entity.RoleOwner || list[0].Project.Description != nil {
-		t.Fatalf("проекты Анны: %+v, %v", list, err)
+		t.Fatalf("Anna's projects: %+v, %v", list, err)
 	}
 
 	design.Rename("Дизайн-система 2", now.Add(time.Hour))
@@ -97,7 +97,7 @@ func TestProjectRepository(t *testing.T) {
 	}
 	if got, err := repo.GetForUpdate(ctx, design.ID); err != nil || got.Name != "Дизайн-система 2" || got.Description != nil ||
 		!got.UpdatedAt.Equal(now.Add(time.Hour)) {
-		t.Fatalf("после изменения: %+v, %v", got, err)
+		t.Fatalf("after update: %+v, %v", got, err)
 	}
 
 	if err := repo.SoftDelete(ctx, design.ID, now); err != nil {
@@ -115,15 +115,15 @@ func TestProjectRepository(t *testing.T) {
 	if err := pool.QueryRow(ctx, `SELECT
 		(SELECT count(*) FROM tasks WHERE project_id = $1 AND deleted_at IS NULL),
 		(SELECT count(*) FROM project_members WHERE project_id = $1)`, design.ID).Scan(&liveTasks, &kept); err != nil || liveTasks != 0 || kept != 2 {
-		t.Fatalf("после удаления задач %d, участий %d, %v", liveTasks, kept, err)
+		t.Fatalf("after delete: tasks %d, memberships %d, %v", liveTasks, kept, err)
 	}
 	if list, err := repo.ListViews(ctx, anna.ID); err != nil || len(list) != 1 {
-		t.Fatalf("после удаления: %+v, %v", list, err)
+		t.Fatalf("after delete: %+v, %v", list, err)
 	}
 }
 
-// Участники — владелец, администраторы, участники; роль меняется, участие удаляется,
-// исключённый снимается с задач только этого проекта.
+// Members: owner, admins, members; the role changes, membership is deleted,
+// a removed member is unassigned from tasks of this project only.
 func TestProjectMembers(t *testing.T) {
 	pool := testdb.New(t)
 	ctx := context.Background()
@@ -159,11 +159,11 @@ func TestProjectMembers(t *testing.T) {
 	for _, m := range list {
 		got = append(got, string(m.Member.Role)+" "+string(m.User.Email))
 		if m.User.ID != m.Member.UserID {
-			t.Errorf("участие не того пользователя: %+v", m)
+			t.Errorf("membership of the wrong user: %+v", m)
 		}
 	}
 	if len(got) != 3 || got[0] != "owner owner@example.com" || got[1] != "admin olga@example.com" || got[2] != "member ivan@example.com" {
-		t.Fatalf("участники: %v", got)
+		t.Fatalf("members: %v", got)
 	}
 
 	assigned := insertTask(t, pool, project, owner, ivan)
@@ -178,14 +178,14 @@ func TestProjectMembers(t *testing.T) {
 	for task, want := range map[string]bool{assigned: false, elsewhere: true} {
 		var hasAssignee bool
 		if err := pool.QueryRow(ctx, `SELECT assignee_id IS NOT NULL FROM tasks WHERE id = $1`, task).Scan(&hasAssignee); err != nil || hasAssignee != want {
-			t.Errorf("задача %s: исполнитель %v, %v", task, hasAssignee, err)
+			t.Errorf("task %s: assignee %v, %v", task, hasAssignee, err)
 		}
 	}
 	_, err = repo.Get(ctx, project, ivan.ID)
 	requireCode(t, err, domain.EntityNotFound)
 }
 
-// Кандидаты — люди из неудалённых проектов пользователя, кроме него и участников exclude.
+// Candidates are people from the user's non-deleted projects, except the user and the members in exclude.
 func TestListCandidates(t *testing.T) {
 	pool := testdb.New(t)
 	ctx := context.Background()
@@ -225,11 +225,11 @@ func TestListCandidates(t *testing.T) {
 		}
 		return out
 	}
-	// Без имени — по почте: Пётр без имени идёт как petr@example.com, раньше «Ивана»
+	// Without a name, by email: Petr has no name and sorts as petr@example.com, before "Ivan"
 	if got := emails(nil); len(got) != 2 || got[0] != petr.Email || got[1] != ivan.Email {
-		t.Errorf("все кандидаты: %v", got)
+		t.Errorf("all candidates: %v", got)
 	}
 	if got := emails(&design); len(got) != 1 || got[0] != petr.Email {
-		t.Errorf("в дизайн-систему: %v", got)
+		t.Errorf("into the design system: %v", got)
 	}
 }

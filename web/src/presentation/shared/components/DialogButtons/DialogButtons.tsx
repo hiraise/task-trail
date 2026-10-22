@@ -11,7 +11,7 @@ interface DialogButtonsProps {
   onDelete?: () => void;
   onLeave?: () => void;
   variant?: "apply" | "move" | "delete" | "leave";
-  /** Текст кнопки «apply», если «Применить» не подходит */
+  /** Text of the "apply" button, if "Apply" does not fit */
   applyText?: string;
 }
 

@@ -8,7 +8,7 @@ import { tasksTexts } from "@/shared/locales/tasks";
 
 import { storeTask } from "./taskCache";
 
-/** Меняет статус; новый статус виден на экране сразу после ответа сервера. */
+/** Changes the status; the new status shows on screen right after the server responds. */
 export function useChangeTaskStatus() {
   const queryClient = useQueryClient();
 

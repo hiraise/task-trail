@@ -18,7 +18,7 @@ import { MAIL_REQUEST_TIMEOUT_MS } from "../http/timeouts";
 
 import { toCurrentUser } from "./mappers";
 
-// Ошибки приходят из HttpClient уже как AppError с кодом API (http/apiError.ts).
+// Errors arrive from HttpClient already as AppError with the API code (http/apiError.ts).
 const createAuthRepository = (http: HttpClient): AuthRepository => ({
   login: async (email, password) => {
     const body: Credentials = { email, password };

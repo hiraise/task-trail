@@ -11,7 +11,7 @@ import { tasksTexts } from "@/shared/locales/tasks";
 
 import { invalidateTaskLists } from "./taskCache";
 
-/** Удаляет задачу (мягко) и уводит со страницы задачи: в «Мои задачи» или в её проект. */
+/** Soft-deletes the task and leaves the task page: to "My tasks" or to its project. */
 export function useDeleteTask() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export function useDeleteTask() {
     onSuccess: async (_, task) => {
       toast.success(tasksTexts.taskDeleted);
 
-      // Сначала уходим со страницы задачи, иначе она перечитает удалённую задачу
+      // Leave the task page first, otherwise it refetches the deleted task
       if (pathname.startsWith(ROUTES.tasks)) {
         await navigate({ to: ROUTES.tasks, replace: true });
       } else {

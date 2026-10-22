@@ -11,7 +11,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { TaskStatusList } from "../../components";
 
-/** Выбор статуса: на телефоне окно закрывается выбором, шире — кнопкой «Применить» (макет). */
+/** Status picker: on a phone the modal closes on selection, wider — via the "Apply" button (mockup). */
 export function ChangeTaskStatusModal(props: BaseModalProps<TaskStatusId>) {
   const { onClose, ...rest } = props;
   const { statusId } = useGlobalModalProps<ChangeStatusProps>() ?? {};

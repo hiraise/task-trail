@@ -36,7 +36,7 @@
   color: var(--text-secondary);
 }
 
-/* Название — до двух строк, как в макете */
+/* Name — up to two lines, as in the mockup */
 .name {
   overflow: hidden;
   display: -webkit-box;

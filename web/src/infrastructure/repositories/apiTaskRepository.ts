@@ -15,7 +15,7 @@ import type { HttpClient } from "../http/HttpClient";
 
 import { toTask, toTaskStatus } from "./mappers";
 
-// Ошибки приходят из HttpClient уже как AppError с кодом API (http/apiError.ts).
+// Errors arrive from HttpClient already as AppError with the API code (http/apiError.ts).
 const createTaskRepository = (http: HttpClient): TaskRepository => ({
   findById: async (id) => toTask(await http.get<Task>(API_ROUTES.TASK_BY_ID(id))),
 

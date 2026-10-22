@@ -17,19 +17,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Usage — команды сервера. Их запускает тот, кто управляет сервером, — тем же бинарником
-// и с тем же окружением, что и сервер; вход в веб им не нужен.
-const Usage = `Использование: app [команда]
+// Usage — server commands. They are run by whoever manages the server — with the same binary
+// and the same environment as the server; they do not need to sign in to the web.
+const Usage = `Usage: app [command]
 
-Без команды — запустить сервер.
+Without a command — start the server.
 
-Команды:
-  password-reset-link <почта>   напечатать ссылку сброса пароля пользователя (ADR-0017):
-                                когда почта не подключена, а ни один администратор не может войти
+Commands:
+  password-reset-link <email>   print a user's password reset link (ADR-0017):
+                                when mail is not connected and no administrator can sign in
 `
 
-// Command выполняет команду args и возвращает код выхода. Результат — в stdout, сообщения
-// и ошибки — в stderr.
+// Command runs the command args and returns the exit code. The result goes to stdout, messages
+// and errors — to stderr.
 func Command(cfg *config.Config, args []string, stdout, stderr io.Writer) int {
 	if len(args) == 2 && args[0] == "password-reset-link" {
 		return passwordResetLink(cfg, args[1], stdout, stderr)
@@ -40,35 +40,35 @@ func Command(cfg *config.Config, args []string, stdout, stderr io.Writer) int {
 
 func passwordResetLink(cfg *config.Config, email string, stdout, stderr io.Writer) int {
 	l := slog.New(slog.NewTextHandler(stderr, &slog.HandlerOptions{Level: slog.LevelWarn}))
-	// Сервер мог ещё не запускаться с этой версией: без миграций нет таблицы ссылок
+	// The server may not have run with this version yet: without migrations there is no links table
 	if err := postgres.Migrate(cfg.PG.ConnString, migrations.FS, l); err != nil {
-		_, _ = fmt.Fprintf(stderr, "миграции: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "migrations: %v\n", err)
 		return 1
 	}
 	pg, err := postgres.New(cfg.PG.ConnString, l)
 	if err != nil {
-		_, _ = fmt.Fprintf(stderr, "подключение к PostgreSQL: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "connecting to PostgreSQL: %v\n", err)
 		return 1
 	}
 	defer pg.Close()
-	// В режиме отладки gin печатает маршруты в stdout, а там должна быть только ссылка
+	// In debug mode gin prints routes to stdout, and only the link must be there
 	gin.SetMode(gin.ReleaseMode)
 	server, err := New(pg.Pool, cfg, clock.New(), l)
 	if err != nil {
-		_, _ = fmt.Fprintf(stderr, "сборка сервера: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "building the server: %v\n", err)
 		return 1
 	}
 	link, err := server.Access.PasswordResetLink.ForEmail(context.Background(), email)
 	var e *domain.DomainError
 	if errors.As(err, &e) && e.Code == domain.EntityNotFound {
-		_, _ = fmt.Fprintf(stderr, "пользователя с почтой %s нет\n", email)
+		_, _ = fmt.Fprintf(stderr, "no user with email %s\n", email)
 		return 1
 	}
 	if err != nil {
-		_, _ = fmt.Fprintf(stderr, "ссылка не создана: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "link not created: %v\n", err)
 		return 1
 	}
 	_, _ = fmt.Fprintln(stdout, link.URL)
-	_, _ = fmt.Fprintf(stderr, "Ссылка действует до %s и сработает один раз.\n", link.ExpiresAt.UTC().Format(time.DateTime+" MST"))
+	_, _ = fmt.Fprintf(stderr, "The link is valid until %s and works once.\n", link.ExpiresAt.UTC().Format(time.DateTime+" MST"))
 	return 0
 }

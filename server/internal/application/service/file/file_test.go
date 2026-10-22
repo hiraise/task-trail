@@ -30,7 +30,7 @@ func newModule(t *testing.T) (*file.FileModule, *mocks.MockFileRepository, *mock
 	return file.New(file.Deps{Clock: clock.New(now), FileRepo: files, FileStorage: storage, OrphanAge: orphanAge}), files, storage
 }
 
-// Ненужные файлы стираются и отмечаются в базе; файлы без записи — только старше OrphanAge.
+// Unneeded files are erased and marked in the database; files without a record only if older than OrphanAge.
 func TestCleanup(t *testing.T) {
 	module, files, storage := newModule(t)
 	const replaced, removed = entity.FileID("replaced"), entity.FileID("removed")
@@ -47,7 +47,7 @@ func TestCleanup(t *testing.T) {
 	}, nil)
 	files.EXPECT().Known(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, ids []entity.FileID) (map[entity.FileID]bool, error) {
 		if !slices.Equal(ids, []entity.FileID{"orphan", "exactly-a-day", "avatar"}) {
-			t.Errorf("проверяются %v", ids)
+			t.Errorf("checked %v", ids)
 		}
 		return map[entity.FileID]bool{"avatar": true}, nil
 	})
@@ -56,18 +56,18 @@ func TestCleanup(t *testing.T) {
 
 	erased, err := module.Cleanup.Execute(context.Background())
 	if err != nil || erased != 4 {
-		t.Fatalf("стёрто %d, %v", erased, err)
+		t.Fatalf("erased %d, %v", erased, err)
 	}
 }
 
-// Файл не стёрся — в базе он остаётся ненужным, и следующая очистка попробует снова.
+// The file was not erased: it stays unneeded in the database, and the next cleanup tries again.
 func TestCleanupStopsOnDiskError(t *testing.T) {
 	module, files, storage := newModule(t)
-	failure := errors.New("диск только для чтения")
+	failure := errors.New("read-only disk")
 	files.EXPECT().ListSoftDeleted(gomock.Any()).Return([]entity.FileID{"replaced"}, nil)
 	storage.EXPECT().Delete(gomock.Any(), entity.FileID("replaced")).Return(failure)
 	if _, err := module.Cleanup.Execute(context.Background()); !errors.Is(err, failure) {
-		t.Fatalf("ошибка %v", err)
+		t.Fatalf("error %v", err)
 	}
 }
 
@@ -83,6 +83,6 @@ func TestDownload(t *testing.T) {
 
 	files.EXPECT().Get(gomock.Any(), entity.FileID("replaced")).Return(nil, domain.ErrEntityNotFound(0, nil))
 	if _, err := module.Download.Execute(context.Background(), "replaced"); !domain.HasCode(err, domain.EntityNotFound) {
-		t.Fatalf("ошибка %v", err)
+		t.Fatalf("error %v", err)
 	}
 }

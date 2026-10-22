@@ -12,9 +12,9 @@ import { useAdminUsers, useServiceSettings } from "../../hooks";
 import styles from "./AdminPage.module.css";
 
 /**
- * Раздел администратора сервиса. На телефоне — пункты на отдельные страницы адреса, почты
- * и пользователей, как в профиле; с 768 px — карточки с формами прямо на странице.
- * Раскладку переключает CSS.
+ * Service administrator section. On a phone, items lead to separate pages for the URL, mail
+ * and users, like in the profile; from 768 px, cards with forms right on the page.
+ * CSS switches the layout.
  */
 export function AdminPage() {
   const { data: settings } = useServiceSettings();
@@ -89,11 +89,11 @@ export function AdminPage() {
 
 interface MailHeadingProps {
   connected: boolean;
-  /** На отдельной странице название уже в верхней панели — только состояние */
+  /** On a separate page the title is already in the top bar: only the state */
   withTitle?: boolean;
 }
 
-/** Заголовок почты с состоянием и пояснением: что почта делает или что без неё. */
+/** Mail heading with the state and an explanation: what mail does or what happens without it. */
 export function MailHeading({ connected, withTitle = true }: MailHeadingProps) {
   const texts = adminTexts.mail;
 

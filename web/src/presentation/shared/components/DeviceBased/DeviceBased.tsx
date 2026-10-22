@@ -6,8 +6,8 @@ interface DeviceBasedProps {
   tablet?: React.ReactNode;
 }
 
-// Рисует вариант для устройства сразу, без пустого первого кадра: тип устройства useDevice
-// знает с первого рендера. Новых использований не добавляй — один адаптивный экран (ADR-0008).
+// Renders the device variant at once, without an empty first frame: useDevice knows the device type
+// from the first render. Do not add new usages: one adaptive screen (ADR-0008).
 export function DeviceBased({ mobile, tablet, desktop }: DeviceBasedProps) {
   const device = useDevice();
 

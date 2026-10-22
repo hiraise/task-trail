@@ -1,30 +1,30 @@
 import type { ProjectRole } from "../../domain/types";
 
-// Права в интерфейсе — по роли в проекте (ADR-0003), как их проверяет сервер (контракт API,
-// описания операций проектов). Интерфейс прячет недоступные действия; запрет всё равно
-// решает сервер, и ответ FORBIDDEN показывается текстом из shared/locales/apiErrors.ts.
+// UI permissions follow the project role (ADR-0003), as the server checks them (the API contract,
+// project operation descriptions). The UI hides unavailable actions; the server still makes
+// the final call, and a FORBIDDEN response is shown with the text from shared/locales/apiErrors.ts.
 
 const isManager = (role: ProjectRole): boolean => role === "owner" || role === "admin";
 
-/** Название, описание и приглашения — владелец и администратор. */
+/** Name, description and invitations — the owner and admin. */
 export const canEditProject = isManager;
 
 export const canInviteMembers = isManager;
 
-/** Удалить проект и менять роли может только владелец. */
+/** Only the owner can delete the project and change roles. */
 export const canDeleteProject = (role: ProjectRole): boolean => role === "owner";
 
 export const canChangeRoles = (role: ProjectRole): boolean => role === "owner";
 
-/** Архива на сервере ещё нет (этап 2) — пункт меню остаётся заглушкой для владельца. */
+/** The server has no archive yet (stage 2) — the menu item stays a placeholder for the owner. */
 export const canArchiveProject = (role: ProjectRole): boolean => role === "owner";
 
-/** Владелец не выходит из проекта, а удаляет его. */
+/** The owner does not leave the project but deletes it. */
 export const canLeaveProject = (role: ProjectRole): boolean => role !== "owner";
 
-/** Владелец исключает любого, кроме себя; администратор — только участников с ролью «участник». */
+/** The owner removes anyone but themselves; an admin removes only members with the "member" role. */
 export const canRemoveMember = (role: ProjectRole, memberRole: ProjectRole): boolean =>
   (role === "owner" && memberRole !== "owner") || (role === "admin" && memberRole === "member");
 
-/** Владелец и администраторы — в группе «Администраторы проекта». */
+/** The owner and admins go into the "Project administrators" group. */
 export const isProjectAdmin = isManager;

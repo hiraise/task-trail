@@ -14,7 +14,7 @@ interface MemberGroupsProps {
   projectId: ProjectId;
 }
 
-/** Участники по группам макета: администраторы (владелец первым) и участники. */
+/** Members grouped as in the mockup: admins (owner first) and members. */
 export function MemberGroups({ members, projectId }: MemberGroupsProps) {
   const admins = members
     .filter((member) => isProjectAdmin(member.role))

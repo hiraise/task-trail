@@ -15,8 +15,8 @@ type updateServiceSettingsReq struct {
 	ServiceURL string `json:"serviceUrl" binding:"required,httpurl"`
 }
 
-// mailSettingsReq — MailSettingsRequest в контракте. Пароль не передан — остаётся
-// сохранённый, null — удалить пароль.
+// mailSettingsReq is MailSettingsRequest in the contract. Password omitted — the saved one
+// stays; null — delete the password.
 type mailSettingsReq struct {
 	Host       string           `json:"host" binding:"required"`
 	Port       int              `json:"port" binding:"required,min=1,max=65535"`
@@ -26,26 +26,26 @@ type mailSettingsReq struct {
 	Password   Optional[string] `json:"password" binding:"omitnil,min=1"`
 }
 
-// normalize убирает пробелы по краям, которые приносит копирование: с ними адрес сервера
-// не найдётся, а ошибка подключения не подскажет почему.
+// normalize trims surrounding spaces that copy-paste brings: with them the server address
+// is not found, and the connection error would not tell why.
 func (r *mailSettingsReq) normalize() {
 	r.Host = strings.TrimSpace(r.Host)
 	r.Sender = strings.TrimSpace(r.Sender)
 }
 
 type updateAdminUserReq struct {
-	// Указатель: required у bool не пропустил бы false
+	// A pointer: required on a bool would reject false
 	IsAdmin *bool `json:"isAdmin" binding:"required"`
 }
 
-// mailbox — отправитель письма, который примет go-mail: «noreply@example.com» или
-// «TaskTrail <noreply@example.com>». Иначе подключение пройдёт проверку, а письма не уйдут.
+// mailbox is a mail sender go-mail accepts: "noreply@example.com" or
+// "TaskTrail <noreply@example.com>". Otherwise the connection check passes but mail is not sent.
 func mailbox(fl validator.FieldLevel) bool {
 	_, err := mail.ParseAddress(fl.Field().String())
 	return err == nil
 }
 
-// BindUpdateServiceSettings возвращает новый адрес сервиса.
+// BindUpdateServiceSettings returns the new service address.
 func BindUpdateServiceSettings(c *gin.Context) (string, error) {
 	body, err := validate[updateServiceSettingsReq](c)
 	if err != nil {
@@ -70,7 +70,7 @@ func BindMailSettings(c *gin.Context) (dto.MailSettings, error) {
 	}, nil
 }
 
-// BindUpdateAdminUser возвращает, должен ли пользователь быть администратором сервиса.
+// BindUpdateAdminUser returns whether the user should be a service administrator.
 func BindUpdateAdminUser(c *gin.Context) (bool, error) {
 	body, err := validate[updateAdminUserReq](c)
 	if err != nil {

@@ -10,14 +10,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// Ключи строк таблицы settings. Ключ — ещё и метка шифрования секрета: секрет, перенесённый
-// в другую строку, не расшифруется.
+// Row keys of the settings table. The key is also the secret's encryption label: a secret moved
+// to another row will not decrypt.
 const (
 	settingsService = "service"
 	settingsMail    = "mail"
 )
 
-// SecretBox шифрует секреты настроек (secretbox.Box).
+// SecretBox encrypts setting secrets (secretbox.Box).
 type SecretBox interface {
 	Seal(plaintext []byte, label string) ([]byte, error)
 	Open(sealed []byte, label string) ([]byte, error)
@@ -99,7 +99,7 @@ func (r *PGSettingsRepository) DeleteMail(ctx context.Context) error {
 	return nil
 }
 
-// get читает строку настроек в value; found — false, если строки нет.
+// get reads a settings row into value; found is false if the row is missing.
 func (r *PGSettingsRepository) get(ctx context.Context, key string, value any) (found bool, secret []byte, err error) {
 	var raw []byte
 	err = r.getDb(ctx).QueryRow(ctx, `SELECT value, secret FROM settings WHERE key = $1`, key).Scan(&raw, &secret)

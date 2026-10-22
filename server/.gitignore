@@ -29,5 +29,5 @@ go.work.sum
 rules.txt
 cmd/sandbox
 
-# Файлы сервера (FILES_DIR по умолчанию), когда он запущен из server/
+# Server files (default FILES_DIR) when it runs from server/
 /files/

@@ -72,12 +72,12 @@ func pngUpload(t *testing.T) dto.Upload {
 func requireCode(t *testing.T, err error, code domain.ErrorCode) {
 	t.Helper()
 	if !domain.HasCode(err, code) {
-		t.Fatalf("ожидалась ошибка %s, получено %v", code, err)
+		t.Fatalf("expected error %s, got %v", code, err)
 	}
 }
 
-// Файл пишется на диск до транзакции; в транзакции — запись о файле, новая аватарка
-// у пользователя под блокировкой строки и пометка прежней аватарки удалённой (ADR-0013).
+// The file is written to disk before the transaction; inside it: the file record, the new avatar
+// of the user under a row lock, and marking the previous avatar as deleted (ADR-0013).
 func TestUploadAvatar(t *testing.T) {
 	module, d := newModule(t)
 	upload := pngUpload(t)
@@ -87,7 +87,7 @@ func TestUploadAvatar(t *testing.T) {
 			saved = id
 			data, _ := io.ReadAll(content)
 			if !bytes.Equal(data, upload.Content) {
-				t.Error("на диск записано не то содержимое")
+				t.Error("wrong content written to disk")
 			}
 			return nil
 		})
@@ -95,13 +95,13 @@ func TestUploadAvatar(t *testing.T) {
 	d.users.EXPECT().GetForUpdate(txtest.InTx, userID).Return(account(new(oldAvatar)), nil)
 	d.files.EXPECT().Create(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, f *entity.File) error {
 		if f.ID != saved || f.OriginalName != "photo.png" || f.MimeType != "image/png" || f.OwnerID != userID || !f.CreatedAt.Equal(now) {
-			t.Errorf("запись о файле: %+v", f)
+			t.Errorf("file record: %+v", f)
 		}
 		return nil
 	})
 	d.users.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, u *entity.UserAccount) error {
 		if u.AvatarID == nil || *u.AvatarID != saved || !u.UpdatedAt.Equal(now) {
-			t.Errorf("пользователь: %+v", u)
+			t.Errorf("user: %+v", u)
 		}
 		return nil
 	})
@@ -112,11 +112,11 @@ func TestUploadAvatar(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.AvatarID == nil || *got.AvatarID != saved {
-		t.Fatalf("аватарка %v, записан файл %s", got.AvatarID, saved)
+		t.Fatalf("avatar %v, written file %s", got.AvatarID, saved)
 	}
 }
 
-// Первую аватарку нечего помечать удалённой.
+// With the first avatar there is nothing to mark as deleted.
 func TestUploadFirstAvatar(t *testing.T) {
 	module, d := newModule(t)
 	d.storage.EXPECT().Save(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
@@ -129,7 +129,7 @@ func TestUploadFirstAvatar(t *testing.T) {
 	}
 }
 
-// Файл не того типа или больше 5 МБ не доходит до диска.
+// A file of a wrong type or larger than 5 MB does not reach the disk.
 func TestUploadAvatarRejected(t *testing.T) {
 	module, _ := newModule(t)
 	_, err := module.UploadAvatar.Execute(context.Background(), string(userID), dto.Upload{Name: "a.png", Content: []byte("<svg></svg>")})
@@ -140,15 +140,15 @@ func TestUploadAvatarRejected(t *testing.T) {
 	requireCode(t, err, domain.FileTooLarge)
 }
 
-// Не прошла транзакция — записанный файл стирается (ADR-0013).
+// The transaction failed: the written file is erased (ADR-0013).
 func TestUploadAvatarTxFailed(t *testing.T) {
-	failure := errors.New("база недоступна")
+	failure := errors.New("database unavailable")
 	for name, c := range map[string]struct {
 		getErr, updateErr error
 		want              domain.ErrorCode
 	}{
-		"пользователя удалили": {getErr: domain.ErrEntityNotFound(0, nil), want: domain.AccessTokenWrong},
-		"сбой записи":          {updateErr: failure},
+		"user deleted":  {getErr: domain.ErrEntityNotFound(0, nil), want: domain.AccessTokenWrong},
+		"write failure": {updateErr: failure},
 	} {
 		t.Run(name, func(t *testing.T) {
 			module, d := newModule(t)
@@ -165,7 +165,7 @@ func TestUploadAvatarTxFailed(t *testing.T) {
 			}
 			d.storage.EXPECT().Delete(txtest.OutsideTx, gomock.Any()).DoAndReturn(func(_ context.Context, id entity.FileID) error {
 				if id != saved {
-					t.Errorf("стёрт %s, записан %s", id, saved)
+					t.Errorf("erased %s, written %s", id, saved)
 				}
 				return nil
 			})
@@ -173,7 +173,7 @@ func TestUploadAvatarTxFailed(t *testing.T) {
 			if c.want != "" {
 				requireCode(t, err, c.want)
 			} else if !errors.Is(err, failure) {
-				t.Fatalf("ошибка %v", err)
+				t.Fatalf("error %v", err)
 			}
 		})
 	}
@@ -187,7 +187,7 @@ func TestRename(t *testing.T) {
 		d.users.EXPECT().GetForUpdate(txtest.InTx, userID).Return(account(nil), nil)
 		d.users.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, u *entity.UserAccount) error {
 			if u.Username != username || !u.UpdatedAt.Equal(now) {
-				t.Errorf("пользователь: %+v", u)
+				t.Errorf("user: %+v", u)
 			}
 			return nil
 		})
@@ -198,7 +198,7 @@ func TestRename(t *testing.T) {
 	}
 }
 
-// Пользователя удалили, а access-токен ещё жив: сессия недействительна — 401, а не 404.
+// The user was deleted but the access token is still alive: the session is invalid, 401, not 404.
 func TestCurrentUserGone(t *testing.T) {
 	module, d := newModule(t)
 	d.users.EXPECT().GetByID(gomock.Any(), userID).Return(nil, domain.ErrEntityNotFound(0, nil))

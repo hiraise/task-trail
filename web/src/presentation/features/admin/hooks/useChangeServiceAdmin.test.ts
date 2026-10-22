@@ -29,7 +29,7 @@ const user: AdminUser = {
   createdAt: "2026-10-22T08:00:00Z",
 };
 
-/** Кэш раздела: список пользователей и текущий пользователь — администратор `admin`. */
+/** Section cache: the user list, and the current user is the administrator `admin`. */
 function setup() {
   const queryClient = new QueryClient();
 
@@ -51,7 +51,7 @@ describe("useChangeServiceAdmin", () => {
     vi.clearAllMocks();
   });
 
-  it("ответ сервера заменяет пользователя в списке, текущего пользователя не трогает", async () => {
+  it("the server response replaces the user in the list and leaves the current user alone", async () => {
     vi.mocked(adminRepository.setAdmin).mockResolvedValue({ ...user, isAdmin: true });
     const { queryClient, result } = setup();
 
@@ -64,7 +64,7 @@ describe("useChangeServiceAdmin", () => {
     expect(toast.success).toHaveBeenCalledWith("user теперь администратор сервиса");
   });
 
-  it("снял администратора с себя — текущий пользователь перечитывается", async () => {
+  it("removed own administrator rights: the current user is refetched", async () => {
     vi.mocked(adminRepository.setAdmin).mockResolvedValue({ ...admin, isAdmin: false });
     const { queryClient, result } = setup();
 
@@ -75,7 +75,7 @@ describe("useChangeServiceAdmin", () => {
     expect(toast.success).toHaveBeenCalledWith("Аня больше не администратор сервиса");
   });
 
-  it("LAST_ADMIN — список перечитывается, текст про последнего администратора", async () => {
+  it("LAST_ADMIN: the list is refetched, a text about the last administrator", async () => {
     const error = new AppError(AppErrorType.VALIDATION, "last admin", { code: "LAST_ADMIN" });
 
     vi.mocked(adminRepository.setAdmin).mockRejectedValue(error);

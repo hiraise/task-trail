@@ -8,13 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Пути cookie сессии — от префикса API (контракт): access-токен уходит во весь API,
-// refresh-токен — только эндпоинтам доступа.
+// Session cookie paths follow the API prefix (contract): the access token goes to the whole API,
+// the refresh token — only to the access endpoints.
 const (
 	accessTokenPath  = "/"
 	refreshTokenPath = "/v1/auth/"
-	// legacyRefreshTokenPath — путь cookie refresh-токена у старого API. Такая cookie
-	// с более точным путём уходит первой и заслоняет новую, поэтому её удаляем.
+	// legacyRefreshTokenPath — the refresh token cookie path of the old API. Such a cookie
+	// with a more specific path is sent first and shadows the new one, so we delete it.
 	legacyRefreshTokenPath = "/v1/auth/refresh"
 )
 
@@ -27,7 +27,7 @@ type GinContextManager struct {
 	legacyRTPath string
 }
 
-// NewGin принимает префикс API (APP_ROOT_PATH): от него считаются пути cookie.
+// NewGin takes the API prefix (APP_ROOT_PATH): cookie paths are counted from it.
 func NewGin(atName string, rtName string, rootPath string, clock service.Clock) *GinContextManager {
 	return &GinContextManager{
 		ATName:       atName,
@@ -43,7 +43,7 @@ func (m *GinContextManager) DeleteAccessToken(c *gin.Context) {
 	m.setCookie(c, m.ATName, "", -1, m.atPath)
 }
 
-// DeleteTokens закрывает сессию в браузере: удаляет обе cookie и cookie старого API.
+// DeleteTokens closes the session in the browser: deletes both cookies and the old API cookie.
 func (m *GinContextManager) DeleteTokens(c *gin.Context) {
 	m.setCookie(c, m.ATName, "", -1, m.atPath)
 	m.setCookie(c, m.RTName, "", -1, m.rtPath)

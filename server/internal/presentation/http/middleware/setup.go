@@ -18,21 +18,21 @@ import (
 
 var bindingOnce sync.Once
 
-// Setup подключает к движку общие middleware и ответы на неизвестный путь. Сервер и тесты
-// обработчиков собирают движок одинаково, поэтому тесты видят те же ответы, что и клиент.
+// Setup attaches the common middleware and unknown-path responses to the engine. The server and
+// handler tests build the engine the same way, so tests see the same responses as the client.
 func Setup(engine *gin.Engine, ids *id.UUIDGenerator, m *contextmanager.GinContextManager, l logger.Logger) {
 	bindingOnce.Do(configureBinding)
 	engine.Use(NewRequest(ids, m), NewResponseLog(l, m), NewRecovery(l, m), NewError(l, m))
 	notFound := func(c *gin.Context) {
-		c.AbortWithStatusJSON(http.StatusNotFound, response.NewApiErr(http.StatusNotFound, response.CodeNotFound, "нет такого пути"))
+		c.AbortWithStatusJSON(http.StatusNotFound, response.NewApiErr(http.StatusNotFound, response.CodeNotFound, "no such path"))
 	}
 	engine.NoRoute(notFound)
 	engine.NoMethod(notFound)
 }
 
-// configureBinding настраивает разбор тел запросов один раз на процесс: настройки gin
-// и валидатора глобальные. Лишние поля — ошибка, а в ошибках проверки поля называются
-// так же, как в JSON запроса, а не как в структуре Go.
+// configureBinding configures request body parsing once per process: gin and validator
+// settings are global. Unknown fields are an error, and validation errors name fields
+// as in the request JSON, not as in the Go struct.
 func configureBinding() {
 	binding.EnableDecoderDisallowUnknownFields = true
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {

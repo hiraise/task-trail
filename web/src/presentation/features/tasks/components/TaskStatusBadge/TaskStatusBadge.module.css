@@ -1,4 +1,4 @@
-/* Цвета статусов — по ID (TaskStatusId), макет: страница «Задачи», «Статусы задач и их ховеры». */
+/* Status colors by ID (TaskStatusId); mockup: Tasks page, task statuses and their hovers. */
 .badge {
   display: flex;
   flex-direction: row;

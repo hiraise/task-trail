@@ -24,7 +24,7 @@ func (d *deps) expectVerify(rt string) {
 	d.jwt.EXPECT().VerifyRefreshToken(rt).Return(string(userID), string(tokenID), nil)
 }
 
-// Действующий токен обменивается один раз: отмечается обменянным, выдаётся новая пара.
+// An active token is exchanged once: it is marked as exchanged, and a new pair is issued.
 func TestRefreshActiveToken(t *testing.T) {
 	module, d := newModule(t)
 	d.expectVerify("rt")
@@ -32,7 +32,7 @@ func TestRefreshActiveToken(t *testing.T) {
 	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).Return(activeToken(), nil)
 	d.tokens.EXPECT().Update(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, rt *entity.RefreshToken) error {
 		if rt.RotatedAt == nil || !rt.RotatedAt.Equal(now) || rt.RevokedAt != nil {
-			t.Errorf("обменянный токен: %+v", rt)
+			t.Errorf("exchanged token: %+v", rt)
 		}
 		return nil
 	})
@@ -43,12 +43,12 @@ func TestRefreshActiveToken(t *testing.T) {
 		t.Fatal(err)
 	}
 	if tokens.UserID != userID || tokens.RefreshToken.Token != "refresh" {
-		t.Fatalf("токены: %+v", tokens)
+		t.Fatalf("tokens: %+v", tokens)
 	}
 }
 
-// Тот же токен в течение 30 секунд после обмена — параллельный запрос другой вкладки:
-// он тоже получает новую пару, а время обмена не сдвигается.
+// The same token within 30 seconds after the exchange is a parallel request from another tab:
+// it also gets a new pair, and the exchange time does not move.
 func TestRefreshJustRotatedToken(t *testing.T) {
 	module, d := newModule(t)
 	d.expectVerify("rt")
@@ -62,8 +62,8 @@ func TestRefreshJustRotatedToken(t *testing.T) {
 	}
 }
 
-// Позже — кража: все токены пользователя отзываются после транзакции, иначе отзыв
-// откатился бы вместе с ошибкой.
+// Later it is theft: all of the user's tokens are revoked after the transaction, otherwise the revocation
+// would roll back along with the error.
 func TestRefreshReusedToken(t *testing.T) {
 	module, d := newModule(t)
 	d.expectVerify("rt")
@@ -76,7 +76,7 @@ func TestRefreshReusedToken(t *testing.T) {
 	requireCode(t, err, domain.RefreshTokenReused)
 }
 
-// Не удалось отозвать токены после кражи — ошибка сервера, а не тихий 401.
+// Failing to revoke the tokens after a theft is a server error, not a silent 401.
 func TestRefreshReusedTokenRevokeFailed(t *testing.T) {
 	module, d := newModule(t)
 	d.expectVerify("rt")
@@ -96,9 +96,9 @@ func TestRefreshRejectedTokens(t *testing.T) {
 		err   error
 		code  domain.ErrorCode
 	}{
-		{"сессия закрыта", token(nil, at(now.Add(-time.Hour)), now.Add(time.Hour)), nil, domain.RefreshTokenRevoked},
-		{"истёк", token(nil, nil, now), nil, domain.RefreshTokenExpired},
-		{"нет в базе", nil, domain.ErrEntityNotFound(0, nil), domain.RefreshTokenNotFound},
+		{"session closed", token(nil, at(now.Add(-time.Hour)), now.Add(time.Hour)), nil, domain.RefreshTokenRevoked},
+		{"expired", token(nil, nil, now), nil, domain.RefreshTokenExpired},
+		{"not in the database", nil, domain.ErrEntityNotFound(0, nil), domain.RefreshTokenNotFound},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

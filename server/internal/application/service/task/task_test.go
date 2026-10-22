@@ -22,7 +22,7 @@ const (
 	userID = entity.UserID("0c5c37ac-3ef6-4b2d-9e2b-547f1fd2378c")
 	ivanID = entity.UserID("9d8c7b6a-5e4f-4d3c-8b2a-1f0e9d8c7b6a")
 	taskID = entity.TaskID("7e6d5c4b-3a29-4817-a6f5-e4d3c2b1a098")
-	// ID проектов упорядочены: backend < design — от этого зависит порядок блокировок
+	// Project IDs are ordered: backend < design, the lock order depends on it
 	backendID = entity.ProjectID("1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d")
 	designID  = entity.ProjectID("5f0c1b52-8d4e-4a8b-9c7e-2b1d3f4a5c6e")
 )
@@ -61,7 +61,7 @@ func member(projectID entity.ProjectID, userID entity.UserID) *entity.ProjectMem
 	return &entity.ProjectMember{ProjectID: projectID, UserID: userID, Role: entity.RoleMember}
 }
 
-// stored — задача в проекте projectID, какой её вернёт репозиторий.
+// stored is a task in project projectID as the repository returns it.
 func stored(projectID entity.ProjectID, assignee *entity.UserID) *entity.Task {
 	return &entity.Task{
 		ID: taskID, ProjectID: projectID, Name: "Кнопка", Status: entity.StatusInReview,
@@ -71,8 +71,8 @@ func stored(projectID entity.ProjectID, assignee *entity.UserID) *entity.Task {
 
 func project(id entity.ProjectID) *entity.Project { return &entity.Project{ID: id} }
 
-// Задача меняется под блокировкой своего проекта: сначала блокировка, затем задача читается
-// заново, и только потом — проверка участия и запись.
+// A task changes under its project's lock: first the lock, then the task is read
+// again, and only then the membership check and the write.
 func TestEditLocksTaskProject(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -83,7 +83,7 @@ func TestEditLocksTaskProject(t *testing.T) {
 		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil),
 		d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, got *entity.Task) error {
 			if got.Status != entity.StatusDone || !got.UpdatedAt.Equal(now) || got.ProjectID != designID {
-				t.Errorf("записана задача %+v", got)
+				t.Errorf("task written %+v", got)
 			}
 			return nil
 		}),
@@ -94,8 +94,8 @@ func TestEditLocksTaskProject(t *testing.T) {
 	}
 }
 
-// Задачу перенесли, пока ждали блокировку: блокируется и её новый проект, права —
-// по новому проекту.
+// The task was moved while waiting for the lock: its new project is locked too, rights are checked
+// against the new project.
 func TestLockFollowsMovedTask(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -109,12 +109,12 @@ func TestLockFollowsMovedTask(t *testing.T) {
 	)
 	err := module.Delete.Execute(context.Background(), string(userID), string(taskID))
 	if !domain.HasCode(err, domain.EntityNotFound) {
-		t.Fatalf("не участник нового проекта: %v", err)
+		t.Fatalf("not a member of the new project: %v", err)
 	}
 }
 
-// Перенос блокирует оба проекта по возрастанию ID; исполнитель не участник нового проекта —
-// задача остаётся без исполнителя, статус прежний.
+// A move locks both projects in ascending ID order; if the assignee is not a member of the new project,
+// the task is left without an assignee, the status stays the same.
 func TestMoveTask(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -129,7 +129,7 @@ func TestMoveTask(t *testing.T) {
 		d.members.EXPECT().Get(txtest.InTx, backendID, ivanID).Return(nil, notFound()),
 		d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, got *entity.Task) error {
 			if got.ProjectID != backendID || got.AssigneeID != nil || got.Status != entity.StatusInReview {
-				t.Errorf("записана задача %+v", got)
+				t.Errorf("task written %+v", got)
 			}
 			return nil
 		}),
@@ -139,7 +139,7 @@ func TestMoveTask(t *testing.T) {
 	}
 }
 
-// Переносит только участник обоих проектов: в чужой проект — 404, задача не меняется.
+// Only a member of both projects can move: to a foreign project it is 404, the task does not change.
 func TestMoveToForeignProject(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -150,11 +150,11 @@ func TestMoveToForeignProject(t *testing.T) {
 	d.members.EXPECT().Get(txtest.InTx, backendID, userID).Return(nil, notFound())
 	_, err := module.Move.Execute(context.Background(), string(userID), string(taskID), string(backendID))
 	if !domain.HasCode(err, domain.EntityNotFound) {
-		t.Fatalf("перенос в чужой проект: %v", err)
+		t.Fatalf("move to a foreign project: %v", err)
 	}
 }
 
-// Задачу создаёт участник проекта под блокировкой проекта: статус — open, автор — он сам.
+// A project member creates a task under the project lock: the status is open, the author is the member.
 func TestCreateTask(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -174,14 +174,14 @@ func TestCreateTask(t *testing.T) {
 	if got.ID == "" || got.ProjectID != designID || got.Name != "Кнопка" || *got.Description != description ||
 		got.Status != entity.StatusOpen || got.AuthorID != userID || *got.AssigneeID != ivanID ||
 		!got.CreatedAt.Equal(now) || !got.UpdatedAt.Equal(now) {
-		t.Fatalf("задача: %+v", got)
+		t.Fatalf("task: %+v", got)
 	}
 }
 
-// Исполнитель не участник проекта — ASSIGNEE_NOT_MEMBER, задача не создаётся и не меняется.
+// The assignee is not a project member: ASSIGNEE_NOT_MEMBER, the task is neither created nor changed.
 func TestAssigneeNotMember(t *testing.T) {
 	ivan := string(ivanID)
-	t.Run("создание", func(t *testing.T) {
+	t.Run("creation", func(t *testing.T) {
 		module, d := newModule(t)
 		txtest.Expect(d.tx)
 		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(project(designID), nil)
@@ -193,7 +193,7 @@ func TestAssigneeNotMember(t *testing.T) {
 			t.Fatalf("%v", err)
 		}
 	})
-	t.Run("смена исполнителя", func(t *testing.T) {
+	t.Run("assignee change", func(t *testing.T) {
 		module, d := newModule(t)
 		txtest.Expect(d.tx)
 		d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(stored(designID, nil), nil).Times(2)
@@ -207,7 +207,7 @@ func TestAssigneeNotMember(t *testing.T) {
 	})
 }
 
-// Не участник проекта не видит задачу: 404, как будто её нет.
+// A non-member does not see the task: 404, as if it does not exist.
 func TestGetTaskNotMember(t *testing.T) {
 	module, d := newModule(t)
 	d.tasks.EXPECT().Get(txtest.OutsideTx, taskID).Return(stored(designID, nil), nil)

@@ -1,5 +1,5 @@
-# Обновления зависимостей (ADR-0021). Каждый PR Dependabot проходит CI; обновление без смены
-# поведения ADR не требует (ADR-0006). Мажорные версии приходят отдельными PR.
+# Dependency updates (ADR-0021). Every Dependabot PR goes through CI; an update without a behavior
+# change needs no ADR (ADR-0006). Major versions come in separate PRs.
 version: 2
 updates:
   - package-ecosystem: gomod
@@ -15,14 +15,14 @@ updates:
     schedule:
       interval: weekly
     ignore:
-      # Типы Node.js — той же мажорной версии, что Node.js в engines web/package.json:
-      # поднимай их вручную вместе с ним
+      # Node.js types have the same major version as Node.js in engines of web/package.json:
+      # bump them manually together with it
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
     groups:
       web:
         update-types: [minor, patch]
-        # Новая версия генератора меняет типы — отдельный PR, типы перегенерирует агент (ADR-0020)
+        # A new generator version changes the types: a separate PR, the agent regenerates the types (ADR-0020)
         exclude-patterns:
           - '@hey-api/openapi-ts'
 

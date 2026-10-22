@@ -8,9 +8,9 @@ import { hasErrorCode } from "@/shared/errors/types";
 import { adminTexts } from "@/shared/locales/admin";
 
 /**
- * Тестовое письмо на почту администратора (ADR-0017); ответ ждём до 20 секунд. Тексты
- * `MAIL_DISABLED` и `MAIL_SEND_FAILED` в apiErrors.ts обращены к тому, кто сбрасывает пароль,
- * поэтому администратору — свои.
+ * A test email to the administrator's address (ADR-0017); wait up to 20 seconds for the response. The
+ * `MAIL_DISABLED` and `MAIL_SEND_FAILED` texts in apiErrors.ts address the person resetting a password,
+ * so the administrator gets their own.
  */
 export function useSendTestMail() {
   const queryClient = useQueryClient();
@@ -21,7 +21,7 @@ export function useSendTestMail() {
       toast.success(adminTexts.testMailSent);
     },
     onError: (error) => {
-      // Почту успели отключить, например в другой вкладке, — показываем настройки как есть
+      // Mail was disabled meanwhile, e.g. in another tab: show the settings as they are
       if (hasErrorCode(error, "MAIL_DISABLED")) {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.settings });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.settings.public });

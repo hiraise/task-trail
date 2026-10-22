@@ -12,7 +12,7 @@ import styles from "./MailForm.module.css";
 
 const texts = adminTexts.mail;
 
-/** Тестовое письмо и отключение почты — работают с сохранёнными настройками. */
+/** Test email and disabling mail: they work with the saved settings. */
 export function MailActions({ disabled }: { disabled: boolean }) {
   const { mutate: sendTest, isPending: sending } = useSendTestMail();
   const { mutate: disable, isPending: disabling } = useDisableMail();

@@ -19,25 +19,25 @@ const result = (outcome: InvitationResult["outcome"], inviteUrl?: string): Invit
   inviteUrl,
 });
 
-describe("результат приглашения", () => {
+describe("invitation report", () => {
   beforeEach(() => {
     showInvitationResults.mockReset();
     vi.mocked(toast.success).mockReset();
   });
 
-  it("окно нужно, когда есть ссылка для отправки вручную или письмо не ушло", () => {
+  it("needs the modal when there is a link to send manually or an email was not sent", () => {
     expect(needsAttention([result("added"), result("invited")])).toBe(false);
     expect(needsAttention([result("invited", "http://localhost:3000/auth/invite?token=a")])).toBe(true);
     expect(needsAttention([result("mail_failed")])).toBe(true);
   });
 
-  it("итог считает добавленных, приглашённых и тех, кто уже в проекте", () => {
+  it("summary counts added, invited and already-in-project people", () => {
     expect(invitationSummary([result("added"), result("added"), result("already_member")])).toBe(
       "Добавлены в проект: 2. Уже в проекте: 1",
     );
   });
 
-  it("всё ушло письмами — тост; есть ссылка — окно со всеми результатами", () => {
+  it("all sent by email — a toast; a link present — a modal with all results", () => {
     const { result: hook } = renderHook(() => useInvitationReport());
 
     hook.current("project-1", [result("invited")]);
@@ -50,7 +50,7 @@ describe("результат приглашения", () => {
     expect(showInvitationResults).toHaveBeenCalledWith({ projectId: "project-1", results: withLink });
   });
 
-  it("никого не звали — молчит", () => {
+  it("stays silent when no one was invited", () => {
     const { result: hook } = renderHook(() => useInvitationReport());
 
     hook.current("project-1", []);

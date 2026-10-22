@@ -15,7 +15,7 @@ import { MAIL_REQUEST_TIMEOUT_MS } from "../http/timeouts";
 
 import { toAdminUser, toPasswordResetLink, toServiceSettings } from "./mappers";
 
-// Ошибки приходят из HttpClient уже как AppError с кодом API (http/apiError.ts).
+// Errors arrive from HttpClient already as AppError with the API code (http/apiError.ts).
 const createAdminRepository = (http: HttpClient): AdminRepository => ({
   getSettings: async () =>
     toServiceSettings(await http.get<ServiceSettings>(API_ROUTES.ADMIN_SETTINGS)),
@@ -26,11 +26,11 @@ const createAdminRepository = (http: HttpClient): AdminRepository => ({
     return toServiceSettings(await http.patch<ServiceSettings>(API_ROUTES.ADMIN_SETTINGS, body));
   },
 
-  // Сервер проверяет подключение к SMTP до 10 секунд, прежде чем ответить, — тайм-аут длиннее
+  // The server checks the SMTP connection for up to 10 seconds before responding — a longer timeout
   saveMail: async ({ host, port, encryption, sender, username, password }) => {
     const body: MailSettingsRequest = { host, port, encryption, sender, username };
 
-    // Поля `password` нет — сервер оставит сохранённый пароль, null — удалит его (saveMailSettings)
+    // No `password` field — the server keeps the saved password, null deletes it (saveMailSettings)
     if (password !== undefined) body.password = password;
 
     const dto = await http.put<ServiceSettings>(API_ROUTES.ADMIN_MAIL, body, {
@@ -44,7 +44,7 @@ const createAdminRepository = (http: HttpClient): AdminRepository => ({
     await http.delete(API_ROUTES.ADMIN_MAIL);
   },
 
-  // Письмо уходит в самом запросе (ADR-0017) — тайм-аут длиннее
+  // The email is sent within the request (ADR-0017) — a longer timeout
   sendTestMail: async () => {
     await http.post(API_ROUTES.ADMIN_TEST_MAIL, undefined, { timeout: MAIL_REQUEST_TIMEOUT_MS });
   },

@@ -16,13 +16,13 @@ export interface ChangeTaskStatusPayload {
 
 export interface ChangeTaskAssigneePayload {
   taskId: TaskId;
-  /** null — снять исполнителя */
+  /** null unassigns the task */
   assigneeId: UserId | null;
 }
 
 export interface MoveTaskPayload {
-  /** Задача до переноса: по ней видно, снял ли сервер исполнителя */
+  /** The task before the move: shows whether the server removed the assignee */
   task: Task;
-  /** Проект, куда переносим */
+  /** The target project */
   project: Project;
 }

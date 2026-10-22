@@ -14,8 +14,8 @@ export function useTask(taskId: TaskId) {
     queryKey: QUERY_KEYS.task.detail(taskId),
     queryFn: () => taskRepository.findById(taskId),
     enabled: !!taskId,
-    // Пока задача грузится, показываем её из списка, откуда её открыли: проект и участники
-    // начинают грузиться сразу, не дожидаясь ответа по задаче
+    // While the task loads, show it from the list it was opened from: the project and members
+    // start loading at once, without waiting for the task response
     placeholderData: () => findTaskInLists(queryClient, taskId),
   });
 }

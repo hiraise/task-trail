@@ -8,38 +8,38 @@ import (
 type CreateProject struct {
 	Name        string
 	Description *string
-	// Emails — кого позвать сразу, как в AddMembers.
+	// Emails are whom to invite right away, as in AddMembers.
 	Emails []string
 }
 
-// ProjectChanges — что поменять в проекте: Name — если не nil; описание — если DescriptionSet,
-// nil в Description убирает описание.
+// ProjectChanges is what to change in a project: Name if not nil; the description if DescriptionSet,
+// nil in Description removes the description.
 type ProjectChanges struct {
 	Name           *string
 	DescriptionSet bool
 	Description    *string
 }
 
-// InvitationOutcome — что стало с почтой, которую позвали в проект (InvitationResult в контракте).
+// InvitationOutcome is what happened to an email invited to a project (InvitationResult in the contract).
 type InvitationOutcome string
 
 const (
-	// InvitationAdded — аккаунт есть, человек стал участником.
+	// InvitationAdded: the account exists, the person became a member.
 	InvitationAdded InvitationOutcome = "added"
-	// InvitationInvited — аккаунта нет, создано приглашение.
+	// InvitationInvited: there is no account, an invitation was created.
 	InvitationInvited InvitationOutcome = "invited"
-	// InvitationAlreadyMember — человек уже участник.
+	// InvitationAlreadyMember: the person is already a member.
 	InvitationAlreadyMember InvitationOutcome = "already_member"
-	// InvitationMailFailed — приглашение создано, а письмо не ушло: повторное приглашение
-	// отправит новое (ADR-0017).
+	// InvitationMailFailed: the invitation was created but the email was not sent: a repeated invitation
+	// sends a new one (ADR-0017).
 	InvitationMailFailed InvitationOutcome = "mail_failed"
 )
 
 type InvitationResult struct {
 	Email   entity.Email
 	Outcome InvitationOutcome
-	// InviteURL — ссылка приглашения, только при InvitationInvited и выключенной почте:
-	// её передаёт сам пригласивший (ADR-0017).
+	// InviteURL is the invitation link, only with InvitationInvited and mail disabled:
+	// the inviter passes it on themselves (ADR-0017).
 	InviteURL *string
 }
 

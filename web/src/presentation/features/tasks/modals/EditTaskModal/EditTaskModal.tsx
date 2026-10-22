@@ -15,12 +15,12 @@ export function EditTaskModal(props: BaseModalProps) {
   if (!task) return null;
 
   const handleSubmit = async (changes: TaskChanges) => {
-    // Ничего не поменяли — запрос не нужен (UpdateTaskRequest требует хотя бы одно поле)
+    // Nothing changed — no request needed (UpdateTaskRequest requires at least one field)
     if (Object.keys(changes).length > 0) {
       try {
         await editTask({ taskId: task.id, ...changes });
       } catch {
-        // Ошибку показал useEditTask, окно остаётся открытым
+        // useEditTask has shown the error; the modal stays open
         return;
       }
     }

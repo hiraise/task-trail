@@ -35,7 +35,7 @@ func requireCode(t *testing.T, err error, code domain.ErrorCode) {
 	t.Helper()
 	var e *domain.DomainError
 	if !errors.As(err, &e) || e.Code != code {
-		t.Fatalf("ожидалась ошибка %s, получено %v", code, err)
+		t.Fatalf("expected error %s, got %v", code, err)
 	}
 }
 
@@ -44,7 +44,7 @@ func TestUserRepository(t *testing.T) {
 	ctx := context.Background()
 
 	if exists, err := repo.Any(ctx); err != nil || exists {
-		t.Fatalf("пустая база: %v, %v", exists, err)
+		t.Fatalf("empty database: %v, %v", exists, err)
 	}
 	user := f.New("ivan@example.com", "$2a$12$hash", "Иван")
 	user.IsAdmin = true
@@ -52,7 +52,7 @@ func TestUserRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if exists, err := repo.Any(ctx); err != nil || !exists {
-		t.Fatalf("после создания: %v, %v", exists, err)
+		t.Fatalf("after create: %v, %v", exists, err)
 	}
 
 	got, err := repo.GetByEmail(ctx, "ivan@example.com")
@@ -61,7 +61,7 @@ func TestUserRepository(t *testing.T) {
 	}
 	if got.ID != user.ID || got.PasswordHash != user.PasswordHash || *got.Username != "Иван" || !got.IsAdmin ||
 		got.AvatarID != nil || got.VerifiedAt == nil || !got.VerifiedAt.Equal(now) || !got.CreatedAt.Equal(now) {
-		t.Fatalf("прочитано %+v, записано %+v", got, user)
+		t.Fatalf("read %+v, written %+v", got, user)
 	}
 
 	got.PasswordHash = "$2a$12$new"
@@ -70,7 +70,7 @@ func TestUserRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if byID, err := repo.GetByID(ctx, user.ID); err != nil || byID.PasswordHash != "$2a$12$new" || !byID.UpdatedAt.Equal(now.Add(time.Hour)) {
-		t.Fatalf("после изменения: %+v, %v", byID, err)
+		t.Fatalf("after update: %+v, %v", byID, err)
 	}
 
 	requireCode(t, repo.Create(ctx, f.New("ivan@example.com", "$2a$12$hash", "Двойник")), domain.EntityAlreadyExists)
@@ -78,16 +78,16 @@ func TestUserRepository(t *testing.T) {
 	requireCode(t, err, domain.EntityNotFound)
 }
 
-// Блокировки регистрации (ADR-0016) и администраторов (ADR-0014) держатся до конца транзакции:
-// вторая транзакция с той же блокировкой ждёт первую, а с другой — нет.
+// The registration (ADR-0016) and admins (ADR-0014) locks are held until the end of the transaction:
+// a second transaction with the same lock waits for the first one, with a different lock it does not.
 func TestAdvisoryLocks(t *testing.T) {
 	pool := testdb.New(t)
 	repo, _ := userRepo(pool)
 	tx := persistent.NewPgTxManager(pool)
 	ctx := context.Background()
 	locks := map[string]func(context.Context) error{
-		"регистрация":    repo.LockRegistration,
-		"администраторы": repo.LockAdmins,
+		"registration": repo.LockRegistration,
+		"admins":       repo.LockAdmins,
 	}
 	for name, lock := range locks {
 		t.Run(name, func(t *testing.T) {
@@ -108,7 +108,7 @@ func TestAdvisoryLocks(t *testing.T) {
 			}()
 			<-locked
 
-			// Другая блокировка не ждёт
+			// A different lock does not wait
 			for other, otherLock := range locks {
 				if other != name {
 					if err := tx.DoWithTx(ctx, otherLock); err != nil {
@@ -120,7 +120,7 @@ func TestAdvisoryLocks(t *testing.T) {
 			go func() { second <- tx.DoWithTx(ctx, lock) }()
 			select {
 			case err := <-second:
-				t.Fatalf("вторая транзакция не ждала блокировку: %v", err)
+				t.Fatalf("the second transaction did not wait for the lock: %v", err)
 			case <-time.After(200 * time.Millisecond):
 			}
 			close(release)
@@ -134,8 +134,8 @@ func TestAdvisoryLocks(t *testing.T) {
 	}
 }
 
-// Список для администратора — по дате регистрации, без удалённых; администраторы считаются
-// тоже без удалённых.
+// The list for the administrator is by registration date, without deleted users; admins are counted
+// without deleted users too.
 func TestUserListAndAdmins(t *testing.T) {
 	pool := testdb.New(t)
 	ctx := context.Background()
@@ -144,7 +144,7 @@ func TestUserListAndAdmins(t *testing.T) {
 	repo := persistent.NewUserRepo(pool, f)
 
 	if users, err := repo.List(ctx); err != nil || len(users) != 0 {
-		t.Fatalf("пустая база: %v, %v", users, err)
+		t.Fatalf("empty database: %v, %v", users, err)
 	}
 	var created []*entity.UserAccount
 	for i, email := range []entity.Email{"anna@example.com", "boris@example.com", "vera@example.com", "gleb@example.com"} {
@@ -169,18 +169,18 @@ func TestUserListAndAdmins(t *testing.T) {
 		emails = append(emails, u.Email)
 	}
 	if want := []entity.Email{"anna@example.com", "boris@example.com", "vera@example.com"}; !slices.Equal(emails, want) {
-		t.Fatalf("список %v, ожидалось %v", emails, want)
+		t.Fatalf("list %v, expected %v", emails, want)
 	}
 	if !users[0].IsAdmin || users[1].IsAdmin || !users[0].CreatedAt.Equal(now) {
-		t.Fatalf("первый %+v, второй %+v", users[0], users[1])
+		t.Fatalf("first %+v, second %+v", users[0], users[1])
 	}
 	if admins, err := repo.CountAdmins(ctx); err != nil || admins != 2 {
-		t.Fatalf("администраторов %d, %v; ожидалось 2", admins, err)
+		t.Fatalf("admins %d, %v; expected 2", admins, err)
 	}
 }
 
-// Аватарка читается и пишется вместе с пользователем; GetForUpdate держит строку до конца
-// транзакции, и параллельное изменение ждёт, а не затирает его.
+// The avatar is read and written together with the user; GetForUpdate holds the row until the end
+// of the transaction, and a concurrent update waits instead of overwriting it.
 func TestUserAvatarAndLock(t *testing.T) {
 	pool := testdb.New(t)
 	repo, _ := userRepo(pool)
@@ -217,7 +217,7 @@ func TestUserAvatarAndLock(t *testing.T) {
 				return err
 			}
 			if u.AvatarID == nil || *u.AvatarID != avatar.ID {
-				return errors.New("вторая транзакция не увидела аватарку первой")
+				return errors.New("the second transaction did not see the first one's avatar")
 			}
 			name := "Иван Петров"
 			u.Rename(&name, now)
@@ -226,7 +226,7 @@ func TestUserAvatarAndLock(t *testing.T) {
 	}()
 	select {
 	case err := <-second:
-		t.Fatalf("вторая транзакция не ждала блокировку: %v", err)
+		t.Fatalf("the second transaction did not wait for the lock: %v", err)
 	case <-time.After(200 * time.Millisecond):
 	}
 	close(release)
@@ -238,12 +238,12 @@ func TestUserAvatarAndLock(t *testing.T) {
 	}
 	got, err := repo.GetByID(ctx, user.ID)
 	if err != nil || got.AvatarID == nil || *got.AvatarID != avatar.ID || *got.Username != "Иван Петров" {
-		t.Fatalf("после обеих транзакций: %+v, %v", got, err)
+		t.Fatalf("after both transactions: %+v, %v", got, err)
 	}
 }
 
-// Пользователь виден себе, участникам общих проектов и участникам проекта, где он автор
-// задачи, — в неудалённых проектах и по неудалённым задачам.
+// A user is visible to themselves, to members of shared projects and to members of a project where they authored
+// a task — in non-deleted projects and through non-deleted tasks.
 func TestUserVisible(t *testing.T) {
 	pool := testdb.New(t)
 	repo, _ := userRepo(pool)
@@ -267,7 +267,7 @@ func TestUserVisible(t *testing.T) {
 	member(design, ivan)
 	backend := createProject(t, pool, "Бэкенд")
 	member(backend, anna)
-	// Пётр — автор задачи в бэкенде, но не участник: вышел из проекта
+	// Petr authored a task in the backend but is not a member: he left the project
 	exec(`INSERT INTO tasks (id, project_id, author_id, name, status) VALUES ($1, $2, $3, 'Задача', 'open')`,
 		id.New().Generate(), backend, petr.ID)
 	member(createProject(t, pool, "Чужой"), olga)
@@ -277,10 +277,10 @@ func TestUserVisible(t *testing.T) {
 		for u, ok := range want {
 			got, err := repo.GetVisible(ctx, u.ID, viewer.ID)
 			if ok && (err != nil || got.ID != u.ID) {
-				t.Errorf("%s не видит %s: %v", viewer.Email, u.Email, err)
+				t.Errorf("%s does not see %s: %v", viewer.Email, u.Email, err)
 			}
 			if !ok && !domain.HasCode(err, domain.EntityNotFound) {
-				t.Errorf("%s видит %s: %v", viewer.Email, u.Email, err)
+				t.Errorf("%s sees %s: %v", viewer.Email, u.Email, err)
 			}
 		}
 	}

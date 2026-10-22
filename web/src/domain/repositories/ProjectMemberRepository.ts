@@ -4,7 +4,7 @@ import type { AssignableRole, ProjectId, UserId } from "../types";
 
 export interface ProjectMemberRepository {
   findByProjectId(projectId: ProjectId): Promise<ProjectMember[]>;
-  /** Зовёт в проект по почте; результат — по каждой почте в порядке запроса */
+  /** Invites to the project by email; one result per email, in request order */
   addByEmails(projectId: ProjectId, emails: string[]): Promise<InvitationResult[]>;
   changeRole(projectId: ProjectId, userId: UserId, role: AssignableRole): Promise<ProjectMember>;
   removeMember(projectId: ProjectId, userId: UserId): Promise<void>;

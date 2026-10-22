@@ -9,7 +9,7 @@ import { AuthFooterText, AuthScreen, SignupForm } from "../../components";
 
 import styles from "./SignupPage.module.css";
 
-/** Регистрация первого аккаунта; когда пользователи есть, маршрут ведёт на вход (ADR-0016). */
+/** Registration of the first account; when users exist, the route leads to sign-in (ADR-0016). */
 export function SignupPage() {
   return (
     <AuthScreen

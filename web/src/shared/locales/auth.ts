@@ -28,7 +28,7 @@ export const authTexts = {
     buttonText: "Политикой конфиденциальности",
     buttonLink: "https://google.com",
   },
-  // Регистрация открыта, только пока в сервисе нет пользователей (ADR-0016)
+  // Sign-up is open only while the service has no users (ADR-0016)
   signup: {
     title: "Регистрация",
     signup: "Зарегистрироваться",

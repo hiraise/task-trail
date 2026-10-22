@@ -8,21 +8,21 @@ import (
 	"task-trail/internal/domain/entity"
 )
 
-// StoredFile — файл в хранилище и когда его записали.
+// StoredFile — a file in storage and when it was written.
 type StoredFile struct {
 	ID         entity.FileID
 	ModifiedAt time.Time
 }
 
-// FileStorage хранит содержимое файлов под именем — ID файла (ADR-0013). Путь к файлу
-// строится только из ID, а не из данных пользователя.
+// FileStorage stores file contents under a name equal to the file ID (ADR-0013). The file path
+// is built only from the ID, not from user data.
 type FileStorage interface {
-	// Save записывает файл. Не записался до конца — частичный файл удаляется.
+	// Save writes a file. If it is not written completely, the partial file is deleted.
 	Save(ctx context.Context, id entity.FileID, content io.Reader) error
-	// Open открывает файл на чтение и возвращает его размер.
+	// Open opens a file for reading and returns its size.
 	Open(ctx context.Context, id entity.FileID) (io.ReadCloser, int64, error)
-	// Delete стирает файл; файла уже нет — не ошибка.
+	// Delete erases a file; a file that is already gone is not an error.
 	Delete(ctx context.Context, id entity.FileID) error
-	// List — все файлы хранилища: очистка ищет среди них файлы без записи в базе.
+	// List — all files in storage: cleanup looks among them for files without a database record.
 	List(ctx context.Context) ([]StoredFile, error)
 }

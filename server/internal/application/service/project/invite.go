@@ -16,20 +16,20 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// Письма приглашений уходят в запросе (ADR-0017), параллельно. Контракт обещает ответ
-// не дольше 15 секунд при тайм-ауте веба 20 (addProjectMembers).
+// Invitation emails are sent within the request (ADR-0017), in parallel. The contract promises a response
+// within 15 seconds with a web timeout of 20 (addProjectMembers).
 const (
-	// letterTimeout — сколько ждать отправки одного письма.
+	// letterTimeout is how long to wait for sending one email.
 	letterTimeout = 10 * time.Second
-	// lettersTimeout — сколько ждать всех писем: что не ушло к этому сроку, считается не ушедшим.
+	// lettersTimeout is how long to wait for all emails: whatever is not sent by then counts as failed.
 	lettersTimeout = 12 * time.Second
-	// lettersParallel — сколько писем отправлять одновременно: больше соединений SMTP-сервер
-	// может не принять.
+	// lettersParallel is how many emails to send at once: an SMTP server may not accept
+	// more connections.
 	lettersParallel = 10
 )
 
-// inviter зовёт почты в проект (ADR-0016): почта с аккаунтом сразу становится участником,
-// без аккаунта — получает приглашение.
+// inviter invites emails to a project (ADR-0016): an email with an account becomes a member right away,
+// one without an account gets an invitation.
 type inviter struct {
 	clock       service.Clock
 	users       repository.UserRepository
@@ -40,22 +40,22 @@ type inviter struct {
 	mailer      service.Mailer
 }
 
-// invitationEnv — настройки, с которыми зовут: почта (nil — выключена) и адрес сервиса.
+// invitationEnv holds the settings used for inviting: mail (nil if disabled) and the service address.
 type invitationEnv struct {
 	mail       *entity.MailSettings
 	serviceURL string
 }
 
-// invitation — результат по одной почте и письмо, которое осталось отправить.
+// invitation is the result for one email and the email message still to send.
 type invitation struct {
 	result dto.InvitationResult
 	letter *service.Letter
-	// required — письмо со ссылкой приглашения: не ушло — результат mail_failed. Извещение
-	// тому, кого добавили сразу, необязательно: не ушло — человек всё равно участник.
+	// required marks an email with an invitation link: if not sent, the result is mail_failed. A notification
+	// to someone added right away is optional: if not sent, the person is still a member.
 	required bool
 }
 
-// env читает настройки до транзакции: письма уходят после неё.
+// env reads the settings before the transaction: emails are sent after it.
 func (i *inviter) env(ctx context.Context) (invitationEnv, error) {
 	mail, err := i.settings.GetMail(ctx)
 	if err != nil {
@@ -66,14 +66,14 @@ func (i *inviter) env(ctx context.Context) (invitationEnv, error) {
 		return invitationEnv{}, err
 	}
 	if serviceURL == "" {
-		// Адрес задаётся вместе с первым аккаунтом, а без аккаунтов звать некому
-		return invitationEnv{}, errors.New("адрес сервиса не задан")
+		// The address is set with the first account, and without accounts there is nobody to invite
+		return invitationEnv{}, errors.New("service address is not set")
 	}
 	return invitationEnv{mail: mail, serviceURL: serviceURL}, nil
 }
 
-// invite зовёт почты в project от имени by — в транзакции, под блокировкой проекта.
-// Результат — по каждой почте в порядке запроса; повтор почты получает тот же результат.
+// invite invites emails to project on behalf of by, in a transaction, under the project lock.
+// The result is per email in request order; a repeated email gets the same result.
 func (i *inviter) invite(ctx context.Context, env invitationEnv, project *entity.Project, by *entity.UserAccount, emails []string) ([]*invitation, error) {
 	now := i.clock.Now()
 	seen := make(map[entity.Email]*invitation, len(emails))
@@ -110,7 +110,7 @@ func (i *inviter) inviteOne(ctx context.Context, env invitationEnv, project *ent
 	url := link.Invitation(env.serviceURL, token)
 	inv := &invitation{result: dto.InvitationResult{Email: email, Outcome: dto.InvitationInvited}}
 	if env.mail == nil {
-		// Без почты ссылку передаёт сам пригласивший (ADR-0017)
+		// Without mail, the inviter passes the link on themselves (ADR-0017)
 		inv.result.InviteURL = &url
 		return inv, nil
 	}
@@ -119,7 +119,7 @@ func (i *inviter) inviteOne(ctx context.Context, env invitationEnv, project *ent
 	return inv, nil
 }
 
-// add делает человека с аккаунтом участником и готовит извещение, если почта включена.
+// add makes a person with an account a member and prepares a notification if mail is enabled.
 func (i *inviter) add(ctx context.Context, env invitationEnv, project *entity.Project, inviterName string, user *entity.UserAccount, now time.Time) (*invitation, error) {
 	inv := &invitation{result: dto.InvitationResult{Email: user.Email}}
 	_, err := i.members.Get(ctx, project.ID, user.ID)
@@ -141,8 +141,8 @@ func (i *inviter) add(ctx context.Context, env invitationEnv, project *entity.Pr
 	return inv, nil
 }
 
-// send отправляет письма после транзакции: приглашение уже записано, и если письмо со ссылкой
-// не ушло, результат — mail_failed, а повторное приглашение отправит новое (ADR-0017).
+// send sends emails after the transaction: the invitation is already stored, and if the email with the link
+// was not sent, the result is mail_failed, and a repeated invitation sends a new one (ADR-0017).
 func (i *inviter) send(ctx context.Context, env invitationEnv, invitations []*invitation) {
 	ctx, cancel := context.WithTimeout(ctx, lettersTimeout)
 	defer cancel()

@@ -11,8 +11,8 @@ import (
 	"task-trail/internal/domain/service/password"
 )
 
-// RegistrationService создаёт первый аккаунт сервиса — он же администратор (ADR-0014,
-// ADR-0016). Остальные аккаунты приходят по приглашению.
+// RegistrationService creates the first account of the service, which is also the administrator (ADR-0014,
+// ADR-0016). Other accounts come by invitation.
 type RegistrationService struct {
 	txManager          transaction.TxManager
 	userRepository     repository.UserRepository
@@ -23,7 +23,7 @@ type RegistrationService struct {
 }
 
 func (s *RegistrationService) Execute(ctx context.Context, data dto.Register) (dto.Session, error) {
-	// Хеш считается до транзакции: bcrypt медленный, а блокировку регистрации держим недолго
+	// The hash is computed before the transaction: bcrypt is slow, and the registration lock is held briefly
 	hash, err := s.pwdHasher.HashPassword(data.Password)
 	if err != nil {
 		return dto.Session{}, err

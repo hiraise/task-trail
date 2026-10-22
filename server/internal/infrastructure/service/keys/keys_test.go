@@ -9,15 +9,15 @@ func TestDerive(t *testing.T) {
 	secret := "0123456789abcdef0123456789abcdef"
 	access := Derive(secret, AccessToken)
 	if len(access) != Size {
-		t.Fatalf("длина ключа %d, ожидалась %d", len(access), Size)
+		t.Fatalf("key length %d, expected %d", len(access), Size)
 	}
 	if !bytes.Equal(access, Derive(secret, AccessToken)) {
-		t.Error("один секрет и назначение дали разные ключи")
+		t.Error("the same secret and purpose gave different keys")
 	}
 	if bytes.Equal(access, Derive(secret, RefreshToken)) || bytes.Equal(access, Derive(secret, SecretBox)) {
-		t.Error("у разных назначений одинаковый ключ")
+		t.Error("different purposes share the same key")
 	}
 	if bytes.Equal(access, Derive(secret+"x", AccessToken)) {
-		t.Error("разные секреты дали одинаковый ключ")
+		t.Error("different secrets gave the same key")
 	}
 }

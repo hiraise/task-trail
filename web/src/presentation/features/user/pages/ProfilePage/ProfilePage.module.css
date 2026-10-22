@@ -1,6 +1,6 @@
-/* До 767 px — телефон: шапка во всю ширину, меню и выход внизу над нижней навигацией.
-   С 768 px — карточка с формами в DesktopTemplate, как у остального интерфейса
-   (брейкпоинты — presentation/shared/hooks/useDevice.ts). */
+/* Up to 767 px, phone: full-width header, menu and sign-out at the bottom above the bottom navigation.
+   From 768 px, a card with forms in DesktopTemplate, like the rest of the interface
+   (breakpoints: presentation/shared/hooks/useDevice.ts). */
 .profile {
   display: flex;
   flex-direction: column;

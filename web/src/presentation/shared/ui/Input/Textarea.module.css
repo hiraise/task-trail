@@ -29,7 +29,7 @@
   outline: none;
 }
 
-/* Поле с ошибкой — красная рамка, как в макете */
+/* A field with an error has a red border, as in the mockup */
 .textarea[aria-invalid="true"] {
   box-shadow: inset 0 0 0 1px var(--border-critical);
 }

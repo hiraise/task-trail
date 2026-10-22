@@ -12,7 +12,7 @@ const globalErrorTexts: Partial<Record<AppErrorType, string>> = {
   [AppErrorType.UNKNOWN]: errorTexts.unknownError,
 };
 
-/** Показывает ошибки запросов, общие для всех экранов: сессия, сеть, тайм-аут, неизвестная. */
+/** Shows request errors common to all screens: session, network, timeout, unknown. */
 export function handleGlobalError(error: unknown) {
   if (!isGlobalError(error)) return;
 

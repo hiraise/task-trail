@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// userRoutes — текущий пользователь и другие пользователи: /v1/users/* в контракте.
+// userRoutes are the current user and other users: /v1/users/* in the contract.
 type userRoutes struct {
 	cm       *contextmanager.GinContextManager
 	services *user.UserModule

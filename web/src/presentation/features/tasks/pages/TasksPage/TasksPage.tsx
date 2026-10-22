@@ -19,7 +19,7 @@ import { useMyTasks, useOpenCreateTask } from "../../hooks";
 
 import styles from "./TasksPage.module.css";
 
-/** «Мои задачи» — задачи, назначенные на текущего пользователя, во всех его проектах. */
+/** "My tasks" — tasks assigned to the current user across all their projects. */
 export function TasksPage() {
   return (
     <TabPanelProvider>
@@ -28,8 +28,8 @@ export function TasksPage() {
   );
 }
 
-// На телефоне — верхняя панель и вкладки телефона, с 768 px — заголовок с кнопкой и карточка
-// (ADR-0008): обе панели в разметке, видна одна — по ширине экрана.
+// On a phone — the top bar and phone tabs; from 768 px — a header with a button and a card
+// (ADR-0008): both are in the markup, one is visible depending on the screen width.
 function TasksScreen() {
   const { activeTab } = useTabPanel();
   const { showSortOptions } = useGlobalModals();
@@ -80,7 +80,7 @@ function TasksScreen() {
           <ContentTopBarDesktop onClick={showSortOptions} />
         </div>
         {activeTab === TabType.ACTIVE && renderActive()}
-        {/* Архива на сервере ещё нет — этап 2 (docs/roadmap.md) */}
+        {/* The server has no archive yet — stage 2 (docs/roadmap.md) */}
         {activeTab === TabType.ARCHIVED && <h1>Архив</h1>}
       </div>
     </div>

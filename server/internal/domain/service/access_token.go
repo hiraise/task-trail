@@ -6,7 +6,7 @@ import (
 	"task-trail/internal/domain/entity"
 )
 
-// IssuedToken — подписанный токен и момент, когда он истекает.
+// IssuedToken — a signed token and the moment it expires.
 type IssuedToken struct {
 	Token     string
 	ExpiredAt time.Time

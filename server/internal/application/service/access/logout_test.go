@@ -19,7 +19,7 @@ func TestLogoutRevokesToken(t *testing.T) {
 	d.tokens.EXPECT().GetForUpdate(inTx, tokenID, userID).Return(activeToken(), nil)
 	d.tokens.EXPECT().Update(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, rt *entity.RefreshToken) error {
 		if rt.RevokedAt == nil || !rt.RevokedAt.Equal(now) {
-			t.Errorf("отозванный токен: %+v", rt)
+			t.Errorf("revoked token: %+v", rt)
 		}
 		return nil
 	})
@@ -29,7 +29,7 @@ func TestLogoutRevokesToken(t *testing.T) {
 	}
 }
 
-// Выход с украденным токеном закрывает все сессии пользователя.
+// Logout with a stolen token closes all of the user's sessions.
 func TestLogoutReusedToken(t *testing.T) {
 	module, d := newModule(t)
 	d.expectVerify("rt")
@@ -42,17 +42,17 @@ func TestLogoutReusedToken(t *testing.T) {
 	}
 }
 
-// Закрывать нечего — выход всё равно успешен.
+// Nothing to close: logout still succeeds.
 func TestLogoutNothingToRevoke(t *testing.T) {
 	cases := []struct {
 		name  string
 		token *entity.RefreshToken
 		err   error
 	}{
-		{"только что обменян", token(at(now.Add(-time.Second)), nil, now.Add(time.Hour)), nil},
-		{"уже закрыт", token(nil, at(now.Add(-time.Hour)), now.Add(time.Hour)), nil},
-		{"истёк", token(nil, nil, now.Add(-time.Hour)), nil},
-		{"нет в базе", nil, domain.ErrEntityNotFound(0, nil)},
+		{"just exchanged", token(at(now.Add(-time.Second)), nil, now.Add(time.Hour)), nil},
+		{"already closed", token(nil, at(now.Add(-time.Hour)), now.Add(time.Hour)), nil},
+		{"expired", token(nil, nil, now.Add(-time.Hour)), nil},
+		{"not in the database", nil, domain.ErrEntityNotFound(0, nil)},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -65,7 +65,7 @@ func TestLogoutNothingToRevoke(t *testing.T) {
 			}
 		})
 	}
-	t.Run("неверный JWT", func(t *testing.T) {
+	t.Run("invalid JWT", func(t *testing.T) {
 		module, d := newModule(t)
 		d.jwt.EXPECT().VerifyRefreshToken("rt").Return("", "", domain.ErrRefreshTokenExpired())
 		if err := module.Logout.Execute(context.Background(), "rt"); err != nil {

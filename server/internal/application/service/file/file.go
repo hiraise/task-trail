@@ -1,4 +1,4 @@
-// Package file — выдача файлов и очистка хранилища (ADR-0013).
+// Package file serves files and cleans up the storage (ADR-0013).
 package file
 
 import (
@@ -16,8 +16,8 @@ type FileModule struct {
 	Cleanup  *CleanupService
 }
 
-// Deps — зависимости модуля файлов. OrphanAge — через сколько стирать файл на диске,
-// у которого нет записи в базе: раньше он может оказаться загрузкой, которая ещё идёт.
+// Deps are the dependencies of the file module. OrphanAge is how long to wait before erasing a file on disk
+// that has no database record: before that it may be an upload still in progress.
 type Deps struct {
 	Clock       service.Clock
 	FileRepo    repository.FileRepository
@@ -37,9 +37,9 @@ func New(d Deps) *FileModule {
 	}
 }
 
-// DownloadService отдаёт файл по ID. Сейчас все файлы — аватарки, их отдают без входа:
-// ID случайный, а <img> не умеет обновить сессию (ADR-0013). Вложения (этап 3) — только
-// участникам их проекта: появятся они — проверяй здесь участие.
+// DownloadService serves a file by ID. For now all files are avatars, served without sign-in:
+// the ID is random, and <img> cannot refresh the session (ADR-0013). Attachments (stage 3) are only for
+// members of their project: once they appear, check membership here.
 type DownloadService struct {
 	fileRepository repository.FileRepository
 	storage        service.FileStorage
@@ -57,8 +57,8 @@ func (s *DownloadService) Execute(ctx context.Context, id string) (dto.FileConte
 	return dto.FileContent{File: file, Content: content, Size: size}, nil
 }
 
-// CleanupService стирает с диска ненужные файлы и отмечает это в базе, а заодно — файлы
-// без записи в базе старше OrphanAge: их оставила прерванная загрузка (ADR-0013).
+// CleanupService erases unneeded files from disk and marks this in the database, and also files
+// without a database record older than OrphanAge: an interrupted upload left them (ADR-0013).
 type CleanupService struct {
 	clock          service.Clock
 	fileRepository repository.FileRepository
@@ -66,7 +66,7 @@ type CleanupService struct {
 	orphanAge      time.Duration
 }
 
-// Execute возвращает, сколько файлов стёрто.
+// Execute returns how many files were erased.
 func (s *CleanupService) Execute(ctx context.Context) (int64, error) {
 	now := s.clock.Now()
 	var erased int64

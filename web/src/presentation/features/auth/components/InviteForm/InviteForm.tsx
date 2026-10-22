@@ -18,11 +18,11 @@ type FormData = z.infer<typeof schema>;
 
 interface InviteFormProps {
   token: string;
-  /** Почта из приглашения: аккаунт создаётся на неё, сменить её нельзя */
+  /** Email from the invitation: the account is created for it, it cannot be changed */
   email: string;
 }
 
-/** Принятие приглашения: имя и пароль, почта — из приглашения (ADR-0016). */
+/** Accepting an invitation: name and password, the email comes from the invitation (ADR-0016). */
 export function InviteForm({ token, email }: InviteFormProps) {
   const { mutate: accept, isPending } = useAcceptInvitation();
   const form = useForm<FormData>({ resolver: zodResolver(schema) });

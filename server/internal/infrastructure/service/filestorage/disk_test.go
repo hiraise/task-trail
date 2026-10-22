@@ -29,9 +29,9 @@ func TestDisk(t *testing.T) {
 	if err := disk.Save(ctx, fileID, strings.NewReader("содержимое")); err != nil {
 		t.Fatal(err)
 	}
-	// Файл по ID не меняется: второй записи под тем же ID нет
+	// A file never changes by ID: there is no second write under the same ID
 	if err := disk.Save(ctx, fileID, strings.NewReader("другое")); err == nil {
-		t.Fatal("файл перезаписан")
+		t.Fatal("file overwritten")
 	}
 	content, size, err := disk.Open(ctx, fileID)
 	if err != nil {
@@ -40,10 +40,10 @@ func TestDisk(t *testing.T) {
 	data, err := io.ReadAll(content)
 	_ = content.Close()
 	if err != nil || string(data) != "содержимое" || size != int64(len("содержимое")) {
-		t.Fatalf("прочитано %q, %d байт, %v", data, size, err)
+		t.Fatalf("read %q, %d bytes, %v", data, size, err)
 	}
 
-	// Чужие файлы в папке List не видит, а значит, и очистка не тронет
+	// List does not see foreign files in the folder, so cleanup will not touch them either
 	if err := os.WriteFile(filepath.Join(dir, "notes.txt"), []byte("x"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -52,21 +52,21 @@ func TestDisk(t *testing.T) {
 	}
 	stored, err := disk.List(ctx)
 	if err != nil || len(stored) != 1 || stored[0].ID != fileID || stored[0].ModifiedAt.IsZero() {
-		t.Fatalf("в хранилище: %+v, %v", stored, err)
+		t.Fatalf("in storage: %+v, %v", stored, err)
 	}
 
 	if err := disk.Delete(ctx, fileID); err != nil {
 		t.Fatal(err)
 	}
 	if err := disk.Delete(ctx, fileID); err != nil {
-		t.Fatalf("повторное удаление: %v", err)
+		t.Fatalf("repeated delete: %v", err)
 	}
 	if _, _, err := disk.Open(ctx, fileID); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("после удаления: %v", err)
+		t.Fatalf("after delete: %v", err)
 	}
 }
 
-// Путь строится только из UUID: ни «..», ни «/» в него не попадут (ADR-0013).
+// The path is built only from a UUID: neither ".." nor "/" can get into it (ADR-0013).
 func TestDiskRejectsNonUUID(t *testing.T) {
 	dir := t.TempDir()
 	if err := filestorage.Prepare(filepath.Join(dir, "files")); err != nil {
@@ -76,34 +76,34 @@ func TestDiskRejectsNonUUID(t *testing.T) {
 	ctx := context.Background()
 	for _, id := range []entity.FileID{"../escape", "../../etc/passwd", "", "0b8f8a529c2e4d5f8a1b3c4d5e6f7a8b"} {
 		if err := disk.Save(ctx, id, strings.NewReader("x")); err == nil {
-			t.Errorf("%q: записан", id)
+			t.Errorf("%q: written", id)
 		}
 		if _, _, err := disk.Open(ctx, id); err == nil {
-			t.Errorf("%q: открыт", id)
+			t.Errorf("%q: opened", id)
 		}
 		if err := disk.Delete(ctx, id); err == nil {
-			t.Errorf("%q: удалён", id)
+			t.Errorf("%q: deleted", id)
 		}
 	}
 	if _, err := os.Stat(filepath.Join(dir, "escape")); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("файл вне папки: %v", err)
+		t.Fatalf("file outside the folder: %v", err)
 	}
 }
 
 type failingReader struct{}
 
 func (failingReader) Read([]byte) (int, error) {
-	return 0, errors.New("соединение оборвалось")
+	return 0, errors.New("connection dropped")
 }
 
-// Не записался до конца — частичного файла не остаётся.
+// A write that did not finish leaves no partial file.
 func TestDiskSaveFailure(t *testing.T) {
 	disk := filestorage.NewDisk(t.TempDir())
 	ctx := context.Background()
 	if err := disk.Save(ctx, fileID, io.MultiReader(strings.NewReader("начало"), failingReader{})); err == nil {
-		t.Fatal("ошибка чтения не дошла")
+		t.Fatal("the read error did not propagate")
 	}
 	if stored, err := disk.List(ctx); err != nil || len(stored) != 0 {
-		t.Fatalf("остался файл: %+v, %v", stored, err)
+		t.Fatalf("a file remained: %+v, %v", stored, err)
 	}
 }

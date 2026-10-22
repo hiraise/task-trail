@@ -9,15 +9,15 @@ import styles from "./TaskField.module.css";
 interface TaskFieldProps {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   label: string;
-  /** Значения нет — вместо него `placeholder` */
+  /** No value — `placeholder` is shown instead */
   value?: string;
   placeholder: string;
   onClick: () => void;
 }
 
 /**
- * Поле задачи, которое меняют выбором: ответственный, проект. На телефоне — плашка со стрелкой,
- * с 768 px — подпись слева и значение, при наведении — значок правки.
+ * A task field changed by picking a value: assignee, project. On a phone — a panel with an arrow;
+ * from 768 px — a label on the left and the value, with an edit icon on hover.
  */
 export function TaskField({ icon, label, value, placeholder, onClick }: TaskFieldProps) {
   const text = value ?? placeholder;

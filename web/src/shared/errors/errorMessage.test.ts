@@ -2,7 +2,7 @@ import { errorMessage, isGlobalError } from "./errorMessage";
 import { AppError, AppErrorType } from "./types";
 
 describe("errorMessage", () => {
-  it("текст по коду API", () => {
+  it("text by API code", () => {
     const error = new AppError(AppErrorType.AUTH, "bad credentials", {
       code: "INVALID_CREDENTIALS",
     });
@@ -10,7 +10,7 @@ describe("errorMessage", () => {
     expect(errorMessage(error, "запасной")).toBe("Неверная почта или пароль");
   });
 
-  it("код без текста и чужая ошибка — запасной текст", () => {
+  it("a code without text and a foreign error — fallback text", () => {
     const internal = new AppError(AppErrorType.SERVER, "boom", { code: "INTERNAL" });
 
     expect(errorMessage(internal, "запасной")).toBe("запасной");
@@ -19,7 +19,7 @@ describe("errorMessage", () => {
 });
 
 describe("isGlobalError", () => {
-  it("сеть и сессию показывает общий обработчик, ошибки формы — экран", () => {
+  it("the global handler shows network and session errors, the screen shows form errors", () => {
     expect(isGlobalError(new AppError(AppErrorType.NETWORK, "offline"))).toBe(true);
     expect(isGlobalError(new AppError(AppErrorType.UNAUTHORIZED, "expired"))).toBe(true);
     expect(isGlobalError(new AppError(AppErrorType.VALIDATION, "invalid"))).toBe(false);

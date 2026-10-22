@@ -8,8 +8,8 @@ import (
 	"task-trail/internal/domain/repository"
 )
 
-// AdminCheckService проверяет, что пользователь — администратор сервиса. Права проверяет
-// сервер в каждом эндпоинте администрирования, веб только прячет раздел (ADR-0014).
+// AdminCheckService checks that the user is a service administrator. The server checks rights
+// in every administration endpoint; the web only hides the section (ADR-0014).
 type AdminCheckService struct {
 	userRepository repository.UserRepository
 }
@@ -17,7 +17,7 @@ type AdminCheckService struct {
 func (s *AdminCheckService) Execute(ctx context.Context, userID string) error {
 	user, err := s.userRepository.GetByID(ctx, entity.UserID(userID))
 	if isEntityNotFound(err) {
-		// Пользователя удалили, а access-токен ещё жив: сессия недействительна
+		// The user was deleted but the access token is still alive: the session is invalid
 		return domain.ErrWrongAccessToken("userID", userID, "reason", "user not found")
 	}
 	if err != nil {

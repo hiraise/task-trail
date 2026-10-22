@@ -8,12 +8,12 @@ import (
 
 type RefreshTokenRepository interface {
 	Create(ctx context.Context, entity *entity.RefreshToken) error
-	// GetForUpdate читает токен пользователя и блокирует его строку до конца транзакции:
-	// параллельный обмен того же токена ждёт и видит, что токен уже обменян.
+	// GetForUpdate reads the user's token and locks its row until the end of the transaction:
+	// a parallel exchange of the same token waits and sees that the token is already exchanged.
 	GetForUpdate(ctx context.Context, tokenID entity.RefreshTokenID, userID entity.UserID) (*entity.RefreshToken, error)
 	Update(ctx context.Context, entity *entity.RefreshToken) error
-	// RevokeAll закрывает все действующие сессии пользователя.
+	// RevokeAll closes all active sessions of the user.
 	RevokeAll(ctx context.Context, userID entity.UserID, now time.Time) error
-	// DeleteExpired удаляет токены, истёкшие к моменту now, и возвращает, сколько удалено.
+	// DeleteExpired deletes tokens expired by now and returns how many were deleted.
 	DeleteExpired(ctx context.Context, now time.Time) (int64, error)
 }

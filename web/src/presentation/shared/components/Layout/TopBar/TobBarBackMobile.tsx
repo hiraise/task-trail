@@ -10,7 +10,7 @@ interface TopBarBackMobileProps {
   title: string;
   variant?: Variant;
   onActionClick?: () => void;
-  /** Куда ведёт «назад»; без него — на уровень выше по адресу */
+  /** Where "back" leads; without it, one level up the URL */
   backTo?: string;
 }
 

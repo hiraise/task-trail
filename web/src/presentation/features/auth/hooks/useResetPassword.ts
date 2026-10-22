@@ -8,7 +8,7 @@ import { ROUTES } from "@/shared/config/routes";
 import { toastError } from "@/shared/errors/errorMessage";
 import { authTexts } from "@/shared/locales/auth";
 
-/** Новый пароль по ссылке сброса. Сброс закрывает все сессии — дальше вход (resetPassword). */
+/** A new password via a reset link. The reset ends all sessions; next comes sign-in (resetPassword). */
 export function useResetPassword() {
   const navigate = useNavigate();
 

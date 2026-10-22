@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Modules — модули сервера, чьи сценарии вызывают обработчики /v1.
+// Modules are the server modules whose use cases the /v1 handlers call.
 type Modules struct {
 	Access  *access.AccessModule
 	User    *user.UserModule

@@ -24,7 +24,7 @@ type AccessModule struct {
 	Cleanup           *CleanupService
 }
 
-// Deps — зависимости модуля доступа.
+// Deps are the dependencies of the access module.
 type Deps struct {
 	TxManager            transaction.TxManager
 	Clock                service.Clock

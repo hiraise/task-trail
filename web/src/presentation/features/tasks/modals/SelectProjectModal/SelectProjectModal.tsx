@@ -10,7 +10,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { ProjectsList } from "../../components/ProjectsList";
 
-/** Проект задачи — из проектов пользователя; выбран другой — задача переносится туда. */
+/** Task project — one of the user's projects; picking another one moves the task there. */
 export function SelectProjectModal(props: BaseModalProps<Project>) {
   const { onClose, ...rest } = props;
   const { data: projects } = useProjects();

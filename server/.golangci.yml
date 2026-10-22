@@ -1,4 +1,4 @@
-# Линтер сервера (ADR-0009). Версия golangci-lint закреплена в scripts/dev.sh.
+# Server linter (ADR-0009). The golangci-lint version is pinned in scripts/dev.sh.
 version: "2"
 
 linters:

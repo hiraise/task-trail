@@ -10,10 +10,10 @@ import { hasErrorCode } from "@/shared/errors/types";
 import { adminTexts } from "@/shared/locales/admin";
 
 /**
- * Подключает почту или меняет её настройки (ADR-0017). Сервер сохраняет их, только если подключился
- * к SMTP, — ответ ждём до 20 секунд. Ошибки: `SECRET_REQUIRED` — пароль ввести заново,
- * `MAIL_CONNECTION_FAILED` — не подключился, `VALIDATION_FAILED` — поля в `details`.
- * Без поля `password` остаётся сохранённый пароль, `null` — удалить его.
+ * Connects mail or changes its settings (ADR-0017). The server saves them only if it connected
+ * to SMTP, so wait up to 20 seconds for the response. Errors: `SECRET_REQUIRED`, re-enter the password;
+ * `MAIL_CONNECTION_FAILED`, could not connect; `VALIDATION_FAILED`, fields in `details`.
+ * Without the `password` field the saved password stays; `null` deletes it.
  */
 export function useSaveMailSettings() {
   const queryClient = useQueryClient();
@@ -22,12 +22,12 @@ export function useSaveMailSettings() {
     mutationFn: (settings) => adminRepository.saveMail(settings),
     onSuccess: (settings) => {
       queryClient.setQueryData(QUERY_KEYS.admin.settings, settings);
-      // Почта могла только что включиться — веб перестанет прятать действия, которым она нужна
+      // Mail may have just been enabled: the web stops hiding the actions that need it
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.settings.public });
       toast.success(adminTexts.mailSaved);
     },
     onError: (error) => {
-      // Пароль ввести заново — форма показывает это под полем пароля, тост не нужен
+      // Re-enter the password: the form shows this under the password field, no toast needed
       if (hasErrorCode(error, "SECRET_REQUIRED")) return;
       toastError(error, adminTexts.mailSaveFailed);
     },

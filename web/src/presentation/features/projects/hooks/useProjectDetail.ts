@@ -9,7 +9,7 @@ import {
 } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-/** Страница проекта: проект с ролью текущего пользователя, участники и задачи. */
+/** Project page: the project with the current user's role, members and tasks. */
 export const useProjectDetail = (projectId: ProjectId) => {
   const [projectQuery, membersQuery, tasksQuery] = useQueries({
     queries: [

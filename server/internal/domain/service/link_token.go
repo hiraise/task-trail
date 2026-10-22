@@ -1,6 +1,6 @@
 package service
 
-// LinkTokenGenerator выдаёт случайные токены для ссылок приглашений и сброса пароля (ADR-0016).
+// LinkTokenGenerator issues random tokens for invitation and password reset links (ADR-0016).
 type LinkTokenGenerator interface {
 	Generate() string
 }

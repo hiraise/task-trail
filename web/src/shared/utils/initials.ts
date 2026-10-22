@@ -1,4 +1,4 @@
-/** Инициалы для аватарки без картинки: «Daria F» → «DF», «ivanov_sergey» → «IS», почта — по имени ящика. */
+/** Initials for an avatar without an image: "Daria F" → "DF", "ivanov_sergey" → "IS", an email — by the mailbox name. */
 export function initials(name: string): string {
   const words = name
     .split("@")[0]

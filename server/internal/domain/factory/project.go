@@ -14,7 +14,7 @@ func NewProjectFactory(idGenerator service.IDGenerator, clock service.Clock) *Pr
 	return &ProjectFactory{idGenerator: idGenerator, clock: clock}
 }
 
-// New создаёт проект и участие его создателя — владельца.
+// New creates a project and the membership of its creator — the owner.
 func (f *ProjectFactory) New(name string, description *string, ownerID entity.UserID) (*entity.Project, *entity.ProjectMember) {
 	now := f.clock.Now()
 	project := &entity.Project{

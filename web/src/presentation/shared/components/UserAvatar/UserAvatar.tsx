@@ -9,9 +9,9 @@ import styles from "./UserAvatar.module.css";
 
 interface UserAvatarProps {
   variant?: "small" | "standard" | "large";
-  /** Адрес аватарки (User.avatarUrl) */
+  /** Avatar URL (User.avatarUrl) */
   src?: string;
-  /** Имя или почта: без аватарки — инициалы, как в макете */
+  /** Name or email: without an avatar, initials, as in the mockup */
   name?: string;
 }
 

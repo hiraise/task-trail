@@ -6,8 +6,8 @@ import { useChangeTaskStatus } from "./useChangeTaskStatus";
 import { useMoveTask } from "./useMoveTask";
 
 /**
- * Статус, ответственный и проект задачи меняются выбором в окне, каждый своим эндпоинтом
- * (ADR-0002). Выбрали то же, что было, — запроса нет.
+ * Task status, assignee and project are changed by picking in a modal, each via its own endpoint
+ * (ADR-0002). Picking the current value sends no request.
  */
 export function useTaskActions(task: Task) {
   const { showChangeStatus, showSelectAssignee, showSelectProject } = useGlobalModals();

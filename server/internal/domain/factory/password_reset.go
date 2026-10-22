@@ -16,7 +16,7 @@ func NewPasswordResetFactory(tokens service.LinkTokenGenerator, clock service.Cl
 	return &PasswordResetFactory{tokens: tokens, clock: clock, lifetime: lifetime}
 }
 
-// New создаёт ссылку сброса: token уходит человеку, в сущности — только его хеш.
+// New creates a reset link: token goes to the person, the entity keeps only its hash.
 func (f *PasswordResetFactory) New(userID entity.UserID) (token string, reset *entity.PasswordReset) {
 	token = f.tokens.Generate()
 	now := f.clock.Now()

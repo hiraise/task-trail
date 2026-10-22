@@ -7,8 +7,8 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 
 ## Where we are
 
-- **Now:** stage 2, plan — [docs/plans/stage-2/](plans/stage-2/README.md). Next step — 0, code
-  comments in English; then 1, task keys.
+- **Now:** stage 2, plan — [docs/plans/stage-2/](plans/stage-2/README.md). Step 0 is done: code
+  comments and developer-facing strings are in English. Next step — 1, task keys.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects and members; fixed statuses and tasks; service administration.

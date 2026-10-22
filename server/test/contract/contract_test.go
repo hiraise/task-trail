@@ -19,7 +19,7 @@ const (
 
 const jsonType = "application/json"
 
-// Проверяет настройку валидатора: что он пропускает и что ловит.
+// Checks the validator setup: what it lets through and what it catches.
 func TestValidate(t *testing.T) {
 	v := Load(t)
 	cookie := http.Header{"Set-Cookie": {"at=x; Path=/; HttpOnly"}}
@@ -32,46 +32,46 @@ func TestValidate(t *testing.T) {
 		body   string
 		valid  bool
 	}{
-		{"текущий пользователь", "GET", "/v1/users/me", 200, nil, someUser, true},
-		{"числовой ID вместо UUID", "GET", "/v1/users/me", 200, nil,
+		{"current user", "GET", "/v1/users/me", 200, nil, someUser, true},
+		{"numeric ID instead of UUID", "GET", "/v1/users/me", 200, nil,
 			strings.Replace(someUser, someID, "42", 1), false},
-		{"неверная почта", "GET", "/v1/users/me", 200, nil, strings.Replace(someUser, "a@b.c", "nope", 1), false},
-		{"нет обязательного поля", "GET", "/v1/users/me", 200, nil,
+		{"invalid email", "GET", "/v1/users/me", 200, nil, strings.Replace(someUser, "a@b.c", "nope", 1), false},
+		{"missing required field", "GET", "/v1/users/me", 200, nil,
 			strings.Replace(someUser, `"avatarId":null,`, "", 1), false},
-		{"лишнее поле", "GET", "/v1/users/me", 200, nil,
+		{"extra field", "GET", "/v1/users/me", 200, nil,
 			strings.Replace(someUser, `"isAdmin":true`, `"isAdmin":true,"passwordHash":"x"`, 1), false},
-		{"статус не из контракта", "GET", "/v1/users/me", 409, nil,
+		{"status not in the contract", "GET", "/v1/users/me", 409, nil,
 			`{"code":"NOT_FOUND","message":"x","details":null}`, false},
-		{"не тот тип ответа", "GET", "/v1/users/me", 200, http.Header{"Content-Type": {"text/plain"}}, "ok", false},
-		{"ошибка с кодом", "GET", "/v1/projects/" + someID, 404, nil,
-			`{"code":"NOT_FOUND","message":"нет проекта","details":null}`, true},
-		{"код не из ErrorCode", "GET", "/v1/projects/" + someID, 404, nil,
+		{"wrong response type", "GET", "/v1/users/me", 200, http.Header{"Content-Type": {"text/plain"}}, "ok", false},
+		{"error with a code", "GET", "/v1/projects/" + someID, 404, nil,
+			`{"code":"NOT_FOUND","message":"project not found","details":null}`, true},
+		{"code not in ErrorCode", "GET", "/v1/projects/" + someID, 404, nil,
 			`{"code":"NOPE","message":"x","details":null}`, false},
-		{"ошибка старого формата", "GET", "/v1/projects/" + someID, 500, nil, `{"msg":"internal error"}`, false},
-		{"поля в ошибке проверки", "POST", "/v1/auth/password/change", 422, nil,
+		{"old-format error", "GET", "/v1/projects/" + someID, 500, nil, `{"msg":"internal error"}`, false},
+		{"fields in a validation error", "POST", "/v1/auth/password/change", 422, nil,
 			`{"code":"VALIDATION_FAILED","message":"x","details":{"newPassword":"слишком короткий"}}`, true},
-		{"задача после смены статуса", "PATCH", "/v1/tasks/" + someID + "/status", 200, nil, someTask, true},
-		{"только id, как в старом API", "PATCH", "/v1/tasks/" + someID + "/status", 200, nil,
+		{"task after a status change", "PATCH", "/v1/tasks/" + someID + "/status", 200, nil, someTask, true},
+		{"only id, as in the old API", "PATCH", "/v1/tasks/" + someID + "/status", 200, nil,
 			`{"id":"` + someID + `"}`, false},
-		{"время не в UTC", "PATCH", "/v1/tasks/" + someID + "/status", 200, nil,
+		{"time not in UTC", "PATCH", "/v1/tasks/" + someID + "/status", 200, nil,
 			strings.Replace(someTask, "10:00:00Z", "13:00:00+03:00", 1), false},
-		{"лишнее поле в элементе списка", "GET", "/v1/projects/" + someID + "/tasks", 200, nil,
+		{"extra field in a list item", "GET", "/v1/projects/" + someID + "/tasks", 200, nil,
 			"[" + someTask + "," + strings.Replace(someTask, `"name":"n"`, `"name":"n","permissions":[]`, 1) + "]", false},
-		{"роль не из перечня", "GET", "/v1/projects/" + someID, 200, nil,
+		{"role not in the enum", "GET", "/v1/projects/" + someID, 200, nil,
 			`{"id":"` + someID + `","name":"p","description":null,"createdAt":"2026-10-21T10:00:00Z",` +
 				`"tasksCount":0,"role":"boss"}`, false},
-		{"почта не подключена", "GET", "/v1/admin/settings", 200, nil,
+		{"mail not connected", "GET", "/v1/admin/settings", 200, nil,
 			`{"serviceUrl":"http://localhost:3000","mail":null}`, true},
-		{"почта подключена", "GET", "/v1/admin/settings", 200, nil,
+		{"mail connected", "GET", "/v1/admin/settings", 200, nil,
 			`{"serviceUrl":"https://example.com/tasktrail","mail":` + someMail + `}`, true},
-		{"лишнее поле в настройках почты", "GET", "/v1/admin/settings", 200, nil,
+		{"extra field in mail settings", "GET", "/v1/admin/settings", 200, nil,
 			`{"serviceUrl":"http://localhost:3000","mail":` + strings.Replace(someMail, `"passwordSet":false`,
 				`"passwordSet":true,"password":"secret"`, 1) + `}`, false},
-		{"относительный адрес сервиса", "GET", "/v1/admin/settings", 200, nil,
+		{"relative service URL", "GET", "/v1/admin/settings", 200, nil,
 			`{"serviceUrl":"/tasktrail","mail":null}`, false},
-		{"вход с cookie", "POST", "/v1/auth/login", 200, cookie, someUser, true},
-		{"вход без cookie", "POST", "/v1/auth/login", 200, nil, someUser, false},
-		{"выход без тела", "POST", "/v1/auth/logout", 204, cookie, "", true},
+		{"login with cookie", "POST", "/v1/auth/login", 200, cookie, someUser, true},
+		{"login without cookie", "POST", "/v1/auth/login", 200, nil, someUser, false},
+		{"logout without body", "POST", "/v1/auth/logout", 204, cookie, "", true},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -84,10 +84,10 @@ func TestValidate(t *testing.T) {
 			}
 			err := v.validate(httptest.NewRequest(c.method, c.path, nil), c.status, header, []byte(c.body))
 			if c.valid && err != nil {
-				t.Errorf("ожидался успех: %v", err)
+				t.Errorf("expected success: %v", err)
 			}
 			if !c.valid && err == nil {
-				t.Error("ожидалась ошибка")
+				t.Error("expected an error")
 			}
 		})
 	}
@@ -97,12 +97,12 @@ func TestUnknownRoute(t *testing.T) {
 	v := Load(t)
 	req := httptest.NewRequest(http.MethodGet, "/v1/access/check", nil)
 	if err := v.validate(req, 200, http.Header{}, nil); err == nil {
-		t.Error("путь, которого нет в контракте, принят")
+		t.Error("a path that is not in the contract was accepted")
 	}
 }
 
-// Check берёт заголовки из снимка на момент WriteHeader: поставленный позже заголовок
-// клиент не получит, и проверка должна это заметить.
+// Check takes headers from the snapshot at WriteHeader time: the client will not receive
+// a header set later, and the check must notice it.
 func TestCheckUsesWrittenHeaders(t *testing.T) {
 	v := Load(t)
 	rec := httptest.NewRecorder()
@@ -113,11 +113,11 @@ func TestCheckUsesWrittenHeaders(t *testing.T) {
 	inner := &failRecorder{TB: t}
 	v.Check(inner, httptest.NewRequest(http.MethodGet, "/v1/users/me", nil), rec)
 	if !inner.failed {
-		t.Error("Content-Type, поставленный после WriteHeader, принят")
+		t.Error("Content-Type set after WriteHeader was accepted")
 	}
 }
 
-// failRecorder запоминает провал проверки, не роняя сам тест.
+// failRecorder records a check failure without failing the test itself.
 type failRecorder struct {
 	testing.TB
 	failed bool

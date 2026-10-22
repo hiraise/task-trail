@@ -10,8 +10,8 @@ import { toastError } from "@/shared/errors/errorMessage";
 import { projectsTexts } from "@/shared/locales/projects";
 
 /**
- * Создаёт проект и зовёт в него почты из `emails` тем же запросом (ADR-0016). Результат
- * приглашений показывает форма — после того как закроет своё окно (useInvitationReport).
+ * Creates the project and invites the `emails` in the same request (ADR-0016). The form shows
+ * the invitation result after closing its modal (useInvitationReport).
  */
 export function useCreateProject() {
   const navigate = useNavigate();

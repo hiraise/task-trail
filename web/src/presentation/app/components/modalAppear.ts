@@ -1,11 +1,11 @@
 import { createContext, useContext } from "react";
 
-// Окно, которое сменяет на экране другое окно стека, появляется сразу, без анимации появления:
-// иначе затемнение гаснет и проявляется заново, а панель снова выезжает — экран моргает.
-// Значение ставит GlobalModalManager, читает BaseModal.
+// A modal that replaces another modal of the stack on screen appears at once, without the enter animation:
+// otherwise the overlay fades out and in again and the panel slides in again, and the screen flickers.
+// GlobalModalManager sets the value, BaseModal reads it.
 export const ModalAppearContext = createContext(true);
 
-/** true — окно открывается поверх экрана; false — сменяет другое окно и появляется сразу. */
+/** true: the modal opens over the screen; false: it replaces another modal and appears at once. */
 export function useModalAppear() {
   return useContext(ModalAppearContext);
 }

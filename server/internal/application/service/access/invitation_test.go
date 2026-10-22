@@ -55,27 +55,27 @@ func TestInvitationLookup(t *testing.T) {
 			t.Fatal(err)
 		}
 		if info != (dto.InvitationInfo{Email: email, ProjectName: "Дизайн-система", InvitedBy: want}) {
-			t.Errorf("приглашение: %+v", info)
+			t.Errorf("invitation: %+v", info)
 		}
 	}
 }
 
 func TestInvitationLookupRejected(t *testing.T) {
-	t.Run("нет приглашения", func(t *testing.T) {
+	t.Run("no invitation", func(t *testing.T) {
 		module, d := newModule(t)
 		d.invitations.EXPECT().GetByTokenHash(gomock.Any(), gomock.Any()).Return(nil, domain.ErrEntityNotFound(0, nil))
 		_, err := module.InvitationLookup.Execute(context.Background(), inviteToken)
 		requireCode(t, err, domain.LinkInvalid)
 	})
-	t.Run("истекло", func(t *testing.T) {
+	t.Run("expired", func(t *testing.T) {
 		module, d := newModule(t)
 		d.invitations.EXPECT().GetByTokenHash(gomock.Any(), gomock.Any()).Return(details(now, nil), nil)
 		d.expectNoAccount()
 		_, err := module.InvitationLookup.Execute(context.Background(), inviteToken)
 		requireCode(t, err, domain.LinkInvalid)
 	})
-	// Аккаунт уже есть — ссылка ведёт на вход, даже истёкшая
-	t.Run("принято", func(t *testing.T) {
+	// The account already exists: the link leads to sign-in, even when expired
+	t.Run("accepted", func(t *testing.T) {
 		module, d := newModule(t)
 		d.invitations.EXPECT().GetByTokenHash(gomock.Any(), gomock.Any()).Return(details(now.Add(-time.Hour), nil), nil)
 		d.users.EXPECT().GetByEmail(gomock.Any(), email).Return(user(), nil)
@@ -86,8 +86,8 @@ func TestInvitationLookupRejected(t *testing.T) {
 
 var acceptData = dto.AcceptInvitation{Token: inviteToken, Username: "Иван", Password: "password"}
 
-// Аккаунт создаётся подтверждённым и не администратором; действующие приглашения почты
-// становятся участием с ролью «участник», истёкшие — нет; сессия открывается сразу.
+// The account is created verified and not an administrator; active invitations of the email
+// become memberships with the "member" role, expired ones do not; the session opens right away.
 func TestAcceptInvitation(t *testing.T) {
 	module, d := newModule(t)
 	d.invitations.EXPECT().GetByTokenHash(outsideTx, entity.HashLinkToken(inviteToken)).Return(details(now.Add(time.Hour), nil), nil)
@@ -108,7 +108,7 @@ func TestAcceptInvitation(t *testing.T) {
 	var added []entity.ProjectID
 	d.members.EXPECT().Add(inTx, gomock.Any()).Times(2).DoAndReturn(func(_ context.Context, m *entity.ProjectMember) error {
 		if m.UserID != created.ID || m.Role != entity.RoleMember || !m.CreatedAt.Equal(now) {
-			t.Errorf("участие: %+v", m)
+			t.Errorf("membership: %+v", m)
 		}
 		added = append(added, m.ProjectID)
 		return nil
@@ -122,26 +122,26 @@ func TestAcceptInvitation(t *testing.T) {
 	}
 	if created.Email != email || created.PasswordHash != passwordHash || *created.Username != "Иван" ||
 		created.IsAdmin || created.VerifiedAt == nil {
-		t.Fatalf("аккаунт: %+v", created)
+		t.Fatalf("account: %+v", created)
 	}
 	if session.User != created || session.UserID != created.ID {
-		t.Fatalf("сессия: %+v", session)
+		t.Fatalf("session: %+v", session)
 	}
 	if len(added) != 2 || added[0] != projectID || added[1] != other {
-		t.Fatalf("участие в проектах %v", added)
+		t.Fatalf("project memberships %v", added)
 	}
 }
 
 func TestAcceptInvitationRejected(t *testing.T) {
-	// Неверная ссылка отсекается до bcrypt: HashPassword не вызывается
-	t.Run("нет приглашения", func(t *testing.T) {
+	// An invalid link is rejected before bcrypt: HashPassword is not called
+	t.Run("no invitation", func(t *testing.T) {
 		module, d := newModule(t)
 		d.invitations.EXPECT().GetByTokenHash(gomock.Any(), gomock.Any()).Return(nil, domain.ErrEntityNotFound(0, nil))
 		_, err := module.AcceptInvitation.Execute(context.Background(), acceptData)
 		requireCode(t, err, domain.LinkInvalid)
 	})
-	// Другую ссылку той же почты приняли параллельно — почта уже занята
-	t.Run("параллельное принятие", func(t *testing.T) {
+	// Another link for the same email was accepted in parallel: the email is already taken
+	t.Run("parallel acceptance", func(t *testing.T) {
 		module, d := newModule(t)
 		d.invitations.EXPECT().GetByTokenHash(gomock.Any(), gomock.Any()).Return(details(now.Add(time.Hour), nil), nil)
 		d.expectNoAccount()
@@ -162,10 +162,10 @@ func TestAdminCheck(t *testing.T) {
 		repoErr error
 		want    domain.ErrorCode
 	}{
-		{"администратор", admin, nil, ""},
-		{"не администратор", user(), nil, domain.Forbidden},
-		// Пользователя удалили, а access-токен ещё жив — 401, а не 403
-		{"нет пользователя", nil, domain.ErrEntityNotFound(0, nil), domain.AccessTokenWrong},
+		{"administrator", admin, nil, ""},
+		{"not an administrator", user(), nil, domain.Forbidden},
+		// The user was deleted but the access token is still alive: 401, not 403
+		{"no user", nil, domain.ErrEntityNotFound(0, nil), domain.AccessTokenWrong},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

@@ -51,8 +51,8 @@ const MODAL_COMPONENTS = {
 export function GlobalModalManager() {
   const { stack, close, back } = useGlobalModalContext();
   const topModal = stack[stack.length - 1];
-  // Видно только верхнее окно. Сменилось окно на окне (выбор из формы, возврат в форму) —
-  // новое появляется без анимации: затемнение и панель остаются на месте (ModalAppearContext)
+  // Only the top modal is visible. When one modal replaces another (a picker from a form, back to the form),
+  // the new one appears without animation: the overlay and the panel stay in place (ModalAppearContext)
   const [shownModal, setShownModal] = useState(topModal);
   const [appear, setAppear] = useState(true);
 

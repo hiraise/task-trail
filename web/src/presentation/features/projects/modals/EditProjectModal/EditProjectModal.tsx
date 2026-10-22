@@ -14,7 +14,7 @@ export function EditProjectModal(props: BaseModalProps<void>) {
 
   if (!projectId) return null;
 
-  // Шлём только изменённые поля; пустое описание — убрать его (null)
+  // Send only the changed fields; an empty description removes it (null)
   const submitHandler = async (data: FormValues) => {
     const changes = {
       name: data.name !== name ? data.name : undefined,
@@ -27,7 +27,7 @@ export function EditProjectModal(props: BaseModalProps<void>) {
       }
       props.onClose();
     } catch {
-      // Ошибку показал useEditProject, форма остаётся открытой
+      // useEditProject has shown the error; the form stays open
     }
   };
 

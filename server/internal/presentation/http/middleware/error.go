@@ -16,7 +16,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// NewError превращает ошибку обработчика в ответ ApiError (ADR-0018) и пишет её в лог.
+// NewError turns a handler error into an ApiError response (ADR-0018) and logs it.
 func NewError(l logger.Logger, m *contextmanager.GinContextManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
@@ -25,44 +25,44 @@ func NewError(l logger.Logger, m *contextmanager.GinContextManager) gin.HandlerF
 		}
 		apiErr := toAPIError(c.Errors.Last().Err, l, m.GetRequestID(c))
 		c.AbortWithStatusJSON(apiErr.Status, apiErr)
-		// Ошибки уже в логе
+		// The errors are already logged
 		c.Errors = nil
 	}
 }
 
-// apiErrorFor — что отвечает API на ошибку домена. Ошибки клиента пишутся в лог как
-// предупреждения, всё, чего нет в таблице, — как ошибка сервера с ответом INTERNAL.
+// apiErrorFor is the API response to a domain error. Client errors are logged as
+// warnings; anything not in the table is logged as a server error and answered with INTERNAL.
 var apiErrorFor = map[domain.ErrorCode]response.ApiError{
-	domain.InvalidCredentials: {Status: http.StatusUnauthorized, Code: response.CodeInvalidCredentials, Message: "неверная почта или пароль"},
-	domain.WrongPassword:      {Status: http.StatusUnprocessableEntity, Code: response.CodeWrongPassword, Message: "неверный текущий пароль"},
-	domain.PasswordSameAsOld:  {Status: http.StatusUnprocessableEntity, Code: response.CodePasswordSameAsOld, Message: "новый пароль совпадает с текущим"},
-	domain.RegistrationClosed: {Status: http.StatusConflict, Code: response.CodeRegistrationClosed, Message: "регистрация закрыта: первый аккаунт уже создан"},
-	domain.Forbidden:          {Status: http.StatusForbidden, Code: response.CodeForbidden, Message: "не хватает роли в проекте или прав администратора сервиса"},
-	domain.OwnerCannotLeave:   {Status: http.StatusConflict, Code: response.CodeOwnerCannotLeave, Message: "владелец не выходит из проекта, а удаляет его"},
-	domain.AssigneeNotMember:  {Status: http.StatusUnprocessableEntity, Code: response.CodeAssigneeNotMember, Message: "исполнитель не участник проекта"},
-	domain.LastAdmin:          {Status: http.StatusConflict, Code: response.CodeLastAdmin, Message: "нельзя снять последнего администратора сервиса"},
-	domain.LinkInvalid:        {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "ссылка неверна, использована или истекла"},
-	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "аккаунт с этой почтой уже есть, нужно войти"},
-	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "почта не подключена"},
-	domain.MailSendFailed:     {Status: http.StatusBadGateway, Code: response.CodeMailSendFailed, Message: "SMTP не принял письмо"},
+	domain.InvalidCredentials: {Status: http.StatusUnauthorized, Code: response.CodeInvalidCredentials, Message: "wrong email or password"},
+	domain.WrongPassword:      {Status: http.StatusUnprocessableEntity, Code: response.CodeWrongPassword, Message: "wrong current password"},
+	domain.PasswordSameAsOld:  {Status: http.StatusUnprocessableEntity, Code: response.CodePasswordSameAsOld, Message: "new password is the same as the current one"},
+	domain.RegistrationClosed: {Status: http.StatusConflict, Code: response.CodeRegistrationClosed, Message: "registration is closed: the first account already exists"},
+	domain.Forbidden:          {Status: http.StatusForbidden, Code: response.CodeForbidden, Message: "missing a project role or service administrator rights"},
+	domain.OwnerCannotLeave:   {Status: http.StatusConflict, Code: response.CodeOwnerCannotLeave, Message: "the owner cannot leave the project, only delete it"},
+	domain.AssigneeNotMember:  {Status: http.StatusUnprocessableEntity, Code: response.CodeAssigneeNotMember, Message: "the assignee is not a project member"},
+	domain.LastAdmin:          {Status: http.StatusConflict, Code: response.CodeLastAdmin, Message: "cannot remove the last service administrator"},
+	domain.LinkInvalid:        {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "the link is invalid, used or expired"},
+	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "an account with this email already exists, sign in instead"},
+	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "mail is not configured"},
+	domain.MailSendFailed:     {Status: http.StatusBadGateway, Code: response.CodeMailSendFailed, Message: "SMTP rejected the message"},
 	domain.MailConnectionFailed: {Status: http.StatusBadGateway, Code: response.CodeMailConnectionFailed,
-		Message: "не удалось подключиться к SMTP, настройки не сохранены"},
+		Message: "could not connect to SMTP, settings not saved"},
 	domain.SecretRequired: {Status: http.StatusUnprocessableEntity, Code: response.CodeSecretRequired,
-		Message: "нужно ввести пароль заново: он не сохранён или сменились сервер или порт"},
-	domain.FileTooLarge:       {Status: http.StatusUnprocessableEntity, Code: response.CodeFileTooLarge, Message: "файл больше допустимого"},
-	domain.FileTypeNotAllowed: {Status: http.StatusUnprocessableEntity, Code: response.CodeFileTypeNotAllowed, Message: "тип файла не подходит"},
+		Message: "the password must be entered again: it is not saved or the host or port changed"},
+	domain.FileTooLarge:       {Status: http.StatusUnprocessableEntity, Code: response.CodeFileTooLarge, Message: "the file is too large"},
+	domain.FileTypeNotAllowed: {Status: http.StatusUnprocessableEntity, Code: response.CodeFileTypeNotAllowed, Message: "file type not allowed"},
 
-	domain.RefreshTokenNotFound: {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "нет сессии"},
-	domain.RefreshTokenWrong:    {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
-	domain.RefreshTokenRevoked:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия закрыта"},
-	domain.RefreshTokenReused:   {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
-	domain.RefreshTokenExpired:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия истекла"},
-	domain.AccessTokenNotFound:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "нужен вход"},
-	domain.AccessTokenWrong:     {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
-	domain.AccessTokenExpired:   {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия истекла"},
-	domain.ParseTokenFailed:     {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "сессия недействительна"},
+	domain.RefreshTokenNotFound: {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "no session"},
+	domain.RefreshTokenWrong:    {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "session is invalid"},
+	domain.RefreshTokenRevoked:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "session is revoked"},
+	domain.RefreshTokenReused:   {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "session is invalid"},
+	domain.RefreshTokenExpired:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "session expired"},
+	domain.AccessTokenNotFound:  {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "sign-in required"},
+	domain.AccessTokenWrong:     {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "session is invalid"},
+	domain.AccessTokenExpired:   {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "session expired"},
+	domain.ParseTokenFailed:     {Status: http.StatusUnauthorized, Code: response.CodeUnauthenticated, Message: "session is invalid"},
 
-	domain.EntityNotFound: {Status: http.StatusNotFound, Code: response.CodeNotFound, Message: "не найдено"},
+	domain.EntityNotFound: {Status: http.StatusNotFound, Code: response.CodeNotFound, Message: "not found"},
 }
 
 func toAPIError(err error, l logger.Logger, reqID string) *response.ApiError {
@@ -82,12 +82,12 @@ func toAPIError(err error, l logger.Logger, reqID string) *response.ApiError {
 	}
 	known, ok := apiErrorFor[e.Code]
 	if !ok {
-		// Ошибки репозитория без своего кода — тоже внутренние
+		// Repository errors without their own code are internal too
 		l.Error(string(e.Code), append(args, "error", e.Unwrap())...)
 		return internalError()
 	}
 	if source := e.Unwrap(); source != nil {
-		// Причина отказа внешней службы, например ответ SMTP, — администратору в лог
+		// Why the external service refused, e.g. the SMTP reply, goes to the log for the administrator
 		args = append(args, "error", source)
 	}
 	l.Warn(string(e.Code), args...)
@@ -95,13 +95,13 @@ func toAPIError(err error, l logger.Logger, reqID string) *response.ApiError {
 }
 
 func internalError() *response.ApiError {
-	return response.NewApiErr(http.StatusInternalServerError, response.CodeInternal, "ошибка сервера")
+	return response.NewApiErr(http.StatusInternalServerError, response.CodeInternal, "internal server error")
 }
 
-// validationError собирает details: ключ — путь поля, как в JSON запроса (`newPassword`,
-// `emails[3]`), значение — что с ним не так.
+// validationError builds details: the key is the field path as in the request JSON (`newPassword`,
+// `emails[3]`), the value is what is wrong with it.
 func validationError(err error) *response.ApiError {
-	apiErr := response.NewApiErr(http.StatusUnprocessableEntity, response.CodeValidationFailed, "данные не прошли проверку")
+	apiErr := response.NewApiErr(http.StatusUnprocessableEntity, response.CodeValidationFailed, "validation failed")
 	var fieldErrs validator.ValidationErrors
 	var typeErr *json.UnmarshalTypeError
 	var bindErrs request.FieldErrors
@@ -119,13 +119,13 @@ func validationError(err error) *response.ApiError {
 		field := strings.TrimSuffix(strings.TrimPrefix(err.Error(), `json: unknown field "`), `"`)
 		apiErr.Details = map[string]string{field: "неизвестное поле"}
 	case err != nil:
-		apiErr.Message = "тело запроса не разобрано: " + err.Error()
+		apiErr.Message = "cannot parse request body: " + err.Error()
 	}
 	return apiErr
 }
 
-// fieldPath убирает из пути валидатора имя структуры запроса: credentials.email → email.
-// Имена полей — из тегов json (Setup регистрирует их в валидаторе).
+// fieldPath strips the request struct name from the validator path: credentials.email → email.
+// Field names come from json tags (Setup registers them in the validator).
 func fieldPath(fe validator.FieldError) string {
 	_, path, ok := strings.Cut(fe.Namespace(), ".")
 	if !ok {

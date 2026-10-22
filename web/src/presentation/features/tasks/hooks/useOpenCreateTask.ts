@@ -3,7 +3,7 @@ import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 
 import { useCreateTaskFormStore } from "../store/createTaskFormStore";
 
-/** Открывает форму новой задачи; со страницы проекта — сразу с этим проектом. */
+/** Opens the new task form; from a project page — with that project preselected. */
 export function useOpenCreateTask() {
   const { showCreateTask } = useGlobalModals();
   const setProjectId = useCreateTaskFormStore((state) => state.setProjectId);

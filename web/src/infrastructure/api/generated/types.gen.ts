@@ -7,18 +7,18 @@ export type ClientOptions = {
 export type Uuid = string;
 
 /**
- * ISO 8601 в UTC
+ * ISO 8601 in UTC
  */
 export type DateTime = string;
 
 /**
- * Сервер приводит почту к нижнему регистру и обрезает пробелы по краям (ADR-0016)
+ * The server lowercases the email and trims surrounding whitespace (ADR-0016)
  */
 export type Email = string;
 
 /**
- * От 8 символов и не длиннее 72 байт в UTF-8 — предел bcrypt; русская буква занимает
- * 2 байта. Длиннее — `422 VALIDATION_FAILED`.
+ * At least 8 characters and at most 72 bytes in UTF-8 — the bcrypt limit; a Cyrillic letter takes
+ * 2 bytes. Longer — `422 VALIDATION_FAILED`.
  *
  */
 export type Password = string;
@@ -30,11 +30,11 @@ export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' 
 export type ApiError = {
     code: ErrorCode;
     /**
-     * Для логов и отладки, не для показа пользователю
+     * For logs and debugging, not for showing to the user
      */
     message: string;
     /**
-     * Поле запроса → что с ним не так; только для `VALIDATION_FAILED`
+     * Request field → what is wrong with it; only for `VALIDATION_FAILED`
      */
     details: {
         [key: string]: string;
@@ -43,11 +43,11 @@ export type ApiError = {
 
 export type PublicSettings = {
     /**
-     * Пользователей ещё нет — можно создать первый аккаунт
+     * There are no users yet — the first account can be created
      */
     registrationOpen: boolean;
     /**
-     * Почта подключена — работает восстановление пароля по почте
+     * Mail is connected — password recovery by email works
      */
     mailEnabled: boolean;
 };
@@ -62,7 +62,7 @@ export type RegisterRequest = {
     password: Password;
     username: Username;
     /**
-     * Адрес веба с путём, например `https://example.com/tasktrail` (ADR-0015)
+     * Web address with a path, e.g. `https://example.com/tasktrail` (ADR-0015)
      */
     serviceUrl: string;
 };
@@ -78,7 +78,7 @@ export type ForgotPasswordRequest = {
 
 export type ResetPasswordRequest = {
     /**
-     * Параметр `token` ссылки `<адрес сервиса>/auth/reset?token=…`
+     * The `token` parameter of the link `<service address>/auth/reset?token=…`
      */
     token: string;
     password: Password;
@@ -86,7 +86,7 @@ export type ResetPasswordRequest = {
 
 export type InvitationTokenRequest = {
     /**
-     * Параметр `token` ссылки `<адрес сервиса>/auth/invite?token=…`
+     * The `token` parameter of the link `<service address>/auth/invite?token=…`
      */
     token: string;
 };
@@ -95,14 +95,14 @@ export type InvitationInfo = {
     email: Email;
     projectName: string;
     /**
-     * Имя пригласившего, а если его нет — почта
+     * The inviter's name, or their email if there is no name
      */
     invitedBy: string;
 };
 
 export type AcceptInvitationRequest = {
     /**
-     * Параметр `token` ссылки `<адрес сервиса>/auth/invite?token=…`
+     * The `token` parameter of the link `<service address>/auth/invite?token=…`
      */
     token: string;
     username: Username;
@@ -114,14 +114,14 @@ export type User = {
     email: Email;
     username: string | null;
     /**
-     * ID файла аватарки для `GET /v1/files/{fileId}`
+     * Avatar file ID for `GET /v1/files/{fileId}`
      */
     avatarId: string | null;
 };
 
 export type CurrentUser = User & {
     /**
-     * Администратор сервиса (ADR-0014)
+     * Service administrator (ADR-0014)
      */
     isAdmin: boolean;
 };
@@ -142,7 +142,7 @@ export type Project = {
 
 export type ProjectDetails = Project & {
     /**
-     * Роль текущего пользователя в проекте
+     * The current user's role in the project
      */
     role: ProjectRole;
 };
@@ -178,14 +178,14 @@ export type AddMembersRequest = {
 export type InvitationResult = {
     email: Email;
     /**
-     * `added` — аккаунт есть, человек стал участником; `invited` — создано приглашение;
-     * `already_member` — уже участник; `mail_failed` — приглашение создано, но письмо
-     * не ушло, повторное приглашение отправит новое (ADR-0017)
+     * `added` — the account exists, the person became a member; `invited` — an invitation was created;
+     * `already_member` — already a member; `mail_failed` — the invitation was created but the email
+     * was not sent, a repeated invitation sends a new one (ADR-0017)
      *
      */
     result: 'added' | 'invited' | 'already_member' | 'mail_failed';
     /**
-     * Ссылка приглашения — только при `invited` и выключенной почте (ADR-0017)
+     * Invitation link — only with `invited` and mail disabled (ADR-0017)
      */
     inviteUrl: string | null;
 };
@@ -195,15 +195,15 @@ export type TaskStatusId = 'open' | 'in_progress' | 'in_review' | 'done';
 export type TaskStatus = {
     id: TaskStatusId;
     /**
-     * Название для интерфейса — «Открыта», «В работе», «На проверке», «Готово»
+     * Russian display name for the UI, one per status `id`
      */
     name: string;
     /**
-     * Статус новой задачи — только у `open`
+     * Status of a new task — only for `open`
      */
     isDefault: boolean;
     /**
-     * Задача выполнена — только у `done`
+     * The task is done — only for `done`
      */
     isResolved: boolean;
 };
@@ -246,11 +246,11 @@ export type ChangeTaskAssigneeRequest = {
 
 export type ServiceSettings = {
     /**
-     * Адрес веба с путём; от него строятся ссылки в письмах и приглашениях
+     * Web address with a path; links in emails and invitations are built from it
      */
     serviceUrl: string;
     /**
-     * Настройки SMTP или `null`, если почта не подключена
+     * SMTP settings, or `null` if mail is not connected
      */
     mail: MailSettings | null;
 };
@@ -266,12 +266,12 @@ export type MailSettings = {
     port: number;
     encryption: MailEncryption;
     /**
-     * Отправитель, например `TaskTrail <noreply@example.com>`
+     * Sender, e.g. `TaskTrail <noreply@example.com>`
      */
     sender: string;
     username: string | null;
     /**
-     * Пароль сохранён; сам пароль API не отдаёт (ADR-0015)
+     * Whether a password is saved; the API never returns the password itself (ADR-0015)
      */
     passwordSet: boolean;
 };
@@ -281,15 +281,15 @@ export type MailSettingsRequest = {
     port: number;
     encryption: MailEncryption;
     /**
-     * Адрес почты, можно с именем, — `TaskTrail <noreply@example.com>`; иначе `VALIDATION_FAILED`
+     * Email address, optionally with a name — `TaskTrail <noreply@example.com>`; otherwise `VALIDATION_FAILED`
      */
     sender: string;
     /**
-     * `null` — без входа на SMTP
+     * `null` — no SMTP sign-in
      */
     username?: string | null;
     /**
-     * Не передан — остаётся сохранённый; `null` — удалить пароль
+     * Not passed — the saved one stays; `null` — delete the password
      */
     password?: string | null;
 };
@@ -323,7 +323,7 @@ export type GetPublicSettingsData = {
 
 export type GetPublicSettingsErrors = {
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -332,7 +332,7 @@ export type GetPublicSettingsError = GetPublicSettingsErrors[keyof GetPublicSett
 
 export type GetPublicSettingsResponses = {
     /**
-     * Открыта ли регистрация и включена ли почта
+     * Whether registration is open and mail is enabled
      */
     200: PublicSettings;
 };
@@ -348,15 +348,15 @@ export type RegisterData = {
 
 export type RegisterErrors = {
     /**
-     * `REGISTRATION_CLOSED` — первый аккаунт уже создан
+     * `REGISTRATION_CLOSED` — the first account has already been created
      */
     409: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -365,7 +365,7 @@ export type RegisterError = RegisterErrors[keyof RegisterErrors];
 
 export type RegisterResponses = {
     /**
-     * Аккаунт создан, сессия открыта
+     * Account created, session opened
      */
     201: CurrentUser;
 };
@@ -381,15 +381,15 @@ export type LoginData = {
 
 export type LoginErrors = {
     /**
-     * `INVALID_CREDENTIALS` — неверная почта или пароль
+     * `INVALID_CREDENTIALS` — wrong email or password
      */
     401: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -398,7 +398,7 @@ export type LoginError = LoginErrors[keyof LoginErrors];
 
 export type LoginResponses = {
     /**
-     * Сессия открыта
+     * Session opened
      */
     200: CurrentUser;
 };
@@ -414,11 +414,11 @@ export type RefreshSessionData = {
 
 export type RefreshSessionErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -427,7 +427,7 @@ export type RefreshSessionError = RefreshSessionErrors[keyof RefreshSessionError
 
 export type RefreshSessionResponses = {
     /**
-     * Сессия обновлена
+     * Session refreshed
      */
     204: void;
 };
@@ -443,7 +443,7 @@ export type LogoutData = {
 
 export type LogoutErrors = {
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -452,7 +452,7 @@ export type LogoutError = LogoutErrors[keyof LogoutErrors];
 
 export type LogoutResponses = {
     /**
-     * Сессия закрыта
+     * Session closed
      */
     204: void;
 };
@@ -468,11 +468,11 @@ export type CheckSessionData = {
 
 export type CheckSessionErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -481,7 +481,7 @@ export type CheckSessionError = CheckSessionErrors[keyof CheckSessionErrors];
 
 export type CheckSessionResponses = {
     /**
-     * Пользователь вошёл
+     * The user is signed in
      */
     204: void;
 };
@@ -497,17 +497,17 @@ export type ChangePasswordData = {
 
 export type ChangePasswordErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `WRONG_PASSWORD` — неверный текущий пароль; `PASSWORD_SAME_AS_OLD` — новый пароль
-     * совпадает с текущим; `VALIDATION_FAILED` — данные не прошли проверку
+     * `WRONG_PASSWORD` — wrong current password; `PASSWORD_SAME_AS_OLD` — the new password
+     * matches the current one; `VALIDATION_FAILED` — the data failed validation
      *
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -516,7 +516,7 @@ export type ChangePasswordError = ChangePasswordErrors[keyof ChangePasswordError
 
 export type ChangePasswordResponses = {
     /**
-     * Пароль изменён
+     * Password changed
      */
     204: void;
 };
@@ -532,19 +532,19 @@ export type ForgotPasswordData = {
 
 export type ForgotPasswordErrors = {
     /**
-     * `MAIL_DISABLED` — почта не настроена, ссылку выдаёт администратор (ADR-0017)
+     * `MAIL_DISABLED` — mail is not configured, the administrator issues the link (ADR-0017)
      */
     409: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
     /**
-     * `MAIL_SEND_FAILED` — SMTP не принял письмо
+     * `MAIL_SEND_FAILED` — SMTP did not accept the email
      */
     502: ApiError;
 };
@@ -553,7 +553,7 @@ export type ForgotPasswordError = ForgotPasswordErrors[keyof ForgotPasswordError
 
 export type ForgotPasswordResponses = {
     /**
-     * Письмо отправлено или почта не зарегистрирована
+     * Email sent or the email address is not registered
      */
     204: void;
 };
@@ -569,11 +569,11 @@ export type ResetPasswordData = {
 
 export type ResetPasswordErrors = {
     /**
-     * `LINK_INVALID` — ссылка неверна, использована или истекла; `VALIDATION_FAILED`
+     * `LINK_INVALID` — the link is wrong, used or expired; `VALIDATION_FAILED`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -582,7 +582,7 @@ export type ResetPasswordError = ResetPasswordErrors[keyof ResetPasswordErrors];
 
 export type ResetPasswordResponses = {
     /**
-     * Пароль изменён, все сессии пользователя закрыты
+     * Password changed, all of the user's sessions closed
      */
     204: void;
 };
@@ -598,15 +598,15 @@ export type LookupInvitationData = {
 
 export type LookupInvitationErrors = {
     /**
-     * `INVITATION_ACCEPTED` — аккаунт с этой почтой уже есть, нужно войти
+     * `INVITATION_ACCEPTED` — an account with this email already exists, sign in instead
      */
     409: ApiError;
     /**
-     * `LINK_INVALID` — ссылка неверна или истекла; `VALIDATION_FAILED`
+     * `LINK_INVALID` — the link is wrong or expired; `VALIDATION_FAILED`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -615,7 +615,7 @@ export type LookupInvitationError = LookupInvitationErrors[keyof LookupInvitatio
 
 export type LookupInvitationResponses = {
     /**
-     * Приглашение действует
+     * The invitation is valid
      */
     200: InvitationInfo;
 };
@@ -631,15 +631,15 @@ export type AcceptInvitationData = {
 
 export type AcceptInvitationErrors = {
     /**
-     * `INVITATION_ACCEPTED` — аккаунт с этой почтой уже есть, нужно войти
+     * `INVITATION_ACCEPTED` — an account with this email already exists, sign in instead
      */
     409: ApiError;
     /**
-     * `LINK_INVALID` — ссылка неверна или истекла; `VALIDATION_FAILED`
+     * `LINK_INVALID` — the link is wrong or expired; `VALIDATION_FAILED`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -648,7 +648,7 @@ export type AcceptInvitationError = AcceptInvitationErrors[keyof AcceptInvitatio
 
 export type AcceptInvitationResponses = {
     /**
-     * Аккаунт создан, сессия открыта
+     * Account created, session opened
      */
     201: CurrentUser;
 };
@@ -664,11 +664,11 @@ export type GetCurrentUserData = {
 
 export type GetCurrentUserErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -677,7 +677,7 @@ export type GetCurrentUserError = GetCurrentUserErrors[keyof GetCurrentUserError
 
 export type GetCurrentUserResponses = {
     /**
-     * Текущий пользователь
+     * Current user
      */
     200: CurrentUser;
 };
@@ -693,15 +693,15 @@ export type UpdateCurrentUserData = {
 
 export type UpdateCurrentUserErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -710,7 +710,7 @@ export type UpdateCurrentUserError = UpdateCurrentUserErrors[keyof UpdateCurrent
 
 export type UpdateCurrentUserResponses = {
     /**
-     * Пользователь изменён
+     * User changed
      */
     200: CurrentUser;
 };
@@ -728,15 +728,15 @@ export type UploadAvatarData = {
 
 export type UploadAvatarErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FILE_TOO_LARGE`, `FILE_TYPE_NOT_ALLOWED` или `VALIDATION_FAILED`
+     * `FILE_TOO_LARGE`, `FILE_TYPE_NOT_ALLOWED` or `VALIDATION_FAILED`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -745,7 +745,7 @@ export type UploadAvatarError = UploadAvatarErrors[keyof UploadAvatarErrors];
 
 export type UploadAvatarResponses = {
     /**
-     * Аватарка заменена
+     * Avatar replaced
      */
     200: CurrentUser;
 };
@@ -761,11 +761,11 @@ export type ListCurrentUserTasksData = {
 
 export type ListCurrentUserTasksErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -774,7 +774,7 @@ export type ListCurrentUserTasksError = ListCurrentUserTasksErrors[keyof ListCur
 
 export type ListCurrentUserTasksResponses = {
     /**
-     * Задачи
+     * Tasks
      */
     200: Array<Task>;
 };
@@ -792,15 +792,15 @@ export type GetUserData = {
 
 export type GetUserErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -809,7 +809,7 @@ export type GetUserError = GetUserErrors[keyof GetUserErrors];
 
 export type GetUserResponses = {
     /**
-     * Пользователь
+     * User
      */
     200: User;
 };
@@ -827,11 +827,11 @@ export type GetFileData = {
 
 export type GetFileErrors = {
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -840,7 +840,7 @@ export type GetFileError = GetFileErrors[keyof GetFileErrors];
 
 export type GetFileResponses = {
     /**
-     * Тип — сохранённый при загрузке MIME-тип файла
+     * The type is the file's MIME type saved at upload
      */
     200: unknown;
 };
@@ -854,11 +854,11 @@ export type ListProjectsData = {
 
 export type ListProjectsErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -867,7 +867,7 @@ export type ListProjectsError = ListProjectsErrors[keyof ListProjectsErrors];
 
 export type ListProjectsResponses = {
     /**
-     * Проекты
+     * Projects
      */
     200: Array<Project>;
 };
@@ -883,15 +883,15 @@ export type CreateProjectData = {
 
 export type CreateProjectErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -900,7 +900,7 @@ export type CreateProjectError = CreateProjectErrors[keyof CreateProjectErrors];
 
 export type CreateProjectResponses = {
     /**
-     * Проект создан
+     * Project created
      */
     201: ProjectCreated;
 };
@@ -918,19 +918,19 @@ export type ListProjectCandidatesData = {
 
 export type ListProjectCandidatesErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -939,7 +939,7 @@ export type ListProjectCandidatesError = ListProjectCandidatesErrors[keyof ListP
 
 export type ListProjectCandidatesResponses = {
     /**
-     * Кандидаты
+     * Candidates
      */
     200: Array<User>;
 };
@@ -957,19 +957,19 @@ export type DeleteProjectData = {
 
 export type DeleteProjectErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -978,7 +978,7 @@ export type DeleteProjectError = DeleteProjectErrors[keyof DeleteProjectErrors];
 
 export type DeleteProjectResponses = {
     /**
-     * Проект удалён
+     * Project deleted
      */
     204: void;
 };
@@ -996,15 +996,15 @@ export type GetProjectData = {
 
 export type GetProjectErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1013,7 +1013,7 @@ export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
 
 export type GetProjectResponses = {
     /**
-     * Проект
+     * Project
      */
     200: ProjectDetails;
 };
@@ -1031,23 +1031,23 @@ export type UpdateProjectData = {
 
 export type UpdateProjectErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1056,7 +1056,7 @@ export type UpdateProjectError = UpdateProjectErrors[keyof UpdateProjectErrors];
 
 export type UpdateProjectResponses = {
     /**
-     * Проект изменён
+     * Project changed
      */
     200: ProjectDetails;
 };
@@ -1074,15 +1074,15 @@ export type ListProjectMembersData = {
 
 export type ListProjectMembersErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1091,7 +1091,7 @@ export type ListProjectMembersError = ListProjectMembersErrors[keyof ListProject
 
 export type ListProjectMembersResponses = {
     /**
-     * Участники
+     * Members
      */
     200: Array<Member>;
 };
@@ -1109,23 +1109,23 @@ export type AddProjectMembersData = {
 
 export type AddProjectMembersErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1134,7 +1134,7 @@ export type AddProjectMembersError = AddProjectMembersErrors[keyof AddProjectMem
 
 export type AddProjectMembersResponses = {
     /**
-     * Результат по каждой почте
+     * Result per email
      */
     200: Array<InvitationResult>;
 };
@@ -1153,19 +1153,19 @@ export type RemoveProjectMemberData = {
 
 export type RemoveProjectMemberErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1174,7 +1174,7 @@ export type RemoveProjectMemberError = RemoveProjectMemberErrors[keyof RemovePro
 
 export type RemoveProjectMemberResponses = {
     /**
-     * Участник исключён
+     * Member removed
      */
     204: void;
 };
@@ -1193,23 +1193,23 @@ export type ChangeProjectMemberRoleData = {
 
 export type ChangeProjectMemberRoleErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1218,7 +1218,7 @@ export type ChangeProjectMemberRoleError = ChangeProjectMemberRoleErrors[keyof C
 
 export type ChangeProjectMemberRoleResponses = {
     /**
-     * Роль изменена
+     * Role changed
      */
     200: Member;
 };
@@ -1236,19 +1236,19 @@ export type LeaveProjectData = {
 
 export type LeaveProjectErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `OWNER_CANNOT_LEAVE` — владелец не может выйти, только удалить проект
+     * `OWNER_CANNOT_LEAVE` — the owner cannot leave, only delete the project
      */
     409: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1257,7 +1257,7 @@ export type LeaveProjectError = LeaveProjectErrors[keyof LeaveProjectErrors];
 
 export type LeaveProjectResponses = {
     /**
-     * Пользователь больше не участник
+     * The user is no longer a member
      */
     204: void;
 };
@@ -1275,15 +1275,15 @@ export type ListProjectTasksData = {
 
 export type ListProjectTasksErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1292,7 +1292,7 @@ export type ListProjectTasksError = ListProjectTasksErrors[keyof ListProjectTask
 
 export type ListProjectTasksResponses = {
     /**
-     * Задачи
+     * Tasks
      */
     200: Array<Task>;
 };
@@ -1308,11 +1308,11 @@ export type ListTaskStatusesData = {
 
 export type ListTaskStatusesErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1321,7 +1321,7 @@ export type ListTaskStatusesError = ListTaskStatusesErrors[keyof ListTaskStatuse
 
 export type ListTaskStatusesResponses = {
     /**
-     * Статусы в порядке работы над задачей
+     * Statuses in the order of work on a task
      */
     200: Array<TaskStatus>;
 };
@@ -1337,19 +1337,19 @@ export type CreateTaskData = {
 
 export type CreateTaskErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `ASSIGNEE_NOT_MEMBER` — исполнитель не участник проекта; `VALIDATION_FAILED`
+     * `ASSIGNEE_NOT_MEMBER` — the assignee is not a project member; `VALIDATION_FAILED`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1358,7 +1358,7 @@ export type CreateTaskError = CreateTaskErrors[keyof CreateTaskErrors];
 
 export type CreateTaskResponses = {
     /**
-     * Задача создана
+     * Task created
      */
     201: Task;
 };
@@ -1376,15 +1376,15 @@ export type DeleteTaskData = {
 
 export type DeleteTaskErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1393,7 +1393,7 @@ export type DeleteTaskError = DeleteTaskErrors[keyof DeleteTaskErrors];
 
 export type DeleteTaskResponses = {
     /**
-     * Задача удалена
+     * Task deleted
      */
     204: void;
 };
@@ -1411,15 +1411,15 @@ export type GetTaskData = {
 
 export type GetTaskErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1428,7 +1428,7 @@ export type GetTaskError = GetTaskErrors[keyof GetTaskErrors];
 
 export type GetTaskResponses = {
     /**
-     * Задача
+     * Task
      */
     200: Task;
 };
@@ -1446,19 +1446,19 @@ export type UpdateTaskData = {
 
 export type UpdateTaskErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1467,7 +1467,7 @@ export type UpdateTaskError = UpdateTaskErrors[keyof UpdateTaskErrors];
 
 export type UpdateTaskResponses = {
     /**
-     * Задача изменена
+     * Task changed
      */
     200: Task;
 };
@@ -1485,19 +1485,19 @@ export type ChangeTaskStatusData = {
 
 export type ChangeTaskStatusErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1506,7 +1506,7 @@ export type ChangeTaskStatusError = ChangeTaskStatusErrors[keyof ChangeTaskStatu
 
 export type ChangeTaskStatusResponses = {
     /**
-     * Статус изменён
+     * Status changed
      */
     200: Task;
 };
@@ -1524,19 +1524,19 @@ export type ChangeTaskAssigneeData = {
 
 export type ChangeTaskAssigneeErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `ASSIGNEE_NOT_MEMBER` — исполнитель не участник проекта; `VALIDATION_FAILED`
+     * `ASSIGNEE_NOT_MEMBER` — the assignee is not a project member; `VALIDATION_FAILED`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1545,7 +1545,7 @@ export type ChangeTaskAssigneeError = ChangeTaskAssigneeErrors[keyof ChangeTaskA
 
 export type ChangeTaskAssigneeResponses = {
     /**
-     * Исполнитель изменён
+     * Assignee changed
      */
     200: Task;
 };
@@ -1563,19 +1563,19 @@ export type MoveTaskData = {
 
 export type MoveTaskErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1584,7 +1584,7 @@ export type MoveTaskError = MoveTaskErrors[keyof MoveTaskErrors];
 
 export type MoveTaskResponses = {
     /**
-     * Задача перенесена
+     * Task moved
      */
     200: Task;
 };
@@ -1600,15 +1600,15 @@ export type GetServiceSettingsData = {
 
 export type GetServiceSettingsErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1617,7 +1617,7 @@ export type GetServiceSettingsError = GetServiceSettingsErrors[keyof GetServiceS
 
 export type GetServiceSettingsResponses = {
     /**
-     * Настройки
+     * Settings
      */
     200: ServiceSettings;
 };
@@ -1633,19 +1633,19 @@ export type UpdateServiceSettingsData = {
 
 export type UpdateServiceSettingsErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1654,7 +1654,7 @@ export type UpdateServiceSettingsError = UpdateServiceSettingsErrors[keyof Updat
 
 export type UpdateServiceSettingsResponses = {
     /**
-     * Настройки изменены
+     * Settings changed
      */
     200: ServiceSettings;
 };
@@ -1670,15 +1670,15 @@ export type DisableMailData = {
 
 export type DisableMailErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1687,7 +1687,7 @@ export type DisableMailError = DisableMailErrors[keyof DisableMailErrors];
 
 export type DisableMailResponses = {
     /**
-     * Почта отключена
+     * Mail disconnected
      */
     204: void;
 };
@@ -1703,23 +1703,23 @@ export type SaveMailSettingsData = {
 
 export type SaveMailSettingsErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `SECRET_REQUIRED` — нужно ввести пароль заново; `VALIDATION_FAILED`
+     * `SECRET_REQUIRED` — the password must be entered again; `VALIDATION_FAILED`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
     /**
-     * `MAIL_CONNECTION_FAILED` — не удалось подключиться к SMTP, войти или SMTP не принимает отправителя; настройки не сохранены
+     * `MAIL_CONNECTION_FAILED` — could not connect to SMTP, sign in, or SMTP does not accept the sender; settings not saved
      */
     502: ApiError;
 };
@@ -1728,7 +1728,7 @@ export type SaveMailSettingsError = SaveMailSettingsErrors[keyof SaveMailSetting
 
 export type SaveMailSettingsResponses = {
     /**
-     * Почта подключена
+     * Mail connected
      */
     200: ServiceSettings;
 };
@@ -1744,23 +1744,23 @@ export type SendTestMailData = {
 
 export type SendTestMailErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `MAIL_DISABLED` — почта не подключена
+     * `MAIL_DISABLED` — mail is not connected
      */
     409: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
     /**
-     * `MAIL_SEND_FAILED` — SMTP не принял письмо
+     * `MAIL_SEND_FAILED` — SMTP did not accept the email
      */
     502: ApiError;
 };
@@ -1769,7 +1769,7 @@ export type SendTestMailError = SendTestMailErrors[keyof SendTestMailErrors];
 
 export type SendTestMailResponses = {
     /**
-     * Письмо отправлено на почту администратора
+     * Email sent to the administrator's address
      */
     204: void;
 };
@@ -1785,15 +1785,15 @@ export type ListUsersData = {
 
 export type ListUsersErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1802,7 +1802,7 @@ export type ListUsersError = ListUsersErrors[keyof ListUsersErrors];
 
 export type ListUsersResponses = {
     /**
-     * Пользователи
+     * Users
      */
     200: Array<AdminUser>;
 };
@@ -1820,27 +1820,27 @@ export type UpdateUserAdminFlagData = {
 
 export type UpdateUserAdminFlagErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `LAST_ADMIN` — нельзя снять последнего администратора
+     * `LAST_ADMIN` — the last administrator cannot be revoked
      */
     409: ApiError;
     /**
-     * `VALIDATION_FAILED` — данные не прошли проверку, поля — в `details`
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1849,7 +1849,7 @@ export type UpdateUserAdminFlagError = UpdateUserAdminFlagErrors[keyof UpdateUse
 
 export type UpdateUserAdminFlagResponses = {
     /**
-     * Пользователь изменён
+     * User changed
      */
     200: AdminUser;
 };
@@ -1867,19 +1867,19 @@ export type CreatePasswordResetLinkData = {
 
 export type CreatePasswordResetLinkErrors = {
     /**
-     * `UNAUTHENTICATED` — нет входа или сессия истекла
+     * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — не хватает роли в проекте или прав администратора сервиса
+     * `FORBIDDEN` — insufficient project role or service administrator rights
      */
     403: ApiError;
     /**
-     * `NOT_FOUND` — ресурса нет или пользователь не участник его проекта
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
     /**
-     * `INTERNAL` — ошибка сервера
+     * `INTERNAL` — server error
      */
     500: ApiError;
 };
@@ -1888,7 +1888,7 @@ export type CreatePasswordResetLinkError = CreatePasswordResetLinkErrors[keyof C
 
 export type CreatePasswordResetLinkResponses = {
     /**
-     * Ссылка создана
+     * Link created
      */
     201: PasswordResetLink;
 };

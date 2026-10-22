@@ -1,16 +1,16 @@
-// Клиент API локального стенда для scripts/stand-setup.mjs и scripts/stand-smoke.mjs: ходит
-// в API через /api веба, как браузер, и хранит cookie сессии.
+// Local stack API client for scripts/stand-setup.mjs and scripts/stand-smoke.mjs: calls
+// the API through the web's /api, like a browser, and keeps the session cookies.
 export const WEB = "http://localhost:3000";
 export const MAIL = "http://localhost:3025";
 
-// Первый аккаунт стенда — администратор сервиса (ADR-0016). Его создаёт scripts/dev.sh up,
-// им входит заказчик, и от его имени smoke зовёт в проект.
+// The stack's first account is the service administrator (ADR-0016). scripts/dev.sh up creates it,
+// the customer signs in with it, and smoke invites to a project on its behalf.
 export const ADMIN = { email: "admin@tasktrail.local", password: "tasktrail", username: "Администратор" };
 
-// Сессия одного браузера. Cookie хранятся по имени и пути, как в браузере: сервер ставит `rt`
-// на /api/v1/auth/ и тем же ответом удаляет одноимённую cookie старого API на другом пути.
+// A single browser session. Cookies are stored by name and path, as in a browser: the server sets `rt`
+// on /api/v1/auth/ and in the same response deletes the old API's cookie of the same name on another path.
 export function createSession() {
-  const jar = new Map(); // "имя путь" -> { name, value, path }
+  const jar = new Map(); // "name path" -> { name, value, path }
 
   function remember(response) {
     for (const raw of response.headers.getSetCookie()) {
@@ -27,7 +27,7 @@ export function createSession() {
     }
   }
 
-  // Путь запроса подходит cookie, если совпадает с её путём или лежит под ним (RFC 6265, 5.1.4)
+  // A request path matches a cookie if it equals the cookie's path or lies under it (RFC 6265, 5.1.4)
   function cookieHeader(url) {
     return [...jar.values()]
       .filter(({ path }) => url === path || url.startsWith(path.endsWith("/") ? path : `${path}/`))
@@ -35,7 +35,7 @@ export function createSession() {
       .join("; ");
   }
 
-  // json — тело в JSON; body — готовое тело, например FormData. Ответ — статус и разобранный JSON.
+  // json is a body to send as JSON; body is a ready body, e.g. FormData. Returns the status and parsed JSON.
   async function request(method, path, { json, body } = {}) {
     const url = path.startsWith("/api/") ? path : `/api${path}`;
     const headers = { cookie: cookieHeader(url) };
@@ -51,7 +51,7 @@ export function createSession() {
     try {
       data = JSON.parse(text);
     } catch {
-      // Не JSON: пустое тело 204 или страница Swagger
+      // Not JSON: an empty 204 body or the Swagger page
     }
     return { url, status: response.status, ok: response.ok, data, text, headers: response.headers };
   }
@@ -62,7 +62,7 @@ export function createSession() {
   };
 }
 
-// Ждёт, пока nginx веба начнёт отвечать: compose up --wait не ждёт сервис без healthcheck.
+// Waits until the web's nginx responds: compose up --wait does not wait for a service without a healthcheck.
 export async function waitForWeb() {
   for (let attempt = 0; attempt < 30; attempt++) {
     try {
@@ -72,5 +72,5 @@ export async function waitForWeb() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
-  throw new Error(`${WEB} не отвечает`);
+  throw new Error(`${WEB} is not responding`);
 }

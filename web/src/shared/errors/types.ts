@@ -12,9 +12,9 @@ export const AppErrorType = {
 
 export type AppErrorType = (typeof AppErrorType)[keyof typeof AppErrorType];
 
-// Коды ошибок API — `ErrorCode` контракта (ADR-0018). Сгенерированный тип вне infrastructure
-// не импортируется (ADR-0020), поэтому список повторён здесь, а совпадение с контрактом
-// проверяет infrastructure/http/apiError.ts при сборке: добавили код в контракт — добавь сюда.
+// API error codes — the contract's `ErrorCode` (ADR-0018). The generated type is not imported
+// outside infrastructure (ADR-0020), so the list is repeated here, and infrastructure/http/apiError.ts
+// checks it matches the contract at build time: add a code to the contract — add it here.
 export type ApiErrorCode =
   | "UNAUTHENTICATED"
   | "INVALID_CREDENTIALS"
@@ -38,9 +38,9 @@ export type ApiErrorCode =
   | "INTERNAL";
 
 interface AppErrorOptions {
-  /** Код из ответа API; у сетевых ошибок и ошибок самого веба его нет */
+  /** Code from the API response; network errors and the web's own errors have none */
   code?: ApiErrorCode;
-  /** Поле запроса → что с ним не так; только у VALIDATION_FAILED */
+  /** Request field → what is wrong with it; only for VALIDATION_FAILED */
   details?: Record<string, string>;
   cause?: unknown;
 }

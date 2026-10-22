@@ -1,6 +1,6 @@
-# Контекст сборки — корень репозитория: сервер встраивает контракт из api/ (ADR-0023).
+# The build context is the repository root: the server embeds the contract from api/ (ADR-0023).
 #   docker build -f server/docker/Dockerfile .
-# Что попадает в контекст — Dockerfile.dockerignore рядом.
+# What goes into the context — Dockerfile.dockerignore next to it.
 FROM golang:1.27 AS builder
 
 ENV CGO_ENABLED=0
@@ -11,6 +11,6 @@ RUN go build -C server/cmd/app -o /build/app
 
 FROM alpine
 WORKDIR /app
-# Миграции встроены в бинарник (server/migrations/migrations.go), отдельно их копировать не нужно
+# Migrations are embedded in the binary (server/migrations/migrations.go), no need to copy them separately
 COPY --from=builder /build/app app
 CMD ["./app"]

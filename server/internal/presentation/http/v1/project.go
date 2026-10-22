@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// projectRoutes — проекты и участники: /v1/projects/* в контракте.
+// projectRoutes are projects and members: /v1/projects/* in the contract.
 type projectRoutes struct {
 	cm       *contextmanager.GinContextManager
 	services *project.ProjectModule
@@ -186,7 +186,7 @@ func (r *projectRoutes) leave(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// memberPath — ID проекта и участника из пути /projects/{projectId}/members/{userId}.
+// memberPath is the project and member IDs from the path /projects/{projectId}/members/{userId}.
 func memberPath(c *gin.Context) (projectID, userID string, err error) {
 	if projectID, err = pathID(c, "projectId"); err != nil {
 		return "", "", err

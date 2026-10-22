@@ -3,7 +3,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { PersonalDataForm } from "../components";
 
-/** Личные данные отдельной страницей — с телефона; на десктопе та же форма стоит в профиле. */
+/** Personal data as a separate page, from a phone; on a desktop the same form is in the profile. */
 export function EditPersonalDataPage() {
   return (
     <PagesMobileTemplate topBarBackTitle={TEXTS.profile.personalInfoTitle}>

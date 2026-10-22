@@ -9,7 +9,7 @@ import { queryClient } from "./__root";
 
 export const Route = createFileRoute("/auth")({
   beforeLoad: async () => {
-    // Вошедшему экраны доступа не нужны
+    // A signed-in user does not need the auth screens
     const authStatus = await queryClient.ensureQueryData({
       queryKey: QUERY_KEYS.auth.session,
       queryFn: checkAuthStatusUseCase,

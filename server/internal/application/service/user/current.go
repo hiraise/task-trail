@@ -9,7 +9,7 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// CurrentUserService — пользователь, который вошёл.
+// CurrentUserService returns the signed-in user.
 type CurrentUserService struct {
 	userRepository repository.UserRepository
 }
@@ -22,7 +22,7 @@ func (s *CurrentUserService) Execute(ctx context.Context, userID string) (*entit
 	return user, nil
 }
 
-// RenameService меняет имя текущего пользователя; nil — убрать имя.
+// RenameService changes the current user's name; nil removes the name.
 type RenameService struct {
 	txManager      transaction.TxManager
 	clock          service.Clock

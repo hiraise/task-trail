@@ -2,7 +2,7 @@ import type { ProjectRole } from "../types";
 
 import type { User } from "./User";
 
-/** Участник проекта: пользователь и его роль в проекте. */
+/** Project member: a user and their role in the project. */
 export interface ProjectMember extends User {
   role: ProjectRole;
 }

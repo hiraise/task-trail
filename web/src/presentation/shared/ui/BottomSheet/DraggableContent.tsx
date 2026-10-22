@@ -7,7 +7,7 @@ import styles from "./DraggableContent.module.css";
 interface DraggableContentProps {
   children: React.ReactNode;
   fullScreen?: boolean;
-  /** false — без выезда снизу: панель сменяет другую */
+  /** false: no slide-up from the bottom, the sheet replaces another one */
   appear: boolean;
   contentRef: React.RefObject<HTMLDivElement | null>;
   isDragging: boolean;

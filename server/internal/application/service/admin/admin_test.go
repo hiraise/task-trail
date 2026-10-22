@@ -52,19 +52,19 @@ func newModule(t *testing.T) (*admin.AdminModule, *deps) {
 func requireCode(t *testing.T, err error, code domain.ErrorCode) {
 	t.Helper()
 	if !domain.HasCode(err, code) {
-		t.Fatalf("ожидалась ошибка %s, получено %v", code, err)
+		t.Fatalf("expected error %s, got %v", code, err)
 	}
 }
 
 func ptr(s string) *string { return &s }
 
-// expectCurrent — сценарий отвечает настройками, прочитанными после изменения (ADR-0018).
+// expectCurrent: the use case responds with the settings read after the change (ADR-0018).
 func (d *deps) expectCurrent(mail *entity.MailSettings) {
 	d.settings.EXPECT().GetServiceURL(gomock.Any()).Return("https://example.com", nil)
 	d.settings.EXPECT().GetMail(gomock.Any()).Return(mail, nil)
 }
 
-// Адрес сервиса сохраняется без «/» в конце: от него строятся ссылки (ADR-0015).
+// The service address is saved without a trailing "/": links are built from it (ADR-0015).
 func TestUpdateServiceURL(t *testing.T) {
 	module, d := newModule(t)
 	gomock.InOrder(
@@ -74,7 +74,7 @@ func TestUpdateServiceURL(t *testing.T) {
 	d.settings.EXPECT().GetMail(gomock.Any()).Return(nil, nil)
 	got, err := module.UpdateServiceURL.Execute(context.Background(), "https://example.com/tasktrail/")
 	if err != nil || got.ServiceURL != "https://example.com/tasktrail" || got.Mail != nil {
-		t.Fatalf("настройки %+v, %v", got, err)
+		t.Fatalf("settings %+v, %v", got, err)
 	}
 }
 
@@ -88,26 +88,26 @@ func savedMail(password *string) *entity.MailSettings {
 		Sender: "old@example.com", Username: ptr("robot"), Password: password}
 }
 
-// passwordIs — настройки почты с этим паролем; nil — без пароля.
+// passwordIs matches mail settings with this password; nil means no password.
 func passwordIs(password *string) gomock.Matcher {
 	return gomock.Cond(func(m *entity.MailSettings) bool {
 		return (m.Password == nil) == (password == nil) && (password == nil || *m.Password == *password)
 	})
 }
 
-// Настройки сохраняются, только если с ними удалось подключиться; пароль не введён —
-// берётся сохранённый для того же сервера и порта (ADR-0015, ADR-0017).
+// Settings are saved only if a connection with them succeeded; if no password is entered,
+// the one saved for the same server and port is used (ADR-0015, ADR-0017).
 func TestSaveMail(t *testing.T) {
 	cases := []struct {
 		name     string
 		request  dto.MailSettings
-		saved    *entity.MailSettings // nil — сохранённые настройки не читаются
-		password *string              // с каким паролем проверка и сохранение
+		saved    *entity.MailSettings // nil: saved settings are not read
+		password *string              // the password used for the check and saving
 	}{
-		{name: "новый пароль", request: mailRequest(ptr("new"), true), password: ptr("new")},
-		{name: "сохранённый пароль", request: mailRequest(nil, false), saved: savedMail(ptr("old")), password: ptr("old")},
-		{name: "пароль удалён", request: mailRequest(nil, true)},
-		{name: "без входа", request: func() dto.MailSettings {
+		{name: "new password", request: mailRequest(ptr("new"), true), password: ptr("new")},
+		{name: "saved password", request: mailRequest(nil, false), saved: savedMail(ptr("old")), password: ptr("old")},
+		{name: "password deleted", request: mailRequest(nil, true)},
+		{name: "no authentication", request: func() dto.MailSettings {
 			r := mailRequest(ptr("ignored"), true)
 			r.Username = nil
 			return r
@@ -123,7 +123,7 @@ func TestSaveMail(t *testing.T) {
 				d.mailer.EXPECT().Check(gomock.Any(), passwordIs(c.password)).Return(nil),
 				d.settings.EXPECT().SaveMail(gomock.Any(), passwordIs(c.password)).DoAndReturn(func(_ context.Context, m *entity.MailSettings) error {
 					if m.Host != c.request.Host || m.Sender != c.request.Sender || m.Username != c.request.Username {
-						t.Errorf("сохранено %+v", m)
+						t.Errorf("saved %+v", m)
 					}
 					return nil
 				}),
@@ -131,18 +131,18 @@ func TestSaveMail(t *testing.T) {
 			d.expectCurrent(savedMail(c.password))
 			got, err := module.SaveMail.Execute(context.Background(), c.request)
 			if err != nil || got.Mail == nil {
-				t.Fatalf("настройки %+v, %v", got, err)
+				t.Fatalf("settings %+v, %v", got, err)
 			}
 		})
 	}
 }
 
-// Пароль не введён, а сохранённый взять нельзя — SECRET_REQUIRED до подключения (ADR-0015).
+// No password entered and the saved one cannot be used: SECRET_REQUIRED before connecting (ADR-0015).
 func TestSaveMailSecretRequired(t *testing.T) {
 	for name, saved := range map[string]*entity.MailSettings{
-		"почта не подключена": nil,
-		"пароль не сохранён":  savedMail(nil),
-		"другой порт":         {Host: "smtp.example.com", Port: 465, Username: ptr("robot"), Password: ptr("old")},
+		"mail not configured": nil,
+		"password not saved":  savedMail(nil),
+		"another port":        {Host: "smtp.example.com", Port: 465, Username: ptr("robot"), Password: ptr("old")},
 	} {
 		t.Run(name, func(t *testing.T) {
 			module, d := newModule(t)
@@ -160,7 +160,7 @@ func TestSaveMailConnectionFailed(t *testing.T) {
 	requireCode(t, err, domain.MailConnectionFailed)
 }
 
-// Тестовое письмо уходит на почту администратора, который попросил.
+// The test email goes to the email of the administrator who requested it.
 func TestSendTestMail(t *testing.T) {
 	module, d := newModule(t)
 	mail := savedMail(ptr("secret"))
@@ -176,8 +176,8 @@ func TestSendTestMail(t *testing.T) {
 	requireCode(t, module.SendTestMail.Execute(context.Background(), string(adminID)), domain.MailDisabled)
 }
 
-// Назначение и снятие — под блокировкой администраторов и строки пользователя: подсчёт
-// и снятие не расходятся (ADR-0014).
+// Granting and revoking run under the administrators lock and the user row lock: counting
+// and revoking do not diverge (ADR-0014).
 func TestSetAdmin(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -191,12 +191,12 @@ func TestSetAdmin(t *testing.T) {
 	)
 	u, err := module.SetAdmin.Execute(context.Background(), string(userID), false)
 	if err != nil || u.IsAdmin {
-		t.Fatalf("пользователь %+v, %v", u, err)
+		t.Fatalf("user %+v, %v", u, err)
 	}
 }
 
 func TestSetAdminRefused(t *testing.T) {
-	t.Run("последний администратор", func(t *testing.T) {
+	t.Run("last administrator", func(t *testing.T) {
 		module, d := newModule(t)
 		txtest.Expect(d.tx)
 		d.users.EXPECT().LockAdmins(txtest.InTx).Return(nil)
@@ -205,7 +205,7 @@ func TestSetAdminRefused(t *testing.T) {
 		_, err := module.SetAdmin.Execute(context.Background(), string(adminID), false)
 		requireCode(t, err, domain.LastAdmin)
 	})
-	t.Run("нет пользователя", func(t *testing.T) {
+	t.Run("no user", func(t *testing.T) {
 		module, d := newModule(t)
 		txtest.Expect(d.tx)
 		d.users.EXPECT().LockAdmins(txtest.InTx).Return(nil)

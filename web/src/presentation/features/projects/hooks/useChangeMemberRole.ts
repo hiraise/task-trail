@@ -10,7 +10,7 @@ import { toastError } from "@/shared/errors/errorMessage";
 import { projectsTexts } from "@/shared/locales/projects";
 import { interpolate } from "@/shared/utils/interpolate";
 
-/** Владелец назначает участника администратором или снимает с него эту роль. */
+/** The owner makes a member an admin or revokes that role. */
 export function useChangeMemberRole() {
   const queryClient = useQueryClient();
 

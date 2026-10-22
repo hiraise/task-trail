@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// NewAdmin пускает дальше только администратора сервиса (ADR-0014): 403, если пользователь
-// не администратор. Ставится после NewAuth — тот кладёт ID пользователя в контекст.
+// NewAdmin lets only a service administrator through (ADR-0014): 403 if the user is not
+// an administrator. Goes after NewAuth, which puts the user ID into the context.
 func NewAdmin(check *access.AdminCheckService, m *contextmanager.GinContextManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := utils.Must(m.GetUserID(c))

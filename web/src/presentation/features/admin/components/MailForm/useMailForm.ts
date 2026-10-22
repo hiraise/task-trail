@@ -13,14 +13,14 @@ import { schema, toFormValues, toNewMailSettings, type FormValues } from "./sche
 
 const FIELD_NAMES = ["host", "port", "encryption", "sender", "username", "password"] as const;
 
-/** Ошибку сохранения, которая относится к полю, показываем под полем, а не тостом. */
+/** A save error that belongs to a field is shown under the field, not as a toast. */
 function showFieldErrors(error: unknown, setError: UseFormSetError<FormValues>) {
   if (hasErrorCode(error, "SECRET_REQUIRED")) {
     setError("password", { message: adminTexts.mail.passwordRequired }, { shouldFocus: true });
 
     return;
   }
-  // VALIDATION_FAILED: ключи details — поля запроса (ADR-0018)
+  // VALIDATION_FAILED: `details` keys are request fields (ADR-0018)
   if (!(error instanceof AppError) || !error.details) return;
   for (const name of FIELD_NAMES) {
     const message = error.details[name];
@@ -30,8 +30,8 @@ function showFieldErrors(error: unknown, setError: UseFormSetError<FormValues>) 
 }
 
 /**
- * Состояние формы почты: значения из сохранённых настроек, сохранение с проверкой подключения
- * на сервере. На отдельной странице после сохранения — назад в раздел.
+ * Mail form state: values from the saved settings, saving with a connection check
+ * on the server. On a separate page, back to the section after saving.
  */
 export function useMailForm(inline: boolean) {
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ export function useMailForm(inline: boolean) {
     } catch (error) {
       showFieldErrors(error, setError);
 
-      return; // остальное показал useSaveMailSettings
+      return; // useSaveMailSettings has shown the rest
     }
     if (!inline) {
       navigate({ to: ROUTES.admin });

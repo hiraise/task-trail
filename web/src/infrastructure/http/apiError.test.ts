@@ -13,7 +13,7 @@ const httpError = (status: number, data: unknown): AxiosError => {
 };
 
 describe("toAppError", () => {
-  it("берёт код и подробности из ApiError", () => {
+  it("takes the code and details from ApiError", () => {
     const error = toAppError(
       httpError(422, {
         code: "VALIDATION_FAILED",
@@ -28,7 +28,7 @@ describe("toAppError", () => {
     expect(error.details).toEqual({ newPassword: "too short" });
   });
 
-  it("неверный пароль при входе — ошибка формы, а не истёкшая сессия", () => {
+  it("wrong password at sign-in is a form error, not an expired session", () => {
     const error = toAppError(
       httpError(401, { code: "INVALID_CREDENTIALS", message: "bad", details: null }),
     );
@@ -38,7 +38,7 @@ describe("toAppError", () => {
     expect(error.details).toBeUndefined();
   });
 
-  it("UNAUTHENTICATED — истёкшая сессия", () => {
+  it("UNAUTHENTICATED is an expired session", () => {
     const error = toAppError(
       httpError(401, { code: "UNAUTHENTICATED", message: "no session", details: null }),
     );
@@ -46,14 +46,14 @@ describe("toAppError", () => {
     expect(error.type).toBe(AppErrorType.UNAUTHORIZED);
   });
 
-  it("ответ без ApiError — тип по статусу, без кода", () => {
+  it("response without ApiError — type by status, no code", () => {
     const error = toAppError(httpError(502, "<html>Bad Gateway</html>"));
 
     expect(error.type).toBe(AppErrorType.SERVER);
     expect(error.code).toBeUndefined();
   });
 
-  it("тайм-аут и обрыв сети различаются", () => {
+  it("timeout and network failure are distinguished", () => {
     expect(toAppError(new AxiosError("timeout", "ECONNABORTED", config)).type).toBe(
       AppErrorType.TIMEOUT,
     );
@@ -62,7 +62,7 @@ describe("toAppError", () => {
     );
   });
 
-  it("AppError возвращает как есть", () => {
+  it("returns AppError as is", () => {
     const original = new AppError(AppErrorType.VALIDATION, "local", { code: "FILE_TOO_LARGE" });
 
     expect(toAppError(original)).toBe(original);

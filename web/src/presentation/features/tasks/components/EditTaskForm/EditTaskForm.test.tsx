@@ -18,7 +18,7 @@ const task: Task = {
 };
 
 describe("EditTaskForm", () => {
-  it("отправляет только изменённое название, пробелы по краям обрезает", async () => {
+  it("submits only the changed name, trimming surrounding spaces", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn().mockResolvedValue(undefined);
 
@@ -33,7 +33,7 @@ describe("EditTaskForm", () => {
     expect(onSubmit).toHaveBeenCalledWith({ name: "Отчёт за неделю" });
   });
 
-  it("стёртое описание уходит как null — описания больше нет", async () => {
+  it("sends a cleared description as null — the description is removed", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn().mockResolvedValue(undefined);
 
@@ -44,7 +44,7 @@ describe("EditTaskForm", () => {
     expect(onSubmit).toHaveBeenCalledWith({ description: null });
   });
 
-  it("без названия не сохраняет", async () => {
+  it("does not save without a name", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
 

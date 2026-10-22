@@ -6,8 +6,8 @@ import (
 	"task-trail/internal/domain/repository"
 )
 
-// PublicSettingsService отдаёт вебу до входа, открыта ли регистрация и включена ли почта:
-// веб прячет недоступные действия (ADR-0017).
+// PublicSettingsService tells the web before sign-in whether registration is open and mail is enabled:
+// the web hides unavailable actions (ADR-0017).
 type PublicSettingsService struct {
 	userRepository     repository.UserRepository
 	settingsRepository repository.SettingsRepository

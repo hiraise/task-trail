@@ -8,7 +8,7 @@ import { LeaveProject } from "../../components";
 
 import styles from "./LeaveProjectModal.module.css";
 
-/** Подтверждение выхода: возвращает ID проекта, из которого выйти. */
+/** Leave confirmation: returns the ID of the project to leave. */
 export function LeaveProjectModal(props: BaseModalProps<ProjectId>) {
   const { id, title } = useGlobalModalProps<LeaveProjectProps>() ?? {};
 

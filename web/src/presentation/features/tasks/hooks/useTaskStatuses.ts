@@ -4,12 +4,12 @@ import type { TaskStatus } from "@/domain/models/TaskStatus";
 import { taskRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-/** Статусы задач — один набор на все проекты (ADR-0003), в порядке работы над задачей. */
+/** Task statuses — one set for all projects (ADR-0003), in workflow order. */
 export function useTaskStatuses() {
   return useQuery<TaskStatus[], Error>({
     queryKey: QUERY_KEYS.task.statuses,
     queryFn: () => taskRepository.findStatuses(),
-    // Набор фиксирован: пока открыт веб, он не меняется
+    // The set is fixed: it does not change while the web app is open
     staleTime: Infinity,
     gcTime: Infinity,
   });

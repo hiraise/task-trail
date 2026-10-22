@@ -10,7 +10,7 @@ interface UserAvatarProps {
   avatarUrl?: string;
   onImageSelected: (file: File) => void;
   className?: string;
-  /** Класс значка камеры: например, спрятать его на десктопе */
+  /** Class of the camera badge: e.g. to hide it on a desktop */
   badgeClassName?: string;
 }
 

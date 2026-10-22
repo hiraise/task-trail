@@ -11,7 +11,7 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// ListMembersService — участники проекта: видит любой участник.
+// ListMembersService returns the project members: any member can see them.
 type ListMembersService struct {
 	members repository.ProjectMemberRepository
 }
@@ -24,7 +24,7 @@ func (s *ListMembersService) Execute(ctx context.Context, userID, projectID stri
 	return s.members.List(ctx, member.ProjectID)
 }
 
-// AddMembersService зовёт почты в проект: владелец или администратор (ADR-0016).
+// AddMembersService invites emails to a project: the owner or an administrator (ADR-0016).
 type AddMembersService struct {
 	txManager transaction.TxManager
 	access    *access
@@ -59,7 +59,7 @@ func (s *AddMembersService) Execute(ctx context.Context, userID, projectID strin
 	return results(invitations), nil
 }
 
-// ChangeRoleService — владелец назначает участнику роль администратора или участника.
+// ChangeRoleService: the owner sets a member's role to administrator or member.
 type ChangeRoleService struct {
 	txManager transaction.TxManager
 	clock     service.Clock
@@ -75,7 +75,7 @@ func (s *ChangeRoleService) Execute(ctx context.Context, userID, projectID, targ
 		if err != nil {
 			return err
 		}
-		// Не владельцу — 403, даже если такого участника нет
+		// Not the owner: 403, even if there is no such member
 		if err := member.RequireOwner(); err != nil {
 			return err
 		}
@@ -102,7 +102,7 @@ func (s *ChangeRoleService) Execute(ctx context.Context, userID, projectID, targ
 	return view, nil
 }
 
-// RemoveMemberService исключает участника; его задачи в проекте остаются без исполнителя.
+// RemoveMemberService removes a member; their tasks in the project are left without an assignee.
 type RemoveMemberService struct {
 	txManager transaction.TxManager
 	clock     service.Clock
@@ -117,7 +117,7 @@ func (s *RemoveMemberService) Execute(ctx context.Context, userID, projectID, ta
 		if err != nil {
 			return err
 		}
-		// Участнику — 403, даже если исключать некого
+		// A member gets 403, even if there is nobody to remove
 		if err := member.RequireManager(); err != nil {
 			return err
 		}
@@ -132,8 +132,8 @@ func (s *RemoveMemberService) Execute(ctx context.Context, userID, projectID, ta
 	})
 }
 
-// LeaveService — выход из проекта: администратор или участник. Задачи вышедшего в проекте
-// остаются без исполнителя.
+// LeaveService leaves a project: an administrator or a member. The leaver's tasks in the project
+// are left without an assignee.
 type LeaveService struct {
 	txManager transaction.TxManager
 	clock     service.Clock
@@ -155,7 +155,7 @@ func (s *LeaveService) Execute(ctx context.Context, userID, projectID string) er
 	})
 }
 
-// leave убирает участие и снимает человека с задач проекта.
+// leave removes the membership and unassigns the person from the project's tasks.
 func leave(ctx context.Context, members repository.ProjectMemberRepository, tasks repository.TaskRepository, m *entity.ProjectMember, now time.Time) error {
 	if err := members.Remove(ctx, m.ProjectID, m.UserID); err != nil {
 		return err

@@ -31,7 +31,7 @@ export function useLogout() {
     mutationFn: () => authRepository.logout(),
     onSuccess: async () => {
       toast.success(successTexts.logoutSuccess);
-      // Кеш — данные этого пользователя: следующий вход, возможно другого, начинает с чистого
+      // The cache holds this user's data: the next sign-in, possibly of another user, starts clean
       queryClient.clear();
       navigate({ to: ROUTES.login, replace: true });
     },

@@ -8,11 +8,11 @@ import (
 
 type PasswordResetRepository interface {
 	Create(ctx context.Context, reset *entity.PasswordReset) error
-	// GetForUpdate читает ссылку по хешу токена и блокирует её строку до конца транзакции:
-	// два одновременных сброса по одной ссылке не пройдут оба.
+	// GetForUpdate reads a link by the token hash and locks its row until the end of the transaction:
+	// two simultaneous resets by one link will not both succeed.
 	GetForUpdate(ctx context.Context, hash entity.LinkTokenHash) (*entity.PasswordReset, error)
-	// DeleteByUser удаляет все ссылки сброса пользователя.
+	// DeleteByUser deletes all password reset links of the user.
 	DeleteByUser(ctx context.Context, userID entity.UserID) error
-	// DeleteExpired удаляет ссылки, истёкшие к моменту now, и возвращает, сколько удалено.
+	// DeleteExpired deletes links expired by now and returns how many were deleted.
 	DeleteExpired(ctx context.Context, now time.Time) (int64, error)
 }

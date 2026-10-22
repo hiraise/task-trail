@@ -1,5 +1,5 @@
-/* Раскладки форм профиля и раздела администратора. Раскладку выбирает место формы, а не
-   ширина экрана: inline — карточка на странице, page — отдельная страница телефона (/profile/…, /admin/…) */
+/* Form layouts of the profile and the administrator section. The layout is chosen by the form's place, not
+   the screen width: inline is a card on a page, page is a separate phone page (/profile/…, /admin/…) */
 .inline {
   display: flex;
   flex-direction: column;
@@ -27,7 +27,7 @@
   gap: 20px;
 }
 
-/* Две колонки — с ширины десктопа 1025 px (брейкпоинты — presentation/shared/hooks/useDevice.ts) */
+/* Two columns from desktop width 1025 px (breakpoints: presentation/shared/hooks/useDevice.ts) */
 @media (min-width: 1025px) {
   .inline .fields {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -38,7 +38,7 @@
   }
 }
 
-/* Старый пароль отделён от нового и повтора */
+/* The old password is separated from the new one and its confirmation */
 .page .wide {
   padding-bottom: 12px;
 }

@@ -8,7 +8,7 @@ interface PagesMobileTemplateProps {
   topBarBackTitle?: string;
   variant?: Variant;
   onActionClick?: () => void;
-  /** Куда ведёт «назад» верхней панели; без него — на уровень выше по адресу */
+  /** Where the top bar's "back" leads; without it, one level up the URL */
   backTo?: string;
 }
 

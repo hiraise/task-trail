@@ -7,34 +7,34 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, entity *entity.UserAccount) error
-	// Update записывает пользователя целиком. Прочитай его через GetForUpdate в той же
-	// транзакции, иначе параллельное изменение (пароль, имя, аватарка) затрётся.
+	// Update writes the whole user. Read it via GetForUpdate in the same
+	// transaction, otherwise a parallel change (password, name, avatar) is overwritten.
 	Update(ctx context.Context, entity *entity.UserAccount) error
 	GetByID(ctx context.Context, id entity.UserID) (*entity.UserAccount, error)
-	// GetForUpdate читает пользователя и блокирует его строку до конца транзакции.
+	// GetForUpdate reads the user and locks its row until the end of the transaction.
 	GetForUpdate(ctx context.Context, id entity.UserID) (*entity.UserAccount, error)
 	GetByEmail(ctx context.Context, email entity.Email) (*entity.UserAccount, error)
-	// GetVisible находит пользователя, которого видит viewer: это он сам, у них есть общий
-	// проект или пользователь — автор задачи в проекте viewer. Так автор задачи виден
-	// и после выхода из проекта (контракт, GET /v1/users/{userId}). Остальные не находятся.
+	// GetVisible finds a user the viewer can see: the viewer themselves, a user sharing a
+	// project, or the author of a task in a project of the viewer. This way a task author stays visible
+	// after leaving the project (contract, GET /v1/users/{userId}). Others are not found.
 	GetVisible(ctx context.Context, id entity.UserID, viewer entity.UserID) (*entity.UserAccount, error)
-	// ListCandidates — кого userID может позвать в проект: люди из его неудалённых проектов,
-	// кроме него самого, а если задан exclude — и кроме участников этого проекта.
+	// ListCandidates — whom userID can invite to a project: people from their non-deleted projects,
+	// except themselves, and if exclude is set — except members of that project too.
 	ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error)
-	// List — все пользователи сервиса для администратора (ADR-0014), по дате регистрации:
-	// первые — раньше.
+	// List — all service users for the administrator (ADR-0014), by registration date:
+	// earliest first.
 	List(ctx context.Context) ([]*entity.UserAccount, error)
-	// CountAdmins — сколько в сервисе администраторов (ADR-0014).
+	// CountAdmins — how many administrators the service has (ADR-0014).
 	CountAdmins(ctx context.Context) (int, error)
-	// LockAdmins до конца транзакции не пускает другое назначение или снятие администратора
-	// (ADR-0014): без блокировки два встречных снятия оставят сервис без администраторов.
-	// Вне транзакции — ошибка.
+	// LockAdmins blocks another administrator grant or removal until the end of the transaction
+	// (ADR-0014): without the lock two concurrent removals would leave the service without administrators.
+	// Outside a transaction — an error.
 	LockAdmins(ctx context.Context) error
-	// Any сообщает, есть ли в сервисе хоть один пользователь, включая удалённых:
-	// регистрация открыта, только пока их нет (ADR-0016).
+	// Any reports whether the service has at least one user, deleted ones included:
+	// registration is open only while there are none (ADR-0016).
 	Any(ctx context.Context) (bool, error)
-	// LockRegistration до конца транзакции не пускает другую регистрацию первого аккаунта
-	// (ADR-0016): без блокировки два запроса в READ COMMITTED создадут двух «первых».
-	// Вне транзакции — ошибка.
+	// LockRegistration blocks another registration of the first account until the end of the transaction
+	// (ADR-0016): without the lock two requests in READ COMMITTED would create two "first" ones.
+	// Outside a transaction — an error.
 	LockRegistration(ctx context.Context) error
 }

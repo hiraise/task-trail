@@ -11,7 +11,7 @@ import (
 	"task-trail/internal/domain/repository"
 )
 
-// ListProjectTasksService — задачи проекта: видит любой участник.
+// ListProjectTasksService returns the project's tasks: any member can see them.
 type ListProjectTasksService struct {
 	members repository.ProjectMemberRepository
 	tasks   repository.TaskRepository
@@ -25,7 +25,7 @@ func (s *ListProjectTasksService) Execute(ctx context.Context, userID, projectID
 	return s.tasks.ListInProject(ctx, member.ProjectID)
 }
 
-// ListAssignedTasksService — задачи, назначенные на пользователя, во всех его проектах.
+// ListAssignedTasksService returns the tasks assigned to the user in all their projects.
 type ListAssignedTasksService struct {
 	tasks repository.TaskRepository
 }
@@ -34,7 +34,7 @@ func (s *ListAssignedTasksService) Execute(ctx context.Context, userID string) (
 	return s.tasks.ListAssigned(ctx, entity.UserID(userID))
 }
 
-// GetTaskService — задача: видит любой участник её проекта.
+// GetTaskService returns a task: any member of its project can see it.
 type GetTaskService struct {
 	members repository.ProjectMemberRepository
 	tasks   repository.TaskRepository
@@ -51,7 +51,7 @@ func (s *GetTaskService) Execute(ctx context.Context, userID, taskID string) (*e
 	return task, nil
 }
 
-// CreateTaskService — задачу создаёт любой участник проекта; исполнитель — тоже участник.
+// CreateTaskService: any project member creates a task; the assignee is also a member.
 type CreateTaskService struct {
 	editor  *editor
 	factory *factory.TaskFactory
@@ -84,7 +84,7 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 	return task, nil
 }
 
-// UpdateTaskService меняет название и описание.
+// UpdateTaskService changes the name and description.
 type UpdateTaskService struct {
 	editor *editor
 }
@@ -112,7 +112,7 @@ func (s *ChangeStatusService) Execute(ctx context.Context, userID, taskID string
 	})
 }
 
-// ChangeAssigneeService назначает исполнителя из участников проекта; nil снимает исполнителя.
+// ChangeAssigneeService assigns a project member; nil removes the assignee.
 type ChangeAssigneeService struct {
 	editor *editor
 }
@@ -127,8 +127,8 @@ func (s *ChangeAssigneeService) Execute(ctx context.Context, userID, taskID stri
 	})
 }
 
-// MoveTaskService переносит задачу в другой проект: переносит участник обоих проектов.
-// Исполнитель остаётся, если он участник нового проекта.
+// MoveTaskService moves a task to another project: a member of both projects moves it.
+// The assignee stays if they are a member of the new project.
 type MoveTaskService struct {
 	editor *editor
 }
@@ -155,7 +155,7 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 	})
 }
 
-// DeleteTaskService удаляет задачу мягко (ADR-0001).
+// DeleteTaskService soft-deletes a task (ADR-0001).
 type DeleteTaskService struct {
 	editor *editor
 }

@@ -41,7 +41,7 @@
   white-space: pre;
 }
 
-/* Телефон: меню — в верхней панели страницы, описание свёрнуто в 3 строки */
+/* Phone: the menu is in the page top bar, the description is collapsed to 3 lines */
 .menu {
   display: none;
 }

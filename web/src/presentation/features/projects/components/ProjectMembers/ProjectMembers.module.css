@@ -20,7 +20,7 @@
   transform: rotate(90deg);
 }
 
-/* До 767 px — телефон (presentation/shared/hooks/useDevice.ts) */
+/* Up to 767 px — phone (presentation/shared/hooks/useDevice.ts) */
 .wideOnly {
   display: none;
 }

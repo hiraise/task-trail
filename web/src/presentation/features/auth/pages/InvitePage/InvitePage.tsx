@@ -12,8 +12,8 @@ import { useInvitation } from "../../hooks";
 import styles from "./InvitePage.module.css";
 
 /**
- * Принятие приглашения по ссылке `<адрес сервиса>/auth/invite?token=…` (ADR-0016). Экрана нет
- * в Figma — он собран из компонентов экрана регистрации.
+ * Accepting an invitation via the link `<service URL>/auth/invite?token=…` (ADR-0016). There is no screen
+ * in Figma: it is built from the registration screen components.
  */
 export function InvitePage() {
   const { token } = useSearch({ from: "/auth/invite/" });
@@ -28,7 +28,7 @@ export function InvitePage() {
     );
   }
 
-  // Аккаунт с почтой приглашения уже есть — ссылка ведёт на вход, даже если истекла
+  // An account with the invitation email already exists: the link leads to sign-in, even if expired
   if (hasErrorCode(error, "INVITATION_ACCEPTED")) {
     return (
       <InviteMessage

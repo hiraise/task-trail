@@ -8,8 +8,8 @@ import { AuthScreen, PasswordRecoveryForm } from "../../components";
 import { usePublicSettings } from "../../hooks";
 
 /**
- * Восстановление пароля по почте. Без почты письмо не уйдёт: ссылку сброса выдаёт
- * администратор сервиса (ADR-0017), поэтому вместо формы — объяснение.
+ * Password recovery by email. Without mail no email is sent: the reset link is issued by
+ * the service administrator (ADR-0017), so an explanation is shown instead of the form.
  */
 export function PasswordRecoveryPage() {
   const navigate = useNavigate();
