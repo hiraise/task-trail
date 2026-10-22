@@ -1,1 +1,0 @@
-export { BottomContent } from "./BottomContent";

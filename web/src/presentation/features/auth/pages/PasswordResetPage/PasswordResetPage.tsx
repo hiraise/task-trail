@@ -1,22 +1,47 @@
-import { useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 
-import { toast } from "sonner";
+import { SubmitButton } from "@/presentation/shared";
+import { ROUTES } from "@/shared/config/routes";
+import { hasErrorCode } from "@/shared/errors/types";
+import { authTexts } from "@/shared/locales/auth";
 
+import { AuthScreen, PasswordResetForm } from "../../components";
 import { useResetPassword } from "../../hooks";
-import { PasswordResetForm } from "../../components";
 
+/**
+ * Новый пароль по ссылке `<адрес сервиса>/auth/reset?token=…`. Ссылка неверна, истекла или
+ * уже использована (`LINK_INVALID`) — предлагаем запросить новую.
+ */
 export function PasswordResetPage() {
-  const { mutateAsync: resetPassword, isPending: isLoading } = useResetPassword();
+  const navigate = useNavigate();
   const { token } = useSearch({ from: "/auth/reset/" });
+  const { mutate: resetPassword, isPending, error } = useResetPassword();
 
-  const handleSubmit = async (password: string) => {
-    if (!token) {
-      toast.error("Что-то пошло не так");
+  if (!token || hasErrorCode(error, "LINK_INVALID")) {
+    return (
+      <AuthScreen
+        title={authTexts.passwordReset.invalidTitle}
+        description={authTexts.passwordReset.invalidDescription}
+      >
+        <SubmitButton
+          className="btn-font-m"
+          onClick={() => navigate({ to: ROUTES.passwordRecovery, replace: true })}
+        >
+          {authTexts.passwordReset.requestNewLink}
+        </SubmitButton>
+      </AuthScreen>
+    );
+  }
 
-      return;
-    }
-    await resetPassword({ password, token });
-  };
-
-  return <PasswordResetForm onSubmit={handleSubmit} isLoading={isLoading} />;
+  return (
+    <AuthScreen
+      title={authTexts.passwordReset.title}
+      description={authTexts.passwordReset.description}
+    >
+      <PasswordResetForm
+        onSubmit={(password) => resetPassword({ password, token })}
+        isPending={isPending}
+      />
+    </AuthScreen>
+  );
 }

@@ -1,17 +1,13 @@
-/**
- * Mobile-only page. Always redirects desktop users to the profile page.
- */
+import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
+import { TEXTS } from "@/shared/locales/texts";
 
-import { DeviceBased, RedirectScreen } from "@/presentation/shared";
-import { ROUTES } from "@/shared/config/routes";
+import { PersonalDataForm } from "../components";
 
-import { EditPersonalDataMobilePage } from "./SettingsPage";
-
+/** Личные данные отдельной страницей — с телефона; на десктопе та же форма стоит в профиле. */
 export function EditPersonalDataPage() {
   return (
-    <DeviceBased
-      desktop={<RedirectScreen href={ROUTES.profile} />}
-      mobile={<EditPersonalDataMobilePage />}
-    />
+    <PagesMobileTemplate topBarBackTitle={TEXTS.profile.personalInfoTitle}>
+      <PersonalDataForm layout="page" />
+    </PagesMobileTemplate>
   );
 }

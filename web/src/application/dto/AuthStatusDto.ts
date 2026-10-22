@@ -1,7 +1,7 @@
-import type { User } from "@/domain/models/User";
+import type { CurrentUser } from "@/domain/models/User";
 
 export interface AuthStatusDto {
   isAuthenticated: boolean;
   authInitializing?: boolean;
-  user?: User | null;
+  user?: CurrentUser | null;
 }

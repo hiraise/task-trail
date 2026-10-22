@@ -5,21 +5,23 @@
   align-items: center;
 }
 
-.desktop {
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  outline: 4px solid rgba(255, 255, 255, 1);
-}
-
-.desktop:hover,
-.mobile:hover {
-  cursor: pointer;
-}
-
-.mobile {
+.avatar {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  outline: 5px solid rgba(255, 255, 255, 1);
+  outline: 5px solid var(--bg-card);
+  cursor: pointer;
+}
+
+/* С 768 px (presentation/shared/hooks/useDevice.ts) — большая аватарка без значка камеры */
+@media (min-width: 768px) {
+  .avatar {
+    width: 160px;
+    height: 160px;
+    outline-width: 4px;
+  }
+
+  .badge {
+    display: none;
+  }
 }

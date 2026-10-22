@@ -1,14 +1,21 @@
 export const authTexts = {
-  enterNewPassword: "Введите новый пароль",
-  confirmNewPassword: "Повторите новый пароль",
-  changePassword: "Изменить пароль",
-  changingPassword: "Изменение пароля",
   emailPlaceholder: "E-mail",
   passwordPlaceholder: "Пароль",
+  usernamePlaceholder: "Имя",
+  newPasswordPlaceholder: "Новый пароль",
+  confirmPasswordPlaceholder: "Повторите пароль",
+  showPassword: "Показать пароль",
+  hidePassword: "Скрыть пароль",
   noAccount: "Нет аккаунта?",
   hasAccount: "Уже есть аккаунт?",
+  backToLogin: "Вернуться ко входу",
   send: "Отправить",
   sending: "Отправляем...",
+  sendEmailFailed: "Не удалось отправить письмо. Попробуйте ещё раз",
+  passwordChanged: "Пароль изменён",
+  changePasswordFailed: "Не удалось изменить пароль. Попробуйте ещё раз",
+  passwordsDoNotMatch: "Пароли не совпадают",
+  confirmPasswordRequired: "Повторите пароль",
   login: {
     title: "Вход",
     description: "Введите почту и пароль\r\nдля входа в свою учетную запись",
@@ -21,22 +28,47 @@ export const authTexts = {
     buttonText: "Политикой конфиденциальности",
     buttonLink: "https://google.com",
   },
+  // Регистрация открыта, только пока в сервисе нет пользователей (ADR-0016)
   signup: {
     title: "Регистрация",
     signup: "Зарегистрироваться",
-    description: "Введите почту и придумайте пароль,\r\nчтобы создать новую учетную запись",
+    description:
+      "Это первый аккаунт в TaskTrail —\r\nон станет администратором сервиса",
     signingUp: "Регистрация...",
+  },
+  invite: {
+    title: "Приглашение",
+    description: "{invitedBy} приглашает вас в проект «{projectName}».\r\nПридумайте имя и пароль, чтобы войти",
+    accept: "Принять приглашение",
+    accepting: "Создаём аккаунт...",
+    acceptedTitle: "Аккаунт уже есть",
+    acceptedDescription: "Аккаунт с этой почтой уже есть —\r\nвойдите, чтобы открыть проект",
+    invalidTitle: "Ссылка недействительна",
+    invalidDescription:
+      "Ссылка приглашения недействительна или устарела.\r\nПопросите пригласить вас ещё раз",
+    failedTitle: "Не удалось открыть приглашение",
+    failedDescription: "Попробуйте обновить страницу",
+    retry: "Обновить",
   },
   passwordRecovery: {
     title: "Восстановление пароля",
     description:
       "Введите адрес почты, указанный при регистрации — мы отправим вам письмо для восстановления пароля",
+    mailDisabledDescription:
+      "Почта в сервисе не подключена.\r\nСсылку для сброса пароля выдаёт администратор сервиса",
+  },
+  passwordReset: {
+    title: "Новый пароль",
+    description: "Придумайте новый пароль —\r\nпосле смены войдите с ним заново",
+    submit: "Сменить пароль",
+    submitting: "Меняем пароль...",
+    invalidTitle: "Ссылка недействительна",
+    invalidDescription: "Ссылка для сброса пароля недействительна.\r\nЗапросите новую",
+    requestNewLink: "Запросить новую ссылку",
   },
   checkEmailTitle: "Проверьте вашу почту",
   checkEmailDescription:
     "Отправили письмо на {email}. Перейдите по ссылке в письме, чтобы создать новый пароль.",
-  checkEmailDescription2:
-    "Отправили письмо на {email}. Перейдите по ссылке в письме, чтобы подтвердить регистрацию",
   checkEmailAlt: "Иллюстрация проверки электронной почты: письмо отправлено на ваш адрес",
   openEmail: "Перейти в почту",
   resendEmail: "Отправить повторно",

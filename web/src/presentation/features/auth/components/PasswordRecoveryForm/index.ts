@@ -1,3 +1,1 @@
-export { PasswordRecoveryFormMobile } from "./PasswordRecoveryFormMobile";
-export { PasswordRecoveryFormDesktop } from "./PasswordRecoveryFormDesktop";
-export { schema, type FormData } from "./schema";
+export { PasswordRecoveryForm } from "./PasswordRecoveryForm";

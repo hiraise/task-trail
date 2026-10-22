@@ -1,53 +1,29 @@
 import type { UploadAvatarPayload } from "@/application/payloads";
-import { logger } from "@/infrastructure/config/clientLogger";
+import type { CurrentUser } from "@/domain/models/User";
 import { userRepository } from "@/infrastructure/repositories";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-const createFormDataFromFile = (file: File): FormData => {
-  const formData = new FormData();
-
-  formData.append("file", file, file.name);
-
-  return formData;
-};
+// Те же пределы, что у сервера (uploadAvatar в контракте, ADR-0013): проверяем до загрузки,
+// чтобы не гонять 5 МБ ради отказа. Тип сервер определяет по содержимому — здесь по расширению.
+const MAX_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const validateAvatarFile = (file: File): void => {
-  const MAX_SIZE = 5 * 1024 * 1024;
-  const MIN_SIZE = 1024;
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-
   if (file.size > MAX_SIZE) {
-    throw new AppError(
-      AppErrorType.VALIDATION,
-      `File size too large. Maximum size is ${MAX_SIZE / 1024 / 1024}MB`,
-    );
+    throw new AppError(AppErrorType.VALIDATION, "avatar is larger than 5 MB", {
+      code: "FILE_TOO_LARGE",
+    });
   }
 
-  if (!allowedTypes.includes(file.type)) {
-    throw new AppError(
-      AppErrorType.VALIDATION,
-      `Invalid file type. Allowed types: ${allowedTypes.join(", ")}`,
-    );
-  }
-
-  if (file.size < MIN_SIZE) {
-    throw new AppError(AppErrorType.VALIDATION, "File is too small. Please upload a valid image");
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new AppError(AppErrorType.VALIDATION, `avatar type ${file.type} is not allowed`, {
+      code: "FILE_TYPE_NOT_ALLOWED",
+    });
   }
 };
 
-export async function uploadAvatarUseCase(payload: UploadAvatarPayload): Promise<string | null> {
+export async function uploadAvatarUseCase(payload: UploadAvatarPayload): Promise<CurrentUser> {
   validateAvatarFile(payload.avatarFile);
-  const formData = createFormDataFromFile(payload.avatarFile);
 
-  try {
-    return await userRepository.uploadAvatar(formData);
-  } catch (error) {
-    if (error instanceof AppError) throw error;
-
-    if (!import.meta.env.PROD) {
-      logger.error("Upload avatar failed:", { error });
-    }
-
-    throw new AppError(AppErrorType.UNKNOWN, "Failed to upload avatar");
-  }
+  return userRepository.uploadAvatar(payload.avatarFile);
 }

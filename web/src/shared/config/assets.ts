@@ -1,6 +1,7 @@
 import { ICONS } from "../../shared/config/icons";
 
-const basePath = import.meta.env.VITE_ROOT_PATH;
+// Путь приложения (VITE_ROOT_PATH, web/README.md); без переменной — корень
+const basePath = import.meta.env.VITE_ROOT_PATH ?? "";
 
 function addBasePath(path: string) {
   return basePath + path;
@@ -24,6 +25,5 @@ export const ASSETS = {
     search: addBasePath("/images/search.png"),
     hero: addBasePath("/images/hero.png"),
     passwordRecovery: addBasePath("/images/password-recovery-image.png"),
-    resendVerification: addBasePath("/images/resend-verification-image.png"),
   },
 };

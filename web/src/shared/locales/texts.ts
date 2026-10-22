@@ -107,8 +107,13 @@ export const TEXTS = {
     oldPasswordLabel: "Старый пароль",
     newPasswordLabel: "Новый пароль",
     confirmPasswordLabel: "Повторите новый пароль",
+    changePasswordSubmit: "Изменить пароль",
     passwordPlaceholder: "••••••••",
     changeEmailDescription:
       "Почту пока нельзя изменить. Эта функция появится в следующих обновлениях.",
+    userUpdated: "Данные сохранены",
+    userUpdateFailed: "Не удалось сохранить данные. Попробуйте ещё раз",
+    avatarUpdated: "Аватарка обновлена",
+    avatarUpdateFailed: "Не удалось обновить аватарку. Попробуйте ещё раз",
   },
 };

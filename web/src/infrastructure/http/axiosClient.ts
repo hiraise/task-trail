@@ -1,5 +1,7 @@
+import { API_URL } from "../config/apiRoutes";
+
 import { AxiosHttpClient } from "./AxiosHttpClient";
 
-const axiosClient = new AxiosHttpClient(import.meta.env.VITE_API_URL || "http://localhost:8080");
+const axiosClient = new AxiosHttpClient(API_URL);
 
 export default axiosClient;

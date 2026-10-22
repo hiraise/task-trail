@@ -1,15 +1,15 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
-import { DeviceBased } from "@/presentation/shared";
-import { AuthDesktopTemplate, AuthMobileTemplate } from "@/presentation/shared/components/Layout";
 import { checkAuthStatusUseCase } from "@/application/usecases";
-import { queryClient } from "./__root";
-import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+import { AuthLayout } from "@/presentation/shared/components/Layout";
 import { ROUTES } from "@/shared/config/routes";
+import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+
+import { queryClient } from "./__root";
 
 export const Route = createFileRoute("/auth")({
   beforeLoad: async () => {
-    // Check if user is already authenticated
+    // Вошедшему экраны доступа не нужны
     const authStatus = await queryClient.ensureQueryData({
       queryKey: QUERY_KEYS.auth.session,
       queryFn: checkAuthStatusUseCase,
@@ -25,12 +25,3 @@ export const Route = createFileRoute("/auth")({
     </AuthLayout>
   ),
 });
-
-function AuthLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <DeviceBased
-      mobile={<AuthMobileTemplate>{children}</AuthMobileTemplate>}
-      desktop={<AuthDesktopTemplate>{children}</AuthDesktopTemplate>}
-    />
-  );
-}

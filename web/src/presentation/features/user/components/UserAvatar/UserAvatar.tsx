@@ -6,33 +6,33 @@ import { ICONS } from "@/shared/config/icons";
 
 import styles from "./UserAvatar.module.css";
 
-interface UserAvatarProps extends React.HTMLAttributes<HTMLDivElement> {
+interface UserAvatarProps {
   avatarUrl?: string;
   onImageSelected: (file: File) => void;
-  showIcon?: boolean;
+  className?: string;
+  /** Класс значка камеры: например, спрятать его на десктопе */
+  badgeClassName?: string;
 }
 
 export function UserAvatar({
   avatarUrl,
   onImageSelected,
-  showIcon = true,
-  ...props
+  className,
+  badgeClassName,
 }: UserAvatarProps) {
   const { inputRef, openFileDialog, handleChange } = useSelectImage({
     onSelect: onImageSelected,
   });
 
   return (
-    <button className={clsx(styles.container, props.className)} onClick={openFileDialog}>
+    <button type="button" className={clsx(styles.container, className)} onClick={openFileDialog}>
       <AvatarImage avatarUrl={avatarUrl} />
-      {showIcon && (
-        <Icon
-          as={ICONS.camera}
-          size="24px"
-          className={styles.badgeIcon}
-          color="var(--icon-secondary)"
-        />
-      )}
+      <Icon
+        as={ICONS.camera}
+        size="24px"
+        className={clsx(styles.badgeIcon, badgeClassName)}
+        color="var(--icon-secondary)"
+      />
       <input
         ref={inputRef}
         type="file"
@@ -46,7 +46,7 @@ export function UserAvatar({
 
 function AvatarImage({ avatarUrl }: { avatarUrl?: string }) {
   return avatarUrl ? (
-    <img className={styles.userAvatar} src={avatarUrl} alt="User Avatar" />
+    <img className={styles.userAvatar} src={avatarUrl} alt="Аватарка" />
   ) : (
     <Icon as={ICONS.profileLarge} size="40px" />
   );

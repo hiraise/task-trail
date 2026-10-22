@@ -1,0 +1,91 @@
+/* Раскладки форм профиля (PersonalDataForm, ChangePasswordForm). Раскладку выбирает место
+   формы, а не ширина экрана: inline — карточка в профиле, page — отдельная страница /profile/… */
+.inline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: var(--bg-primary);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+  height: 100%;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.inline .fields {
+  gap: 20px;
+}
+
+/* Две колонки — с ширины десктопа 1025 px (брейкпоинты — presentation/shared/hooks/useDevice.ts) */
+@media (min-width: 1025px) {
+  .inline .fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .wide {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Старый пароль отделён от нового и повтора */
+.page .wide {
+  padding-bottom: 12px;
+}
+
+.inline .wide {
+  padding-bottom: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inline .label {
+  color: var(--text-secondary);
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hint {
+  color: var(--text-tertiary);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  height: 40px;
+}
+
+.buttons > button {
+  max-width: 164px;
+  width: 100%;
+}
+
+.submit {
+  margin-top: auto;
+  margin-bottom: 12px;
+}
+
+.submit > button {
+  width: 100%;
+}

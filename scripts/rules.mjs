@@ -184,7 +184,7 @@ function checkWebImports() {
 
 // Компонентов с Mobile/Desktop в имени не становится больше: новые экраны — один адаптивный
 // компонент (ADR-0008). Слил пару — снизь порог; превышение — ошибка, снижение — подсказка.
-const DEVICE_SPLIT_LIMIT = { Mobile: 38, Desktop: 33 };
+const DEVICE_SPLIT_LIMIT = { Mobile: 23, Desktop: 21 };
 
 function checkDeviceSplit() {
   const components = FILES.filter(
@@ -202,7 +202,7 @@ function checkDeviceSplit() {
 
 // Цвета, тени и шрифты — из переменных web/src/styles/ (ADR-0008). Объявлений с цветом значением
 // в CSS вне web/src/styles/ не становится больше: убрал — снизь порог. Шрифт — только переменной.
-const STYLE_LITERAL_LIMIT = 21;
+const STYLE_LITERAL_LIMIT = 18;
 
 function checkStyleTokens() {
   const colorRe =

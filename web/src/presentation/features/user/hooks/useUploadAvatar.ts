@@ -3,43 +3,21 @@ import { toast } from "sonner";
 
 import type { UploadAvatarPayload } from "@/application/payloads";
 import { uploadAvatarUseCase } from "@/application/usecases";
-import { logger } from "@/infrastructure/config/clientLogger";
+import type { CurrentUser } from "@/domain/models/User";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+import { toastError } from "@/shared/errors/errorMessage";
+import { TEXTS } from "@/shared/locales/texts";
 
-/**
- * Custom hook to handle the upload of a user's avatar.
- *
- * This hook uses a mutation to perform the avatar upload operation and provides
- * success and error handling. On successful upload, it invalidates the current
- * user query to refresh the user data and displays a success toast notification.
- * On failure, it logs the error and displays an error toast notification.
- *
- * @returns A mutation object that can be used to trigger the avatar upload operation.
- *
- * @example
- * const { mutate: uploadAvatar, isLoading, isError } = useUploadAvatar();
- *
- * uploadAvatar(payload, {
- *   onSuccess: () => {
- *     console.log("Avatar uploaded successfully!");
- *   },
- *   onError: (error) => {
- *     console.error("Error uploading avatar:", error);
- *   },
- * });
- */
+/** Аватарка текущего пользователя: JPEG, PNG или WebP до 5 МБ (ADR-0013). */
 export function useUploadAvatar() {
   const queryClient = useQueryClient();
 
-  return useMutation<string | null, Error, UploadAvatarPayload>({
+  return useMutation<CurrentUser, Error, UploadAvatarPayload>({
     mutationFn: (payload) => uploadAvatarUseCase(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user.current });
-      toast.success("Avatar updated successfully!");
+    onSuccess: (user) => {
+      queryClient.setQueryData(QUERY_KEYS.user.current, user);
+      toast.success(TEXTS.profile.avatarUpdated);
     },
-    onError: (error) => {
-      logger.error("Failed to update avatar", { error });
-      toast.error("Failed to update avatar");
-    },
+    onError: (error) => toastError(error, TEXTS.profile.avatarUpdateFailed),
   });
 }

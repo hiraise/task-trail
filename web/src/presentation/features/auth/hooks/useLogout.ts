@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { logger } from "@/infrastructure/config/clientLogger";
 import { authRepository } from "@/infrastructure/repositories";
 import { ROUTES } from "@/shared/config/routes";
-import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { successTexts } from "@/shared/locales/messages";
 
 /**
@@ -32,9 +31,8 @@ export function useLogout() {
     mutationFn: () => authRepository.logout(),
     onSuccess: async () => {
       toast.success(successTexts.logoutSuccess);
-      // Clear auth cache before navigation to ensure fresh state in route guards
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.auth.session });
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.user.current });
+      // Кеш — данные этого пользователя: следующий вход, возможно другого, начинает с чистого
+      queryClient.clear();
       navigate({ to: ROUTES.login, replace: true });
     },
     onError: (error) => {

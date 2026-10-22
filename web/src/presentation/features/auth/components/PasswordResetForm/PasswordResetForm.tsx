@@ -1,80 +1,57 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
+import z from "zod";
 
-import { FormFieldError, Input, SubmitButton } from "@/presentation/shared";
+import { SubmitButton } from "@/presentation/shared";
+import { passwordField } from "@/presentation/shared/forms/fields";
 import { authTexts } from "@/shared/locales/auth";
 
-import styles from "./PasswordResetForm.module.css";
-import { PasswordResetSchema, type PasswordResetFormData } from "./schema";
+import { PasswordField } from "../AuthForm";
+import formStyles from "../AuthForm/AuthForm.module.css";
 
-interface PasswordResetFormProps {
-  onSubmit: (password: string) => void | Promise<void>;
-  isLoading?: boolean;
-}
-
-export function PasswordResetForm({ onSubmit, isLoading }: PasswordResetFormProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting, isValid },
-  } = useForm<PasswordResetFormData>({
-    resolver: zodResolver(PasswordResetSchema),
-    mode: "onChange",
+const schema = z
+  .object({
+    password: passwordField,
+    confirmPassword: z.string().min(1, authTexts.confirmPasswordRequired),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: authTexts.passwordsDoNotMatch,
+    path: ["confirmPassword"],
   });
 
-  const submitHandler = (data: PasswordResetFormData) => {
-    const { password } = data;
+type FormData = z.infer<typeof schema>;
 
-    return onSubmit(password);
-  };
+interface PasswordResetFormProps {
+  onSubmit: (password: string) => void;
+  isPending?: boolean;
+}
+
+export function PasswordResetForm({ onSubmit, isPending }: PasswordResetFormProps) {
+  const form = useForm<FormData>({ resolver: zodResolver(schema) });
 
   return (
-    <form onSubmit={handleSubmit(submitHandler)} className={styles.formFlex}>
-      <div className={styles.formFieldsContainer}>
-        <div className={styles.inputs}>
-          <label htmlFor="password" className="body-med">
-            {authTexts.enterNewPassword}
-          </label>
-          <Input
-            id="password"
-            type="password"
-            {...register("password")}
-            aria-invalid={!!errors.password}
-            aria-describedby="password-error"
-            placeholder={authTexts.passwordPlaceholder}
-            disabled={isSubmitting}
-            autoComplete="off"
+    <FormProvider {...form}>
+      <form
+        className={formStyles.form}
+        onSubmit={form.handleSubmit((data) => onSubmit(data.password))}
+        noValidate
+      >
+        <div className={formStyles.group}>
+          <PasswordField
+            name="password"
+            placeholder={authTexts.newPasswordPlaceholder}
+            autoComplete="new-password"
           />
-          {errors.password && <FormFieldError>{errors.password.message}</FormFieldError>}
-        </div>
-        <div className={styles.inputs}>
-          <label htmlFor="confirmPassword" className="body-med">
-            {authTexts.confirmNewPassword}
-          </label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            {...register("confirmPassword")}
-            aria-invalid={!!errors.confirmPassword}
-            aria-describedby="confirmPassword-error"
-            placeholder={authTexts.passwordPlaceholder}
-            disabled={isSubmitting}
-            autoComplete="off"
+          <PasswordField
+            name="confirmPassword"
+            placeholder={authTexts.confirmPasswordPlaceholder}
+            autoComplete="new-password"
           />
-          {errors.confirmPassword && (
-            <FormFieldError>{errors.confirmPassword.message}</FormFieldError>
-          )}
         </div>
-      </div>
-      <div className={styles.btnContainer}>
-        <SubmitButton
-          type="submit"
-          disabled={!isValid || isSubmitting}
-          className={styles.changePasswordBtn}
-        >
-          {isSubmitting || isLoading ? authTexts.changingPassword : authTexts.changePassword}
+        <SubmitButton className="btn-font-m" disabled={isPending}>
+          {isPending ? authTexts.passwordReset.submitting : authTexts.passwordReset.submit}
         </SubmitButton>
-      </div>
-    </form>
+      </form>
+    </FormProvider>
   );
 }

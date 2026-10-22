@@ -1,0 +1,12 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* С 768 px (presentation/shared/hooks/useDevice.ts) — плотнее */
+@media (min-width: 768px) {
+  .content {
+    gap: 16px;
+  }
+}

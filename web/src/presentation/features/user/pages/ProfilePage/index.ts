@@ -1,2 +1,1 @@
-export { ProfileDesktopPage } from "./ProfileDesktopPage";
-export { ProfileMobilePage } from "./ProfileMobilePage";
+export { ProfilePage } from "./ProfilePage";

@@ -242,11 +242,7 @@ rules) rules ;;
 server) server ;;
 web) web ;;
 up) stand_up ;;
-smoke)
-	# Схема веба импортируется из TypeScript: нужны зависимости веба и снятие типов в Node
-	ensure_web_deps
-	node --experimental-strip-types --disable-warning=ExperimentalWarning "$ROOT/scripts/stand-smoke.mjs"
-	;;
+smoke) node "$ROOT/scripts/stand-smoke.mjs" ;;
 down) "${COMPOSE[@]}" down ;;
 reset) "${COMPOSE[@]}" down --volumes ;;
 logs)

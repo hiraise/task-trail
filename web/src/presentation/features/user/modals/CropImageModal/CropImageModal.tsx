@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import type { Area } from "react-easy-crop";
 import { toast } from "sonner";
 
-import { DeviceBased, DialogButtons } from "@/presentation/shared";
+import { DialogButtons } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
 import type { BaseModalProps } from "@/presentation/shared/modals/BaseModal";
 import { BaseModal } from "@/presentation/shared/modals/BaseModal/BaseModal";
@@ -10,6 +10,8 @@ import { errorTexts } from "@/shared/locales/messages";
 import { getCroppedImage } from "@/shared/utils/images";
 
 import { ImageCropper } from "../../components";
+
+import styles from "./CropImageModal.module.css";
 
 export function CropImageModal(props: BaseModalProps<File>) {
   const { file } = useGlobalModalProps<{ file: File }>() ?? {};
@@ -41,28 +43,10 @@ export function CropImageModal(props: BaseModalProps<File>) {
 
   return (
     <BaseModal {...props} title="">
-      <DeviceBased
-        desktop={
-          <div style={{ gap: "16px" }}>
-            <ImageCropper
-              file={file}
-              onCropComplete={handleCropComplete}
-              onImageLoad={setImageSrc}
-            />
-            <DialogButtons variant="apply" onClose={handleClose} onApply={handleComplete} />
-          </div>
-        }
-        mobile={
-          <div style={{ gap: "24px" }}>
-            <ImageCropper
-              file={file}
-              onCropComplete={handleCropComplete}
-              onImageLoad={setImageSrc}
-            />
-            <DialogButtons variant="apply" onClose={handleClose} onApply={handleComplete} />
-          </div>
-        }
-      />
+      <div className={styles.content}>
+        <ImageCropper file={file} onCropComplete={handleCropComplete} onImageLoad={setImageSrc} />
+        <DialogButtons variant="apply" onClose={handleClose} onApply={handleComplete} />
+      </div>
     </BaseModal>
   );
 }
