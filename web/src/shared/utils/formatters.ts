@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { ru } from "date-fns/locale/ru";
 
 /**
  * Formats a given date as a string in the "dd.MM.yyyy" format.
@@ -63,4 +64,9 @@ export function getProjectId(str: string): string {
   }
 
   return `${res}-`;
+}
+
+/** Дата и время по-русски: «23 октября, 14:30» — срок ссылки и подобное. */
+export function formatDateTime(date: Date | string): string {
+  return format(new Date(date), "d MMMM, HH:mm", { locale: ru });
 }

@@ -77,3 +77,19 @@ export const SortItemsModal = lazy(() =>
 export const TaskSettingsModal = lazy(() =>
   import("@/presentation/features/tasks/modals").then((m) => ({ default: m.TaskSettingsModal })),
 );
+
+export const ConfirmModal = lazy(() =>
+  import("@/presentation/shared/modals").then((m) => ({ default: m.ConfirmModal })),
+);
+
+export const AdminUserActionsModal = lazy(() =>
+  import("@/presentation/features/admin/modals").then((m) => ({
+    default: m.AdminUserActionsModal,
+  })),
+);
+
+export const PasswordResetLinkModal = lazy(() =>
+  import("@/presentation/features/admin/modals").then((m) => ({
+    default: m.PasswordResetLinkModal,
+  })),
+);

@@ -12,7 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MainAdminRouteImport } from './routes/_main/admin'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as MainAdminIndexRouteImport } from './routes/_main/admin/index'
+import { Route as MainAdminMailRouteImport } from './routes/_main/admin/mail'
+import { Route as MainAdminServiceUrlRouteImport } from './routes/_main/admin/service-url'
+import { Route as MainAdminUsersRouteImport } from './routes/_main/admin/users'
 import { Route as MainBoardsIndexRouteImport } from './routes/_main/boards/index'
 import { Route as MainBoardsIdRouteImport } from './routes/_main/boards/$id'
 import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/index'
@@ -46,10 +51,35 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MainAdminRoute = MainAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => MainRoute,
+} as any)
 const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthRoute,
+} as any)
+const MainAdminIndexRoute = MainAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MainAdminRoute,
+} as any)
+const MainAdminMailRoute = MainAdminMailRouteImport.update({
+  id: '/mail',
+  path: '/mail',
+  getParentRoute: () => MainAdminRoute,
+} as any)
+const MainAdminServiceUrlRoute = MainAdminServiceUrlRouteImport.update({
+  id: '/service-url',
+  path: '/service-url',
+  getParentRoute: () => MainAdminRoute,
+} as any)
+const MainAdminUsersRoute = MainAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => MainAdminRoute,
 } as any)
 const MainBoardsIndexRoute = MainBoardsIndexRouteImport.update({
   id: '/boards/',
@@ -151,12 +181,17 @@ const MainProjectsIdTasksTaskIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
+  '/admin': typeof MainAdminRouteWithChildren
   '/auth/': typeof AuthIndexRoute
+  '/admin/mail': typeof MainAdminMailRoute
+  '/admin/service-url': typeof MainAdminServiceUrlRoute
+  '/admin/users': typeof MainAdminUsersRoute
   '/boards/$id': typeof MainBoardsIdRoute
   '/profile/change-password': typeof MainProfileChangePasswordRoute
   '/profile/edit-personal-data': typeof MainProfileEditPersonalDataRoute
   '/tasks/$taskId': typeof MainTasksTaskIdRoute
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
+  '/admin/': typeof MainAdminIndexRoute
   '/boards/': typeof MainBoardsIndexRoute
   '/profile/': typeof MainProfileIndexRoute
   '/projects/': typeof MainProjectsIndexRoute
@@ -174,11 +209,15 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthIndexRoute
+  '/admin/mail': typeof MainAdminMailRoute
+  '/admin/service-url': typeof MainAdminServiceUrlRoute
+  '/admin/users': typeof MainAdminUsersRoute
   '/boards/$id': typeof MainBoardsIdRoute
   '/profile/change-password': typeof MainProfileChangePasswordRoute
   '/profile/edit-personal-data': typeof MainProfileEditPersonalDataRoute
   '/tasks/$taskId': typeof MainTasksTaskIdRoute
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
+  '/admin': typeof MainAdminIndexRoute
   '/boards': typeof MainBoardsIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/projects': typeof MainProjectsIndexRoute
@@ -198,12 +237,17 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_main': typeof MainRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
+  '/_main/admin': typeof MainAdminRouteWithChildren
   '/auth/': typeof AuthIndexRoute
+  '/_main/admin/mail': typeof MainAdminMailRoute
+  '/_main/admin/service-url': typeof MainAdminServiceUrlRoute
+  '/_main/admin/users': typeof MainAdminUsersRoute
   '/_main/boards/$id': typeof MainBoardsIdRoute
   '/_main/profile/change-password': typeof MainProfileChangePasswordRoute
   '/_main/profile/edit-personal-data': typeof MainProfileEditPersonalDataRoute
   '/_main/tasks/$taskId': typeof MainTasksTaskIdRoute
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
+  '/_main/admin/': typeof MainAdminIndexRoute
   '/_main/boards/': typeof MainBoardsIndexRoute
   '/_main/profile/': typeof MainProfileIndexRoute
   '/_main/projects/': typeof MainProjectsIndexRoute
@@ -223,12 +267,17 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/admin'
     | '/auth/'
+    | '/admin/mail'
+    | '/admin/service-url'
+    | '/admin/users'
     | '/boards/$id'
     | '/profile/change-password'
     | '/profile/edit-personal-data'
     | '/tasks/$taskId'
     | '/auth/password-recovery/confirm'
+    | '/admin/'
     | '/boards/'
     | '/profile/'
     | '/projects/'
@@ -246,11 +295,15 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/admin/mail'
+    | '/admin/service-url'
+    | '/admin/users'
     | '/boards/$id'
     | '/profile/change-password'
     | '/profile/edit-personal-data'
     | '/tasks/$taskId'
     | '/auth/password-recovery/confirm'
+    | '/admin'
     | '/boards'
     | '/profile'
     | '/projects'
@@ -269,12 +322,17 @@ export interface FileRouteTypes {
     | '/'
     | '/_main'
     | '/auth'
+    | '/_main/admin'
     | '/auth/'
+    | '/_main/admin/mail'
+    | '/_main/admin/service-url'
+    | '/_main/admin/users'
     | '/_main/boards/$id'
     | '/_main/profile/change-password'
     | '/_main/profile/edit-personal-data'
     | '/_main/tasks/$taskId'
     | '/auth/password-recovery/confirm'
+    | '/_main/admin/'
     | '/_main/boards/'
     | '/_main/profile/'
     | '/_main/projects/'
@@ -319,12 +377,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_main/admin': {
+      id: '/_main/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof MainAdminRouteImport
+      parentRoute: typeof MainRoute
+    }
     '/auth/': {
       id: '/auth/'
       path: '/'
       fullPath: '/auth/'
       preLoaderRoute: typeof AuthIndexRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_main/admin/': {
+      id: '/_main/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof MainAdminIndexRouteImport
+      parentRoute: typeof MainAdminRoute
+    }
+    '/_main/admin/mail': {
+      id: '/_main/admin/mail'
+      path: '/mail'
+      fullPath: '/admin/mail'
+      preLoaderRoute: typeof MainAdminMailRouteImport
+      parentRoute: typeof MainAdminRoute
+    }
+    '/_main/admin/service-url': {
+      id: '/_main/admin/service-url'
+      path: '/service-url'
+      fullPath: '/admin/service-url'
+      preLoaderRoute: typeof MainAdminServiceUrlRouteImport
+      parentRoute: typeof MainAdminRoute
+    }
+    '/_main/admin/users': {
+      id: '/_main/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof MainAdminUsersRouteImport
+      parentRoute: typeof MainAdminRoute
     }
     '/_main/boards/': {
       id: '/_main/boards/'
@@ -455,7 +548,26 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface MainAdminRouteChildren {
+  MainAdminMailRoute: typeof MainAdminMailRoute
+  MainAdminServiceUrlRoute: typeof MainAdminServiceUrlRoute
+  MainAdminUsersRoute: typeof MainAdminUsersRoute
+  MainAdminIndexRoute: typeof MainAdminIndexRoute
+}
+
+const MainAdminRouteChildren: MainAdminRouteChildren = {
+  MainAdminMailRoute: MainAdminMailRoute,
+  MainAdminServiceUrlRoute: MainAdminServiceUrlRoute,
+  MainAdminUsersRoute: MainAdminUsersRoute,
+  MainAdminIndexRoute: MainAdminIndexRoute,
+}
+
+const MainAdminRouteWithChildren = MainAdminRoute._addFileChildren(
+  MainAdminRouteChildren,
+)
+
 interface MainRouteChildren {
+  MainAdminRoute: typeof MainAdminRouteWithChildren
   MainBoardsIdRoute: typeof MainBoardsIdRoute
   MainProfileChangePasswordRoute: typeof MainProfileChangePasswordRoute
   MainProfileEditPersonalDataRoute: typeof MainProfileEditPersonalDataRoute
@@ -472,6 +584,7 @@ interface MainRouteChildren {
 }
 
 const MainRouteChildren: MainRouteChildren = {
+  MainAdminRoute: MainAdminRouteWithChildren,
   MainBoardsIdRoute: MainBoardsIdRoute,
   MainProfileChangePasswordRoute: MainProfileChangePasswordRoute,
   MainProfileEditPersonalDataRoute: MainProfileEditPersonalDataRoute,

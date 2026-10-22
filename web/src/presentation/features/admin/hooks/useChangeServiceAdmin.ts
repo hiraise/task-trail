@@ -1,0 +1,46 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import type { ChangeServiceAdminPayload } from "@/application/payloads";
+import type { AdminUser } from "@/domain/models/AdminUser";
+import type { CurrentUser } from "@/domain/models/User";
+import { getUserDisplayName } from "@/domain/models/User";
+import { adminRepository } from "@/infrastructure/repositories";
+import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+import { toastError } from "@/shared/errors/errorMessage";
+import { hasErrorCode } from "@/shared/errors/types";
+import { adminTexts } from "@/shared/locales/admin";
+import { interpolate } from "@/shared/utils/interpolate";
+
+/**
+ * Назначает или снимает администратора сервиса (ADR-0014). Сервер отвечает пользователем — он
+ * заменяет прежнего в списке. Последнего администратора снять нельзя — `LAST_ADMIN`.
+ */
+export function useChangeServiceAdmin() {
+  const queryClient = useQueryClient();
+
+  return useMutation<AdminUser, Error, ChangeServiceAdminPayload>({
+    mutationFn: ({ userId, isAdmin }) => adminRepository.setAdmin(userId, isAdmin),
+    onSuccess: (user) => {
+      queryClient.setQueryData<AdminUser[]>(QUERY_KEYS.admin.users, (users) =>
+        users?.map((current) => (current.id === user.id ? user : current)),
+      );
+      // Сняли администратора с себя: от isAdmin текущего пользователя зависит доступ к разделу
+      const currentUser = queryClient.getQueryData<CurrentUser>(QUERY_KEYS.user.current);
+
+      if (currentUser?.id === user.id) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.user.current });
+      }
+      const template = user.isAdmin ? adminTexts.madeAdmin : adminTexts.madeUser;
+
+      toast.success(interpolate(template, { name: getUserDisplayName(user) }));
+    },
+    onError: (error) => {
+      // Список устарел: остальных администраторов уже сняли — показываем, как есть
+      if (hasErrorCode(error, "LAST_ADMIN")) {
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.users });
+      }
+      toastError(error, adminTexts.changeAdminFailed);
+    },
+  });
+}

@@ -1,0 +1,51 @@
+/* Телефон и планшет — одна колонка; с десктопа 1025 px — две, как поля форм раздела */
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px 20px;
+}
+
+@media (min-width: 1025px) {
+  .list {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 0;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  text-align: left;
+  transition:
+    padding 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.tappable {
+  width: 100%;
+  cursor: pointer;
+}
+
+.tappable:active {
+  background-color: var(--bg-secondary-2);
+}
+
+/* Меню видно всегда, а не только при наведении: без него не понять, что действия есть */
+.menu {
+  flex-shrink: 0;
+  color: var(--icon-secondary);
+}
+
+.withMenu:hover,
+.withMenu:focus-within {
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: var(--bg-secondary-2);
+}

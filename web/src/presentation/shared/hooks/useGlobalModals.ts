@@ -1,6 +1,8 @@
 import { useCallback } from "react";
 
+import type { AdminUser } from "@/domain/models/AdminUser";
 import type { InvitationResult } from "@/domain/models/Invitation";
+import type { PasswordResetLink } from "@/domain/models/PasswordResetLink";
 import type { Project } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { Task } from "@/domain/models/Task";
@@ -58,6 +60,23 @@ export interface ActionProps {
   type: "task" | "project" | "member";
 }
 
+export interface ConfirmProps {
+  title: string;
+  description?: string;
+  /** Текст кнопки действия: «Отключить», «Снять права» */
+  confirmText: string;
+}
+
+export interface AdminUserActionsProps {
+  user: AdminUser;
+}
+
+export interface PasswordResetLinkProps {
+  /** Кому ссылка: имя или почта */
+  name: string;
+  link: PasswordResetLink;
+}
+
 export const useGlobalModals = () => {
   const { open, closeAll } = useGlobalModalContext();
 
@@ -95,6 +114,14 @@ export const useGlobalModals = () => {
     showDeleteItem: (props?: ActionProps) =>
       safeOpen<TaskId | ProjectId | UserId>(MODAL_TYPE.DELETE, { ...props }),
     showCropImage: (file?: File) => safeOpen<File>(MODAL_TYPE.CROP_IMAGE, { file }),
+    /** Согласие — `true`; отказ или закрытие — `undefined` */
+    showConfirm: (props: ConfirmProps) => safeOpen<boolean>(MODAL_TYPE.CONFIRM, { ...props }),
+
+    // Admin actions
+    showAdminUserActions: (props: AdminUserActionsProps) =>
+      safeOpen<void>(MODAL_TYPE.ADMIN_USER_ACTIONS, { ...props }),
+    showPasswordResetLink: (props: PasswordResetLinkProps) =>
+      safeOpen<void>(MODAL_TYPE.PASSWORD_RESET_LINK, { ...props }),
 
     // Project actions
     showEditProject: (props?: EditProjectProps) =>

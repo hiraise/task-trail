@@ -1,9 +1,12 @@
 import {
+  toAdminUser,
   toCurrentUser,
   toInvitationResult,
+  toPasswordResetLink,
   toProject,
   toProjectDetails,
   toProjectMember,
+  toServiceSettings,
   toTask,
   toTaskStatus,
   toUser,
@@ -137,5 +140,69 @@ describe("toTaskStatus", () => {
     expect(
       toTaskStatus({ id: "done", name: "Готово", isDefault: false, isResolved: true }),
     ).toEqual({ id: "done", name: "Готово", isDefault: false, isResolved: true });
+  });
+});
+
+describe("toServiceSettings", () => {
+  const mail = {
+    host: "smtp.example.com",
+    port: 587,
+    encryption: "starttls" as const,
+    sender: "TaskTrail <noreply@example.com>",
+    username: "noreply@example.com",
+    passwordSet: true,
+  };
+
+  it("почта не подключена — undefined", () => {
+    expect(toServiceSettings({ serviceUrl: "https://example.com/tasktrail", mail: null })).toEqual({
+      serviceUrl: "https://example.com/tasktrail",
+      mail: undefined,
+    });
+  });
+
+  it("настройки SMTP как в ответе, пароля нет — только признак", () => {
+    const settings = toServiceSettings({ serviceUrl: "http://localhost:3000", mail });
+
+    expect(settings.mail).toEqual(mail);
+    expect(settings.mail).not.toHaveProperty("password");
+  });
+
+  it("без входа на SMTP логина нет — undefined", () => {
+    const settings = toServiceSettings({
+      serviceUrl: "http://localhost:3000",
+      mail: { ...mail, encryption: "none", username: null, passwordSet: false },
+    });
+
+    expect(settings.mail).toMatchObject({ encryption: "none", username: undefined, passwordSet: false });
+  });
+});
+
+describe("toAdminUser", () => {
+  it("пользователь с признаком администратора, датой регистрации и адресом аватарки", () => {
+    const user = toAdminUser({
+      id,
+      email: "admin@example.com",
+      username: "Аня",
+      avatarId,
+      isAdmin: true,
+      createdAt: "2026-10-21T08:00:00Z",
+    });
+
+    expect(user).toMatchObject({
+      id,
+      email: "admin@example.com",
+      username: "Аня",
+      isAdmin: true,
+      createdAt: "2026-10-21T08:00:00Z",
+    });
+    expect(user.avatarUrl).toMatch(new RegExp(`/v1/files/${avatarId}$`));
+  });
+});
+
+describe("toPasswordResetLink", () => {
+  it("ссылка и срок как в ответе", () => {
+    const link = { url: "http://localhost:3000/auth/reset?token=abc", expiresAt: "2026-10-23T08:00:00Z" };
+
+    expect(toPasswordResetLink(link)).toEqual(link);
   });
 });

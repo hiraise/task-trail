@@ -8,6 +8,8 @@ interface PagesMobileTemplateProps {
   topBarBackTitle?: string;
   variant?: Variant;
   onActionClick?: () => void;
+  /** Куда ведёт «назад» верхней панели; без него — на уровень выше по адресу */
+  backTo?: string;
 }
 
 export function PagesMobileTemplate({
@@ -16,6 +18,7 @@ export function PagesMobileTemplate({
   topBarBackTitle,
   variant = "none",
   onActionClick,
+  backTo,
 }: PagesMobileTemplateProps) {
   return (
     <div className={styles.container}>
@@ -26,6 +29,7 @@ export function PagesMobileTemplate({
             title={topBarBackTitle}
             variant={variant}
             onActionClick={onActionClick}
+            backTo={backTo}
           />
         </div>
       )}

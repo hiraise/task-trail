@@ -27,6 +27,7 @@ import ProfileLargeIcon from "@/assets/icons/profile-large.svg?react";
 import ProfileIcon from "@/assets/icons/ProfileIcon.svg?react";
 import ProjectIcon from "@/assets/icons/ProjectIcon.svg?react";
 import SearchIcon from "@/assets/icons/SearchIcon.svg?react";
+import SettingsIcon from "@/assets/icons/SettingsIcon.svg?react";
 import ShowIcon from "@/assets/icons/ShowIcon.svg?react";
 import SortIcon from "@/assets/icons/SortIcon.svg?react";
 
@@ -61,6 +62,7 @@ export const ICONS = {
   hide: HideIcon,
   edit: EditIcon,
   leave: LeaveIcon,
+  settings: SettingsIcon,
 };
 
 // Design elements

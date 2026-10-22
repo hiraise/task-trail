@@ -21,6 +21,11 @@ export const QUERY_KEYS = {
   settings: {
     public: ["settings", "public"] as const,
   },
+  /** Раздел администратора сервиса (ADR-0014) */
+  admin: {
+    settings: ["admin", "settings"] as const,
+    users: ["admin", "users"] as const,
+  },
   user: {
     current: ["user", "current"] as const,
     detail: (id: UserId) => ["user", id] as const,

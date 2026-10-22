@@ -1,0 +1,79 @@
+/* До 767 px — телефон: пункты на отдельные страницы. С 768 px — карточки с формами
+   в DesktopTemplate (брейкпоинты — presentation/shared/hooks/useDevice.ts). */
+.page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.cards {
+  display: none;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.menuItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.secondary {
+  color: var(--text-secondary);
+}
+
+.tertiary {
+  color: var(--text-tertiary);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 24px 24px;
+  border-radius: 12px;
+  background-color: var(--bg-card);
+  box-shadow: var(--shade-01);
+}
+
+header.card {
+  gap: 8px;
+  padding-bottom: 20px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .phone {
+    display: none;
+  }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+  }
+
+  .card {
+    flex-shrink: 0;
+  }
+}
