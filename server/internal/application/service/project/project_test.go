@@ -78,7 +78,7 @@ func owner() *entity.UserAccount {
 
 func notFound() error { return domain.ErrEntityNotFound(0, nil) }
 
-// expectLocked — проект заблокирован в транзакции, а requester в нём с ролью role.
+// expectLocked: the project is locked in the transaction, and requester has role in it.
 func (d *deps) expectLocked(role entity.ProjectRole) {
 	txtest.Expect(d.tx)
 	d.projects.EXPECT().GetForUpdate(txtest.InTx, projectID).Return(&entity.Project{ID: projectID, Name: "Дизайн-система"}, nil)
@@ -91,8 +91,8 @@ func (d *deps) expectEnv(mail *entity.MailSettings) {
 	d.settings.EXPECT().GetServiceURL(txtest.OutsideTx).Return(serviceURL, nil)
 }
 
-// Результат — по каждой почте в порядке запроса, повтор — тот же результат; приглашения
-// и участие пишутся в транзакции. Без почты ссылка приглашения — в ответе (ADR-0017).
+// The result is per email in request order, a repeat gets the same result; invitations
+// and memberships are written in the transaction. Without mail, the invitation link is in the response (ADR-0017).
 func TestAddMembersWithoutMail(t *testing.T) {
 	module, d := newModule(t)
 	d.expectEnv(nil)
@@ -102,14 +102,14 @@ func TestAddMembersWithoutMail(t *testing.T) {
 	d.members.EXPECT().Get(txtest.InTx, projectID, annaID).Return(nil, notFound())
 	d.members.EXPECT().Add(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, m *entity.ProjectMember) error {
 		if *m != *entity.NewMember(projectID, annaID, now) {
-			t.Errorf("участие: %+v", m)
+			t.Errorf("membership: %+v", m)
 		}
 		return nil
 	})
 	d.users.EXPECT().GetByEmail(txtest.InTx, entity.Email("ivan@example.com")).Return(nil, notFound())
 	d.invitations.EXPECT().Create(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, i *entity.Invitation) error {
 		if i.ProjectID != projectID || i.Email != "ivan@example.com" || i.InvitedBy != ownerID || !i.ExpiredAt.Equal(now.Add(7*24*time.Hour)) {
-			t.Errorf("приглашение: %+v", i)
+			t.Errorf("invitation: %+v", i)
 		}
 		return nil
 	})
@@ -126,16 +126,16 @@ func TestAddMembersWithoutMail(t *testing.T) {
 		outcomes = append(outcomes, string(r.Email)+" "+string(r.Outcome))
 	}
 	if strings.Join(outcomes, ", ") != "anna@example.com added, ivan@example.com invited, ivan@example.com invited, owner@example.com already_member" {
-		t.Fatalf("результаты: %v", outcomes)
+		t.Fatalf("results: %v", outcomes)
 	}
 	if got[0].InviteURL != nil || got[1].InviteURL == nil || !strings.HasPrefix(*got[1].InviteURL, serviceURL+"/auth/invite?token=") ||
 		got[2].InviteURL != got[1].InviteURL || got[3].InviteURL != nil {
-		t.Fatalf("ссылки: %+v", got)
+		t.Fatalf("links: %+v", got)
 	}
 }
 
-// С почтой письма уходят после транзакции; не ушло приглашение — mail_failed, не ушло
-// извещение добавленному — он всё равно участник.
+// With mail, emails are sent after the transaction; a failed invitation is mail_failed, a failed
+// notification to an added person still leaves them a member.
 func TestAddMembersWithMail(t *testing.T) {
 	module, d := newModule(t)
 	mail := &entity.MailSettings{Host: "smtp.example.com", Port: 587}
@@ -152,7 +152,7 @@ func TestAddMembersWithMail(t *testing.T) {
 	letters := map[entity.Email]service.Letter{}
 	d.mailer.EXPECT().Send(txtest.OutsideTx, mail, gomock.Any()).Times(3).DoAndReturn(func(ctx context.Context, _ *entity.MailSettings, l service.Letter) error {
 		if deadline, ok := ctx.Deadline(); !ok || time.Until(deadline) > 10*time.Second {
-			t.Errorf("письмо без срока в 10 секунд: %v", deadline)
+			t.Errorf("email without a 10-second deadline: %v", deadline)
 		}
 		mu.Lock()
 		letters[l.To] = l
@@ -175,35 +175,35 @@ func TestAddMembersWithMail(t *testing.T) {
 	}
 	for i := range want {
 		if got[i] != want[i] {
-			t.Fatalf("результаты: %+v", got)
+			t.Fatalf("results: %+v", got)
 		}
 	}
 	if l := letters["ivan@example.com"]; !strings.Contains(l.Text, "Владелец приглашает вас в проект «Дизайн-система»") ||
 		!strings.Contains(l.Text, serviceURL+"/auth/invite?token=") {
-		t.Errorf("приглашение:\n%s", l.Text)
+		t.Errorf("invitation:\n%s", l.Text)
 	}
 	if l := letters["anna@example.com"]; !strings.Contains(l.Text, serviceURL+"/projects/"+string(projectID)) {
-		t.Errorf("извещение:\n%s", l.Text)
+		t.Errorf("notification:\n%s", l.Text)
 	}
 }
 
-// Участнику — 403 до поиска того, кого исключают; приглашать ему тоже нельзя.
+// A member gets 403 before looking up whom to remove; they cannot invite either.
 func TestMemberCannotManage(t *testing.T) {
 	module, d := newModule(t)
 	d.expectLocked(entity.RoleMember)
 	err := module.RemoveMember.Execute(context.Background(), string(ownerID), string(projectID), string(annaID))
 	if !domain.HasCode(err, domain.Forbidden) {
-		t.Fatalf("исключение: %v", err)
+		t.Fatalf("removal: %v", err)
 	}
 	d.expectEnv(nil)
 	d.expectLocked(entity.RoleMember)
 	_, err = module.AddMembers.Execute(context.Background(), string(ownerID), string(projectID), []string{"ivan@example.com"})
 	if !domain.HasCode(err, domain.Forbidden) {
-		t.Fatalf("приглашение: %v", err)
+		t.Fatalf("invitation: %v", err)
 	}
 }
 
-// Выход и исключение снимают человека с задач проекта в той же транзакции.
+// Leaving and removal unassign the person from the project's tasks in the same transaction.
 func TestLeave(t *testing.T) {
 	module, d := newModule(t)
 	d.expectLocked(entity.RoleMember)
@@ -216,11 +216,11 @@ func TestLeave(t *testing.T) {
 	d.expectLocked(entity.RoleOwner)
 	err := module.Leave.Execute(context.Background(), string(ownerID), string(projectID))
 	if !domain.HasCode(err, domain.OwnerCannotLeave) {
-		t.Fatalf("владелец: %v", err)
+		t.Fatalf("owner: %v", err)
 	}
 }
 
-// Проект без почт создаётся без чтения настроек почты; создатель — владелец.
+// A project without emails is created without reading mail settings; the creator is the owner.
 func TestCreateProject(t *testing.T) {
 	module, d := newModule(t)
 	d.users.EXPECT().GetByID(gomock.Any(), ownerID).Return(owner(), nil)
@@ -232,7 +232,7 @@ func TestCreateProject(t *testing.T) {
 	})
 	d.members.EXPECT().Add(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, m *entity.ProjectMember) error {
 		if m.ProjectID != created.ID || m.UserID != ownerID || m.Role != entity.RoleOwner {
-			t.Errorf("владелец: %+v", m)
+			t.Errorf("owner: %+v", m)
 		}
 		return nil
 	})
@@ -242,6 +242,6 @@ func TestCreateProject(t *testing.T) {
 	}
 	if got.Project.Project != created || got.Project.Role != entity.RoleOwner || got.Invitations == nil || len(got.Invitations) != 0 ||
 		!created.CreatedAt.Equal(now) {
-		t.Fatalf("создан: %+v", got)
+		t.Fatalf("created: %+v", got)
 	}
 }

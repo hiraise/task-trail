@@ -13,8 +13,8 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// UploadAvatarService заменяет аватарку текущего пользователя. Прежняя помечается удалённой,
-// с диска её сотрёт очистка (ADR-0013).
+// UploadAvatarService replaces the current user's avatar. The previous one is marked as deleted,
+// cleanup erases it from disk (ADR-0013).
 type UploadAvatarService struct {
 	txManager      transaction.TxManager
 	clock          service.Clock
@@ -25,13 +25,13 @@ type UploadAvatarService struct {
 }
 
 func (s *UploadAvatarService) Execute(ctx context.Context, userID string, upload dto.Upload) (*entity.UserAccount, error) {
-	// Тип — по содержимому, а не по заголовку запроса (ADR-0013)
+	// The type comes from the content, not from the request header (ADR-0013)
 	mimeType := http.DetectContentType(upload.Content)
 	if err := entity.CheckAvatar(int64(len(upload.Content)), mimeType); err != nil {
 		return nil, err
 	}
 	file := s.fileFactory.New(upload.Name, mimeType, entity.UserID(userID))
-	// Файл пишется до транзакции: медленный диск не держит блокировку строки пользователя
+	// The file is written before the transaction: a slow disk does not hold the user row lock
 	if err := s.storage.Save(ctx, file.ID, bytes.NewReader(upload.Content)); err != nil {
 		return nil, err
 	}
@@ -58,8 +58,8 @@ func (s *UploadAvatarService) Execute(ctx context.Context, userID string, upload
 		return nil
 	}
 	if err := s.txManager.DoWithTx(ctx, f); err != nil {
-		// Не прошла транзакция — файл никому не нужен (ADR-0013). Не стёрся сейчас — его,
-		// как файл без записи в базе, через сутки сотрёт очистка.
+		// The transaction failed: nobody needs the file (ADR-0013). If it is not erased now,
+		// cleanup erases it in a day as a file without a database record.
 		_ = s.storage.Delete(ctx, file.ID)
 		return nil, err
 	}

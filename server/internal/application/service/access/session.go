@@ -9,8 +9,8 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// sessionOpener выдаёт новую пару токенов: refresh-токен записывается в базу, чтобы
-// его можно было обменять один раз и отозвать.
+// sessionOpener issues a new token pair: the refresh token is stored in the database so that
+// it can be exchanged once and revoked.
 type sessionOpener struct {
 	factory      *factory.RefreshTokenFactory
 	repository   repository.RefreshTokenRepository

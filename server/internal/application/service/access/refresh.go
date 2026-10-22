@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-// RefreshService обменивает refresh-токен на новую пару. Каждый токен обменивается один раз;
-// повтор в течение entity.RefreshTokenReuseGrace — параллельный запрос другой вкладки,
-// позже — кража: отзываются все токены пользователя.
+// RefreshService exchanges a refresh token for a new pair. Each token is exchanged once;
+// a repeat within entity.RefreshTokenReuseGrace is a parallel request from another tab,
+// later it is theft: all of the user's tokens are revoked.
 type RefreshService struct {
 	txManager              transaction.TxManager
 	clock                  service.Clock
@@ -43,7 +43,7 @@ func (s *RefreshService) Execute(ctx context.Context, rt string) (dto.Tokens, er
 				return err
 			}
 		case entity.RefreshTokenJustRotated:
-			// Параллельный запрос: обменянный токен уже отмечен, выдаём ещё одну пару
+			// A parallel request: the exchanged token is already marked, issue one more pair
 		case entity.RefreshTokenReused:
 			return domain.ErrRefreshTokenReused("tokenID", rtID, "userID", userID)
 		case entity.RefreshTokenRevoked:
@@ -79,8 +79,8 @@ func isReuse(err error) bool { return hasCode(err, domain.RefreshTokenReused) }
 
 func isNotFound(err error) bool { return hasCode(err, domain.RefreshTokenNotFound) }
 
-// revokeAll отзывает все токены пользователя после кражи. Вызывается после транзакции,
-// которая нашла кражу: внутри неё отзыв откатился бы вместе с ошибкой.
+// revokeAll revokes all of the user's tokens after a theft. It is called after the transaction
+// that detected the theft: inside it, the revocation would roll back along with the error.
 func revokeAll(ctx context.Context, repo repository.RefreshTokenRepository, userID entity.UserID, now time.Time, reuseErr error) error {
 	if err := repo.RevokeAll(ctx, userID, now); err != nil {
 		return domain.Wrap(err, reuseErr)

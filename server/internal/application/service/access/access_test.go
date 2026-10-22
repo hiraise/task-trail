@@ -27,7 +27,7 @@ const (
 	email        = entity.Email("ivan@example.com")
 	passwordHash = "$2a$12$hash"
 	rtLifetime   = 30 * 24 * time.Hour
-	// resetLifetime — срок ссылки сброса пароля
+	// resetLifetime is the lifetime of a password reset link
 	resetLifetime = 24 * time.Hour
 )
 
@@ -83,8 +83,8 @@ func newModule(t *testing.T) (*access.AccessModule, *deps) {
 	return module, d
 }
 
-// expectTx выполняет сценарий транзакции с пометкой в контексте: по ней видно,
-// какие вызовы шли внутри транзакции (inTx), а какие — после неё (outsideTx).
+// expectTx runs the transaction callback with a mark in the context: it shows
+// which calls ran inside the transaction (inTx) and which after it (outsideTx).
 func (d *deps) expectTx() {
 	txtest.Expect(d.tx)
 }
@@ -94,11 +94,11 @@ var (
 	outsideTx = txtest.OutsideTx
 )
 
-// expectSession — выдача новой пары токенов: новый refresh-токен пишется в базу.
+// expectSession expects a new token pair: the new refresh token is written to the database.
 func (d *deps) expectSession() {
 	d.tokens.EXPECT().Create(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, rt *entity.RefreshToken) error {
 		if rt.UserID != userID || !rt.ExpiredAt.Equal(now.Add(rtLifetime)) || rt.RotatedAt != nil || rt.RevokedAt != nil {
-			return fmt.Errorf("новый refresh-токен: %+v", rt)
+			return fmt.Errorf("new refresh token: %+v", rt)
 		}
 		return nil
 	})
@@ -117,6 +117,6 @@ func requireCode(t *testing.T, err error, code domain.ErrorCode) {
 	t.Helper()
 	var e *domain.DomainError
 	if !errors.As(err, &e) || e.Code != code {
-		t.Fatalf("ожидалась ошибка %s, получено %v", code, err)
+		t.Fatalf("expected error %s, got %v", code, err)
 	}
 }

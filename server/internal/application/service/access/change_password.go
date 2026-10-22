@@ -22,7 +22,7 @@ func (s *ChangePasswordService) Execute(ctx context.Context, userID string, pass
 	f := func(ctx context.Context) error {
 		user, err := s.userRepository.GetForUpdate(ctx, entity.UserID(userID))
 		if isEntityNotFound(err) {
-			// Пользователя удалили, а access-токен ещё жив: сессия недействительна
+			// The user was deleted but the access token is still alive: the session is invalid
 			return domain.ErrWrongAccessToken("userID", userID, "reason", "user not found")
 		}
 		if err != nil {

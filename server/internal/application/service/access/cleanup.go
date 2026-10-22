@@ -8,9 +8,9 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// CleanupService удаляет истёкшие refresh-токены, ссылки сброса пароля и приглашения.
-// Отозванные и обменянные, но не истёкшие refresh-токены остаются: по ним видно повторное
-// использование. Принятые приглашения тоже остаются до конца срока: их ссылки ведут на вход.
+// CleanupService deletes expired refresh tokens, password reset links and invitations.
+// Revoked and exchanged but unexpired refresh tokens stay: they reveal reuse.
+// Accepted invitations also stay until they expire: their links lead to sign-in.
 type CleanupService struct {
 	clock                  service.Clock
 	refreshTokenRepository repository.RefreshTokenRepository
@@ -18,7 +18,7 @@ type CleanupService struct {
 	invitationRepository   repository.InvitationRepository
 }
 
-// Execute возвращает, сколько записей удалено.
+// Execute returns how many records were deleted.
 func (s *CleanupService) Execute(ctx context.Context) (int64, error) {
 	now := s.clock.Now()
 	var total int64

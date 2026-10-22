@@ -1,5 +1,5 @@
-// Package project — сценарии проектов и их участников: роли по ADR-0003, приглашения
-// по ADR-0016 и ADR-0017, мягкое удаление по ADR-0001.
+// Package project holds the use cases of projects and their members: roles per ADR-0003, invitations
+// per ADR-0016 and ADR-0017, soft deletion per ADR-0001.
 package project
 
 import (
@@ -27,7 +27,7 @@ type ProjectModule struct {
 	Leave        *LeaveService
 }
 
-// Deps — зависимости модуля проектов.
+// Deps are the dependencies of the project module.
 type Deps struct {
 	TxManager         transaction.TxManager
 	Clock             service.Clock
@@ -93,15 +93,15 @@ func New(d Deps) *ProjectModule {
 	}
 }
 
-// access находит проект и участие в нём.
+// access finds a project and the membership in it.
 type access struct {
 	projects repository.ProjectRepository
 	members  repository.ProjectMemberRepository
 	users    repository.UserRepository
 }
 
-// lock блокирует проект до конца транзакции и находит участие userID. Не участник или
-// проекта нет — ENTITY_NOT_FOUND: существование проекта не выдаём (ADR-0018).
+// lock locks the project until the end of the transaction and finds userID's membership. A non-member or
+// a missing project: ENTITY_NOT_FOUND, the project's existence is not revealed (ADR-0018).
 func (a *access) lock(ctx context.Context, projectID, userID string) (*entity.Project, *entity.ProjectMember, error) {
 	project, err := a.projects.GetForUpdate(ctx, entity.ProjectID(projectID))
 	if err != nil {
@@ -114,8 +114,8 @@ func (a *access) lock(ctx context.Context, projectID, userID string) (*entity.Pr
 	return project, member, nil
 }
 
-// currentUser — пользователь, который вошёл. Его удалили, а access-токен ещё жив:
-// сессия недействительна, это 401, а не 404.
+// currentUser returns the signed-in user. If the user was deleted but the access token is still alive,
+// the session is invalid: 401, not 404.
 func (a *access) currentUser(ctx context.Context, userID string) (*entity.UserAccount, error) {
 	user, err := a.users.GetByID(ctx, entity.UserID(userID))
 	if domain.HasCode(err, domain.EntityNotFound) {

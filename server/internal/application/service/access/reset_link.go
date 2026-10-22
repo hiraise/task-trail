@@ -8,15 +8,15 @@ import (
 	"task-trail/internal/domain/repository"
 )
 
-// PasswordResetLinkService выдаёт ссылку сброса без письма (ADR-0017): администратор — для
-// любого пользователя, команда сервера — для любой почты, на случай, когда ни один
-// администратор не может войти. Ссылку человеку передают сами.
+// PasswordResetLinkService issues a reset link without an email (ADR-0017): the administrator for
+// any user, a server command for any email, in case no
+// administrator can sign in. The link is passed to the person manually.
 type PasswordResetLinkService struct {
 	userRepository repository.UserRepository
 	links          *resetLinkIssuer
 }
 
-// ForEmail возвращает ENTITY_NOT_FOUND, если пользователя с такой почтой нет.
+// ForEmail returns ENTITY_NOT_FOUND if there is no user with this email.
 func (s *PasswordResetLinkService) ForEmail(ctx context.Context, email string) (dto.ResetLink, error) {
 	user, err := s.userRepository.GetByEmail(ctx, entity.NewEmail(email))
 	if err != nil {
@@ -26,8 +26,8 @@ func (s *PasswordResetLinkService) ForEmail(ctx context.Context, email string) (
 	return link, err
 }
 
-// ForUser возвращает ENTITY_NOT_FOUND, если такого пользователя нет. Права администратора
-// проверяет middleware.NewAdmin (ADR-0014).
+// ForUser returns ENTITY_NOT_FOUND if there is no such user. Administrator rights
+// are checked by middleware.NewAdmin (ADR-0014).
 func (s *PasswordResetLinkService) ForUser(ctx context.Context, userID string) (dto.ResetLink, error) {
 	user, err := s.userRepository.GetByID(ctx, entity.UserID(userID))
 	if err != nil {

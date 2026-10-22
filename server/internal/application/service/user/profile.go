@@ -7,8 +7,8 @@ import (
 	"task-trail/internal/domain/repository"
 )
 
-// ProfileService — другой пользователь, если viewer его видит: у них общий проект или он
-// автор задачи в проекте viewer. Остальные — ENTITY_NOT_FOUND: существование не выдаём (ADR-0018).
+// ProfileService returns another user if viewer can see them: they share a project or the user is
+// the author of a task in viewer's project. Others: ENTITY_NOT_FOUND, existence is not revealed (ADR-0018).
 type ProfileService struct {
 	userRepository repository.UserRepository
 }

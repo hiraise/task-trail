@@ -12,8 +12,8 @@ import (
 	"task-trail/internal/domain/service/password"
 )
 
-// ResetPasswordService задаёт пароль по ссылке сброса. Ссылка срабатывает один раз: сброс
-// удаляет все ссылки пользователя и закрывает все его сессии.
+// ResetPasswordService sets a password via a reset link. The link works once: a reset
+// deletes all of the user's links and closes all their sessions.
 type ResetPasswordService struct {
 	txManager              transaction.TxManager
 	clock                  service.Clock

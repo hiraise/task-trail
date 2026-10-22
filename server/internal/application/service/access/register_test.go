@@ -19,8 +19,8 @@ var registerData = dto.Register{
 	ServiceURL: "https://example.com/tasktrail/",
 }
 
-// Первый аккаунт — администратор, подтверждён сразу, адрес сервиса сохранён без «/» в конце;
-// проверка и создание — под блокировкой регистрации внутри транзакции.
+// The first account is an administrator, verified right away, the service address is saved without a trailing "/";
+// the check and creation run under the registration lock inside a transaction.
 func TestRegisterFirstAccount(t *testing.T) {
 	module, d := newModule(t)
 	d.passwords.EXPECT().HashPassword("password").Return(passwordHash, nil)
@@ -31,7 +31,7 @@ func TestRegisterFirstAccount(t *testing.T) {
 		d.users.EXPECT().Create(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, u *entity.UserAccount) error {
 			if u.Email != email || u.PasswordHash != passwordHash || *u.Username != "Иван" || !u.IsAdmin ||
 				u.VerifiedAt == nil || !u.CreatedAt.Equal(now) {
-				return fmt.Errorf("пользователь: %+v", u)
+				return fmt.Errorf("user: %+v", u)
 			}
 			return nil
 		}),
@@ -46,7 +46,7 @@ func TestRegisterFirstAccount(t *testing.T) {
 	}
 	if !session.User.IsAdmin || session.AccessToken.Token != "access" || session.RefreshToken.Token != "refresh" ||
 		session.UserID != session.User.ID {
-		t.Fatalf("сессия: %+v", session)
+		t.Fatalf("session: %+v", session)
 	}
 }
 

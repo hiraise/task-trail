@@ -22,7 +22,7 @@ func TestChangePassword(t *testing.T) {
 	d.passwords.EXPECT().HashPassword("new-password").Return("$2a$12$new", nil)
 	d.users.EXPECT().Update(inTx, gomock.Any()).DoAndReturn(func(_ context.Context, u *entity.UserAccount) error {
 		if u.PasswordHash != "$2a$12$new" || !u.UpdatedAt.Equal(now) {
-			t.Errorf("пользователь: %+v", u)
+			t.Errorf("user: %+v", u)
 		}
 		return nil
 	})
@@ -33,22 +33,22 @@ func TestChangePassword(t *testing.T) {
 }
 
 func TestChangePasswordRejected(t *testing.T) {
-	t.Run("неверный текущий пароль", func(t *testing.T) {
+	t.Run("wrong current password", func(t *testing.T) {
 		module, d := newModule(t)
 		d.expectTx()
 		d.users.EXPECT().GetForUpdate(inTx, userID).Return(user(), nil)
 		d.passwords.EXPECT().ComparePassword("old-password", passwordHash).Return(false, nil)
 		requireCode(t, module.ChangePassword.Execute(context.Background(), string(userID), passwords), domain.WrongPassword)
 	})
-	t.Run("новый совпадает с текущим", func(t *testing.T) {
+	t.Run("new equals current", func(t *testing.T) {
 		module, d := newModule(t)
 		d.expectTx()
 		d.users.EXPECT().GetForUpdate(inTx, userID).Return(user(), nil)
 		d.passwords.EXPECT().ComparePassword(gomock.Any(), passwordHash).Return(true, nil).Times(2)
 		requireCode(t, module.ChangePassword.Execute(context.Background(), string(userID), passwords), domain.PasswordSameAsOld)
 	})
-	// Пользователя удалили, а access-токен ещё жив — 401, а не 404
-	t.Run("нет пользователя", func(t *testing.T) {
+	// The user was deleted but the access token is still alive: 401, not 404
+	t.Run("no user", func(t *testing.T) {
 		module, d := newModule(t)
 		d.expectTx()
 		d.users.EXPECT().GetForUpdate(inTx, userID).Return(nil, domain.ErrEntityNotFound(0, nil))

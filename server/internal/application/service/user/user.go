@@ -1,5 +1,5 @@
-// Package user — сценарии пользователя: текущий пользователь, его имя и аватарка,
-// другие пользователи из его проектов.
+// Package user holds the user use cases: the current user, their name and avatar,
+// other users from their projects.
 package user
 
 import (
@@ -17,7 +17,7 @@ type UserModule struct {
 	Profile      *ProfileService
 }
 
-// Deps — зависимости модуля пользователя.
+// Deps are the dependencies of the user module.
 type Deps struct {
 	TxManager   transaction.TxManager
 	Clock       service.Clock
@@ -47,8 +47,8 @@ func New(d Deps) *UserModule {
 	}
 }
 
-// sessionUser — ошибка чтения текущего пользователя. Его удалили, а access-токен ещё жив:
-// сессия недействительна, это 401, а не 404.
+// sessionUser maps an error reading the current user. If the user was deleted but the access token is still alive,
+// the session is invalid: 401, not 404.
 func sessionUser(err error, userID string) error {
 	if domain.HasCode(err, domain.EntityNotFound) {
 		return domain.ErrWrongAccessToken("userID", userID, "reason", "user not found")

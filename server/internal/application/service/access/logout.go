@@ -9,8 +9,8 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// LogoutService закрывает сессию refresh-токена. Недействительный токен — не ошибка:
-// выход всё равно удаляет cookie, а закрывать нечего.
+// LogoutService closes the session of a refresh token. An invalid token is not an error:
+// logout deletes the cookies anyway, and there is nothing to close.
 type LogoutService struct {
 	txManager              transaction.TxManager
 	clock                  service.Clock
@@ -38,13 +38,13 @@ func (s *LogoutService) Execute(ctx context.Context, rt string) error {
 		case entity.RefreshTokenReused:
 			return domain.ErrRefreshTokenReused("tokenID", rtID, "userID", userID)
 		}
-		// Только что обменянный, отозванный или истёкший токен закрывать не нужно
+		// A just exchanged, revoked or expired token needs no closing
 		return nil
 	}
 	err = s.txManager.DoWithTx(ctx, f)
 	switch {
 	case isReuse(err):
-		// Кража: выход удался, но закрываем и все остальные сессии пользователя
+		// Theft: logout succeeded, but all other sessions of the user are closed too
 		return s.refreshTokenRepository.RevokeAll(ctx, userID, now)
 	case isNotFound(err):
 		return nil

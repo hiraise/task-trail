@@ -1,5 +1,5 @@
-// Package link строит ссылки на страницы веба от адреса сервиса (ADR-0015): из писем
-// и из ответов API. Адреса страниц — в описании контракта api/openapi.yaml.
+// Package link builds links to web pages from the service address (ADR-0015): for emails
+// and API responses. Page addresses are described in the contract api/openapi.yaml.
 package link
 
 import (
@@ -14,17 +14,17 @@ const (
 	projectPath       = "/projects/"
 )
 
-// PasswordReset — страница сброса пароля; веб берёт токен из параметра token.
+// PasswordReset is the password reset page; the web takes the token from the token parameter.
 func PasswordReset(serviceURL, token string) string {
 	return serviceURL + passwordResetPath + "?token=" + url.QueryEscape(token)
 }
 
-// Invitation — страница приглашения; веб берёт токен из параметра token.
+// Invitation is the invitation page; the web takes the token from the token parameter.
 func Invitation(serviceURL, token string) string {
 	return serviceURL + invitationPath + "?token=" + url.QueryEscape(token)
 }
 
-// Project — страница проекта.
+// Project is the project page.
 func Project(serviceURL string, id entity.ProjectID) string {
 	return serviceURL + projectPath + url.PathEscape(string(id))
 }

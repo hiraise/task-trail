@@ -1,6 +1,6 @@
-// Package admin — администрирование сервиса (ADR-0014): адрес сервиса и почта (ADR-0015,
-// ADR-0017), пользователи и администраторы. Права администратора проверяет middleware.NewAdmin
-// до сценария, ссылку сброса пароля для пользователя выдаёт модуль доступа
+// Package admin is the service administration (ADR-0014): the service address and mail (ADR-0015,
+// ADR-0017), users and administrators. Administrator rights are checked by middleware.NewAdmin
+// before the use case; a password reset link for a user is issued by the access module
 // (access.PasswordResetLinkService.ForUser).
 package admin
 
@@ -23,7 +23,7 @@ type AdminModule struct {
 	SetAdmin         *SetAdminService
 }
 
-// Deps — зависимости модуля администрирования.
+// Deps are the dependencies of the administration module.
 type Deps struct {
 	TxManager    transaction.TxManager
 	Clock        service.Clock
@@ -44,8 +44,8 @@ func New(d Deps) *AdminModule {
 	}
 }
 
-// current — настройки сервиса, какими их видит администратор: изменение отвечает
-// изменённым ресурсом (ADR-0018).
+// current returns the service settings as the administrator sees them: a change responds
+// with the changed resource (ADR-0018).
 func current(ctx context.Context, settings repository.SettingsRepository) (dto.ServiceSettings, error) {
 	serviceURL, err := settings.GetServiceURL(ctx)
 	if err != nil {

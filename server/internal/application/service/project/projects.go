@@ -11,7 +11,7 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// ListProjectsService — проекты, где пользователь участник.
+// ListProjectsService returns the projects where the user is a member.
 type ListProjectsService struct {
 	projects repository.ProjectRepository
 }
@@ -20,7 +20,7 @@ func (s *ListProjectsService) Execute(ctx context.Context, userID string) ([]*re
 	return s.projects.ListViews(ctx, entity.UserID(userID))
 }
 
-// GetProjectService — проект и роль пользователя в нём; не участник — ENTITY_NOT_FOUND.
+// GetProjectService returns a project and the user's role in it; a non-member gets ENTITY_NOT_FOUND.
 type GetProjectService struct {
 	projects repository.ProjectRepository
 }
@@ -29,8 +29,8 @@ func (s *GetProjectService) Execute(ctx context.Context, userID, projectID strin
 	return s.projects.GetView(ctx, entity.ProjectID(projectID), entity.UserID(userID))
 }
 
-// CreateProjectService создаёт проект: создатель — владелец, почты из запроса зовутся,
-// как в AddMembersService.
+// CreateProjectService creates a project: the creator is the owner, emails from the request are invited
+// as in AddMembersService.
 type CreateProjectService struct {
 	txManager transaction.TxManager
 	access    *access
@@ -74,7 +74,7 @@ func (s *CreateProjectService) Execute(ctx context.Context, userID string, data 
 	}, nil
 }
 
-// UpdateProjectService меняет название и описание: владелец или администратор.
+// UpdateProjectService changes the name and description: the owner or an administrator.
 type UpdateProjectService struct {
 	txManager transaction.TxManager
 	clock     service.Clock
@@ -111,7 +111,7 @@ func (s *UpdateProjectService) Execute(ctx context.Context, userID, projectID st
 	return view, nil
 }
 
-// DeleteProjectService удаляет проект мягко, вместе с задачами (ADR-0001): только владелец.
+// DeleteProjectService soft-deletes a project along with its tasks (ADR-0001): only the owner.
 type DeleteProjectService struct {
 	txManager transaction.TxManager
 	clock     service.Clock
@@ -132,8 +132,8 @@ func (s *DeleteProjectService) Execute(ctx context.Context, userID, projectID st
 	})
 }
 
-// CandidatesService — кого пользователь может позвать в проект: люди из его проектов.
-// С projectID — без участников этого проекта, и звать в него должно быть можно.
+// CandidatesService returns whom the user can invite to a project: people from their projects.
+// With projectID: without that project's members, and the user must be allowed to invite to it.
 type CandidatesService struct {
 	members repository.ProjectMemberRepository
 	users   repository.UserRepository

@@ -1,6 +1,6 @@
-// Package task — сценарии задач: каждое изменение — своя операция (ADR-0002), статусы
-// фиксированы (ADR-0003), удаление мягкое (ADR-0001). Задачу видит и меняет любой участник
-// её проекта; не участнику — ENTITY_NOT_FOUND: существование задачи не выдаём (ADR-0018).
+// Package task holds the task use cases: each change is its own operation (ADR-0002), statuses
+// are fixed (ADR-0003), deletion is soft (ADR-0001). Any member of a task's project sees and changes
+// it; a non-member gets ENTITY_NOT_FOUND: the task's existence is not revealed (ADR-0018).
 package task
 
 import (
@@ -28,7 +28,7 @@ type TaskModule struct {
 	Delete         *DeleteTaskService
 }
 
-// Deps — зависимости модуля задач.
+// Deps are the dependencies of the task module.
 type Deps struct {
 	TxManager   transaction.TxManager
 	Clock       service.Clock
@@ -53,7 +53,7 @@ func New(d Deps) *TaskModule {
 	}
 }
 
-// editor меняет задачи под блокировкой их проекта (TaskRepository).
+// editor changes tasks under the lock of their project (TaskRepository).
 type editor struct {
 	txManager transaction.TxManager
 	clock     service.Clock
@@ -62,8 +62,8 @@ type editor struct {
 	tasks     repository.TaskRepository
 }
 
-// lock блокирует до конца транзакции проект задачи и проекты also и находит задачу
-// и участие userID в её проекте.
+// lock locks the task's project and the also projects until the end of the transaction and finds the task
+// and userID's membership in its project.
 func (e *editor) lock(ctx context.Context, taskID, userID string, also ...entity.ProjectID) (*entity.Task, *entity.ProjectMember, error) {
 	task, err := e.tasks.Get(ctx, entity.TaskID(taskID))
 	if err != nil {
@@ -74,8 +74,8 @@ func (e *editor) lock(ctx context.Context, taskID, userID string, also ...entity
 		if err := e.lockProjects(ctx, locked, append([]entity.ProjectID{task.ProjectID}, also...)); err != nil {
 			return nil, nil, err
 		}
-		// Пока ждали блокировку, задачу могли перенести или удалить. Теперь, если её проект
-		// заблокирован, задача не изменится до конца транзакции
+		// While waiting for the lock, the task may have been moved or deleted. Now, if its project
+		// is locked, the task does not change until the end of the transaction
 		if task, err = e.tasks.Get(ctx, task.ID); err != nil {
 			return nil, nil, err
 		}
@@ -87,8 +87,8 @@ func (e *editor) lock(ctx context.Context, taskID, userID string, also ...entity
 	return task, member, nil
 }
 
-// lockProjects блокирует проекты ids, кроме уже заблокированных, по возрастанию ID: так
-// два встречных переноса задач не ждут друг друга.
+// lockProjects locks the ids projects, except those already locked, in ascending ID order: this way
+// two opposite task moves do not wait for each other.
 func (e *editor) lockProjects(ctx context.Context, locked map[entity.ProjectID]bool, ids []entity.ProjectID) error {
 	slices.Sort(ids)
 	for _, id := range slices.Compact(ids) {
@@ -103,8 +103,8 @@ func (e *editor) lockProjects(ctx context.Context, locked map[entity.ProjectID]b
 	return nil
 }
 
-// edit — изменение задачи участником её проекта: в транзакции под блокировкой проекта
-// (и проектов also) применяет apply и записывает задачу.
+// edit is a change of a task by a member of its project: in a transaction under the project lock
+// (and the also projects) it applies apply and writes the task.
 func (e *editor) edit(ctx context.Context, userID, taskID string, also []entity.ProjectID,
 	apply func(ctx context.Context, task *entity.Task, now time.Time) error,
 ) (*entity.Task, error) {
@@ -129,8 +129,8 @@ func (e *editor) edit(ctx context.Context, userID, taskID string, also []entity.
 	return task, nil
 }
 
-// assignee — участие assigneeID в проекте; nil — без исполнителя. Не участник —
-// ASSIGNEE_NOT_MEMBER: ошибка в данных запроса, а не ресурс, которого нет.
+// assignee returns assigneeID's membership in the project; nil means no assignee. A non-member gives
+// ASSIGNEE_NOT_MEMBER: an error in the request data, not a missing resource.
 func (e *editor) assignee(ctx context.Context, projectID entity.ProjectID, assigneeID *string) (*entity.ProjectMember, error) {
 	if assigneeID == nil {
 		return nil, nil

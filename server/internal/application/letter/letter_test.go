@@ -21,7 +21,7 @@ func TestDuration(t *testing.T) {
 		21 * 24 * time.Hour:           "21 день",
 	} {
 		if got := letter.Duration(d); got != want {
-			t.Errorf("%s: %q, ожидалось %q", d, got, want)
+			t.Errorf("%s: %q, want %q", d, got, want)
 		}
 	}
 }
@@ -29,37 +29,37 @@ func TestDuration(t *testing.T) {
 func TestPasswordReset(t *testing.T) {
 	l := letter.PasswordReset("ivan@example.com", "https://example.com/auth/reset?token=ABC", 24*time.Hour)
 	if l.To != "ivan@example.com" || l.Subject == "" {
-		t.Fatalf("письмо %+v", l)
+		t.Fatalf("email %+v", l)
 	}
 	for _, part := range []string{"ivan@example.com", "\nhttps://example.com/auth/reset?token=ABC\n", "24 часа"} {
 		if !strings.Contains(l.Text, part) {
-			t.Errorf("в тексте нет %q:\n%s", part, l.Text)
+			t.Errorf("text lacks %q:\n%s", part, l.Text)
 		}
 	}
 }
 
-// Тема — одна строка заголовка: переводы строк из названия проекта не попадут в заголовки письма.
+// The subject is a single header line: line breaks from the project name do not get into the email headers.
 func TestProjectLetters(t *testing.T) {
 	const project = "Дизайн\r\nBcc: evil@example.com"
 	invitation := letter.Invitation("ivan@example.com", "Анна", project, "https://example.com/auth/invite?token=ABC", 7*24*time.Hour)
 	added := letter.AddedToProject("ivan@example.com", "Анна", project, "https://example.com/projects/42")
 	for _, l := range []struct{ subject, text string }{{invitation.Subject, invitation.Text}, {added.Subject, added.Text}} {
 		if strings.ContainsAny(l.subject, "\r\n") || !strings.Contains(l.subject, "«Дизайн  Bcc: evil@example.com»") {
-			t.Errorf("тема %q", l.subject)
+			t.Errorf("subject %q", l.subject)
 		}
 	}
 	if !strings.Contains(invitation.Text, "Анна приглашает вас") || !strings.Contains(invitation.Text, "действует 7 дней") ||
 		!strings.Contains(invitation.Text, "\nhttps://example.com/auth/invite?token=ABC\n") || invitation.To != "ivan@example.com" {
-		t.Errorf("приглашение:\n%s", invitation.Text)
+		t.Errorf("invitation:\n%s", invitation.Text)
 	}
 	if !strings.Contains(added.Text, "Анна добавляет вас") || !strings.Contains(added.Text, "\nhttps://example.com/projects/42\n") {
-		t.Errorf("извещение:\n%s", added.Text)
+		t.Errorf("notification:\n%s", added.Text)
 	}
 }
 
 func TestMailTest(t *testing.T) {
 	l := letter.MailTest("admin@example.com")
 	if l.To != "admin@example.com" || l.Subject == "" || !strings.Contains(l.Text, "тестовое письмо") {
-		t.Fatalf("письмо %+v", l)
+		t.Fatalf("email %+v", l)
 	}
 }

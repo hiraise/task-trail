@@ -12,7 +12,7 @@ import (
 func TestLogin(t *testing.T) {
 	module, d := newModule(t)
 	d.expectTx()
-	// Сценарий сам приводит почту к норме (ADR-0016)
+	// The use case normalizes the email itself (ADR-0016)
 	d.users.EXPECT().GetByEmail(inTx, email).Return(user(), nil)
 	d.passwords.EXPECT().ComparePassword("password", passwordHash).Return(true, nil)
 	d.expectSession()
@@ -22,20 +22,20 @@ func TestLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	if session.User.ID != userID || session.UserID != userID || session.AccessToken.Token != "access" {
-		t.Fatalf("сессия: %+v", session)
+		t.Fatalf("session: %+v", session)
 	}
 }
 
-// Нет пользователя и неверный пароль неотличимы: INVALID_CREDENTIALS.
+// A missing user and a wrong password are indistinguishable: INVALID_CREDENTIALS.
 func TestLoginInvalidCredentials(t *testing.T) {
-	t.Run("нет пользователя", func(t *testing.T) {
+	t.Run("no user", func(t *testing.T) {
 		module, d := newModule(t)
 		d.expectTx()
 		d.users.EXPECT().GetByEmail(inTx, email).Return(nil, domain.ErrEntityNotFound(0, nil))
 		_, err := module.Login.Execute(context.Background(), dto.Credentials{Email: string(email), Password: "password"})
 		requireCode(t, err, domain.InvalidCredentials)
 	})
-	t.Run("неверный пароль", func(t *testing.T) {
+	t.Run("wrong password", func(t *testing.T) {
 		module, d := newModule(t)
 		d.expectTx()
 		d.users.EXPECT().GetByEmail(inTx, email).Return(user(), nil)

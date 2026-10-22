@@ -11,7 +11,7 @@ import (
 	"task-trail/internal/domain/repository"
 )
 
-// resetLinkIssuer создаёт ссылку сброса пароля: токен уходит в ссылку, хеш — в базу.
+// resetLinkIssuer creates a password reset link: the token goes into the link, the hash into the database.
 type resetLinkIssuer struct {
 	factory            *factory.PasswordResetFactory
 	repository         repository.PasswordResetRepository
@@ -24,8 +24,8 @@ func (i *resetLinkIssuer) issue(ctx context.Context, userID entity.UserID) (dto.
 		return dto.ResetLink{}, nil, err
 	}
 	if serviceURL == "" {
-		// Адрес задаётся вместе с первым аккаунтом, а без аккаунтов сбрасывать нечего
-		return dto.ResetLink{}, nil, errors.New("адрес сервиса не задан")
+		// The address is set with the first account, and without accounts there is nothing to reset
+		return dto.ResetLink{}, nil, errors.New("service address is not set")
 	}
 	token, reset := i.factory.New(userID)
 	if err := i.repository.Create(ctx, reset); err != nil {

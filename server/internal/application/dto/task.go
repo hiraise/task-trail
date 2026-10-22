@@ -4,12 +4,12 @@ type CreateTask struct {
 	ProjectID   string
 	Name        string
 	Description *string
-	// AssigneeID — исполнитель или nil.
+	// AssigneeID is the assignee or nil.
 	AssigneeID *string
 }
 
-// TaskChanges — что поменять в задаче: Name — если не nil; описание — если DescriptionSet,
-// nil в Description убирает описание.
+// TaskChanges is what to change in a task: Name if not nil; the description if DescriptionSet,
+// nil in Description removes the description.
 type TaskChanges struct {
 	Name           *string
 	DescriptionSet bool
