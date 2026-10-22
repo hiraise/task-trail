@@ -13,6 +13,10 @@ export const ROUTES = {
   profile: "/profile",
   profileEditPersonalData: "/profile/edit-personal-data",
   profileChangePassword: "/profile/change-password",
+  admin: "/admin",
+  adminServiceUrl: "/admin/service-url",
+  adminMail: "/admin/mail",
+  adminUsers: "/admin/users",
 } as const;
 
 export const BOTTOM_NAV_PATHS = [

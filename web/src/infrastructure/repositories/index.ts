@@ -1,3 +1,4 @@
+export * from "./apiAdminRepository";
 export * from "./apiAuthRepository";
 export * from "./apiProjectMemberRepository";
 export * from "./apiProjectRepository";

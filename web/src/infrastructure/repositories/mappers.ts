@@ -1,16 +1,23 @@
+import type { AdminUser } from "@/domain/models/AdminUser";
 import type { InvitationResult } from "@/domain/models/Invitation";
+import type { PasswordResetLink } from "@/domain/models/PasswordResetLink";
 import type { Project, ProjectDetails } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
+import type { MailSettings, ServiceSettings } from "@/domain/models/ServiceSettings";
 import type { Task } from "@/domain/models/Task";
 import type { TaskStatus } from "@/domain/models/TaskStatus";
 import type { CurrentUser, User } from "@/domain/models/User";
 
 import type {
+  AdminUser as AdminUserDto,
   CurrentUser as CurrentUserDto,
   InvitationResult as InvitationResultDto,
+  MailSettings as MailSettingsDto,
   Member as MemberDto,
+  PasswordResetLink as PasswordResetLinkDto,
   ProjectDetails as ProjectDetailsDto,
   Project as ProjectDto,
+  ServiceSettings as ServiceSettingsDto,
   TaskStatus as TaskStatusDto,
   Task as TaskDto,
   User as UserDto,
@@ -73,4 +80,29 @@ export const toTaskStatus = (dto: TaskStatusDto): TaskStatus => ({
   name: dto.name,
   isDefault: dto.isDefault,
   isResolved: dto.isResolved,
+});
+
+const toMailSettings = (dto: MailSettingsDto): MailSettings => ({
+  host: dto.host,
+  port: dto.port,
+  encryption: dto.encryption,
+  sender: dto.sender,
+  username: dto.username ?? undefined,
+  passwordSet: dto.passwordSet,
+});
+
+export const toServiceSettings = (dto: ServiceSettingsDto): ServiceSettings => ({
+  serviceUrl: dto.serviceUrl,
+  mail: dto.mail ? toMailSettings(dto.mail) : undefined,
+});
+
+export const toAdminUser = (dto: AdminUserDto): AdminUser => ({
+  ...toUser(dto),
+  isAdmin: dto.isAdmin,
+  createdAt: dto.createdAt,
+});
+
+export const toPasswordResetLink = (dto: PasswordResetLinkDto): PasswordResetLink => ({
+  url: dto.url,
+  expiresAt: dto.expiresAt,
 });

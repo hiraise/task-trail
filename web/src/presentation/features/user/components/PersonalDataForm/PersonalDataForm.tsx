@@ -11,15 +11,15 @@ import {
   formClassName,
   formStyles as styles,
   labelClassName,
-  ProfileFormFooter,
-  type ProfileFormLayout,
+  FormFooter,
+  type FormLayout,
   useFocusWithin,
-} from "../ProfileFormLayout";
+} from "@/presentation/shared/forms/FormLayout";
 
 import { PersonalDataSchema, type PersonalDataFormData } from "./schema";
 
 interface PersonalDataFormProps {
-  layout: ProfileFormLayout;
+  layout: FormLayout;
 }
 
 /** Имя и почта текущего пользователя; почту сервер менять пока не даёт. */
@@ -97,7 +97,7 @@ export function PersonalDataForm({ layout }: PersonalDataFormProps) {
         </div>
         <EmailField email={user?.email ?? ""} labelClass={labelClass} withHint={!inline} />
       </div>
-      <ProfileFormFooter
+      <FormFooter
         layout={layout}
         focused={focused}
         dirty={isDirty}

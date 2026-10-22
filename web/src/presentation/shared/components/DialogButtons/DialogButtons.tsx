@@ -11,6 +11,8 @@ interface DialogButtonsProps {
   onDelete?: () => void;
   onLeave?: () => void;
   variant?: "apply" | "move" | "delete" | "leave";
+  /** Текст кнопки «apply», если «Применить» не подходит */
+  applyText?: string;
 }
 
 export function DialogButtons({
@@ -20,6 +22,7 @@ export function DialogButtons({
   onDelete,
   onLeave,
   variant = "apply",
+  applyText = TEXTS.apply,
 }: DialogButtonsProps) {
   return (
     <div className={styles.buttons}>
@@ -29,7 +32,7 @@ export function DialogButtons({
 
       {variant === "apply" && (
         <SubmitButton variant="primary" onClick={onApply}>
-          {TEXTS.apply}
+          {applyText}
         </SubmitButton>
       )}
       {variant === "move" && (

@@ -10,12 +10,15 @@ interface TopBarBackMobileProps {
   title: string;
   variant?: Variant;
   onActionClick?: () => void;
+  /** Куда ведёт «назад»; без него — на уровень выше по адресу */
+  backTo?: string;
 }
 
 export function TopBarBackMobile({
   title,
   variant = "none",
   onActionClick,
+  backTo = "..",
 }: TopBarBackMobileProps) {
   const navigate = useNavigate();
 
@@ -41,7 +44,7 @@ export function TopBarBackMobile({
       <IconButton
         icon={ICONS.leftArrowWithPadding}
         size="24px"
-        onClick={() => navigate({ to: ".." })}
+        onClick={() => navigate({ to: backTo })}
       />
       <h4 className={styles.title}>{title}</h4>
       {content}

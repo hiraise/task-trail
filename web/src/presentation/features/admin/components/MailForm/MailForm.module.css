@@ -1,0 +1,74 @@
+.form {
+  min-width: 0;
+}
+
+.encryption {
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.legend {
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.radios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.radio input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--icon-accent);
+  cursor: pointer;
+}
+
+.hint {
+  color: var(--text-secondary);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-left: -8px;
+}
+
+.danger {
+  color: var(--text-critical);
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.buttons > button {
+  width: 164px;
+  height: 40px;
+}

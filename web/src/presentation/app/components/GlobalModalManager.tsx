@@ -2,6 +2,8 @@ import { Suspense, useState } from "react";
 
 import { MODAL_TYPE, useGlobalModalContext } from "./GlobalModalContext";
 import {
+  AdminUserActionsModal,
+  ConfirmModal,
   CreateProjectModal,
   CreateTaskModal,
   CropImageModal,
@@ -19,6 +21,7 @@ import {
   SortItemsModal,
   TaskSettingsModal,
   ChangeTaskStatusModal,
+  PasswordResetLinkModal,
 } from "./lazyModalComponents";
 import { ModalAppearContext } from "./modalAppear";
 
@@ -40,6 +43,9 @@ const MODAL_COMPONENTS = {
   [MODAL_TYPE.TASK_SETTINGS]: TaskSettingsModal,
   [MODAL_TYPE.CROP_IMAGE]: CropImageModal,
   [MODAL_TYPE.MEMBER_ACTIONS]: MemberActionsModal,
+  [MODAL_TYPE.CONFIRM]: ConfirmModal,
+  [MODAL_TYPE.ADMIN_USER_ACTIONS]: AdminUserActionsModal,
+  [MODAL_TYPE.PASSWORD_RESET_LINK]: PasswordResetLinkModal,
 } as const;
 
 export function GlobalModalManager() {

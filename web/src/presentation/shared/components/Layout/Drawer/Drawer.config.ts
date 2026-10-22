@@ -33,6 +33,13 @@ export const navItems: NavMenuItem[] = [
   },
 ];
 
+/** Раздел администратора сервиса — в меню только у администратора (ADR-0014) */
+export const adminItem: NavMenuItem = {
+  href: ROUTES.admin,
+  icon: ASSETS.icons.settings,
+  label: TEXTS.drawer.admin,
+};
+
 export const searchItem = {
   href: ROUTES.search,
   icon: ASSETS.icons.search,

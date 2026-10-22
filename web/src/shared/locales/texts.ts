@@ -23,6 +23,7 @@ export const TEXTS = {
     myBoards: "Мои доски",
     myTasks: "Мои задачи",
     myProfile: "Мой профиль",
+    admin: "Администрирование",
     search: "Поиск",
     collapse: "Свернуть",
     expand: "Развернуть",

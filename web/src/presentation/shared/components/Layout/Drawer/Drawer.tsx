@@ -4,9 +4,10 @@ import { useState } from "react";
 
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
+import { useGetCurrentUser } from "@/presentation/shared/hooks";
 import { Icon } from "@/presentation/shared/ui";
 
-import { navItems, searchItem } from "./Drawer.config";
+import { adminItem, navItems, searchItem } from "./Drawer.config";
 import styles from "./Drawer.module.css";
 import { NavItem } from "./NavItem";
 
@@ -52,10 +53,13 @@ function Logo({ isExpanded }: { isExpanded: boolean }) {
 }
 
 function NavItems({ isExpanded }: { isExpanded: boolean }) {
+  const { data: user } = useGetCurrentUser();
+  const items = user?.isAdmin ? [...navItems, adminItem] : navItems;
+
   return (
     <nav className={styles.body}>
       <div className={styles.menuItems}>
-        {navItems.map((item) => (
+        {items.map((item) => (
           <NavItem key={item.label} item={item} isExpanded={isExpanded} />
         ))}
       </div>

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Icon } from "@/presentation/shared";
+import { Icon } from "../../ui";
 
 import styles from "./MenuButton.module.css";
 import type { ComponentType } from "react";

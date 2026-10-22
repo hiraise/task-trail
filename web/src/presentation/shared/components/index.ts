@@ -6,6 +6,7 @@ export * from "./DialogButtons";
 export * from "./EmptyListState";
 export * from "./FormFieldError";
 export * from "./LoadingScreen";
+export * from "./MenuButton";
 export * from "./MembersAvatarList";
 export * from "./RedirectScreen";
 export * from "./Search";

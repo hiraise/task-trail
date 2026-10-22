@@ -1,11 +1,11 @@
 import { SubmitButton } from "@/presentation/shared";
 
 import { InlineFormButtons } from "./InlineFormButtons";
-import styles from "./ProfileFormLayout.module.css";
-import type { ProfileFormLayout } from "./types";
+import styles from "./FormLayout.module.css";
+import type { FormLayout } from "./types";
 
-interface ProfileFormFooterProps {
-  layout: ProfileFormLayout;
+interface FormFooterProps {
+  layout: FormLayout;
   focused: boolean;
   dirty: boolean;
   submitting: boolean;
@@ -14,17 +14,17 @@ interface ProfileFormFooterProps {
 }
 
 /**
- * Кнопки формы профиля: в карточке — «Отменить» и «Сохранить», пока форма в фокусе или изменена;
+ * Кнопки формы: в карточке — «Отменить» и «Сохранить», пока форма в фокусе или изменена;
  * на отдельной странице — одна кнопка внизу.
  */
-export function ProfileFormFooter({
+export function FormFooter({
   layout,
   focused,
   dirty,
   submitting,
   submitText,
   onCancel,
-}: ProfileFormFooterProps) {
+}: FormFooterProps) {
   if (layout === "inline") {
     return (
       <InlineFormButtons

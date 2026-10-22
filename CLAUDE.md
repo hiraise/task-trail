@@ -30,7 +30,7 @@ AI-агенты (Claude): код пишет и проверяет агент, в
 | Контракт API | `api/openapi.yaml`, соглашения — [ADR-0018](docs/adr/0018-api-conventions.md) | агент |
 | Устройство сервера | [ADR-0007](docs/adr/0007-server-architecture.md), переменные окружения — `server/README.md` | агент |
 | Устройство веб-клиента | [ADR-0008](docs/adr/0008-web-architecture.md) | агент |
-| Дизайн | Figma, файл `a0kWAR6mX1ljkre7UrmtkH`: экраны на 393, 768 и 1200+ px, дизайн-система на странице «ДС». Страницы подгружаются лениво — `get_metadata` без узла видит только обложку, список страниц даёт `use_figma` (`figma.root.children`) | агент |
+| Дизайн | `docs/design-system.md`: токены, раскладка, компоненты; новый экран — макет на согласование ([ADR-0025](docs/adr/0025-design-system-in-repo.md)). Уже нарисованные экраны — Figma, файл `a0kWAR6mX1ljkre7UrmtkH` (393, 768 и 1200+ px), не дополняется | агент |
 | Правила работы | `CLAUDE.md` | агент |
 | Повторяемые процедуры: сдача задачи (`/pr`), слияние PR (`/merge`) | `.claude/skills/` | агент |
 

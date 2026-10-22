@@ -12,6 +12,10 @@ const PROJECTS = `${API_VERSION}/projects`;
 const TASKS = `${API_VERSION}/tasks`;
 const FILES = `${API_VERSION}/files`;
 const INVITATIONS = `${AUTH}/invitations`;
+const ADMIN = `${API_VERSION}/admin`;
+const ADMIN_SETTINGS = `${ADMIN}/settings`;
+const ADMIN_MAIL = `${ADMIN_SETTINGS}/mail`;
+const ADMIN_USERS = `${ADMIN}/users`;
 
 export const API_ROUTES = {
   // AUTH API
@@ -48,6 +52,13 @@ export const API_ROUTES = {
   USER_BY_ID: (id: UserId) => `${USERS}/${id}`,
   // FILES API
   FILE: (id: string) => `${FILES}/${id}`,
+  // ADMIN API: только администратору сервиса (ADR-0014)
+  ADMIN_SETTINGS: ADMIN_SETTINGS,
+  ADMIN_MAIL: ADMIN_MAIL,
+  ADMIN_TEST_MAIL: `${ADMIN_MAIL}/test`,
+  ADMIN_USERS: ADMIN_USERS,
+  ADMIN_USER: (id: UserId) => `${ADMIN_USERS}/${id}`,
+  ADMIN_PASSWORD_RESET_LINK: (id: UserId) => `${ADMIN_USERS}/${id}/password-reset-link`,
 };
 
 /** Адрес файла для `<img>` и ссылок: аватарка отдаётся без входа (getFile в контракте). */

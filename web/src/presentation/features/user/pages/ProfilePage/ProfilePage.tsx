@@ -1,16 +1,17 @@
-import { Icon } from "@/presentation/shared";
+import { Icon, MenuButton } from "@/presentation/shared";
 import { useLogout } from "@/presentation/shared/hooks";
 import { ICONS } from "@/shared/config/icons";
 import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { ChangePasswordForm, MenuButton, PersonalDataForm, ProfileHero } from "../../components";
+import { ChangePasswordForm, PersonalDataForm, ProfileHero } from "../../components";
 import { useGetCurrentUser } from "../../hooks";
 
 import styles from "./ProfilePage.module.css";
 
 /**
- * Профиль. На телефоне — шапка, кнопки на отдельные страницы данных и пароля и выход внизу;
+ * Профиль. На телефоне — шапка, кнопки на отдельные страницы данных и пароля (администратору —
+ * и в раздел администратора: шире он в боковом меню) и выход внизу;
  * с 768 px — карточка с формами прямо на странице. Раскладку переключает CSS.
  */
 export function ProfilePage() {
@@ -34,6 +35,9 @@ export function ProfilePage() {
           text={TEXTS.profile.changePassword2}
           icon={ICONS.lock}
         />
+        {user.isAdmin && (
+          <MenuButton href={ROUTES.admin} text={TEXTS.drawer.admin} icon={ICONS.settings} />
+        )}
       </nav>
 
       <div className={styles.forms}>

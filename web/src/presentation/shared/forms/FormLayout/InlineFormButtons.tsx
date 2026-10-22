@@ -3,7 +3,7 @@ import { AnimatePresence, motion as m } from "framer-motion";
 import { SubmitButton } from "@/presentation/shared";
 import { TEXTS } from "@/shared/locales/texts";
 
-import styles from "./ProfileFormLayout.module.css";
+import styles from "./FormLayout.module.css";
 
 interface InlineFormButtonsProps {
   visible: boolean;
@@ -11,7 +11,7 @@ interface InlineFormButtonsProps {
   onCancel: () => void;
 }
 
-/** «Отменить» и «Сохранить» формы в карточке профиля: видны, пока форма в фокусе или изменена. */
+/** «Отменить» и «Сохранить» формы в карточке: видны, пока форма в фокусе или изменена. */
 export function InlineFormButtons({ visible, submitDisabled, onCancel }: InlineFormButtonsProps) {
   return (
     <AnimatePresence mode="wait">

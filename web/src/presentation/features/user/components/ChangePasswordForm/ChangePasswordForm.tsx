@@ -12,10 +12,10 @@ import {
   formClassName,
   formStyles as styles,
   labelClassName,
-  ProfileFormFooter,
-  type ProfileFormLayout,
+  FormFooter,
+  type FormLayout,
   useFocusWithin,
-} from "../ProfileFormLayout";
+} from "@/presentation/shared/forms/FormLayout";
 
 import { schema, type FormValues } from "./schema";
 
@@ -32,7 +32,7 @@ const FIELDS = [
 ] as const;
 
 interface ChangePasswordFormProps {
-  layout: ProfileFormLayout;
+  layout: FormLayout;
 }
 
 /**
@@ -112,7 +112,7 @@ export function ChangePasswordForm({ layout }: ChangePasswordFormProps) {
           </div>
         ))}
       </div>
-      <ProfileFormFooter
+      <FormFooter
         layout={layout}
         focused={focused}
         dirty={isDirty}

@@ -1,0 +1,22 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.admin {
+  background-color: var(--bg-accent-yellow);
+}
+
+.on {
+  background-color: var(--bg-accent-green);
+}
+
+.off {
+  background-color: var(--bg-secondary);
+  color: var(--text-tertiary);
+}
