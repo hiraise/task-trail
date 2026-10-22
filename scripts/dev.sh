@@ -7,10 +7,7 @@ ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 CACHE="$ROOT/.cache"
 GOLANGCI_LINT_VERSION=2.15.0
 
-# Стенд (ADR-0010). Сервер на нём — эталон старого API, с которым работает веб-клиент:
-# коммит de79e25 из hiraise/tt-backend, после переноса истории — этот.
-LEGACY_API_COMMIT=71b514ee41c26b60afb7bbb8b970036b1d591483
-STAND="$CACHE/stand"
+# Стенд (ADR-0010): сервер из server/, веб из web/, PostgreSQL и перехватчик почты
 COMPOSE=(docker compose -f "$ROOT/stand/compose.yaml")
 
 usage() {
@@ -24,10 +21,12 @@ usage() {
   web     веб: типы API из контракта, линтер, тесты, проверка типов и сборка
 
 Локальный стенд в Docker:
-  up              собрать и запустить: веб, сервер, PostgreSQL, перехватчик почты
-  smoke           дымовая проверка поднятого стенда: вход через письмо, проект
+  up              собрать и запустить: веб, сервер, PostgreSQL, перехватчик почты;
+                  на пустой базе — создать администратора и подключить почту
+  smoke           дымовая проверка поднятого стенда: вход, приглашение по письму,
+                  задача, аватарка
   down            остановить, данные сохраняются
-  reset           остановить и стереть базу
+  reset           остановить и стереть базу и файлы
   logs [сервис]   логи: server, web, postgres, mailpit
 
 Ветки:
@@ -184,43 +183,13 @@ ensure_docker() {
 	exit 1
 }
 
-# Исходники эталонного сервера и сертификат почты — в .cache/stand/, их подхватывает stand/compose.yaml
-prepare_stand() {
-	local legacy="$STAND/legacy"
-	if [ "$(cat "$legacy/COMMIT" 2>/dev/null)" != "$LEGACY_API_COMMIT" ]; then
-		if ! git -C "$ROOT" cat-file -e "$LEGACY_API_COMMIT^{commit}" 2>/dev/null; then
-			echo "В клоне нет коммита эталона ${LEGACY_API_COMMIT:0:7} — клон неполный: git fetch --unshallow" >&2
-			exit 1
-		fi
-		echo "== стенд: выгружаю сервер ${LEGACY_API_COMMIT:0:7} из истории"
-		rm -rf "$legacy"
-		mkdir -p "$legacy"
-		git -C "$ROOT" archive "$LEGACY_API_COMMIT" server | tar -x -C "$legacy"
-		echo "$LEGACY_API_COMMIT" >"$legacy/COMMIT"
-	fi
-	local certs="$STAND/certs"
-	if [ ! -f "$certs/mailpit.crt" ]; then
-		echo "== стенд: самоподписанный сертификат для Mailpit"
-		mkdir -p "$certs"
-		printf '[req]\ndistinguished_name = dn\nx509_extensions = ext\nprompt = no\n[dn]\nCN = mailpit\n[ext]\nsubjectAltName = DNS:mailpit\n' >"$certs/openssl.cnf"
-		openssl req -x509 -newkey rsa:2048 -nodes -days 3650 -config "$certs/openssl.cnf" \
-			-keyout "$certs/mailpit.key" -out "$certs/mailpit.crt" 2>/dev/null
-		chmod 644 "$certs/mailpit.key"
-	fi
-}
-
+# Первый аккаунт и почту настраивает API администратора, а не окружение сервера (ADR-0015):
+# scripts/stand-setup.mjs, он же печатает адреса и вход
 stand_up() {
 	ensure_docker
-	prepare_stand
 	echo "== стенд: сборка и запуск"
 	"${COMPOSE[@]}" up -d --build --wait
-	cat <<'EOF'
-== стенд запущен
-  веб      http://localhost:3000   Chrome или Firefox: Safari не принимает Secure-cookies по http
-  почта    http://localhost:8025   письма подтверждения почты и сброса пароля
-  Swagger  http://localhost:3000/api/docs/index.html   логин и пароль — root
-Остановить — scripts/dev.sh down, стереть базу — scripts/dev.sh reset.
-EOF
+	node "$ROOT/scripts/stand-setup.mjs"
 }
 
 # Убирает worktree веток, чей PR слит (CLAUDE.md, «Ветки и PR»): исходники остаются в истории git.
