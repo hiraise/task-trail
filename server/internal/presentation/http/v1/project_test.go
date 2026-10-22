@@ -356,18 +356,13 @@ func TestProjectRoles(t *testing.T) {
 func TestLeaveUnassignsTasks(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	ctx := context.Background()
-	admin := registerAdmin(t, s)
+	registerAdmin(t, s)
 	design := createProject(t, s, "Дизайн-система").Project.ID
 	backend := createProject(t, s, "Бэкенд").Project.ID
 	ivan := signUp(t, s, design, "ivan@example.com", "Иван")
 	login(t, s, "admin@example.com", password)
 	addMembers(t, s, backend, "ivan@example.com")
-	tasks := []string{s.CreateTask(design, admin.ID, "Кнопка"), s.CreateTask(backend, admin.ID, "API")}
-	for _, task := range tasks {
-		if _, err := s.Pool.Exec(ctx, `UPDATE tasks SET assignee_id = $1 WHERE id = $2`, ivan.ID, task); err != nil {
-			t.Fatal(err)
-		}
-	}
+	tasks := []string{createTask(t, s, design, "Кнопка", ivan.ID).ID, createTask(t, s, backend, "API", ivan.ID).ID}
 	assignee := func(task string) *string {
 		t.Helper()
 		var id *string
@@ -398,12 +393,10 @@ func TestDeleteProject(t *testing.T) {
 	design := createProject(t, s, "Дизайн-система").Project.ID
 	keep := createProject(t, s, "Бэкенд").Project.ID
 	link := *addMembers(t, s, design, "ivan@example.com")[0].InviteURL
-	task := s.CreateTask(design, admin.ID, "Кнопка")
-	s.CreateTask(keep, admin.ID, "API")
-	gone := s.CreateTask(keep, admin.ID, "Удалённая")
-	if _, err := s.Pool.Exec(ctx, `UPDATE tasks SET deleted_at = now() WHERE id = $1`, gone); err != nil {
-		t.Fatal(err)
-	}
+	task := createTask(t, s, design, "Кнопка", "").ID
+	createTask(t, s, keep, "API", "")
+	gone := createTask(t, s, keep, "Удалённая", "").ID
+	apitest.RequireStatus(t, s.Do(http.MethodDelete, "/v1/tasks/"+gone, nil), http.StatusNoContent)
 
 	apitest.RequireStatus(t, s.Do(http.MethodDelete, "/v1/projects/"+design, nil), http.StatusNoContent)
 	apitest.RequireError(t, s.Do(http.MethodGet, "/v1/projects/"+design, nil), http.StatusNotFound, "NOT_FOUND")

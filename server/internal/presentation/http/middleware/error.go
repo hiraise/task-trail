@@ -39,6 +39,7 @@ var apiErrorFor = map[domain.ErrorCode]response.ApiError{
 	domain.RegistrationClosed: {Status: http.StatusConflict, Code: response.CodeRegistrationClosed, Message: "регистрация закрыта: первый аккаунт уже создан"},
 	domain.Forbidden:          {Status: http.StatusForbidden, Code: response.CodeForbidden, Message: "не хватает роли в проекте или прав администратора сервиса"},
 	domain.OwnerCannotLeave:   {Status: http.StatusConflict, Code: response.CodeOwnerCannotLeave, Message: "владелец не выходит из проекта, а удаляет его"},
+	domain.AssigneeNotMember:  {Status: http.StatusUnprocessableEntity, Code: response.CodeAssigneeNotMember, Message: "исполнитель не участник проекта"},
 	domain.LinkInvalid:        {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "ссылка неверна, использована или истекла"},
 	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "аккаунт с этой почтой уже есть, нужно войти"},
 	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "почта не подключена"},

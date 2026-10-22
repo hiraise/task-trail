@@ -1,0 +1,190 @@
+package v1
+
+import (
+	"net/http"
+
+	"task-trail/internal/application/service/task"
+	"task-trail/internal/domain/entity"
+	"task-trail/internal/pkg/contextmanager"
+	"task-trail/internal/presentation/http/v1/request"
+	"task-trail/internal/presentation/http/v1/response"
+	"task-trail/internal/utils"
+
+	"github.com/gin-gonic/gin"
+)
+
+// taskRoutes — задачи и их статусы: /v1/tasks/*, /v1/task-statuses, задачи проекта
+// и задачи текущего пользователя в контракте.
+type taskRoutes struct {
+	cm       *contextmanager.GinContextManager
+	services *task.TaskModule
+}
+
+func (r *taskRoutes) userID(c *gin.Context) string {
+	return utils.Must(r.cm.GetUserID(c))
+}
+
+// Набор статусов фиксирован (ADR-0003) — сценарий ему не нужен.
+func (r *taskRoutes) statuses(c *gin.Context) {
+	c.JSON(http.StatusOK, response.NewTaskStatuses(entity.TaskStatuses()))
+}
+
+func (r *taskRoutes) listInProject(c *gin.Context) {
+	projectID, err := pathID(c, "projectId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	tasks, err := r.services.ListInProject.Execute(c, r.userID(c), projectID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTasks(tasks))
+}
+
+func (r *taskRoutes) listAssigned(c *gin.Context) {
+	tasks, err := r.services.ListAssigned.Execute(c, r.userID(c))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTasks(tasks))
+}
+
+func (r *taskRoutes) create(c *gin.Context) {
+	data, err := request.BindCreateTask(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.Create.Execute(c, r.userID(c), data)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, response.NewTask(t))
+}
+
+func (r *taskRoutes) get(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.Get.Execute(c, r.userID(c), taskID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
+func (r *taskRoutes) update(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	changes, err := request.BindUpdateTask(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.Update.Execute(c, r.userID(c), taskID, changes)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
+func (r *taskRoutes) changeStatus(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	status, err := request.BindChangeTaskStatus(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.ChangeStatus.Execute(c, r.userID(c), taskID, status)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
+func (r *taskRoutes) changeAssignee(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	assigneeID, err := request.BindChangeTaskAssignee(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.ChangeAssignee.Execute(c, r.userID(c), taskID, assigneeID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
+func (r *taskRoutes) move(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	projectID, err := request.BindMoveTask(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.Move.Execute(c, r.userID(c), taskID, projectID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
+func (r *taskRoutes) delete(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if err := r.services.Delete.Execute(c, r.userID(c), taskID); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func NewTaskRouter(
+	router *gin.RouterGroup,
+	services *task.TaskModule,
+	authMW gin.HandlerFunc,
+	cm *contextmanager.GinContextManager,
+) {
+	r := &taskRoutes{cm: cm, services: services}
+	g := router.Group("", authMW)
+	g.GET("/task-statuses", r.statuses)
+	g.GET("/projects/:projectId/tasks", r.listInProject)
+	g.GET("/users/me/tasks", r.listAssigned)
+	g.POST("/tasks", r.create)
+	g.GET("/tasks/:taskId", r.get)
+	g.PATCH("/tasks/:taskId", r.update)
+	g.DELETE("/tasks/:taskId", r.delete)
+	g.PATCH("/tasks/:taskId/status", r.changeStatus)
+	g.PATCH("/tasks/:taskId/assignee", r.changeAssignee)
+	g.PATCH("/tasks/:taskId/project", r.move)
+}

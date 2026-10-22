@@ -341,7 +341,7 @@ func TestGetUser(t *testing.T) {
 	backend := s.CreateProject("Бэкенд")
 	s.AddMember(backend, admin.ID, entity.RoleOwner)
 	petr := accept(backend, "petr@example.com")
-	task := s.CreateTask(backend, petr.ID, "Сверстать вход")
+	task := createTask(t, s, backend, "Сверстать вход", "").ID
 	s.RemoveMember(backend, petr.ID)
 	stranger := accept(s.CreateProject("Чужой"), "stranger@example.com")
 

@@ -16,7 +16,9 @@ type createProjectReq struct {
 
 func (r *createProjectReq) normalize() { normalizeEmails(r.Emails) }
 
-type updateProjectReq struct {
+// renameReq — новое название или описание проекта или задачи (UpdateProjectRequest
+// и UpdateTaskRequest в контракте).
+type renameReq struct {
 	Name        Optional[string] `json:"name" binding:"omitnil,min=1,max=254"`
 	Description Optional[string] `json:"description"`
 }
@@ -38,10 +40,9 @@ func normalizeEmails(emails []string) {
 	}
 }
 
-// checkUpdateProject: название не может быть null, и хотя бы одно поле нужно
-// (UpdateProjectRequest в контракте: minProperties 1).
-func checkUpdateProject(sl validator.StructLevel) {
-	r := sl.Current().Interface().(updateProjectReq)
+// checkRename: название не может быть null, и хотя бы одно поле нужно (minProperties 1).
+func checkRename(sl validator.StructLevel) {
+	r := sl.Current().Interface().(renameReq)
 	switch {
 	case r.Name.Set && r.Name.Value == nil:
 		sl.ReportError(r.Name, "name", "Name", "required", "")
@@ -59,7 +60,7 @@ func BindCreateProject(c *gin.Context) (dto.CreateProject, error) {
 }
 
 func BindUpdateProject(c *gin.Context) (dto.ProjectChanges, error) {
-	body, err := validate[updateProjectReq](c)
+	body, err := validate[renameReq](c)
 	if err != nil {
 		return dto.ProjectChanges{}, err
 	}

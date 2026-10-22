@@ -18,7 +18,7 @@ type ProjectView struct {
 type ProjectRepository interface {
 	Create(ctx context.Context, project *entity.Project) error
 	// GetForUpdate блокирует строку проекта до конца транзакции. Сценарии, которые меняют
-	// проект или его участников, начинают с неё: так проверка роли и само действие
+	// проект, его участников или задачи, начинают с неё: так проверка роли и само действие
 	// не разойдутся с параллельным изменением.
 	GetForUpdate(ctx context.Context, id entity.ProjectID) (*entity.Project, error)
 	// GetView — проект глазами участника userID; не участник — ENTITY_NOT_FOUND.
