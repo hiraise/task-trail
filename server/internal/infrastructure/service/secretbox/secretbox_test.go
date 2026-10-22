@@ -23,15 +23,15 @@ func TestSealOpen(t *testing.T) {
 		t.Fatal(err)
 	}
 	if bytes.Contains(sealed, []byte("smtp-password")) {
-		t.Fatal("секрет виден в шифротексте")
+		t.Fatal("the secret is visible in the ciphertext")
 	}
 	opened, err := b.Open(sealed, "mail")
 	if err != nil || string(opened) != "smtp-password" {
-		t.Fatalf("расшифровано %q, ошибка %v", opened, err)
+		t.Fatalf("decrypted %q, error %v", opened, err)
 	}
 	again, _ := b.Seal([]byte("smtp-password"), "mail")
 	if bytes.Equal(sealed, again) {
-		t.Error("одинаковые секреты дали одинаковый шифротекст: nonce не случайный")
+		t.Error("identical secrets gave the same ciphertext: the nonce is not random")
 	}
 }
 
@@ -39,12 +39,12 @@ func TestOpenFails(t *testing.T) {
 	b := box(t, "0123456789abcdef0123456789abcdef")
 	sealed, _ := b.Seal([]byte("smtp-password"), "mail")
 	if _, err := b.Open(sealed, "other"); err == nil {
-		t.Error("секрет одной настройки расшифрован как секрет другой")
+		t.Error("a secret of one setting decrypted as a secret of another")
 	}
 	if _, err := box(t, "another-secret-another-secret-123").Open(sealed, "mail"); err == nil {
-		t.Error("секрет расшифрован с другим APP_SECRET")
+		t.Error("the secret decrypted with another APP_SECRET")
 	}
 	if _, err := b.Open([]byte("short"), "mail"); err == nil {
-		t.Error("обрывок расшифрован")
+		t.Error("a truncated ciphertext decrypted")
 	}
 }

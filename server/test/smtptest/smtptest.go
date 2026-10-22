@@ -1,5 +1,5 @@
-// Package smtptest — SMTP-сервер для тестов почты (ADR-0017): принимает письма на 127.0.0.1
-// и отдаёт их тесту. Умеет STARTTLS, TLS сразу и вход AUTH PLAIN со своим сертификатом.
+// Package smtptest is an SMTP server for mail tests (ADR-0017): it accepts emails on 127.0.0.1
+// and hands them to the test. Supports STARTTLS, implicit TLS and AUTH PLAIN sign-in with its own certificate.
 package smtptest
 
 import (
@@ -25,25 +25,25 @@ import (
 	"task-trail/internal/domain/entity"
 )
 
-// Message — принятое письмо.
+// Message is an accepted email.
 type Message struct {
 	From string
 	To   []string
 	Data []byte
 }
 
-// Header — заголовок письма, закодированные слова (=?UTF-8?…?=) раскодированы.
+// Header is an email header with encoded words (=?UTF-8?…?=) decoded.
 func (m Message) Header(t testing.TB, name string) string {
 	t.Helper()
 	msg := m.parse(t)
 	value, err := new(mime.WordDecoder).DecodeHeader(msg.Header.Get(name))
 	if err != nil {
-		t.Fatalf("заголовок %s: %v", name, err)
+		t.Fatalf("header %s: %v", name, err)
 	}
 	return value
 }
 
-// Text — тело письма с раскодированным Content-Transfer-Encoding.
+// Text is the email body with Content-Transfer-Encoding decoded.
 func (m Message) Text(t testing.TB) string {
 	t.Helper()
 	msg := m.parse(t)
@@ -56,7 +56,7 @@ func (m Message) Text(t testing.TB) string {
 	}
 	text, err := io.ReadAll(body)
 	if err != nil {
-		t.Fatalf("тело письма: %v", err)
+		t.Fatalf("email body: %v", err)
 	}
 	return string(text)
 }
@@ -65,7 +65,7 @@ func (m Message) parse(t testing.TB) *mail.Message {
 	t.Helper()
 	msg, err := mail.ReadMessage(strings.NewReader(string(m.Data)))
 	if err != nil {
-		t.Fatalf("письмо не разобрано: %v", err)
+		t.Fatalf("email not parsed: %v", err)
 	}
 	return msg
 }
@@ -83,13 +83,13 @@ type Server struct {
 	listener net.Listener
 	mode     mode
 	tls      *tls.Config
-	// RootCAs — корневой сертификат для клиента: notification.WithRootCAs.
+	// RootCAs is the root certificate for the client: notification.WithRootCAs.
 	RootCAs  *x509.CertPool
 	username string
 	password string
-	// rejected — получатели, которых сервер не принимает, как несуществующий ящик.
+	// rejected are recipients the server does not accept, like a nonexistent mailbox.
 	rejected map[string]bool
-	// rejectedSenders — отправители, которых сервер не принимает, как чужой адрес.
+	// rejectedSenders are senders the server does not accept, like a foreign address.
 	rejectedSenders map[string]bool
 
 	mu       sync.Mutex
@@ -98,18 +98,18 @@ type Server struct {
 
 type Option func(*Server)
 
-// WithSTARTTLS — сервер предлагает STARTTLS.
+// WithSTARTTLS: the server offers STARTTLS.
 func WithSTARTTLS() Option { return func(s *Server) { s.mode = startTLS } }
 
-// WithTLS — TLS с первого байта, как на порту 465.
+// WithTLS: TLS from the first byte, as on port 465.
 func WithTLS() Option { return func(s *Server) { s.mode = implicitTLS } }
 
-// WithAuth — письма принимаются только после AUTH PLAIN с этим логином и паролем.
+// WithAuth: emails are accepted only after AUTH PLAIN with this login and password.
 func WithAuth(username, password string) Option {
 	return func(s *Server) { s.username, s.password = username, password }
 }
 
-// WithRejected — сервер отказывает этим получателям (550), остальным письма доходят.
+// WithRejected: the server rejects these recipients (550), emails to the rest arrive.
 func WithRejected(addresses ...string) Option {
 	return func(s *Server) {
 		s.rejected = make(map[string]bool, len(addresses))
@@ -119,8 +119,8 @@ func WithRejected(addresses ...string) Option {
 	}
 }
 
-// WithRejectedSenders — сервер отказывает письмам от этих отправителей (553), как почтовый
-// сервис, который не даёт слать от чужого адреса.
+// WithRejectedSenders: the server rejects emails from these senders (553), like a mail
+// service that does not allow sending from a foreign address.
 func WithRejectedSenders(addresses ...string) Option {
 	return func(s *Server) {
 		s.rejectedSenders = make(map[string]bool, len(addresses))
@@ -130,7 +130,7 @@ func WithRejectedSenders(addresses ...string) Option {
 	}
 }
 
-// New запускает сервер; он останавливается после теста.
+// New starts the server; it stops after the test.
 func New(t testing.TB, opts ...Option) *Server {
 	t.Helper()
 	s := &Server{t: t}
@@ -151,7 +151,7 @@ func New(t testing.TB, opts ...Option) *Server {
 	return s
 }
 
-// Settings — настройки почты для этого сервера: шифрование по его режиму, вход — если задан.
+// Settings are the mail settings for this server: encryption by its mode, sign-in if set.
 func (s *Server) Settings() *entity.MailSettings {
 	addr := s.listener.Addr().(*net.TCPAddr)
 	settings := &entity.MailSettings{
@@ -172,19 +172,19 @@ func (s *Server) Settings() *entity.MailSettings {
 	return settings
 }
 
-// Messages — письма, принятые к этому моменту.
+// Messages are the emails accepted so far.
 func (s *Server) Messages() []Message {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return append([]Message(nil), s.messages...)
 }
 
-// Last — последнее письмо; без писем тест падает.
+// Last is the last email; the test fails if there are none.
 func (s *Server) Last(t testing.TB) Message {
 	t.Helper()
 	messages := s.Messages()
 	if len(messages) == 0 {
-		t.Fatal("писем нет")
+		t.Fatal("no emails")
 	}
 	return messages[len(messages)-1]
 }
@@ -199,7 +199,7 @@ func (s *Server) serve() {
 	}
 }
 
-// session ведёт разговор по RFC 5321 в том объёме, который нужен клиенту go-mail.
+// session conducts the RFC 5321 conversation to the extent the go-mail client needs.
 func (s *Server) session(conn net.Conn) {
 	defer func() { _ = conn.Close() }()
 	_ = conn.SetDeadline(time.Now().Add(10 * time.Second))
@@ -235,10 +235,10 @@ func (s *Server) session(conn net.Conn) {
 			reply(lines...)
 		case "STARTTLS":
 			if s.mode != startTLS || encrypted {
-				reply("502 STARTTLS не поддерживается")
+				reply("502 STARTTLS not supported")
 				continue
 			}
-			reply("220 готов к TLS")
+			reply("220 ready to start TLS")
 			tlsConn := tls.Server(conn, s.tls)
 			if err := tlsConn.Handshake(); err != nil {
 				return
@@ -248,24 +248,24 @@ func (s *Server) session(conn net.Conn) {
 			reply(s.auth(text, arg, &authed))
 		case "MAIL":
 			if !authed {
-				reply("530 нужен вход")
+				reply("530 authentication required")
 				continue
 			}
 			if from := address(arg); s.rejectedSenders[from] {
-				reply("553 отправитель не принадлежит вам")
+				reply("553 sender address not owned by you")
 			} else {
 				msg = Message{From: from}
 				reply("250 OK")
 			}
 		case "RCPT":
 			if to := address(arg); s.rejected[to] {
-				reply("550 нет такого ящика")
+				reply("550 no such mailbox")
 			} else {
 				msg.To = append(msg.To, to)
 				reply("250 OK")
 			}
 		case "DATA":
-			reply("354 жду письмо")
+			reply("354 start mail input")
 			data, err := text.ReadDotBytes()
 			if err != nil {
 				return
@@ -274,45 +274,45 @@ func (s *Server) session(conn net.Conn) {
 			s.mu.Lock()
 			s.messages = append(s.messages, msg)
 			s.mu.Unlock()
-			reply("250 принято")
+			reply("250 accepted")
 		case "RSET", "NOOP":
 			reply("250 OK")
 		case "QUIT":
-			reply("221 до свидания")
+			reply("221 bye")
 			return
 		default:
-			reply("502 команда не поддерживается")
+			reply("502 command not supported")
 		}
 	}
 }
 
-// auth проверяет AUTH PLAIN: ответ клиента — сразу в команде или следующей строкой.
+// auth checks AUTH PLAIN: the client's response is either in the command or on the next line.
 func (s *Server) auth(text *textproto.Conn, arg string, authed *bool) string {
 	mech, initial, _ := strings.Cut(arg, " ")
 	if !strings.EqualFold(mech, "PLAIN") || s.username == "" {
-		return "504 способ входа не поддерживается"
+		return "504 authentication mechanism not supported"
 	}
 	if initial == "" {
 		_ = text.PrintfLine("334 ")
 		line, err := text.ReadLine()
 		if err != nil {
-			return "501 нет ответа"
+			return "501 no response"
 		}
 		initial = line
 	}
 	decoded, err := base64.StdEncoding.DecodeString(initial)
 	if err != nil {
-		return "501 не base64"
+		return "501 not base64"
 	}
 	parts := strings.Split(string(decoded), "\x00")
 	if len(parts) != 3 || parts[1] != s.username || parts[2] != s.password {
-		return "535 неверный логин или пароль"
+		return "535 invalid login or password"
 	}
 	*authed = true
-	return "235 вход выполнен"
+	return "235 authentication successful"
 }
 
-// address достаёт адрес из «FROM:<a@b> BODY=8BITMIME».
+// address extracts the address from "FROM:<a@b> BODY=8BITMIME".
 func address(arg string) string {
 	start, end := strings.Index(arg, "<"), strings.Index(arg, ">")
 	if start < 0 || end < start {
@@ -321,7 +321,7 @@ func address(arg string) string {
 	return arg[start+1 : end]
 }
 
-// selfSigned выпускает сертификат на 127.0.0.1 и возвращает его же как корневой для клиента.
+// selfSigned issues a certificate for 127.0.0.1 and returns it as the root for the client too.
 func selfSigned(t testing.TB) (*tls.Config, *x509.CertPool) {
 	t.Helper()
 	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)

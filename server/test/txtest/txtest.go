@@ -1,5 +1,5 @@
-// Package txtest — транзакция в тестах сценариев на моках (ADR-0007): сценарий выполняется
-// с пометкой в контексте, и по ней видно, какие вызовы шли внутри транзакции, а какие — вне её.
+// Package txtest is the transaction in mock-based scenario tests (ADR-0007): the scenario runs
+// with a mark in the context, which shows which calls ran inside the transaction and which outside it.
 package txtest
 
 import (
@@ -13,7 +13,7 @@ import (
 
 type key struct{}
 
-// Expect ждёт один вызов DoWithTx и выполняет сценарий транзакции с пометкой в контексте.
+// Expect expects one DoWithTx call and runs the transaction scenario with a mark in the context.
 func Expect(tx *mocks.MockTxManager) *gomock.Call {
 	return tx.EXPECT().DoWithTx(gomock.Any(), gomock.Any()).DoAndReturn(
 		func(ctx context.Context, fn func(ctx context.Context) error) error {
@@ -29,12 +29,12 @@ func (m matcher) Matches(x any) bool {
 }
 
 func (m matcher) String() string {
-	return fmt.Sprintf("контекст внутри транзакции: %v", bool(m))
+	return fmt.Sprintf("context inside a transaction: %v", bool(m))
 }
 
 var (
-	// InTx — вызов внутри транзакции.
+	// InTx is a call inside the transaction.
 	InTx gomock.Matcher = matcher(true)
-	// OutsideTx — вызов вне транзакции: до неё или после.
+	// OutsideTx is a call outside the transaction: before or after it.
 	OutsideTx gomock.Matcher = matcher(false)
 )

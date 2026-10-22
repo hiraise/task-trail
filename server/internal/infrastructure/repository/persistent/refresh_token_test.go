@@ -52,21 +52,21 @@ func TestRefreshTokenRepository(t *testing.T) {
 
 	rotated := create(ivan.ID)
 	if got := get(rotated); !got.ExpiredAt.Equal(now.Add(time.Hour)) || got.RotatedAt != nil || got.RevokedAt != nil {
-		t.Fatalf("прочитано %+v", got)
+		t.Fatalf("read %+v", got)
 	}
 	rotated.Rotate(now)
 	if err := repo.Update(ctx, rotated); err != nil {
 		t.Fatal(err)
 	}
 	if got := get(rotated); got.RotatedAt == nil || !got.RotatedAt.Equal(now) {
-		t.Fatalf("после обмена: %+v", got)
+		t.Fatalf("after exchange: %+v", got)
 	}
 
-	// Токен чужого пользователя не находится
+	// Another user's token is not found
 	_, err := repo.GetForUpdate(ctx, rotated.ID, petr.ID)
 	requireCode(t, err, domain.EntityNotFound)
 
-	// RevokeAll закрывает действующие токены пользователя, не трогая чужие
+	// RevokeAll closes the user's active tokens without touching other users' tokens
 	active := create(ivan.ID)
 	other := create(petr.ID)
 	clk.Advance(time.Minute)
@@ -75,20 +75,20 @@ func TestRefreshTokenRepository(t *testing.T) {
 	}
 	for _, token := range []*entity.RefreshToken{rotated, active} {
 		if got := get(token); got.RevokedAt == nil || !got.RevokedAt.Equal(clk.Now()) {
-			t.Errorf("токен %s не отозван: %+v", token.ID, got)
+			t.Errorf("token %s not revoked: %+v", token.ID, got)
 		}
 	}
 	if got := get(other); got.RevokedAt != nil {
-		t.Errorf("отозван чужой токен: %+v", got)
+		t.Errorf("another user's token revoked: %+v", got)
 	}
 
-	// DeleteExpired удаляет истёкшие к моменту now, в том числе отозванные
+	// DeleteExpired deletes tokens expired by now, revoked ones included
 	fresh := create(petr.ID)
 	deleted, err := repo.DeleteExpired(ctx, now.Add(time.Hour))
 	if err != nil || deleted != 3 {
-		t.Fatalf("удалено %d, %v; ожидалось 3", deleted, err)
+		t.Fatalf("deleted %d, %v; expected 3", deleted, err)
 	}
 	if got := get(fresh); got == nil {
-		t.Fatal("удалён действующий токен")
+		t.Fatal("an active token was deleted")
 	}
 }

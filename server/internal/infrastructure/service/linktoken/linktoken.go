@@ -1,4 +1,4 @@
-// Package linktoken выдаёт токены для ссылок приглашений и сброса пароля (ADR-0016).
+// Package linktoken issues tokens for invitation and password reset links (ADR-0016).
 package linktoken
 
 import "crypto/rand"
@@ -9,8 +9,8 @@ func New() *Generator {
 	return &Generator{}
 }
 
-// Generate возвращает 26 символов base32 — 128 случайных бит: годится в адрес без
-// экранирования, а подобрать нельзя.
+// Generate returns 26 base32 characters — 128 random bits: fits in a URL without
+// escaping and cannot be guessed.
 func (Generator) Generate() string {
 	return rand.Text()
 }

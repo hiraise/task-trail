@@ -40,7 +40,7 @@ func (r *PGProjectRepository) GetForUpdate(ctx context.Context, id entity.Projec
 	return project, nil
 }
 
-// projectViews выбирает проекты глазами участника $1: число неудалённых задач и его роль.
+// projectViews selects projects as member $1 sees them: the number of non-deleted tasks and the member's role.
 const projectViews = `
 	SELECT ` + projectColumns + `,
 		(SELECT count(*) FROM tasks t WHERE t.project_id = p.id AND t.deleted_at IS NULL),
@@ -82,7 +82,7 @@ func (r *PGProjectRepository) Update(ctx context.Context, p *entity.Project) err
 	return nil
 }
 
-// SoftDelete помечает проект и задачи одним запросом: удалённым становится всё или ничего.
+// SoftDelete marks the project and its tasks in one query: either everything is deleted or nothing.
 func (r *PGProjectRepository) SoftDelete(ctx context.Context, id entity.ProjectID, now time.Time) error {
 	query := `
 		WITH project AS (
@@ -101,7 +101,7 @@ func (r *PGProjectRepository) SoftDelete(ctx context.Context, id entity.ProjectI
 	return nil
 }
 
-// scanProject читает колонки projectColumns и затем extra.
+// scanProject reads the projectColumns columns and then extra.
 func scanProject(row pgx.Row, extra ...any) (*entity.Project, error) {
 	var id string
 	p := &entity.Project{}

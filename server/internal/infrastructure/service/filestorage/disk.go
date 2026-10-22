@@ -1,4 +1,4 @@
-// Package filestorage хранит файлы в папке на диске сервера — FILES_DIR (ADR-0013).
+// Package filestorage stores files in a folder on the server's disk — FILES_DIR (ADR-0013).
 package filestorage
 
 import (
@@ -16,29 +16,29 @@ import (
 	"github.com/google/uuid"
 )
 
-// Disk хранит каждый файл под именем — его ID, без вложенных папок.
+// Disk stores each file under its ID as the name, without subfolders.
 type Disk struct {
 	dir string
 }
 
-// NewDisk — хранилище в папке dir. Папку создаёт Prepare при запуске сервера.
+// NewDisk is a storage in folder dir. Prepare creates the folder at server startup.
 func NewDisk(dir string) *Disk {
 	return &Disk{dir: dir}
 }
 
-// Prepare создаёт папку файлов, если её нет: недоступная FILES_DIR видна сразу при запуске
-// сервера, а не при первой загрузке.
+// Prepare creates the files folder if it is missing: an inaccessible FILES_DIR shows up right at
+// server startup, not at the first upload.
 func Prepare(dir string) error {
 	if err := os.MkdirAll(dir, 0o750); err != nil {
-		return fmt.Errorf("папка файлов FILES_DIR=%q: %w", dir, err)
+		return fmt.Errorf("files folder FILES_DIR=%q: %w", dir, err)
 	}
 	return nil
 }
 
-// path строит путь только из ID в виде UUID: ни «..», ни «/» в него не попадут.
+// path builds the path only from an ID in UUID form: neither ".." nor "/" can get into it.
 func (d *Disk) path(id entity.FileID) (string, error) {
 	if !isUUID(string(id)) {
-		return "", fmt.Errorf("ID файла не UUID: %q", id)
+		return "", fmt.Errorf("file ID is not a UUID: %q", id)
 	}
 	return filepath.Join(d.dir, string(id)), nil
 }
@@ -47,8 +47,8 @@ func isUUID(s string) bool {
 	return len(s) == 36 && uuid.Validate(s) == nil
 }
 
-// Save пишет прямо под окончательным именем: запись в базе появляется только после записи
-// файла, а файл без записи не отдаётся и через сутки стирается очисткой.
+// Save writes straight under the final name: the database record appears only after the file
+// is written, and a file without a record is never served and is erased by cleanup after a day.
 func (d *Disk) Save(_ context.Context, id entity.FileID, content io.Reader) (err error) {
 	path, err := d.path(id)
 	if err != nil {
@@ -100,8 +100,8 @@ func (d *Disk) Delete(_ context.Context, id entity.FileID) error {
 	return nil
 }
 
-// List возвращает только файлы с именем-UUID: чужие файлы, если FILES_DIR указали
-// на непустую папку, очистка не тронет.
+// List returns only files with a UUID name: if FILES_DIR points to a non-empty folder,
+// cleanup will not touch foreign files.
 func (d *Disk) List(_ context.Context) ([]service.StoredFile, error) {
 	entries, err := os.ReadDir(d.dir)
 	if err != nil {
@@ -114,7 +114,7 @@ func (d *Disk) List(_ context.Context) ([]service.StoredFile, error) {
 		}
 		info, err := entry.Info()
 		if errors.Is(err, fs.ErrNotExist) {
-			// Файл стёрли, пока читали папку
+			// The file was erased while the folder was being read
 			continue
 		}
 		if err != nil {

@@ -1,6 +1,6 @@
-// Package apitest собирает сервер так же, как internal/app, на временной базе (test/testdb)
-// с фиксированными часами (ADR-0022) и ходит в него запросами, как браузер: с cookie
-// по их путям. Каждый ответ сверяется с контрактом (ADR-0019).
+// Package apitest builds the server the same way as internal/app, on a temporary database (test/testdb)
+// with a fixed clock (ADR-0022), and sends requests to it like a browser: with cookies
+// by their paths. Every response is checked against the contract (ADR-0019).
 package apitest
 
 import (
@@ -34,26 +34,26 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// BaseURL — адрес сервера в тестах: cookie сессии с флагом Secure браузер шлёт только по https.
+// BaseURL is the server address in tests: the browser sends a session cookie with the Secure flag only over https.
 const BaseURL = "https://tasktrail.test"
 
-// Secret — APP_SECRET тестового сервера.
+// Secret is the APP_SECRET of the test server.
 const Secret = "0123456789abcdef0123456789abcdef"
 
-// Start — время на часах сервера в начале теста.
+// Start is the time on the server clock at the start of the test.
 var Start = time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)
 
 type Server struct {
 	t        testing.TB
 	contract *contract.Validator
 	engine   *gin.Engine
-	// App — модули сервера: тест вызывает то, что сервер делает по расписанию, например очистку.
+	// App is the server modules: the test calls what the server does on a schedule, such as cleanup.
 	App   *app.Server
 	Clock *clock.Fixed
 	Pool  *pgxpool.Pool
-	// FilesDir — папка файлов сервера (FILES_DIR), своя у каждого теста.
+	// FilesDir is the server's files folder (FILES_DIR), separate for each test.
 	FilesDir string
-	// Jar — cookie «браузера»: ответы их ставят и удаляют, запросы отправляют по пути.
+	// Jar holds the "browser" cookies: responses set and delete them, requests send them by path.
 	Jar http.CookieJar
 }
 
@@ -64,8 +64,8 @@ func (nopLogger) Info(string, ...any)  {}
 func (nopLogger) Warn(string, ...any)  {}
 func (nopLogger) Error(string, ...any) {}
 
-// New поднимает сервер на чистой базе. Контракт передаёт тест: contract.Load(t); opts —
-// параметры сборки только для тестов, например app.WithSMTPRootCAs.
+// New starts the server on a clean database. The test passes the contract: contract.Load(t); opts are
+// test-only build options, such as app.WithSMTPRootCAs.
 func New(t testing.TB, v *contract.Validator, opts ...app.Option) *Server {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
@@ -76,7 +76,7 @@ func New(t testing.TB, v *contract.Validator, opts ...app.Option) *Server {
 	opts = append([]app.Option{app.WithPasswordHashCost(bcrypt.MinCost)}, opts...)
 	srv, err := app.New(pool, cfg, clk, nopLogger{}, opts...)
 	if err != nil {
-		t.Fatalf("сборка сервера: %v", err)
+		t.Fatalf("building the server: %v", err)
 	}
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -85,9 +85,9 @@ func New(t testing.TB, v *contract.Validator, opts ...app.Option) *Server {
 	return &Server{t: t, contract: v, engine: srv.Engine, App: srv, Clock: clk, Pool: pool, FilesDir: filesDir, Jar: jar}
 }
 
-// Do отправляет запрос с cookie из Jar, сверяет ответ с контрактом и сохраняет новые cookie.
-// body — значение для JSON, строка с готовым JSON или Multipart; replace — cookie, которые запрос
-// отправит вместо одноимённых из Jar (например, старый refresh-токен).
+// Do sends a request with cookies from Jar, checks the response against the contract and stores new cookies.
+// body is a value for JSON, a string with ready JSON, or Multipart; replace are cookies the request
+// sends instead of the same-named ones from Jar (for example, an old refresh token).
 func (s *Server) Do(method, path string, body any, replace ...*http.Cookie) *httptest.ResponseRecorder {
 	s.t.Helper()
 	req, rec := s.do(method, path, body, replace...)
@@ -95,21 +95,21 @@ func (s *Server) Do(method, path string, body any, replace ...*http.Cookie) *htt
 	return rec
 }
 
-// Get — GET с cookie из Jar для путей вне контракта, например Swagger по /docs/.
+// Get is a GET with cookies from Jar for paths outside the contract, such as Swagger at /docs/.
 func (s *Server) Get(path string) *httptest.ResponseRecorder {
 	s.t.Helper()
 	_, rec := s.do(http.MethodGet, path, nil)
 	return rec
 }
 
-// Part — поле multipart/form-data: файл, если задано FileName.
+// Part is a multipart/form-data field: a file if FileName is set.
 type Part struct {
 	Name     string
 	FileName string
 	Content  []byte
 }
 
-// Multipart — тело multipart/form-data для Do.
+// Multipart is a multipart/form-data body for Do.
 type Multipart []Part
 
 func (m Multipart) encode(t testing.TB) (io.Reader, string) {
@@ -174,7 +174,7 @@ func (s *Server) do(method, path string, body any, replace ...*http.Cookie) (*ht
 	return req, rec
 }
 
-// SaveMail подключает почту, как это сделает администратор в интерфейсе (ADR-0017).
+// SaveMail connects mail the way the administrator does it in the UI (ADR-0017).
 func (s *Server) SaveMail(settings *entity.MailSettings) {
 	s.t.Helper()
 	box, err := secretbox.New(keys.Derive(Secret, keys.SecretBox))
@@ -186,11 +186,11 @@ func (s *Server) SaveMail(settings *entity.MailSettings) {
 	}
 }
 
-// InvitationLifetime — срок приглашения (ADR-0016).
+// InvitationLifetime is the invitation lifetime (ADR-0016).
 const InvitationLifetime = 7 * 24 * time.Hour
 
-// CreateProject создаёт проект прямо в базе, без владельца и участников: тестам, которым нужен
-// просто проект, API проектов с его проверками ролей ни к чему.
+// CreateProject creates a project directly in the database, without an owner or members: tests that just
+// need a project have no use for the projects API with its role checks.
 func (s *Server) CreateProject(name string) string {
 	s.t.Helper()
 	projectID := id.New().Generate()
@@ -200,7 +200,7 @@ func (s *Server) CreateProject(name string) string {
 	return projectID
 }
 
-// AddMember делает пользователя участником проекта прямо в базе, минуя проверки ролей API.
+// AddMember makes the user a project member directly in the database, bypassing the API role checks.
 func (s *Server) AddMember(projectID, userID string, role entity.ProjectRole) {
 	s.t.Helper()
 	_, err := s.Pool.Exec(context.Background(),
@@ -210,7 +210,7 @@ func (s *Server) AddMember(projectID, userID string, role entity.ProjectRole) {
 	}
 }
 
-// RemoveMember исключает пользователя из проекта прямо в базе, минуя проверки ролей API.
+// RemoveMember removes the user from the project directly in the database, bypassing the API role checks.
 func (s *Server) RemoveMember(projectID, userID string) {
 	s.t.Helper()
 	_, err := s.Pool.Exec(context.Background(),
@@ -220,8 +220,8 @@ func (s *Server) RemoveMember(projectID, userID string) {
 	}
 }
 
-// Invite приглашает email в проект от inviterID и возвращает токен ссылки. Приглашение
-// пишется прямо в базу, без письма и проверки ролей, — как его создаёт POST /v1/projects/{id}/members.
+// Invite invites email to the project from inviterID and returns the link token. The invitation
+// is written directly to the database, without an email or role checks — as POST /v1/projects/{id}/members creates it.
 func (s *Server) Invite(projectID, email, inviterID string) string {
 	s.t.Helper()
 	f := factory.NewInvitationFactory(id.New(), linktoken.New(), s.Clock, InvitationLifetime)
@@ -232,7 +232,7 @@ func (s *Server) Invite(projectID, email, inviterID string) string {
 	return token
 }
 
-// Cookie — значение cookie name, которое браузер отправит на path, или пустая строка.
+// Cookie is the value of cookie name that the browser will send to path, or an empty string.
 func (s *Server) Cookie(name, path string) string {
 	u, _ := url.Parse(BaseURL + path)
 	for _, c := range s.Jar.Cookies(u) {
@@ -243,36 +243,36 @@ func (s *Server) Cookie(name, path string) string {
 	return ""
 }
 
-// Decode разбирает JSON-ответ в значение типа T.
+// Decode parses a JSON response into a value of type T.
 func Decode[T any](t testing.TB, rec *httptest.ResponseRecorder) T {
 	t.Helper()
 	var v T
 	if err := json.Unmarshal(rec.Body.Bytes(), &v); err != nil {
-		t.Fatalf("ответ не JSON: %v, тело %q", err, rec.Body.String())
+		t.Fatalf("response is not JSON: %v, body %q", err, rec.Body.String())
 	}
 	return v
 }
 
-// Error — тело ApiError.
+// Error is the ApiError body.
 type Error struct {
 	Code    string            `json:"code"`
 	Details map[string]string `json:"details"`
 }
 
-// RequireError проверяет статус и код ошибки ответа.
+// RequireError checks the status and the error code of the response.
 func RequireError(t testing.TB, rec *httptest.ResponseRecorder, status int, code string) Error {
 	t.Helper()
 	body := Decode[Error](t, rec)
 	if rec.Code != status || body.Code != code {
-		t.Fatalf("ответ %d %s, ожидался %d %s; тело %s", rec.Code, body.Code, status, code, rec.Body.String())
+		t.Fatalf("response %d %s, expected %d %s; body %s", rec.Code, body.Code, status, code, rec.Body.String())
 	}
 	return body
 }
 
-// RequireStatus проверяет статус ответа.
+// RequireStatus checks the response status.
 func RequireStatus(t testing.TB, rec *httptest.ResponseRecorder, status int) {
 	t.Helper()
 	if rec.Code != status {
-		t.Fatalf("ответ %d, ожидался %d; тело %s", rec.Code, status, rec.Body.String())
+		t.Fatalf("response %d, expected %d; body %s", rec.Code, status, rec.Body.String())
 	}
 }

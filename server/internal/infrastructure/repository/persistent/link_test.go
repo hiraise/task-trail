@@ -25,7 +25,7 @@ var (
 	_ repository.ProjectMemberRepository = (*persistent.PGProjectMemberRepository)(nil)
 )
 
-// createUser создаёт пользователя для внешних ключей.
+// createUser creates a user for foreign keys.
 func createUser(t *testing.T, pool *pgxpool.Pool, email entity.Email, username string) *entity.UserAccount {
 	t.Helper()
 	repo, f := userRepo(pool)
@@ -36,7 +36,7 @@ func createUser(t *testing.T, pool *pgxpool.Pool, email entity.Email, username s
 	return user
 }
 
-// createProject вставляет проект напрямую, без владельца: тестам ссылок и участников он не нужен.
+// createProject inserts a project directly, without an owner: link and member tests do not need one.
 func createProject(t *testing.T, pool *pgxpool.Pool, name string) entity.ProjectID {
 	t.Helper()
 	projectID := id.New().Generate()
@@ -68,12 +68,12 @@ func TestPasswordResetRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.UserID != ivan.ID || !got.ExpiredAt.Equal(now.Add(time.Hour)) || !got.CreatedAt.Equal(now) {
-		t.Fatalf("прочитано %+v", got)
+		t.Fatalf("read %+v", got)
 	}
 	_, err = repo.GetForUpdate(ctx, entity.HashLinkToken("unknown"))
 	requireCode(t, err, domain.EntityNotFound)
 
-	// Сброс гасит все ссылки пользователя, чужие остаются
+	// A reset revokes all of the user's links, other users' links stay
 	if err := repo.DeleteByUser(ctx, ivan.ID); err != nil {
 		t.Fatal(err)
 	}
@@ -82,14 +82,14 @@ func TestPasswordResetRepository(t *testing.T) {
 		requireCode(t, err, domain.EntityNotFound)
 	}
 	if _, err := repo.GetForUpdate(ctx, other.TokenHash); err != nil {
-		t.Fatalf("ссылка другого пользователя: %v", err)
+		t.Fatalf("another user's link: %v", err)
 	}
 
 	if deleted, err := repo.DeleteExpired(ctx, now.Add(time.Hour-time.Second)); err != nil || deleted != 0 {
-		t.Fatalf("удалены действующие: %d, %v", deleted, err)
+		t.Fatalf("active links deleted: %d, %v", deleted, err)
 	}
 	if deleted, err := repo.DeleteExpired(ctx, now.Add(time.Hour)); err != nil || deleted != 1 {
-		t.Fatalf("истёкших удалено %d, %v", deleted, err)
+		t.Fatalf("expired deleted %d, %v", deleted, err)
 	}
 }
 
@@ -122,15 +122,15 @@ func TestInvitationRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.ProjectName != "Дизайн-система" || got.InviterEmail != owner.Email || *got.InviterUsername != "Анна" {
-		t.Fatalf("подробности: %+v", got)
+		t.Fatalf("details: %+v", got)
 	}
 	i := got.Invitation
 	if i.ID != invitation.ID || i.ProjectID != design || i.Email != "ivan@example.com" || i.InvitedBy != owner.ID ||
 		!bytes.Equal(i.TokenHash, invitation.TokenHash) || !i.ExpiredAt.Equal(invitation.ExpiredAt) || !i.CreatedAt.Equal(now) {
-		t.Fatalf("прочитано %+v, записано %+v", i, invitation)
+		t.Fatalf("read %+v, written %+v", i, invitation)
 	}
 
-	// Приглашения удалённого проекта не действуют (ADR-0001)
+	// Invitations of a deleted project are not valid (ADR-0001)
 	_, err = repo.GetByTokenHash(ctx, entity.HashLinkToken(deletedToken))
 	requireCode(t, err, domain.EntityNotFound)
 	list, err := repo.ListByEmail(ctx, "ivan@example.com")
@@ -142,10 +142,10 @@ func TestInvitationRepository(t *testing.T) {
 		projects[i.ProjectID] = true
 	}
 	if len(list) != 2 || !projects[design] || !projects[backend] {
-		t.Fatalf("приглашения почты: %+v", list)
+		t.Fatalf("invitations for the email: %+v", list)
 	}
 
-	// Новое приглашение той же почты в тот же проект заменяет прежнее: старая ссылка не действует
+	// A new invitation of the same email to the same project replaces the previous one: the old link is no longer valid
 	clk.Advance(time.Hour)
 	newToken, renewed := f.New(design, "ivan@example.com", owner.ID)
 	if err := repo.Create(ctx, renewed); err != nil {
@@ -155,15 +155,15 @@ func TestInvitationRepository(t *testing.T) {
 	requireCode(t, err, domain.EntityNotFound)
 	if got, err := repo.GetByTokenHash(ctx, entity.HashLinkToken(newToken)); err != nil || got.Invitation.ID != renewed.ID ||
 		!got.Invitation.ExpiredAt.Equal(renewed.ExpiredAt) {
-		t.Fatalf("новое приглашение: %+v, %v", got, err)
+		t.Fatalf("new invitation: %+v, %v", got, err)
 	}
 
-	// Истекают три первых приглашения; продлённое — на час позже
+	// The first three invitations expire; the extended one expires an hour later
 	if deleted, err := repo.DeleteExpired(ctx, now.Add(7*24*time.Hour)); err != nil || deleted != 3 {
-		t.Fatalf("истёкших удалено %d, %v", deleted, err)
+		t.Fatalf("expired deleted %d, %v", deleted, err)
 	}
 	if list, err := repo.ListByEmail(ctx, "ivan@example.com"); err != nil || len(list) != 1 || list[0].ID != renewed.ID {
-		t.Fatalf("после очистки: %+v, %v", list, err)
+		t.Fatalf("after cleanup: %+v, %v", list, err)
 	}
 }
 
@@ -180,7 +180,7 @@ func TestProjectMemberRepository(t *testing.T) {
 	}
 	var role string
 	if err := pool.QueryRow(ctx, `SELECT role FROM project_members WHERE project_id = $1 AND user_id = $2`, project, ivan.ID).Scan(&role); err != nil || role != "member" {
-		t.Fatalf("роль %q, %v", role, err)
+		t.Fatalf("role %q, %v", role, err)
 	}
 	requireCode(t, repo.Add(ctx, member), domain.EntityAlreadyExists)
 }

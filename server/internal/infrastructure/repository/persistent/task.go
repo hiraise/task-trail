@@ -34,7 +34,7 @@ func (r *PGTaskRepository) Create(ctx context.Context, t *entity.Task) error {
 
 const taskColumns = `t.id, t.project_id, t.name, t.description, t.status, t.author_id, t.assignee_id, t.created_at, t.updated_at`
 
-// newestFirst — порядок списков задач: новые первыми, при равном времени — по ID.
+// newestFirst is the order of task lists: newest first, ties broken by ID.
 const newestFirst = ` ORDER BY t.created_at DESC, t.id`
 
 func (r *PGTaskRepository) Get(ctx context.Context, id entity.TaskID) (*entity.Task, error) {

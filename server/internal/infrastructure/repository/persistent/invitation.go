@@ -79,7 +79,7 @@ func (r *PGInvitationRepository) DeleteExpired(ctx context.Context, now time.Tim
 	return tag.RowsAffected(), nil
 }
 
-// scanInvitation читает колонки invitationColumns и затем extra.
+// scanInvitation reads the invitationColumns columns and then extra.
 func scanInvitation(row pgx.Row, extra ...any) (*entity.Invitation, error) {
 	var id, projectID, email, invitedBy string
 	var tokenHash []byte

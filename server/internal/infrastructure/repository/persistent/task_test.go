@@ -16,7 +16,7 @@ import (
 	"task-trail/test/testdb"
 )
 
-// describeTask — поля задачи строкой: время из базы приходит в поясе сервера, сравниваем в UTC.
+// describeTask renders task fields as a string: times from the database come in the server's zone, so we compare in UTC.
 func describeTask(t *entity.Task) string {
 	deref := func(s *string) string {
 		if s == nil {
@@ -33,8 +33,8 @@ func describeTask(t *entity.Task) string {
 		t.Status, t.AuthorID, deref(assignee), t.CreatedAt.UTC().Format(time.RFC3339), t.UpdatedAt.UTC().Format(time.RFC3339))
 }
 
-// Задача пишется и читается целиком; списки — новые первыми, без удалённых задач; задачи
-// исполнителя — только в проектах, где он участник.
+// A task is written and read in full; lists put newest first and skip deleted tasks; an assignee's
+// tasks come only from projects where they are a member.
 func TestTaskRepository(t *testing.T) {
 	pool := testdb.New(t)
 	ctx := context.Background()
@@ -79,20 +79,20 @@ func TestTaskRepository(t *testing.T) {
 	button := newTask(annaDesign, "Кнопка", &description, ivanDesign)
 	form := newTask(annaDesign, "Форма", nil, nil)
 	api := newTask(annaBackend, "API", nil, nil)
-	// Иван — исполнитель задачи проекта, где он не участник: такую задачу ему не показывают
+	// Ivan is the assignee of a task in a project where he is not a member: such a task is not shown to him
 	if _, err := pool.Exec(ctx, `UPDATE tasks SET assignee_id = $1 WHERE id = $2`, ivan.ID, api.ID); err != nil {
 		t.Fatal(err)
 	}
 
 	got, err := repo.Get(ctx, button.ID)
 	if err != nil || describeTask(got) != describeTask(button) {
-		t.Fatalf("прочитана %v, %v\nзаписана %s", got, err, describeTask(button))
+		t.Fatalf("read %v, %v\nwritten %s", got, err, describeTask(button))
 	}
 	if ids := taskIDs(repo.ListInProject(ctx, design)); !slices.Equal(ids, []entity.TaskID{form.ID, button.ID}) {
-		t.Errorf("задачи проекта: %v", ids)
+		t.Errorf("project tasks: %v", ids)
 	}
 	if ids := taskIDs(repo.ListAssigned(ctx, ivan.ID)); !slices.Equal(ids, []entity.TaskID{button.ID}) {
-		t.Errorf("задачи Ивана: %v", ids)
+		t.Errorf("Ivan's tasks: %v", ids)
 	}
 
 	later := now.Add(time.Hour)
@@ -104,13 +104,13 @@ func TestTaskRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got, err := repo.Get(ctx, button.ID); err != nil || describeTask(got) != describeTask(button) {
-		t.Fatalf("после изменения %v, %v\nожидалась %s", got, err, describeTask(button))
+		t.Fatalf("after update %v, %v\nexpected %s", got, err, describeTask(button))
 	}
 	if ids := taskIDs(repo.ListInProject(ctx, backend)); !slices.Equal(ids, []entity.TaskID{api.ID, button.ID}) {
-		t.Errorf("задачи бэкенда: %v", ids)
+		t.Errorf("backend tasks: %v", ids)
 	}
 	if ids := taskIDs(repo.ListAssigned(ctx, ivan.ID)); len(ids) != 0 {
-		t.Errorf("задачи Ивана после переноса: %v", ids)
+		t.Errorf("Ivan's tasks after the move: %v", ids)
 	}
 
 	if err := repo.SoftDelete(ctx, form.ID, later); err != nil {
@@ -121,11 +121,11 @@ func TestTaskRepository(t *testing.T) {
 	_, err = repo.Get(ctx, form.ID)
 	requireCode(t, err, domain.EntityNotFound)
 	if ids := taskIDs(repo.ListInProject(ctx, design)); len(ids) != 0 {
-		t.Errorf("задачи проекта после удаления: %v", ids)
+		t.Errorf("project tasks after delete: %v", ids)
 	}
 	var deletedAt time.Time
 	if err := pool.QueryRow(ctx, `SELECT deleted_at FROM tasks WHERE id = $1`, form.ID).Scan(&deletedAt); err != nil || !deletedAt.Equal(later) {
-		t.Fatalf("удаление мягкое: %v, %v", deletedAt, err)
+		t.Fatalf("delete is soft: %v, %v", deletedAt, err)
 	}
 	_, err = repo.Get(ctx, entity.TaskID(id.New().Generate()))
 	requireCode(t, err, domain.EntityNotFound)

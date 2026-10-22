@@ -1,10 +1,10 @@
-// Package api встраивает контракт в бинарник сервера: Swagger показывает его администратору
-// (ADR-0014). Почему отдельный модуль и как сервер его подключает — ADR-0023.
+// Package api embeds the contract into the server binary: Swagger shows it to the administrator
+// (ADR-0014). Why it is a separate module and how the server includes it — ADR-0023.
 package api
 
 import _ "embed"
 
-// OpenAPI — содержимое api/openapi.yaml.
+// OpenAPI is the content of api/openapi.yaml.
 //
 //go:embed openapi.yaml
 var OpenAPI []byte

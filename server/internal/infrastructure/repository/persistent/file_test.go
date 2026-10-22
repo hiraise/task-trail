@@ -17,7 +17,7 @@ import (
 
 var _ repository.FileRepository = (*persistent.PGFileRepository)(nil)
 
-// Жизнь файла: загружен → не нужен (не отдаётся) → стёрт с диска (ADR-0013).
+// File lifecycle: uploaded → not needed (not served) → erased from disk (ADR-0013).
 func TestFileRepository(t *testing.T) {
 	pool := testdb.New(t)
 	repo := persistent.NewFileRepo(pool)
@@ -37,12 +37,12 @@ func TestFileRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.ID != avatar.ID || got.OriginalName != "Фото.png" || got.MimeType != "image/png" || got.OwnerID != owner.ID || !got.CreatedAt.Equal(now) {
-		t.Fatalf("прочитано %+v", got)
+		t.Fatalf("read %+v", got)
 	}
 	_, err = repo.Get(ctx, "5f0c1b52-8d4e-4a8b-9c7e-2b1d3f4a5c6e")
 	requireCode(t, err, domain.EntityNotFound)
 
-	// Ненужный файл не отдаётся, но ждёт очистки
+	// An unneeded file is not served but awaits cleanup
 	if err := repo.SoftDelete(ctx, replaced.ID, now.Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
@@ -50,27 +50,27 @@ func TestFileRepository(t *testing.T) {
 	_, err = repo.Get(ctx, replaced.ID)
 	requireCode(t, err, domain.EntityNotFound)
 	if ids, err := repo.ListSoftDeleted(ctx); err != nil || len(ids) != 1 || ids[0] != replaced.ID {
-		t.Fatalf("ждут очистки: %v, %v", ids, err)
+		t.Fatalf("awaiting cleanup: %v, %v", ids, err)
 	}
 
 	const orphan = entity.FileID("11111111-2222-4333-8444-555555555555")
 	known, err := repo.Known(ctx, []entity.FileID{avatar.ID, replaced.ID, orphan})
 	if err != nil || len(known) != 2 || !known[avatar.ID] || !known[replaced.ID] {
-		t.Fatalf("известные до очистки: %v, %v", known, err)
+		t.Fatalf("known before cleanup: %v, %v", known, err)
 	}
 
-	// Стёртый с диска файл больше не ждёт очистки и не считается известным
+	// A file erased from disk no longer awaits cleanup and is not considered known
 	if err := repo.MarkErased(ctx, replaced.ID, now.Add(2*time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 	requireCode(t, repo.MarkErased(ctx, replaced.ID, now.Add(3*time.Hour)), domain.EntityNotFound)
 	if ids, err := repo.ListSoftDeleted(ctx); err != nil || len(ids) != 0 {
-		t.Fatalf("ждут очистки после неё: %v, %v", ids, err)
+		t.Fatalf("awaiting cleanup after it: %v, %v", ids, err)
 	}
 	if known, err := repo.Known(ctx, []entity.FileID{avatar.ID, replaced.ID}); err != nil || len(known) != 1 || !known[avatar.ID] {
-		t.Fatalf("известные после очистки: %v, %v", known, err)
+		t.Fatalf("known after cleanup: %v, %v", known, err)
 	}
 	if known, err := repo.Known(ctx, nil); err != nil || len(known) != 0 {
-		t.Fatalf("пустой список: %v, %v", known, err)
+		t.Fatalf("empty list: %v, %v", known, err)
 	}
 }

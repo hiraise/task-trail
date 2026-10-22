@@ -22,8 +22,8 @@ type JWTTokenService struct {
 	clock      service.Clock
 }
 
-// New принимает ключи подписи access- и refresh-токенов: они разные, чтобы refresh-токен
-// нельзя было выдать за access-токен (ключи — keys.Derive из APP_SECRET).
+// New takes the signing keys for access and refresh tokens: they differ so that a refresh token
+// cannot pass as an access token (the keys come from keys.Derive over APP_SECRET).
 func New(
 	atKey []byte,
 	atLifetime time.Duration,

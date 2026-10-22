@@ -33,14 +33,14 @@ func TestServiceURL(t *testing.T) {
 	repo, _ := settingsRepo(t, "0123456789abcdef0123456789abcdef")
 	ctx := context.Background()
 	if url, err := repo.GetServiceURL(ctx); err != nil || url != "" {
-		t.Fatalf("до записи: %q, %v; ожидался пустой адрес", url, err)
+		t.Fatalf("before write: %q, %v; expected an empty address", url, err)
 	}
 	for _, url := range []string{"http://localhost:3000", "https://example.com/tasktrail"} {
 		if err := repo.SetServiceURL(ctx, url); err != nil {
 			t.Fatal(err)
 		}
 		if got, err := repo.GetServiceURL(ctx); err != nil || got != url {
-			t.Fatalf("прочитано %q, %v; записано %q", got, err, url)
+			t.Fatalf("read %q, %v; written %q", got, err, url)
 		}
 	}
 }
@@ -50,7 +50,7 @@ func TestMailSettings(t *testing.T) {
 	repo, withSecret := settingsRepo(t, secret)
 	ctx := context.Background()
 	if got, err := repo.GetMail(ctx); err != nil || got != nil {
-		t.Fatalf("до записи: %+v, %v; ожидалось nil", got, err)
+		t.Fatalf("before write: %+v, %v; expected nil", got, err)
 	}
 
 	saved := &entity.MailSettings{Host: "smtp.example.com", Port: 587, Encryption: entity.MailEncryptionSTARTTLS,
@@ -61,26 +61,26 @@ func TestMailSettings(t *testing.T) {
 	got, err := repo.GetMail(ctx)
 	if err != nil || got == nil || got.Host != saved.Host || got.Port != saved.Port || got.Encryption != saved.Encryption ||
 		got.Sender != saved.Sender || *got.Username != "robot" || got.Password == nil || *got.Password != "smtp-password" {
-		t.Fatalf("прочитано %+v, %v", got, err)
+		t.Fatalf("read %+v, %v", got, err)
 	}
 
-	// С другим APP_SECRET пароль не расшифровывается и считается не заданным (ADR-0015)
+	// With another APP_SECRET the password does not decrypt and is treated as not set (ADR-0015)
 	if other, err := withSecret("another-secret-another-secret-123").GetMail(ctx); err != nil || other == nil || other.Password != nil {
-		t.Fatalf("с чужим секретом: %+v, %v; ожидались настройки без пароля", other, err)
+		t.Fatalf("with a foreign secret: %+v, %v; expected settings without a password", other, err)
 	}
 
-	// Без входа на SMTP
+	// Without SMTP sign-in
 	if err := repo.SaveMail(ctx, &entity.MailSettings{Host: "mailpit", Port: 1025, Encryption: entity.MailEncryptionNone, Sender: "a@b.c"}); err != nil {
 		t.Fatal(err)
 	}
 	if got, err := repo.GetMail(ctx); err != nil || got.Username != nil || got.Password != nil {
-		t.Fatalf("без входа: %+v, %v", got, err)
+		t.Fatalf("without sign-in: %+v, %v", got, err)
 	}
 
 	if err := repo.DeleteMail(ctx); err != nil {
 		t.Fatal(err)
 	}
 	if got, err := repo.GetMail(ctx); err != nil || got != nil {
-		t.Fatalf("после удаления: %+v, %v; ожидалось nil", got, err)
+		t.Fatalf("after delete: %+v, %v; expected nil", got, err)
 	}
 }

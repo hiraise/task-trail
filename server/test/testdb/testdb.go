@@ -1,6 +1,6 @@
-// Package testdb даёт интеграционным тестам репозиториев (ADR-0007) чистую базу PostgreSQL
-// с миграциями. Адрес сервера — TEST_PG_URL: scripts/dev.sh server поднимает для него
-// временный PostgreSQL в Docker.
+// Package testdb gives repository integration tests (ADR-0007) a clean PostgreSQL database
+// with migrations. The server address is TEST_PG_URL: scripts/dev.sh server starts a
+// temporary PostgreSQL in Docker for it.
 package testdb
 
 import (
@@ -25,27 +25,27 @@ func (nopLogger) Info(string, ...any)  {}
 func (nopLogger) Warn(string, ...any)  {}
 func (nopLogger) Error(string, ...any) {}
 
-// New создаёт отдельную базу на тест, применяет миграции и удаляет базу после теста.
-// Без TEST_PG_URL тест пропускается, а в CI — падает: там интеграционные тесты обязательны.
+// New creates a separate database per test, applies migrations and drops the database after the test.
+// Without TEST_PG_URL the test is skipped, and in CI it fails: integration tests are mandatory there.
 func New(t testing.TB) *pgxpool.Pool {
 	t.Helper()
 	server := os.Getenv("TEST_PG_URL")
 	if server == "" {
 		if os.Getenv("CI") != "" {
-			t.Fatal("TEST_PG_URL не задан: в CI интеграционные тесты обязательны")
+			t.Fatal("TEST_PG_URL is not set: integration tests are mandatory in CI")
 		}
-		t.Skip("TEST_PG_URL не задан: интеграционные тесты запускает scripts/dev.sh server")
+		t.Skip("TEST_PG_URL is not set: integration tests are run by scripts/dev.sh server")
 	}
 	ctx := context.Background()
 	admin, err := pgx.Connect(ctx, server)
 	if err != nil {
-		t.Fatalf("подключение к %s: %v", server, err)
+		t.Fatalf("connecting to %s: %v", server, err)
 	}
 	t.Cleanup(func() { _ = admin.Close(ctx) })
 
 	name := "test_" + randomSuffix(t)
 	if _, err := admin.Exec(ctx, "CREATE DATABASE "+pgx.Identifier{name}.Sanitize()); err != nil {
-		t.Fatalf("создание базы: %v", err)
+		t.Fatalf("creating the database: %v", err)
 	}
 	t.Cleanup(func() {
 		_, _ = admin.Exec(ctx, "DROP DATABASE "+pgx.Identifier{name}.Sanitize()+" WITH (FORCE)")
@@ -57,11 +57,11 @@ func New(t testing.TB) *pgxpool.Pool {
 	}
 	u.Path = "/" + name
 	if err := postgres.Migrate(u.String(), migrations.FS, nopLogger{}); err != nil {
-		t.Fatalf("миграции: %v", err)
+		t.Fatalf("migrations: %v", err)
 	}
 	pool, err := pgxpool.New(ctx, u.String())
 	if err != nil {
-		t.Fatalf("пул соединений: %v", err)
+		t.Fatalf("connection pool: %v", err)
 	}
 	t.Cleanup(pool.Close)
 	return pool

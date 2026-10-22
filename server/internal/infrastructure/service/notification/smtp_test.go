@@ -27,16 +27,16 @@ func requireCode(t *testing.T, err error, code domain.ErrorCode) {
 	t.Helper()
 	var e *domain.DomainError
 	if !errors.As(err, &e) || e.Code != code {
-		t.Fatalf("ожидалась ошибка %s, получено %v", code, err)
+		t.Fatalf("expected error %s, got %v", code, err)
 	}
 }
 
-// Письмо доходит при любом шифровании; тема и текст по-русски не портятся, ссылка — целиком.
+// The email arrives with any encryption; a Russian subject and text are not corrupted, the link arrives whole.
 func TestSend(t *testing.T) {
 	cases := map[string][]smtptest.Option{
-		"без шифрования":     nil,
-		"STARTTLS со входом": {smtptest.WithSTARTTLS(), smtptest.WithAuth("tasktrail", "secret")},
-		"TLS со входом":      {smtptest.WithTLS(), smtptest.WithAuth("tasktrail", "secret")},
+		"no encryption":         nil,
+		"STARTTLS with sign-in": {smtptest.WithSTARTTLS(), smtptest.WithAuth("tasktrail", "secret")},
+		"TLS with sign-in":      {smtptest.WithTLS(), smtptest.WithAuth("tasktrail", "secret")},
 	}
 	for name, opts := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -47,27 +47,27 @@ func TestSend(t *testing.T) {
 			}
 			msg := smtp.Last(t)
 			if msg.From != "noreply@tasktrail.test" || len(msg.To) != 1 || msg.To[0] != "ivan@example.com" {
-				t.Fatalf("конверт: от %q кому %v", msg.From, msg.To)
+				t.Fatalf("envelope: from %q to %v", msg.From, msg.To)
 			}
 			if got := msg.Header(t, "Subject"); got != letter.Subject {
-				t.Errorf("тема %q", got)
+				t.Errorf("subject %q", got)
 			}
 			if got := msg.Header(t, "From"); got != `"TaskTrail" <noreply@tasktrail.test>` {
-				t.Errorf("отправитель %q", got)
+				t.Errorf("sender %q", got)
 			}
 			if got := msg.Header(t, "Date"); !strings.Contains(got, "21 Oct 2026 12:00:00") {
-				t.Errorf("дата не с часов сервера: %q", got)
+				t.Errorf("date is not from the server clock: %q", got)
 			}
 			if got := strings.ReplaceAll(msg.Text(t), "\r\n", "\n"); got != letter.Text {
-				t.Errorf("текст %q", got)
+				t.Errorf("text %q", got)
 			}
 		})
 	}
 }
 
-// Отказ SMTP — MAIL_SEND_FAILED, а не потерянное письмо.
+// An SMTP failure is MAIL_SEND_FAILED, not a lost email.
 func TestSendFails(t *testing.T) {
-	t.Run("неверный пароль", func(t *testing.T) {
+	t.Run("wrong password", func(t *testing.T) {
 		smtp := smtptest.New(t, smtptest.WithSTARTTLS(), smtptest.WithAuth("tasktrail", "secret"))
 		settings := smtp.Settings()
 		wrong := "wrong"
@@ -75,32 +75,32 @@ func TestSendFails(t *testing.T) {
 		err := notification.NewSMTP(clock.New(now), notification.WithRootCAs(smtp.RootCAs)).Send(context.Background(), settings, letter)
 		requireCode(t, err, domain.MailSendFailed)
 	})
-	// Сервер без STARTTLS при настройке STARTTLS — не шлём письмо открытым текстом
-	t.Run("нет STARTTLS", func(t *testing.T) {
+	// A server without STARTTLS while STARTTLS is configured: we do not send the email in plain text
+	t.Run("no STARTTLS", func(t *testing.T) {
 		smtp := smtptest.New(t)
 		settings := smtp.Settings()
 		settings.Encryption = "starttls"
 		requireCode(t, notification.NewSMTP(clock.New(now)).Send(context.Background(), settings, letter), domain.MailSendFailed)
 		if len(smtp.Messages()) != 0 {
-			t.Fatal("письмо ушло без шифрования")
+			t.Fatal("the email was sent without encryption")
 		}
 	})
-	// Без шифрования пароль открытым текстом не отправляется, даже если сервер просит PLAIN
-	t.Run("вход без шифрования", func(t *testing.T) {
+	// Without encryption the password is not sent in plain text, even if the server asks for PLAIN
+	t.Run("sign-in without encryption", func(t *testing.T) {
 		smtp := smtptest.New(t, smtptest.WithAuth("tasktrail", "secret"))
 		settings := smtp.Settings()
 		settings.Encryption = "none"
 		requireCode(t, notification.NewSMTP(clock.New(now)).Send(context.Background(), settings, letter), domain.MailSendFailed)
 	})
-	// Сертификат SMTP проверяется: без доверенного корня письмо не уходит
-	t.Run("чужой сертификат", func(t *testing.T) {
+	// The SMTP certificate is verified: without a trusted root the email is not sent
+	t.Run("untrusted certificate", func(t *testing.T) {
 		smtp := smtptest.New(t, smtptest.WithSTARTTLS())
 		requireCode(t, notification.NewSMTP(clock.New(now)).Send(context.Background(), smtp.Settings(), letter), domain.MailSendFailed)
 		if len(smtp.Messages()) != 0 {
-			t.Fatal("письмо ушло на сервер с недоверенным сертификатом")
+			t.Fatal("the email was sent to a server with an untrusted certificate")
 		}
 	})
-	t.Run("сервер недоступен", func(t *testing.T) {
+	t.Run("server unavailable", func(t *testing.T) {
 		listener, err := net.Listen("tcp", "127.0.0.1:0")
 		if err != nil {
 			t.Fatal(err)
@@ -110,19 +110,19 @@ func TestSendFails(t *testing.T) {
 		_ = listener.Close()
 		requireCode(t, notification.NewSMTP(clock.New(now)).Send(context.Background(), settings, letter), domain.MailSendFailed)
 	})
-	t.Run("неверный отправитель", func(t *testing.T) {
+	t.Run("invalid sender", func(t *testing.T) {
 		settings := smtptest.New(t).Settings()
 		settings.Sender = "не адрес"
 		requireCode(t, notification.NewSMTP(clock.New(now)).Send(context.Background(), settings, letter), domain.MailSendFailed)
 	})
 }
 
-// Проверка подключается и входит при любом шифровании, но письма не отправляет (ADR-0017).
+// Check connects and signs in with any encryption but sends no email (ADR-0017).
 func TestCheck(t *testing.T) {
 	cases := map[string][]smtptest.Option{
-		"без шифрования":     nil,
-		"STARTTLS со входом": {smtptest.WithSTARTTLS(), smtptest.WithAuth("tasktrail", "secret")},
-		"TLS со входом":      {smtptest.WithTLS(), smtptest.WithAuth("tasktrail", "secret")},
+		"no encryption":         nil,
+		"STARTTLS with sign-in": {smtptest.WithSTARTTLS(), smtptest.WithAuth("tasktrail", "secret")},
+		"TLS with sign-in":      {smtptest.WithTLS(), smtptest.WithAuth("tasktrail", "secret")},
 	}
 	for name, opts := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -132,15 +132,15 @@ func TestCheck(t *testing.T) {
 				t.Fatal(err)
 			}
 			if n := len(smtp.Messages()); n != 0 {
-				t.Fatalf("писем: %d", n)
+				t.Fatalf("emails: %d", n)
 			}
 		})
 	}
 }
 
-// Не подключились или не вошли — MAIL_CONNECTION_FAILED: такие настройки не сохраняются.
+// Failed to connect or sign in — MAIL_CONNECTION_FAILED: such settings are not saved.
 func TestCheckFails(t *testing.T) {
-	t.Run("неверный пароль", func(t *testing.T) {
+	t.Run("wrong password", func(t *testing.T) {
 		smtp := smtptest.New(t, smtptest.WithSTARTTLS(), smtptest.WithAuth("tasktrail", "secret"))
 		settings := smtp.Settings()
 		wrong := "wrong"
@@ -148,33 +148,33 @@ func TestCheckFails(t *testing.T) {
 		err := notification.NewSMTP(clock.New(now), notification.WithRootCAs(smtp.RootCAs)).Check(context.Background(), settings)
 		requireCode(t, err, domain.MailConnectionFailed)
 	})
-	// Подключение без входа удаётся, но письмо сервер не примет: это видно по MAIL FROM
-	t.Run("сервер просит вход, а логина нет", func(t *testing.T) {
+	// Connecting without sign-in succeeds, but the server will not accept the email: MAIL FROM shows it
+	t.Run("server requires sign-in, but there is no login", func(t *testing.T) {
 		smtp := smtptest.New(t, smtptest.WithSTARTTLS(), smtptest.WithAuth("tasktrail", "secret"))
 		settings := smtp.Settings()
 		settings.Username, settings.Password = nil, nil
 		err := notification.NewSMTP(clock.New(now), notification.WithRootCAs(smtp.RootCAs)).Check(context.Background(), settings)
 		requireCode(t, err, domain.MailConnectionFailed)
 	})
-	t.Run("сервер не принимает отправителя", func(t *testing.T) {
+	t.Run("server rejects the sender", func(t *testing.T) {
 		smtp := smtptest.New(t, smtptest.WithRejectedSenders("noreply@tasktrail.test"))
 		requireCode(t, notification.NewSMTP(clock.New(now)).Check(context.Background(), smtp.Settings()), domain.MailConnectionFailed)
 	})
-	t.Run("неверный отправитель", func(t *testing.T) {
+	t.Run("invalid sender", func(t *testing.T) {
 		settings := smtptest.New(t).Settings()
 		settings.Sender = "не адрес"
 		requireCode(t, notification.NewSMTP(clock.New(now)).Check(context.Background(), settings), domain.MailConnectionFailed)
 	})
-	t.Run("нет STARTTLS", func(t *testing.T) {
+	t.Run("no STARTTLS", func(t *testing.T) {
 		settings := smtptest.New(t).Settings()
 		settings.Encryption = "starttls"
 		requireCode(t, notification.NewSMTP(clock.New(now)).Check(context.Background(), settings), domain.MailConnectionFailed)
 	})
-	t.Run("чужой сертификат", func(t *testing.T) {
+	t.Run("untrusted certificate", func(t *testing.T) {
 		smtp := smtptest.New(t, smtptest.WithTLS())
 		requireCode(t, notification.NewSMTP(clock.New(now)).Check(context.Background(), smtp.Settings()), domain.MailConnectionFailed)
 	})
-	t.Run("сервер недоступен", func(t *testing.T) {
+	t.Run("server unavailable", func(t *testing.T) {
 		listener, err := net.Listen("tcp", "127.0.0.1:0")
 		if err != nil {
 			t.Fatal(err)
