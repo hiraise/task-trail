@@ -1,16 +1,13 @@
-/**
- * Mobile-only page. Always redirects desktop users to the profile page.
- */
+import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
+import { TEXTS } from "@/shared/locales/texts";
 
-import { DeviceBased, RedirectScreen } from "@/presentation/shared";
-import { ROUTES } from "@/shared/config/routes";
-import { ChangePasswordMobilePage } from "./SettingsPage";
+import { ChangePasswordForm } from "../components";
 
+/** Смена пароля отдельной страницей — с телефона; на десктопе та же форма стоит в профиле. */
 export function ChangePasswordPage() {
   return (
-    <DeviceBased
-      desktop={<RedirectScreen href={ROUTES.profile} />}
-      mobile={<ChangePasswordMobilePage />}
-    />
+    <PagesMobileTemplate topBarBackTitle={TEXTS.profile.changePassword2}>
+      <ChangePasswordForm layout="page" />
+    </PagesMobileTemplate>
   );
 }

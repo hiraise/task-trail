@@ -10,7 +10,9 @@ import axios from "axios";
 
 import { API_ROUTES } from "../config/apiRoutes";
 
+import { toAppError } from "./apiError";
 import type { AxiosRequestConfig, HttpClient } from "./HttpClient";
+import { REQUEST_TIMEOUT_MS } from "./timeouts";
 
 // Extend Axios config for custom flags
 declare module "axios" {
@@ -33,7 +35,7 @@ export class AxiosHttpClient implements HttpClient {
   constructor(baseURL: string) {
     this.client = axios.create({
       baseURL,
-      timeout: 5000,
+      timeout: REQUEST_TIMEOUT_MS,
       headers: {
         "Content-Type": "application/json",
       },
@@ -43,34 +45,36 @@ export class AxiosHttpClient implements HttpClient {
     this.setupInterceptors();
   }
 
+  // Наружу ошибки уходят как AppError с кодом из ответа API (apiError.ts), а интерцептор
+  // обновления сессии ниже видит исходные ошибки axios.
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.get<T>(url, config);
-
-    return response.data;
+    return this.send<T>(() => this.client.get<T>(url, config));
   }
 
   async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.post<T>(url, data, config);
-
-    return response.data;
+    return this.send<T>(() => this.client.post<T>(url, data, config));
   }
 
   async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.patch<T>(url, data, config);
-
-    return response.data;
+    return this.send<T>(() => this.client.patch<T>(url, data, config));
   }
 
   async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.put<T>(url, data, config);
-
-    return response.data;
+    return this.send<T>(() => this.client.put<T>(url, data, config));
   }
 
   async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await this.client.delete<T>(url, config);
+    return this.send<T>(() => this.client.delete<T>(url, config));
+  }
 
-    return response.data;
+  private async send<T>(request: () => Promise<AxiosResponse<T>>): Promise<T> {
+    try {
+      const response = await request();
+
+      return response.data;
+    } catch (error) {
+      throw toAppError(error);
+    }
   }
 
   getAxiosInstance(): AxiosInstance {

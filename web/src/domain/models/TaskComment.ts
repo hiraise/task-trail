@@ -1,15 +1,12 @@
-import z from "zod";
-
 import type { CommentId } from "../types";
 
-import { UserSchema } from "./User";
+import type { User } from "./User";
 
-export const TaskCommentSchema = z.object({
-  id: z.union([z.string(), z.number()]).transform(String).pipe(z.string()) as z.ZodType<CommentId>,
-  author: UserSchema,
-  createdAt: z.iso.datetime(),
-  text: z.string(),
-  updatedAt: z.iso.datetime().optional(),
-});
-
-export type TaskComment = z.infer<typeof TaskCommentSchema>;
+// Комментариев в API пока нет (этап 2, docs/roadmap.md): модель описывает заглушку экрана задачи.
+export interface TaskComment {
+  id: CommentId;
+  author: User;
+  createdAt: string;
+  text: string;
+  updatedAt?: string;
+}

@@ -1,46 +1,45 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { AuthPayload } from "@/application/payloads";
-import { logger } from "@/infrastructure/config/clientLogger";
+import type { FirstAccountPayload } from "@/application/payloads";
+import type { CurrentUser } from "@/domain/models/User";
 import { authRepository } from "@/infrastructure/repositories";
 import { ROUTES } from "@/shared/config/routes";
+import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+import { errorMessage, toastError } from "@/shared/errors/errorMessage";
+import { hasErrorCode } from "@/shared/errors/types";
 import { errorTexts, successTexts } from "@/shared/locales/messages";
+import { currentServiceUrl } from "@/shared/utils/serviceUrl";
 
 /**
- * Custom hook for handling user sign-up functionality.
- *
- * @returns A mutation object from React Query that handles the sign-up process.
- *
- * @remarks
- * This hook utilizes the `authRepository.signUp` method to register a new user.
- * On successful sign-up, it displays a success toast message and redirects the user
- * to the sign-up confirmation page. On failure, it logs the error and displays
- * an error toast message.
- *
- * @example
- * ```tsx
- * const { mutate: signUp, isLoading } = useSignUp();
- *
- * const handleSubmit = (email: string, password: string) => {
- *   signUp({ email, password });
- * };
- * ```
+ * Регистрация первого аккаунта — он же администратор сервиса (ADR-0016). Адрес сервиса —
+ * тот, с которого открыт веб; администратор поменяет его в настройках (ADR-0015).
  */
 export function useSignUp() {
   const navigate = useNavigate();
-  const { signUp } = authRepository;
+  const queryClient = useQueryClient();
 
-  return useMutation<void, Error, AuthPayload>({
-    mutationFn: (payload) => signUp(payload.email, payload.password),
-    onSuccess: (_, payload) => {
-      toast.success(successTexts.signUpSuccessCheckEmail);
-      navigate({ to: ROUTES.signUpConfirm, params: { email: payload.email } });
+  return useMutation<CurrentUser, Error, FirstAccountPayload>({
+    mutationFn: (payload) =>
+      authRepository.registerFirstAccount({ ...payload, serviceUrl: currentServiceUrl() }),
+    onSuccess: (user) => {
+      toast.success(successTexts.firstAccountCreated);
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.auth.session });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.settings.public });
+      queryClient.setQueryData(QUERY_KEYS.user.current, user);
+      navigate({ to: ROUTES.projects, replace: true });
     },
     onError: (error) => {
-      logger.error("Failed to signup", { error });
-      toast.error(errorTexts.somethingWentWrong);
+      // Первый аккаунт уже кто-то создал — регистрация закрыта, остаётся вход
+      if (hasErrorCode(error, "REGISTRATION_CLOSED")) {
+        toast.error(errorMessage(error, errorTexts.somethingWentWrong));
+        queryClient.removeQueries({ queryKey: QUERY_KEYS.settings.public });
+        navigate({ to: ROUTES.login, replace: true });
+
+        return;
+      }
+      toastError(error, errorTexts.somethingWentWrong);
     },
   });
 }

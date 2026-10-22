@@ -1,26 +1,20 @@
 import { toast } from "sonner";
 
-import { GLOBAL_ERRORS } from "./globalErrors";
-import type { AppError } from "./types";
+import { errorTexts } from "../locales/messages";
+
+import { isGlobalError } from "./errorMessage";
 import { AppErrorType } from "./types";
 
+const globalErrorTexts: Partial<Record<AppErrorType, string>> = {
+  [AppErrorType.UNAUTHORIZED]: errorTexts.sessionExpired,
+  [AppErrorType.NETWORK]: errorTexts.networkProblem,
+  [AppErrorType.TIMEOUT]: errorTexts.timeout,
+  [AppErrorType.UNKNOWN]: errorTexts.unknownError,
+};
+
+/** Показывает ошибки запросов, общие для всех экранов: сессия, сеть, тайм-аут, неизвестная. */
 export function handleGlobalError(error: unknown) {
-  const appError = error as AppError;
+  if (!isGlobalError(error)) return;
 
-  // Skip handling if error is not an AppError or not a global error
-  if (!appError?.type || !GLOBAL_ERRORS.includes(appError.type)) {
-    return;
-  }
-
-  switch (appError.type) {
-    case AppErrorType.UNAUTHORIZED:
-      toast.error(appError.message);
-      break;
-    case AppErrorType.NETWORK:
-      toast.error(appError.message);
-      break;
-    case AppErrorType.UNKNOWN:
-      toast.error(appError.message);
-      break;
-  }
+  toast.error(globalErrorTexts[error.type] ?? errorTexts.unknownError);
 }

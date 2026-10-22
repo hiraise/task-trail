@@ -1,3 +1,3 @@
-export * from "./ProfilePage";
-export * from "./ChangePasswordPage";
-export * from "./EditPersonalDataPage";
+export { ChangePasswordPage } from "./ChangePasswordPage";
+export { EditPersonalDataPage } from "./EditPersonalDataPage";
+export { ProfilePage } from "./ProfilePage";

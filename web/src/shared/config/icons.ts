@@ -19,7 +19,6 @@ import LeaveIcon from "@/assets/icons/LeaveIcon.svg?react";
 import LockIcon from "@/assets/icons/LockIcon.svg?react";
 import LogoDesktop from "@/assets/icons/LogoDesktop.svg?react";
 import LogoMedium from "@/assets/icons/LogoMedium.svg?react";
-import LogoMobile from "@/assets/icons/LogoMobile.svg?react";
 import MailIcon from "@/assets/icons/MailIcon.svg?react";
 import MenuIcon from "@/assets/icons/menu_icon.svg?react";
 import MenuHorizontalIcon from "@/assets/icons/MenuHorizontalIcon.svg?react";
@@ -55,7 +54,6 @@ export const ICONS = {
   addUser: AddUserIcon,
   delete: DeleteIcon,
   logoDesktop: LogoDesktop,
-  logoMobile: LogoMobile,
   logoMedium: LogoMedium,
   mail: MailIcon,
   lock: LockIcon,

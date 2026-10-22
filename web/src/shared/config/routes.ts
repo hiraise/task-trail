@@ -1,9 +1,8 @@
 export const ROUTES = {
   main: "/",
   login: "/auth",
-  authConfirm: "/auth/confirm",
   signUp: "/auth/signup",
-  signUpConfirm: "/auth/signup/confirm",
+  invite: "/auth/invite",
   passwordRecovery: "/auth/password-recovery",
   passwordRecoveryConfirm: "/auth/password-recovery/confirm",
   authReset: "/auth/reset",

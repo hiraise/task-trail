@@ -16,6 +16,10 @@ import type { ProjectId, TaskId, UserId } from "../../domain/types";
 export const QUERY_KEYS = {
   auth: {
     session: ["auth", "session"] as const,
+    invitation: (token: string) => ["auth", "invitation", token] as const,
+  },
+  settings: {
+    public: ["settings", "public"] as const,
   },
   user: {
     current: ["user", "current"] as const,

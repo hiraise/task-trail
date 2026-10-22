@@ -1,0 +1,53 @@
+/* Брейкпоинты — как в presentation/shared/hooks/useDevice.ts: до 767 px телефон,
+   768–1024 px планшет, от 1025 px десктоп (ADR-0008) */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg-primary-contrast);
+}
+
+.header {
+  background-color: var(--bg-primary);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  padding: 32px 20px 16px;
+}
+
+.logoLink {
+  display: inline-flex;
+}
+
+/* Один логотип на все ширины: на телефоне он ниже — 32 px вместо 40 */
+.logo {
+  display: block;
+  width: auto;
+  height: 32px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: var(--bg-primary);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 0 20px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    gap: 1px;
+  }
+
+  .header {
+    padding-top: 24px;
+  }
+
+  .logo {
+    height: 40px;
+  }
+}

@@ -1,0 +1,69 @@
+/* До 767 px — телефон: шапка во всю ширину, меню и выход внизу над нижней навигацией.
+   С 768 px — карточка с формами в DesktopTemplate, как у остального интерфейса
+   (брейкпоинты — presentation/shared/hooks/useDevice.ts). */
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+  height: 100dvh;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px;
+}
+
+.forms {
+  display: none;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logout {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: transparent;
+  color: var(--icon-critical);
+  margin-top: auto;
+  padding-bottom: var(--navbar-offset);
+  cursor: pointer;
+}
+
+.logout > span {
+  color: inherit;
+}
+
+@media (min-width: 768px) {
+  .profile {
+    height: auto;
+    flex: 1 1 auto;
+    gap: 32px;
+    overflow-y: auto;
+    background-color: var(--bg-card);
+    border-radius: 12px;
+    box-shadow: 0px 0px 24px 0px rgba(0, 0, 0, 0.04);
+  }
+
+  .menu,
+  .logout {
+    display: none;
+  }
+
+  .forms {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 0 24px 24px;
+  }
+}

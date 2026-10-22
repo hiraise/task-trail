@@ -1,5 +1,5 @@
 export interface UpdateUserPayload {
-  username?: string;
+  username: string;
 }
 
 export interface UploadAvatarPayload {

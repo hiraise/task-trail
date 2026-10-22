@@ -1,0 +1,12 @@
+/* Иконки карточки на десктопе — места из макета 1352:86520 */
+.picture {
+  position: absolute;
+  top: 63px;
+  left: 52px;
+}
+
+.lock {
+  position: absolute;
+  top: 40px;
+  left: 551px;
+}

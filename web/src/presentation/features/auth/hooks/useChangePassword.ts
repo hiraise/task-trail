@@ -1,42 +1,22 @@
-import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import type { ChangePasswordPayload } from "@/application/payloads";
-import { logger } from "@/infrastructure/config/clientLogger";
 import { authRepository } from "@/infrastructure/repositories";
+import { toastError } from "@/shared/errors/errorMessage";
+import { authTexts } from "@/shared/locales/auth";
 
 /**
- * Custom hook for handling password change functionality.
- *
- * Uses React Query's `useMutation` to manage the password change process,
- * including success and error handling with toast notifications.
- *
- * @returns A mutation object from `useMutation` that can be used to trigger
- * the password change operation with `mutate` or `mutateAsync`.
- *
- * @example
- * ```tsx
- * const { mutate, isLoading } = useChangePassword();
- *
- * const handleSubmit = (oldPassword: string, newPassword: string) => {
- *   mutate({ oldPassword, newPassword });
- * };
- * ```
+ * Смена пароля вошедшим пользователем. Куда идти после успеха, решает экран: на десктопе форма
+ * стоит в профиле, на телефоне — отдельной страницей. `WRONG_PASSWORD` и `PASSWORD_SAME_AS_OLD`
+ * приходят текстом из shared/locales/apiErrors.ts.
  */
 export function useChangePassword() {
-  const navigate = useNavigate();
-  const { changePassword } = authRepository;
-
   return useMutation<void, Error, ChangePasswordPayload>({
-    mutationFn: (payload) => changePassword(payload.oldPassword, payload.newPassword),
+    mutationFn: (payload) => authRepository.changePassword(payload.oldPassword, payload.newPassword),
     onSuccess: () => {
-      navigate({ to: ".." });
-      toast.success("Пароль успешно изменен");
+      toast.success(authTexts.passwordChanged);
     },
-    onError: (error) => {
-      logger.error("usePasswordChange error:", { login: error });
-      toast.error("Не удалось изменить пароль. Пожалуйста, попробуйте еще раз.");
-    },
+    onError: (error) => toastError(error, authTexts.changePasswordFailed),
   });
 }

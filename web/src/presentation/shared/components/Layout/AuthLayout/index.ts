@@ -1,2 +1,1 @@
-export { AuthDesktopTemplate } from "./AuthDesktopTemplate";
-export { AuthMobileTemplate } from "./AuthMobileTemplate";
+export { AuthLayout } from "./AuthLayout";

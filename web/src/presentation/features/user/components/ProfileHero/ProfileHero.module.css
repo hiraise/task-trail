@@ -1,0 +1,118 @@
+/* До 767 px — телефон, с 768 px — раскладка DesktopTemplate, как у остального интерфейса
+   (брейкпоинты — presentation/shared/hooks/useDevice.ts). Аватарка в потоке, а не absolute:
+   высота шапки считается сама, без замеров в JS. */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cover {
+  position: relative;
+  width: 100%;
+  height: 175px;
+  flex-shrink: 0;
+  background-color: var(--bg-primary-contrast);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.coverImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  border-radius: inherit;
+}
+
+.title {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  color: var(--text-primary-contrast);
+}
+
+.logoutButton {
+  display: none;
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: var(--btn-primary);
+  color: var(--icon-primary-contrast);
+  border-radius: 8px;
+  transition: opacity 0.3s;
+  cursor: pointer;
+}
+
+.logoutButton:active {
+  opacity: 0.6;
+}
+
+/* Половина аватарки 80 px заходит на обложку */
+.avatar {
+  margin-top: -40px;
+}
+
+.username {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+
+.name {
+  font-family: var(--font-family);
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+}
+
+.email {
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--text-tertiary);
+}
+
+@media (min-width: 768px) {
+  .cover {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+  }
+
+  .title {
+    display: none;
+  }
+
+  .logoutButton {
+    display: flex;
+  }
+
+  /* Аватарка 160 px начинается с середины обложки */
+  .avatar {
+    margin-top: -88px;
+  }
+
+  .username {
+    gap: 8px;
+  }
+
+  .name {
+    font-size: 20px;
+    line-height: 22px;
+  }
+
+  .email {
+    font-size: 16px;
+    line-height: 20px;
+  }
+}

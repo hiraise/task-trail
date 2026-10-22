@@ -2,9 +2,7 @@
 // Администратор стенда входит, обновляет сессию и открывает Swagger; создаёт проект с приглашением,
 // приглашённый принимает его по ссылке из письма в Mailpit (без почты — из ответа API), получает
 // задачу и меняет её статус, загружает аватарку предельного размера через прокси. В конце проект
-// удаляется; приглашённый остаётся пользователем стенда. Запуск: scripts/dev.sh smoke
-// (нужен --experimental-strip-types для схемы веба).
-import { createUser } from "../web/src/domain/models/User.ts";
+// удаляется; приглашённый остаётся пользователем стенда. Запуск: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession } from "./stand-api.mjs";
 
 const invitee = {
@@ -72,18 +70,10 @@ try {
   check(admin.cookie("at")?.path === "/api/", "cookie access-токена — на путь /api/");
   check(admin.cookie("rt")?.path === "/api/v1/auth/", "cookie refresh-токена — на путь /api/v1/auth/");
 
-  // Как checkAuthStatusUseCase в вебе: сессия есть, только если /auth/check ответил
-  // и текущий пользователь разобрался схемой User — иначе веб вернёт на страницу входа
+  // Как checkAuthStatusUseCase в вебе: сессия есть, если /v1/users/me ответил пользователем
   await call(admin, "GET", "/v1/auth/check", 204);
   const me = await call(admin, "GET", "/v1/users/me", 200);
   check(me?.isAdmin === true, "первый аккаунт — администратор сервиса");
-  try {
-    createUser(me);
-    check(true, "веб принимает текущего пользователя (схема User из web/src)");
-  } catch (error) {
-    const issues = error.issues?.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ");
-    check(false, `веб не примет текущего пользователя и вернёт на вход: ${issues ?? error.message}`);
-  }
   await call(admin, "POST", "/v1/auth/refresh", 204);
   await call(admin, "GET", "/v1/auth/check", 204);
   const docs = await admin.request("GET", "/api/docs/");

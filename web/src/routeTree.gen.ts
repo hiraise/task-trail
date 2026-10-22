@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MainRouteImport } from './routes/_main'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
-import { Route as AuthConfirmRouteImport } from './routes/auth/confirm'
 import { Route as MainBoardsIndexRouteImport } from './routes/_main/boards/index'
 import { Route as MainBoardsIdRouteImport } from './routes/_main/boards/$id'
 import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/index'
@@ -23,11 +22,11 @@ import { Route as MainProjectsIndexRouteImport } from './routes/_main/projects/i
 import { Route as MainSearchIndexRouteImport } from './routes/_main/search/index'
 import { Route as MainTasksIndexRouteImport } from './routes/_main/tasks/index'
 import { Route as MainTasksTaskIdRouteImport } from './routes/_main/tasks/$taskId'
+import { Route as AuthInviteIndexRouteImport } from './routes/auth/invite/index'
 import { Route as AuthPasswordRecoveryIndexRouteImport } from './routes/auth/password-recovery/index'
 import { Route as AuthPasswordRecoveryConfirmRouteImport } from './routes/auth/password-recovery/confirm'
 import { Route as AuthResetIndexRouteImport } from './routes/auth/reset/index'
 import { Route as AuthSignupIndexRouteImport } from './routes/auth/signup/index'
-import { Route as AuthSignupConfirmRouteImport } from './routes/auth/signup/confirm'
 import { Route as MainProjectsIdIndexRouteImport } from './routes/_main/projects/$id/index'
 import { Route as MainProjectsIdMembersRouteImport } from './routes/_main/projects/$id/members'
 import { Route as MainProjectsIdTasksIndexRouteImport } from './routes/_main/projects/$id/tasks/index'
@@ -50,11 +49,6 @@ const AuthRoute = AuthRouteImport.update({
 const AuthIndexRoute = AuthIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthConfirmRoute = AuthConfirmRouteImport.update({
-  id: '/confirm',
-  path: '/confirm',
   getParentRoute: () => AuthRoute,
 } as any)
 const MainBoardsIndexRoute = MainBoardsIndexRouteImport.update({
@@ -104,6 +98,11 @@ const MainTasksTaskIdRoute = MainTasksTaskIdRouteImport.update({
   path: '/tasks/$taskId',
   getParentRoute: () => MainRoute,
 } as any)
+const AuthInviteIndexRoute = AuthInviteIndexRouteImport.update({
+  id: '/invite/',
+  path: '/invite/',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthPasswordRecoveryIndexRoute =
   AuthPasswordRecoveryIndexRouteImport.update({
     id: '/password-recovery/',
@@ -124,11 +123,6 @@ const AuthResetIndexRoute = AuthResetIndexRouteImport.update({
 const AuthSignupIndexRoute = AuthSignupIndexRouteImport.update({
   id: '/signup/',
   path: '/signup/',
-  getParentRoute: () => AuthRoute,
-} as any)
-const AuthSignupConfirmRoute = AuthSignupConfirmRouteImport.update({
-  id: '/signup/confirm',
-  path: '/signup/confirm',
   getParentRoute: () => AuthRoute,
 } as any)
 const MainProjectsIdIndexRoute = MainProjectsIdIndexRouteImport.update({
@@ -157,19 +151,18 @@ const MainProjectsIdTasksTaskIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteWithChildren
-  '/auth/confirm': typeof AuthConfirmRoute
   '/auth/': typeof AuthIndexRoute
   '/boards/$id': typeof MainBoardsIdRoute
   '/profile/change-password': typeof MainProfileChangePasswordRoute
   '/profile/edit-personal-data': typeof MainProfileEditPersonalDataRoute
   '/tasks/$taskId': typeof MainTasksTaskIdRoute
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
-  '/auth/signup/confirm': typeof AuthSignupConfirmRoute
   '/boards/': typeof MainBoardsIndexRoute
   '/profile/': typeof MainProfileIndexRoute
   '/projects/': typeof MainProjectsIndexRoute
   '/search/': typeof MainSearchIndexRoute
   '/tasks/': typeof MainTasksIndexRoute
+  '/auth/invite/': typeof AuthInviteIndexRoute
   '/auth/password-recovery/': typeof AuthPasswordRecoveryIndexRoute
   '/auth/reset/': typeof AuthResetIndexRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
@@ -180,19 +173,18 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth/confirm': typeof AuthConfirmRoute
   '/auth': typeof AuthIndexRoute
   '/boards/$id': typeof MainBoardsIdRoute
   '/profile/change-password': typeof MainProfileChangePasswordRoute
   '/profile/edit-personal-data': typeof MainProfileEditPersonalDataRoute
   '/tasks/$taskId': typeof MainTasksTaskIdRoute
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
-  '/auth/signup/confirm': typeof AuthSignupConfirmRoute
   '/boards': typeof MainBoardsIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/projects': typeof MainProjectsIndexRoute
   '/search': typeof MainSearchIndexRoute
   '/tasks': typeof MainTasksIndexRoute
+  '/auth/invite': typeof AuthInviteIndexRoute
   '/auth/password-recovery': typeof AuthPasswordRecoveryIndexRoute
   '/auth/reset': typeof AuthResetIndexRoute
   '/auth/signup': typeof AuthSignupIndexRoute
@@ -206,19 +198,18 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_main': typeof MainRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
-  '/auth/confirm': typeof AuthConfirmRoute
   '/auth/': typeof AuthIndexRoute
   '/_main/boards/$id': typeof MainBoardsIdRoute
   '/_main/profile/change-password': typeof MainProfileChangePasswordRoute
   '/_main/profile/edit-personal-data': typeof MainProfileEditPersonalDataRoute
   '/_main/tasks/$taskId': typeof MainTasksTaskIdRoute
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
-  '/auth/signup/confirm': typeof AuthSignupConfirmRoute
   '/_main/boards/': typeof MainBoardsIndexRoute
   '/_main/profile/': typeof MainProfileIndexRoute
   '/_main/projects/': typeof MainProjectsIndexRoute
   '/_main/search/': typeof MainSearchIndexRoute
   '/_main/tasks/': typeof MainTasksIndexRoute
+  '/auth/invite/': typeof AuthInviteIndexRoute
   '/auth/password-recovery/': typeof AuthPasswordRecoveryIndexRoute
   '/auth/reset/': typeof AuthResetIndexRoute
   '/auth/signup/': typeof AuthSignupIndexRoute
@@ -232,19 +223,18 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
-    | '/auth/confirm'
     | '/auth/'
     | '/boards/$id'
     | '/profile/change-password'
     | '/profile/edit-personal-data'
     | '/tasks/$taskId'
     | '/auth/password-recovery/confirm'
-    | '/auth/signup/confirm'
     | '/boards/'
     | '/profile/'
     | '/projects/'
     | '/search/'
     | '/tasks/'
+    | '/auth/invite/'
     | '/auth/password-recovery/'
     | '/auth/reset/'
     | '/auth/signup/'
@@ -255,19 +245,18 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/auth/confirm'
     | '/auth'
     | '/boards/$id'
     | '/profile/change-password'
     | '/profile/edit-personal-data'
     | '/tasks/$taskId'
     | '/auth/password-recovery/confirm'
-    | '/auth/signup/confirm'
     | '/boards'
     | '/profile'
     | '/projects'
     | '/search'
     | '/tasks'
+    | '/auth/invite'
     | '/auth/password-recovery'
     | '/auth/reset'
     | '/auth/signup'
@@ -280,19 +269,18 @@ export interface FileRouteTypes {
     | '/'
     | '/_main'
     | '/auth'
-    | '/auth/confirm'
     | '/auth/'
     | '/_main/boards/$id'
     | '/_main/profile/change-password'
     | '/_main/profile/edit-personal-data'
     | '/_main/tasks/$taskId'
     | '/auth/password-recovery/confirm'
-    | '/auth/signup/confirm'
     | '/_main/boards/'
     | '/_main/profile/'
     | '/_main/projects/'
     | '/_main/search/'
     | '/_main/tasks/'
+    | '/auth/invite/'
     | '/auth/password-recovery/'
     | '/auth/reset/'
     | '/auth/signup/'
@@ -336,13 +324,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/auth/'
       preLoaderRoute: typeof AuthIndexRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/confirm': {
-      id: '/auth/confirm'
-      path: '/confirm'
-      fullPath: '/auth/confirm'
-      preLoaderRoute: typeof AuthConfirmRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_main/boards/': {
@@ -408,6 +389,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MainTasksTaskIdRouteImport
       parentRoute: typeof MainRoute
     }
+    '/auth/invite/': {
+      id: '/auth/invite/'
+      path: '/invite'
+      fullPath: '/auth/invite/'
+      preLoaderRoute: typeof AuthInviteIndexRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/auth/password-recovery/': {
       id: '/auth/password-recovery/'
       path: '/password-recovery'
@@ -434,13 +422,6 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/auth/signup/'
       preLoaderRoute: typeof AuthSignupIndexRouteImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/signup/confirm': {
-      id: '/auth/signup/confirm'
-      path: '/signup/confirm'
-      fullPath: '/auth/signup/confirm'
-      preLoaderRoute: typeof AuthSignupConfirmRouteImport
       parentRoute: typeof AuthRoute
     }
     '/_main/projects/$id/': {
@@ -509,20 +490,18 @@ const MainRouteChildren: MainRouteChildren = {
 const MainRouteWithChildren = MainRoute._addFileChildren(MainRouteChildren)
 
 interface AuthRouteChildren {
-  AuthConfirmRoute: typeof AuthConfirmRoute
   AuthIndexRoute: typeof AuthIndexRoute
   AuthPasswordRecoveryConfirmRoute: typeof AuthPasswordRecoveryConfirmRoute
-  AuthSignupConfirmRoute: typeof AuthSignupConfirmRoute
+  AuthInviteIndexRoute: typeof AuthInviteIndexRoute
   AuthPasswordRecoveryIndexRoute: typeof AuthPasswordRecoveryIndexRoute
   AuthResetIndexRoute: typeof AuthResetIndexRoute
   AuthSignupIndexRoute: typeof AuthSignupIndexRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
-  AuthConfirmRoute: AuthConfirmRoute,
   AuthIndexRoute: AuthIndexRoute,
   AuthPasswordRecoveryConfirmRoute: AuthPasswordRecoveryConfirmRoute,
-  AuthSignupConfirmRoute: AuthSignupConfirmRoute,
+  AuthInviteIndexRoute: AuthInviteIndexRoute,
   AuthPasswordRecoveryIndexRoute: AuthPasswordRecoveryIndexRoute,
   AuthResetIndexRoute: AuthResetIndexRoute,
   AuthSignupIndexRoute: AuthSignupIndexRoute,
