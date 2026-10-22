@@ -2,12 +2,14 @@ package persistent
 
 import (
 	"context"
+	"errors"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/repository"
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -19,17 +21,31 @@ func NewProjectRepo(db *pgxpool.Pool) *PGProjectRepository {
 	return &PGProjectRepository{PgRepository: PgRepository{pg: db}}
 }
 
+// uqProjectsKey — the unique index of keys of non-deleted projects (migration 000006).
+const uqProjectsKey = "uq_projects_key"
+
 func (r *PGProjectRepository) Create(ctx context.Context, p *entity.Project) error {
-	return r.insert(ctx, "projects", map[string]any{
+	err := r.insert(ctx, "projects", map[string]any{
 		"id":          p.ID,
 		"name":        p.Name,
 		"description": p.Description,
+		"key":         p.Key,
 		"created_at":  p.CreatedAt,
 		"updated_at":  p.UpdatedAt,
 	})
+	return keyTaken(err, p)
 }
 
-const projectColumns = `p.id, p.name, p.description, p.created_at, p.updated_at`
+// keyTaken turns a violation of uqProjectsKey into PROJECT_KEY_TAKEN and leaves other errors as they are.
+func keyTaken(err error, p *entity.Project) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" && pgErr.ConstraintName == uqProjectsKey {
+		return domain.ErrProjectKeyTaken(err, "projectID", p.ID, "key", p.Key)
+	}
+	return err
+}
+
+const projectColumns = `p.id, p.name, p.description, p.key, p.created_at, p.updated_at`
 
 func (r *PGProjectRepository) GetForUpdate(ctx context.Context, id entity.ProjectID) (*entity.Project, error) {
 	query := `SELECT ` + projectColumns + ` FROM projects p WHERE p.id = $1 AND p.deleted_at IS NULL FOR UPDATE`
@@ -71,15 +87,26 @@ func (r *PGProjectRepository) ListViews(ctx context.Context, userID entity.UserI
 
 func (r *PGProjectRepository) Update(ctx context.Context, p *entity.Project) error {
 	tag, err := r.getDb(ctx).Exec(ctx,
-		`UPDATE projects SET name = $2, description = $3, updated_at = $4 WHERE id = $1 AND deleted_at IS NULL`,
-		p.ID, p.Name, p.Description, p.UpdatedAt)
+		`UPDATE projects SET name = $2, description = $3, key = $4, updated_at = $5 WHERE id = $1 AND deleted_at IS NULL`,
+		p.ID, p.Name, p.Description, p.Key, p.UpdatedAt)
 	if err != nil {
-		return r.handleError(err)
+		return keyTaken(r.handleError(err), p)
 	}
 	if tag.RowsAffected() == 0 {
 		return domain.ErrEntityNotFound(2, nil, "projectID", p.ID)
 	}
 	return nil
+}
+
+func (r *PGProjectRepository) NextTaskNumber(ctx context.Context, id entity.ProjectID) (int, error) {
+	var number int
+	err := r.getDb(ctx).QueryRow(ctx,
+		`UPDATE projects SET task_counter = task_counter + 1 WHERE id = $1 AND deleted_at IS NULL RETURNING task_counter`,
+		id).Scan(&number)
+	if err != nil {
+		return 0, r.handleError(err)
+	}
+	return number, nil
 }
 
 // SoftDelete marks the project and its tasks in one query: either everything is deleted or nothing.
@@ -103,12 +130,12 @@ func (r *PGProjectRepository) SoftDelete(ctx context.Context, id entity.ProjectI
 
 // scanProject reads the projectColumns columns and then extra.
 func scanProject(row pgx.Row, extra ...any) (*entity.Project, error) {
-	var id string
+	var id, key string
 	p := &entity.Project{}
-	if err := row.Scan(append([]any{&id, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt}, extra...)...); err != nil {
+	if err := row.Scan(append([]any{&id, &p.Name, &p.Description, &key, &p.CreatedAt, &p.UpdatedAt}, extra...)...); err != nil {
 		return nil, err
 	}
-	p.ID = entity.ProjectID(id)
+	p.ID, p.Key = entity.ProjectID(id), entity.ProjectKey(key)
 	return p, nil
 }
 

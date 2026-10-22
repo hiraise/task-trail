@@ -14,8 +14,8 @@ func NewTaskFactory(idGenerator service.IDGenerator, clock service.Clock) *TaskF
 	return &TaskFactory{idGenerator: idGenerator, clock: clock}
 }
 
-// New — a task created by project member author; assignee — the assignee's membership
-// in the project or nil.
-func (f *TaskFactory) New(author *entity.ProjectMember, name string, description *string, assignee *entity.ProjectMember) (*entity.Task, error) {
-	return entity.NewTask(entity.TaskID(f.idGenerator.Generate()), author.ProjectID, author.UserID, name, description, assignee, f.clock.Now())
+// New — task number number of project projectKey, created by project member author;
+// assignee — the assignee's membership in the project or nil.
+func (f *TaskFactory) New(author *entity.ProjectMember, projectKey entity.ProjectKey, number int, name string, description *string, assignee *entity.ProjectMember) (*entity.Task, error) {
+	return entity.NewTask(entity.TaskID(f.idGenerator.Generate()), author.ProjectID, projectKey, number, author.UserID, name, description, assignee, f.clock.Now())
 }

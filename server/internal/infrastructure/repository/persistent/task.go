@@ -22,6 +22,7 @@ func (r *PGTaskRepository) Create(ctx context.Context, t *entity.Task) error {
 	return r.insert(ctx, "tasks", map[string]any{
 		"id":          t.ID,
 		"project_id":  t.ProjectID,
+		"number":      t.Number,
 		"name":        t.Name,
 		"description": t.Description,
 		"status":      t.Status,
@@ -32,13 +33,16 @@ func (r *PGTaskRepository) Create(ctx context.Context, t *entity.Task) error {
 	})
 }
 
-const taskColumns = `t.id, t.project_id, t.name, t.description, t.status, t.author_id, t.assignee_id, t.created_at, t.updated_at`
+// taskColumns are read FROM taskTables: the project key comes from the task's project.
+const taskColumns = `t.id, t.project_id, p.key, t.number, t.name, t.description, t.status, t.author_id, t.assignee_id, t.created_at, t.updated_at`
+
+const taskTables = ` FROM tasks t JOIN projects p ON p.id = t.project_id`
 
 // newestFirst is the order of task lists: newest first, ties broken by ID.
 const newestFirst = ` ORDER BY t.created_at DESC, t.id`
 
 func (r *PGTaskRepository) Get(ctx context.Context, id entity.TaskID) (*entity.Task, error) {
-	query := `SELECT ` + taskColumns + ` FROM tasks t WHERE t.id = $1 AND t.deleted_at IS NULL`
+	query := `SELECT ` + taskColumns + taskTables + ` WHERE t.id = $1 AND t.deleted_at IS NULL`
 	task, err := scanTask(r.getDb(ctx).QueryRow(ctx, query, id))
 	if err != nil {
 		return nil, r.handleError(err)
@@ -47,14 +51,13 @@ func (r *PGTaskRepository) Get(ctx context.Context, id entity.TaskID) (*entity.T
 }
 
 func (r *PGTaskRepository) ListInProject(ctx context.Context, projectID entity.ProjectID) ([]*entity.Task, error) {
-	query := `SELECT ` + taskColumns + ` FROM tasks t WHERE t.project_id = $1 AND t.deleted_at IS NULL` + newestFirst
+	query := `SELECT ` + taskColumns + taskTables + ` WHERE t.project_id = $1 AND t.deleted_at IS NULL` + newestFirst
 	return r.list(ctx, query, projectID)
 }
 
 func (r *PGTaskRepository) ListAssigned(ctx context.Context, userID entity.UserID) ([]*entity.Task, error) {
 	query := `
-		SELECT ` + taskColumns + `
-		FROM tasks t
+		SELECT ` + taskColumns + taskTables + `
 		JOIN project_members m ON m.project_id = t.project_id AND m.user_id = t.assignee_id
 		WHERE t.assignee_id = $1 AND t.deleted_at IS NULL` + newestFirst
 	return r.list(ctx, query, userID)
@@ -74,9 +77,9 @@ func (r *PGTaskRepository) list(ctx context.Context, query string, args ...any) 
 
 func (r *PGTaskRepository) Update(ctx context.Context, t *entity.Task) error {
 	tag, err := r.getDb(ctx).Exec(ctx, `
-		UPDATE tasks SET project_id = $2, name = $3, description = $4, status = $5, assignee_id = $6, updated_at = $7
+		UPDATE tasks SET project_id = $2, number = $3, name = $4, description = $5, status = $6, assignee_id = $7, updated_at = $8
 		WHERE id = $1 AND deleted_at IS NULL`,
-		t.ID, t.ProjectID, t.Name, t.Description, t.Status, t.AssigneeID, t.UpdatedAt)
+		t.ID, t.ProjectID, t.Number, t.Name, t.Description, t.Status, t.AssigneeID, t.UpdatedAt)
 	if err != nil {
 		return r.handleError(err)
 	}
@@ -108,12 +111,13 @@ func (r *PGTaskRepository) UnassignInProject(ctx context.Context, projectID enti
 }
 
 func scanTask(row pgx.Row) (*entity.Task, error) {
-	var id, projectID, status, authorID string
+	var id, projectID, projectKey, status, authorID string
 	var assigneeID *string
 	t := &entity.Task{}
-	if err := row.Scan(&id, &projectID, &t.Name, &t.Description, &status, &authorID, &assigneeID, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	if err := row.Scan(&id, &projectID, &projectKey, &t.Number, &t.Name, &t.Description, &status, &authorID, &assigneeID, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, err
 	}
+	t.ProjectKey = entity.ProjectKey(projectKey)
 	t.ID, t.ProjectID, t.Status, t.AuthorID = entity.TaskID(id), entity.ProjectID(projectID), entity.TaskStatus(status), entity.UserID(authorID)
 	if assigneeID != nil {
 		assignee := entity.UserID(*assigneeID)

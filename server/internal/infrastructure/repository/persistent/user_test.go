@@ -268,7 +268,7 @@ func TestUserVisible(t *testing.T) {
 	backend := createProject(t, pool, "Бэкенд")
 	member(backend, anna)
 	// Petr authored a task in the backend but is not a member: he left the project
-	exec(`INSERT INTO tasks (id, project_id, author_id, name, status) VALUES ($1, $2, $3, 'Задача', 'open')`,
+	exec(`INSERT INTO tasks (id, project_id, number, author_id, name, status) VALUES ($1, $2, 1, $3, 'Задача', 'open')`,
 		id.New().Generate(), backend, petr.ID)
 	member(createProject(t, pool, "Чужой"), olga)
 

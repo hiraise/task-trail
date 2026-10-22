@@ -29,7 +29,7 @@ func describeTask(t *entity.Task) string {
 		a := string(*t.AssigneeID)
 		assignee = &a
 	}
-	return fmt.Sprintf("%s %s %q %q %s author=%s assignee=%s %s %s", t.ID, t.ProjectID, t.Name, deref(t.Description),
+	return fmt.Sprintf("%s %s %s %q %q %s author=%s assignee=%s %s %s", t.ID, t.ProjectID, t.Key(), t.Name, deref(t.Description),
 		t.Status, t.AuthorID, deref(assignee), t.CreatedAt.UTC().Format(time.RFC3339), t.UpdatedAt.UTC().Format(time.RFC3339))
 }
 
@@ -44,8 +44,25 @@ func TestTaskRepository(t *testing.T) {
 	f := factory.NewTaskFactory(id.New(), clk)
 	anna := createUser(t, pool, "anna@example.com", "Анна")
 	ivan := createUser(t, pool, "ivan@example.com", "Иван")
+	projects := persistent.NewProjectRepo(pool)
 	design := createProject(t, pool, "Дизайн-система")
 	backend := createProject(t, pool, "Бэкенд")
+	keyOf := func(id entity.ProjectID) entity.ProjectKey {
+		t.Helper()
+		p, err := projects.GetForUpdate(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return p.Key
+	}
+	nextNumber := func(id entity.ProjectID) int {
+		t.Helper()
+		n, err := projects.NextTaskNumber(ctx, id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
 	annaDesign, ivanDesign, annaBackend := entity.NewMember(design, anna.ID, now), entity.NewMember(design, ivan.ID, now), entity.NewMember(backend, anna.ID, now)
 	for _, m := range []*entity.ProjectMember{annaDesign, ivanDesign, annaBackend} {
 		if err := members.Add(ctx, m); err != nil {
@@ -54,7 +71,7 @@ func TestTaskRepository(t *testing.T) {
 	}
 	newTask := func(author *entity.ProjectMember, name string, description *string, assignee *entity.ProjectMember) *entity.Task {
 		t.Helper()
-		task, err := f.New(author, name, description, assignee)
+		task, err := f.New(author, keyOf(author.ProjectID), nextNumber(author.ProjectID), name, description, assignee)
 		if err == nil {
 			err = repo.Create(ctx, task)
 		}
@@ -85,7 +102,7 @@ func TestTaskRepository(t *testing.T) {
 	}
 
 	got, err := repo.Get(ctx, button.ID)
-	if err != nil || describeTask(got) != describeTask(button) {
+	if err != nil || describeTask(got) != describeTask(button) || got.Key() != string(keyOf(design))+"-1" {
 		t.Fatalf("read %v, %v\nwritten %s", got, err, describeTask(button))
 	}
 	if ids := taskIDs(repo.ListInProject(ctx, design)); !slices.Equal(ids, []entity.TaskID{form.ID, button.ID}) {
@@ -99,12 +116,15 @@ func TestTaskRepository(t *testing.T) {
 	button.Rename("Большая кнопка", later)
 	button.Describe(nil, later)
 	button.ChangeStatus(entity.StatusDone, later)
-	button.MoveTo(backend, nil, later)
+	button.MoveTo(backend, keyOf(backend), nextNumber(backend), nil, later)
 	if err := repo.Update(ctx, button); err != nil {
 		t.Fatal(err)
 	}
 	if got, err := repo.Get(ctx, button.ID); err != nil || describeTask(got) != describeTask(button) {
 		t.Fatalf("after update %v, %v\nexpected %s", got, err, describeTask(button))
+	}
+	if button.Number != 2 {
+		t.Errorf("the moved task got number %d in the backend project", button.Number)
 	}
 	if ids := taskIDs(repo.ListInProject(ctx, backend)); !slices.Equal(ids, []entity.TaskID{api.ID, button.ID}) {
 		t.Errorf("backend tasks: %v", ids)

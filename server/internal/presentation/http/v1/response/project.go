@@ -12,6 +12,7 @@ type Project struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
+	Key         string    `json:"key"`
 	CreatedAt   time.Time `json:"createdAt"`
 	TasksCount  int       `json:"tasksCount"`
 }
@@ -25,7 +26,7 @@ type ProjectDetails struct {
 func NewProject(v *repository.ProjectView) Project {
 	p := v.Project
 	// Time is in UTC (ADR-0018): the database returns it in the server's time zone
-	return Project{ID: string(p.ID), Name: p.Name, Description: p.Description, CreatedAt: p.CreatedAt.UTC(), TasksCount: v.TasksCount}
+	return Project{ID: string(p.ID), Name: p.Name, Description: p.Description, Key: string(p.Key), CreatedAt: p.CreatedAt.UTC(), TasksCount: v.TasksCount}
 }
 
 func NewProjectDetails(v *repository.ProjectView) ProjectDetails {

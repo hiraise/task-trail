@@ -12,6 +12,7 @@ import (
 
 	"task-trail/test/apitest"
 	"task-trail/test/contract"
+	"task-trail/test/projectkey"
 	"task-trail/test/smtptest"
 )
 
@@ -19,6 +20,7 @@ type project struct {
 	ID          string  `json:"id"`
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
+	Key         string  `json:"key"`
 	CreatedAt   string  `json:"createdAt"`
 	TasksCount  int     `json:"tasksCount"`
 	Role        string  `json:"role"`
@@ -42,10 +44,10 @@ type member struct {
 	Role     string  `json:"role"`
 }
 
-// createProject creates a project as the current user.
+// createProject creates a project with a random key as the current user.
 func createProject(t *testing.T, s *apitest.Server, name string, emails ...string) projectCreated {
 	t.Helper()
-	body := map[string]any{"name": name}
+	body := map[string]any{"name": name, "key": projectkey.New()}
 	if emails != nil {
 		body["emails"] = emails
 	}
@@ -102,12 +104,12 @@ func TestCreateProject(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
 
-	rec := s.Do(http.MethodPost, "/v1/projects", map[string]any{"name": "Дизайн-система", "description": "Компоненты и токены"})
+	rec := s.Do(http.MethodPost, "/v1/projects", map[string]any{"name": "Дизайн-система", "description": "Компоненты и токены", "key": "DS"})
 	apitest.RequireStatus(t, rec, http.StatusCreated)
 	created := apitest.Decode[projectCreated](t, rec)
 	design := created.Project
 	if design.Name != "Дизайн-система" || design.Description == nil || *design.Description != "Компоненты и токены" ||
-		design.Role != "owner" || design.TasksCount != 0 || design.CreatedAt != "2026-10-21T12:00:00Z" {
+		design.Key != "DS" || design.Role != "owner" || design.TasksCount != 0 || design.CreatedAt != "2026-10-21T12:00:00Z" {
 		t.Fatalf("project: %+v", design)
 	}
 	if created.Invitations == nil || len(created.Invitations) != 0 {
@@ -148,14 +150,22 @@ func TestProjectValidation(t *testing.T) {
 		body         any
 		field        string
 	}{
-		{http.MethodPost, "/v1/projects", map[string]any{"name": ""}, "name"},
-		{http.MethodPost, "/v1/projects", map[string]any{"name": strings.Repeat("я", 255)}, "name"},
-		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "emails": []string{"ivan@example.com", "не почта"}}, "emails[1]"},
-		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "emails": many}, "emails"},
-		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "color": "red"}, "color"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "", "key": "PR"}, "name"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": strings.Repeat("я", 255), "key": "PR"}, "name"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "key": "PR", "emails": []string{"ivan@example.com", "не почта"}}, "emails[1]"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "key": "PR", "emails": many}, "emails"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "key": "PR", "color": "red"}, "color"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект"}, "key"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "key": "1A"}, "key"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "key": "A"}, "key"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "key": "ABCDEFGHIJK"}, "key"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "key": "D-S"}, "key"},
+		{http.MethodPost, "/v1/projects", map[string]any{"name": "Проект", "key": "  "}, "key"},
 		{http.MethodPatch, "/v1/projects/" + id, map[string]any{}, "name"},
 		{http.MethodPatch, "/v1/projects/" + id, `{"name": null}`, "name"},
 		{http.MethodPatch, "/v1/projects/" + id, map[string]any{"name": ""}, "name"},
+		{http.MethodPatch, "/v1/projects/" + id, `{"key": null}`, "key"},
+		{http.MethodPatch, "/v1/projects/" + id, map[string]any{"key": "1A"}, "key"},
 		{http.MethodPost, "/v1/projects/" + id + "/members", map[string]any{"emails": []string{}}, "emails"},
 		{http.MethodPost, "/v1/projects/" + id + "/members", map[string]any{}, "emails"},
 		{http.MethodPost, "/v1/projects/" + id + "/members", map[string]any{"emails": many}, "emails"},
@@ -329,6 +339,7 @@ func TestProjectRoles(t *testing.T) {
 	if got := apitest.Decode[project](t, rec); got.Name != "Дизайн-система 2" || got.Description != nil || got.Role != "admin" {
 		t.Fatalf("after change: %+v", got)
 	}
+	forbidden(http.MethodPatch, path, map[string]any{"key": "OLGA"})
 	forbidden(http.MethodPatch, path+"/members/"+worker.ID, map[string]string{"role": "admin"})
 	forbidden(http.MethodDelete, path+"/members/"+admin.ID, nil)
 	forbidden(http.MethodDelete, path+"/members/"+manager.ID, nil)
@@ -349,6 +360,49 @@ func TestProjectRoles(t *testing.T) {
 	if got := members(t, s, p); len(got) != 1 || got[0].ID != admin.ID {
 		t.Fatalf("after removal: %+v", got)
 	}
+}
+
+// A key is trimmed and upper-cased, Cyrillic included; it is unique among non-deleted projects, the key
+// of a deleted project is free again. The owner changes the key, and the keys of the project tasks
+// change with it, numbers stay (ADR-0026).
+func TestProjectKeys(t *testing.T) {
+	s := apitest.New(t, contract.Load(t))
+	registerAdmin(t, s)
+	rec := s.Do(http.MethodPost, "/v1/projects", map[string]any{"name": "Разработка мобильного приложения", "key": " рмп "})
+	apitest.RequireStatus(t, rec, http.StatusCreated)
+	mobile := apitest.Decode[projectCreated](t, rec).Project
+	if mobile.Key != "РМП" {
+		t.Fatalf("key: %q", mobile.Key)
+	}
+	rec = s.Do(http.MethodPost, "/v1/projects", map[string]any{"name": "Дизайн-система", "key": "ds2"})
+	apitest.RequireStatus(t, rec, http.StatusCreated)
+	design := apitest.Decode[projectCreated](t, rec).Project
+	if design.Key != "DS2" {
+		t.Fatalf("key: %q", design.Key)
+	}
+	apitest.RequireError(t, s.Do(http.MethodPost, "/v1/projects", map[string]any{"name": "Двойник", "key": "Рмп"}),
+		http.StatusConflict, "PROJECT_KEY_TAKEN")
+	apitest.RequireError(t, s.Do(http.MethodPatch, "/v1/projects/"+design.ID, map[string]any{"key": "рмп"}),
+		http.StatusConflict, "PROJECT_KEY_TAKEN")
+
+	first := createTask(t, s, design.ID, "Кнопка", "")
+	second := createTask(t, s, design.ID, "Форма", "")
+	rec = s.Do(http.MethodPatch, "/v1/projects/"+design.ID, map[string]any{"key": "new"})
+	apitest.RequireStatus(t, rec, http.StatusOK)
+	if got := apitest.Decode[project](t, rec); got.Key != "NEW" || got.Name != "Дизайн-система" || got.Role != "owner" {
+		t.Fatalf("after key change: %+v", got)
+	}
+	for _, c := range []struct{ id, key string }{{first.ID, "NEW-1"}, {second.ID, "NEW-2"}} {
+		rec = s.Do(http.MethodGet, "/v1/tasks/"+c.id, nil)
+		apitest.RequireStatus(t, rec, http.StatusOK)
+		if got := apitest.Decode[task](t, rec); got.Key != c.key {
+			t.Errorf("task %s: key %q, want %q", c.id, got.Key, c.key)
+		}
+	}
+
+	apitest.RequireStatus(t, s.Do(http.MethodDelete, "/v1/projects/"+mobile.ID, nil), http.StatusNoContent)
+	rec = s.Do(http.MethodPost, "/v1/projects", map[string]any{"name": "Новое приложение", "key": "РМП"})
+	apitest.RequireStatus(t, rec, http.StatusCreated)
 }
 
 // A removed or departed member is no longer the assignee of the project's tasks; tasks in other

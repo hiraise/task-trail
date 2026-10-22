@@ -11,8 +11,12 @@ type TaskID string
 // Task — a project task. Fields are fixed (ADR-0004), each change is a separate operation
 // (ADR-0002). Deleted softly: alone or together with the project (ADR-0001).
 type Task struct {
-	ID          TaskID
-	ProjectID   ProjectID
+	ID        TaskID
+	ProjectID ProjectID
+	// Number — sequential within the project, never reused (ADR-0026).
+	Number int
+	// ProjectKey — the key of the task's project; read-only, repositories fill it from projects.key.
+	ProjectKey  ProjectKey
 	Name        string
 	Description *string
 	Status      TaskStatus
@@ -23,12 +27,14 @@ type Task struct {
 	UpdatedAt  time.Time
 }
 
-// NewTask — a new task in the default status; assignee — the assignee's membership in the project
-// or nil.
-func NewTask(id TaskID, projectID ProjectID, authorID UserID, name string, description *string, assignee *ProjectMember, now time.Time) (*Task, error) {
+// NewTask — a new task in the default status with number number of project projectKey;
+// assignee — the assignee's membership in the project or nil.
+func NewTask(id TaskID, projectID ProjectID, projectKey ProjectKey, number int, authorID UserID, name string, description *string, assignee *ProjectMember, now time.Time) (*Task, error) {
 	t := &Task{
 		ID:          id,
 		ProjectID:   projectID,
+		ProjectKey:  projectKey,
+		Number:      number,
 		Name:        name,
 		Description: description,
 		Status:      defaultTaskStatus(),
@@ -40,6 +46,11 @@ func NewTask(id TaskID, projectID ProjectID, authorID UserID, name string, descr
 		return nil, err
 	}
 	return t, nil
+}
+
+// Key — the task key, like DS-12.
+func (t *Task) Key() string {
+	return t.ProjectKey.TaskKey(t.Number)
 }
 
 func (t *Task) Rename(name string, now time.Time) {
@@ -75,13 +86,15 @@ func (t *Task) AssignTo(assignee *ProjectMember, now time.Time) error {
 	return nil
 }
 
-// MoveTo moves the task to project projectID; the status is kept. assignee — the current
-// assignee's membership in the new project or nil: a non-member of the new project does not stay
-// the assignee.
-func (t *Task) MoveTo(projectID ProjectID, assignee *ProjectMember, now time.Time) {
+// MoveTo moves the task to project projectID with key projectKey, where it gets number number;
+// the status is kept. assignee — the current assignee's membership in the new project or nil:
+// a non-member of the new project does not stay the assignee.
+func (t *Task) MoveTo(projectID ProjectID, projectKey ProjectKey, number int, assignee *ProjectMember, now time.Time) {
 	stays := t.AssigneeID != nil && assignee != nil &&
 		assignee.ProjectID == projectID && assignee.UserID == *t.AssigneeID
 	t.ProjectID = projectID
+	t.ProjectKey = projectKey
+	t.Number = number
 	if !stays {
 		t.AssigneeID = nil
 	}

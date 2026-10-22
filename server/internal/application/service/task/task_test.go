@@ -64,12 +64,14 @@ func member(projectID entity.ProjectID, userID entity.UserID) *entity.ProjectMem
 // stored is a task in project projectID as the repository returns it.
 func stored(projectID entity.ProjectID, assignee *entity.UserID) *entity.Task {
 	return &entity.Task{
-		ID: taskID, ProjectID: projectID, Name: "Кнопка", Status: entity.StatusInReview,
+		ID: taskID, ProjectID: projectID, ProjectKey: project(projectID).Key, Number: 12, Name: "Кнопка", Status: entity.StatusInReview,
 		AuthorID: userID, AssigneeID: assignee, CreatedAt: now.Add(-time.Hour), UpdatedAt: now.Add(-time.Hour),
 	}
 }
 
-func project(id entity.ProjectID) *entity.Project { return &entity.Project{ID: id} }
+func project(id entity.ProjectID) *entity.Project {
+	return &entity.Project{ID: id, Key: map[entity.ProjectID]entity.ProjectKey{backendID: "BE", designID: "DS"}[id]}
+}
 
 // A task changes under its project's lock: first the lock, then the task is read
 // again, and only then the membership check and the write.
@@ -113,8 +115,9 @@ func TestLockFollowsMovedTask(t *testing.T) {
 	}
 }
 
-// A move locks both projects in ascending ID order; if the assignee is not a member of the new project,
-// the task is left without an assignee, the status stays the same.
+// A move locks both projects in ascending ID order; the task gets the next number of the new project and
+// its key; if the assignee is not a member of the new project, the task is left without an assignee,
+// the status stays the same.
 func TestMoveTask(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -127,8 +130,9 @@ func TestMoveTask(t *testing.T) {
 		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil),
 		d.members.EXPECT().Get(txtest.InTx, backendID, userID).Return(member(backendID, userID), nil),
 		d.members.EXPECT().Get(txtest.InTx, backendID, ivanID).Return(nil, notFound()),
+		d.projects.EXPECT().NextTaskNumber(txtest.InTx, backendID).Return(4, nil),
 		d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, got *entity.Task) error {
-			if got.ProjectID != backendID || got.AssigneeID != nil || got.Status != entity.StatusInReview {
+			if got.ProjectID != backendID || got.Key() != "BE-4" || got.AssigneeID != nil || got.Status != entity.StatusInReview {
 				t.Errorf("task written %+v", got)
 			}
 			return nil
@@ -136,6 +140,20 @@ func TestMoveTask(t *testing.T) {
 	)
 	if _, err := module.Move.Execute(context.Background(), string(userID), string(taskID), string(backendID)); err != nil {
 		t.Fatal(err)
+	}
+}
+
+// A move to the task's own project changes nothing: no new number, the task stays as it was (ADR-0026).
+func TestMoveToSameProject(t *testing.T) {
+	module, d := newModule(t)
+	txtest.Expect(d.tx)
+	d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(stored(designID, nil), nil).Times(2)
+	d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(project(designID), nil)
+	d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+	d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).Return(nil)
+	got, err := module.Move.Execute(context.Background(), string(userID), string(taskID), string(designID))
+	if err != nil || got.Key() != "DS-12" || !got.UpdatedAt.Equal(now.Add(-time.Hour)) {
+		t.Fatalf("%+v, %v", got, err)
 	}
 }
 
@@ -154,7 +172,8 @@ func TestMoveToForeignProject(t *testing.T) {
 	}
 }
 
-// A project member creates a task under the project lock: the status is open, the author is the member.
+// A project member creates a task under the project lock: the number comes from the project counter,
+// the status is open, the author is the member.
 func TestCreateTask(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -163,6 +182,7 @@ func TestCreateTask(t *testing.T) {
 		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(project(designID), nil),
 		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil),
 		d.members.EXPECT().Get(txtest.InTx, designID, ivanID).Return(member(designID, ivanID), nil),
+		d.projects.EXPECT().NextTaskNumber(txtest.InTx, designID).Return(3, nil),
 		d.tasks.EXPECT().Create(txtest.InTx, gomock.Any()).Return(nil),
 	)
 	description := "Основная кнопка"
@@ -171,7 +191,7 @@ func TestCreateTask(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.ID == "" || got.ProjectID != designID || got.Name != "Кнопка" || *got.Description != description ||
+	if got.ID == "" || got.ProjectID != designID || got.Number != 3 || got.Key() != "DS-3" || got.Name != "Кнопка" || *got.Description != description ||
 		got.Status != entity.StatusOpen || got.AuthorID != userID || *got.AssigneeID != ivanID ||
 		!got.CreatedAt.Equal(now) || !got.UpdatedAt.Equal(now) {
 		t.Fatalf("task: %+v", got)

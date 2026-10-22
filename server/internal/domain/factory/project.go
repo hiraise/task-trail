@@ -15,12 +15,13 @@ func NewProjectFactory(idGenerator service.IDGenerator, clock service.Clock) *Pr
 }
 
 // New creates a project and the membership of its creator — the owner.
-func (f *ProjectFactory) New(name string, description *string, ownerID entity.UserID) (*entity.Project, *entity.ProjectMember) {
+func (f *ProjectFactory) New(name string, description *string, key entity.ProjectKey, ownerID entity.UserID) (*entity.Project, *entity.ProjectMember) {
 	now := f.clock.Now()
 	project := &entity.Project{
 		ID:          entity.ProjectID(f.idGenerator.Generate()),
 		Name:        name,
 		Description: description,
+		Key:         key,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}

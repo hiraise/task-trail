@@ -18,6 +18,7 @@ const (
 	CodeOwnerCannotLeave     ErrorCode = "OWNER_CANNOT_LEAVE"
 	CodeAssigneeNotMember    ErrorCode = "ASSIGNEE_NOT_MEMBER"
 	CodeLastAdmin            ErrorCode = "LAST_ADMIN"
+	CodeProjectKeyTaken      ErrorCode = "PROJECT_KEY_TAKEN"
 	CodeMailDisabled         ErrorCode = "MAIL_DISABLED"
 	CodeMailSendFailed       ErrorCode = "MAIL_SEND_FAILED"
 	CodeMailConnectionFailed ErrorCode = "MAIL_CONNECTION_FAILED"

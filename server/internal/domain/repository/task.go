@@ -7,6 +7,7 @@ import (
 )
 
 // TaskRepository — tasks. A deleted task (ADR-0001) is not found by any method.
+// Every method that returns tasks fills Task.ProjectKey from the task's project.
 // Tasks change only under their project's lock (ProjectRepository.GetForUpdate):
 // this way changes to one task do not overwrite each other, and the assignee stays
 // in line with the project members.
@@ -17,7 +18,7 @@ type TaskRepository interface {
 	ListInProject(ctx context.Context, projectID entity.ProjectID) ([]*entity.Task, error)
 	// ListAssigned — tasks where userID is the assignee, in projects where they are a member; newest first.
 	ListAssigned(ctx context.Context, userID entity.UserID) ([]*entity.Task, error)
-	// Update writes everything task operations change: project, title, description,
+	// Update writes everything task operations change: project, number, title, description,
 	// status, assignee and update time.
 	Update(ctx context.Context, task *entity.Task) error
 	SoftDelete(ctx context.Context, id entity.TaskID, now time.Time) error

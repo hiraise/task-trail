@@ -24,6 +24,8 @@ const (
 	OwnerCannotLeave ErrorCode = "OWNER_CANNOT_LEAVE"
 	// The task assignee is not a member of its project
 	AssigneeNotMember ErrorCode = "ASSIGNEE_NOT_MEMBER"
+	// The project key is taken by another non-deleted project (ADR-0026)
+	ProjectKeyTaken ErrorCode = "PROJECT_KEY_TAKEN"
 	// The last service administrator cannot be removed (ADR-0014)
 	LastAdmin ErrorCode = "LAST_ADMIN"
 
@@ -144,6 +146,10 @@ func ErrOwnerCannotLeave(data ...any) *DomainError {
 
 func ErrAssigneeNotMember(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, AssigneeNotMember, nil, data...)
+}
+
+func ErrProjectKeyTaken(sourceErr error, data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, ProjectKeyTaken, sourceErr, data...)
 }
 
 func ErrLastAdmin(data ...any) *DomainError {
