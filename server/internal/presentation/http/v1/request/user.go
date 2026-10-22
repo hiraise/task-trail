@@ -26,6 +26,8 @@ func BindUpdateCurrentUser(c *gin.Context) (*string, error) {
 }
 
 // multipartOverhead — запас тела запроса на границы и заголовки частей multipart сверх файла.
+// Предел тела entity.MaxAvatarSize+multipartOverhead повторяет client_max_body_size прокси
+// стенда (stand/nginx.conf.template): меняешь здесь — поменяй и там (ADR-0013).
 const multipartOverhead = 64 << 10
 
 // avatarField — поле multipart/form-data с файлом аватарки (контракт, PATCH /v1/users/me/avatar).

@@ -10,6 +10,9 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     # Срезанный префикс: по нему Gin строит адреса своих редиректов (например, на путь без «/» в конце)
     proxy_set_header X-Forwarded-Prefix /api;
+    # Тело запроса — как у сервера (ADR-0013): аватарка до 5 МБ (entity.MaxAvatarSize) и 64 КБ
+    # на заголовки multipart (multipartOverhead в server/internal/presentation/http/v1/request/user.go)
+    client_max_body_size 5184k;
   }
 
   # Файлы сборки с хешем в имени: несуществующий — 404, а не index.html вместо скрипта
