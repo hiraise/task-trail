@@ -1,2 +1,1 @@
-export { TaskListMobile } from "./TaskListMobile";
-export { TaskListDesktop } from "./TaskListDesktop";
+export { TaskList } from "./TaskList";

@@ -1,130 +1,132 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
+import { getUserDisplayName } from "@/domain/models/User";
 import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
+import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
 
+import { useProject, useProjectMembers } from "../../../projects/hooks";
 import { useCreateTask } from "../../hooks";
 import { useCreateTaskFormStore } from "../../store/createTaskFormStore";
 
 import styles from "./CreateTaskForm.module.css";
-import { AssigneeSelection, ProjectSelection } from "./FormSelectionOptions";
+import { SelectionField } from "./FormSelectionOptions";
 import type { CreateTaskFormData } from "./schema";
 import { CreateTaskSchema } from "./schema";
 
 interface CreateTaskFormProps {
+  /** Закрыть окно формы: задача создана */
   onSubmit: () => void;
 }
 
 export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
   const store = useCreateTaskFormStore();
+  const { projectId, assigneeId, setName, setDescription, setProjectId, setAssigneeId } = store;
   const { showSelectAssignee, showSelectProject } = useGlobalModals();
   const { mutateAsync: createTask } = useCreateTask();
-
-  useEffect(() => {
-    store.initialize();
-  }, [store]);
+  const { data: project } = useProject(projectId);
+  const { data: members } = useProjectMembers(projectId ?? "");
+  const assignee = members?.find((member) => member.id === assigneeId);
 
   const {
-    control,
     register,
     handleSubmit,
+    control,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<CreateTaskFormData>({
     resolver: zodResolver(CreateTaskSchema),
     mode: "onChange",
-    defaultValues: {
-      name: store.draft?.getName(),
-      description: store.draft?.getDescription(),
-    },
+    // Проект выбирают в своём окне — форма к тому времени уже смонтирована заново из черновика
+    defaultValues: { name: store.name, description: store.description, projectId: projectId ?? "" },
   });
 
-  const formValues = useWatch({ control });
+  // Поля — в черновике: окна выбора проекта и ответственного закрывают форму (createTaskFormStore.ts)
+  const [name, description] = useWatch({ control, name: ["name", "description"] });
 
-  // Sync name with state
-  useEffect(() => {
-    if (formValues.name !== undefined && formValues.name !== store.draft?.getName()) {
-      store.setName(formValues.name);
-    }
-  }, [formValues.name, store]);
+  useEffect(() => setName(name ?? ""), [name, setName]);
+  useEffect(() => setDescription(description ?? ""), [description, setDescription]);
 
-  // Sync description with state
+  // Сменили проект — ответственный, который не его участник, снимается: сервер его не примет
   useEffect(() => {
-    if (
-      formValues.description !== undefined &&
-      formValues.description !== store.draft?.getDescription()
-    ) {
-      store.setDescription(formValues.description || "");
+    if (members && assigneeId && !members.some((member) => member.id === assigneeId)) {
+      setAssigneeId(undefined);
     }
-  }, [formValues.description, store]);
+  }, [members, assigneeId, setAssigneeId]);
 
   const handleSelectAssignee = async () => {
-    const result = await showSelectAssignee({
-      projectId: store.draft?.getProjectId() ?? "",
-      userId: store.draft?.getAssigneeId() ?? "",
-    });
+    const member = await showSelectAssignee({ projectId, userId: assigneeId });
 
-    if (!result) return;
-    store.setAssignee(result);
+    if (member) setAssigneeId(member.id);
   };
 
   const handleSelectProject = async () => {
-    const result = await showSelectProject(store.draft?.getProjectId() ?? "");
+    const selected = await showSelectProject(projectId);
 
-    if (!result) return;
-    await store.setProject(result);
+    if (selected) setProjectId(selected.id);
   };
 
-  const submitHandler = async () => {
-    if (!store.draft) return;
-    const dto = store.draft.toPersistenceDto();
+  const submitHandler = async (values: CreateTaskFormData) => {
+    // Проект из старого черновика мог стать недоступен: из него вышли или его удалили
+    if (!project) {
+      setError("projectId", { message: tasksTexts.requiredField });
 
-    await createTask(dto);
-    store.reset();
-    onSubmit();
+      return;
+    }
+
+    try {
+      await createTask({
+        projectId: project.id,
+        name: values.name,
+        description: values.description || undefined,
+        assigneeId: assignee?.id,
+      });
+      store.reset();
+      onSubmit();
+    } catch {
+      // Ошибку показал useCreateTask
+    }
   };
 
   return (
     <form className={styles.form} onSubmit={handleSubmit(submitHandler)}>
       <div className={styles.inputFields}>
-        <Input {...register("name")} placeholder={tasksTexts.taskNamePlaceholder} />
+        <Input
+          id="taskName"
+          {...register("name")}
+          aria-invalid={!!errors.name}
+          placeholder={tasksTexts.taskNamePlaceholder}
+          disabled={isSubmitting}
+          autoComplete="off"
+        />
         {errors.name && <FormFieldError>{errors.name.message}</FormFieldError>}
         <Textarea
           rows={3}
           id="taskDescription"
           {...register("description")}
-          aria-invalid={!!errors.description}
-          aria-describedby="taskDescription-error"
           placeholder={tasksTexts.taskDescriptionPlaceholder}
           disabled={isSubmitting}
           autoComplete="off"
-          className={styles.textarea}
         />
-        {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
-        <Controller
-          name={"assigneeId"}
-          control={control}
-          defaultValue={store.assignee?.name}
-          render={() => (
-            <AssigneeSelection
-              username={store.assignee?.name || store.assignee?.email}
-              onClick={handleSelectAssignee}
-            />
-          )}
+        <SelectionField
+          icon={ICONS.profile}
+          placeholder={tasksTexts.assignee}
+          value={assignee && getUserDisplayName(assignee)}
+          onClick={handleSelectAssignee}
         />
-        <Controller
-          name={"projectId"}
-          control={control}
-          defaultValue={store.project?.name}
-          render={() => (
-            <ProjectSelection project={store.project?.name} onClick={handleSelectProject} />
-          )}
+        <SelectionField
+          icon={ICONS.project}
+          placeholder={tasksTexts.project}
+          value={project?.name}
+          invalid={!!errors.projectId}
+          onClick={handleSelectProject}
         />
         {errors.projectId && <FormFieldError>{errors.projectId.message}</FormFieldError>}
       </div>
-      <SubmitButton disabled={isSubmitting}>
+      <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? tasksTexts.submittingText : tasksTexts.buttonText}
       </SubmitButton>
     </form>

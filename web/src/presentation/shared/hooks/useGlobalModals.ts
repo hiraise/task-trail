@@ -4,25 +4,24 @@ import type { InvitationResult } from "@/domain/models/Invitation";
 import type { Project } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { Task } from "@/domain/models/Task";
-import type { TaskStatus } from "@/domain/models/TaskStatus";
-import type { ProjectId, TaskId, UserId } from "@/domain/types";
+import type { ProjectId, TaskId, TaskStatusId, UserId } from "@/domain/types";
 import type { ModalType } from "@/presentation/app";
 import { MODAL_TYPE, useGlobalModalContext } from "@/presentation/app";
 
 export interface ChangeStatusProps {
-  currentStatus?: TaskStatus;
-  projectId?: ProjectId;
+  /** Текущий статус задачи */
+  statusId?: TaskStatusId;
 }
 
 export interface SelectAssigneeProps {
+  /** Ответственный — из участников этого проекта; проекта нет — выбирать не из кого */
   projectId?: ProjectId;
+  /** Текущий ответственный */
   userId?: UserId;
 }
 
-export interface EditTaskProps {
-  taskId: TaskId;
-  title: string;
-  description?: string;
+export interface TaskProps {
+  task: Task;
 }
 
 export interface EditProjectProps {
@@ -78,7 +77,7 @@ export const useGlobalModals = () => {
     closeAllModals: closeAll,
 
     // Selection modals
-    showSelectProject: (projectId?: string | number) =>
+    showSelectProject: (projectId?: ProjectId) =>
       safeOpen<Project>(MODAL_TYPE.SELECT_PROJECT, { projectId }),
     showSortOptions: () => safeOpen<void>(MODAL_TYPE.SORT_ITEMS),
 
@@ -108,10 +107,10 @@ export const useGlobalModals = () => {
       safeOpen<void>(MODAL_TYPE.MEMBER_ACTIONS, { ...props }),
 
     // Task actions
-    showEditTask: (props?: EditTaskProps) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { ...props }),
+    showEditTask: (task: Task) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { task }),
     showTaskSettings: (task: Task) => safeOpen<void>(MODAL_TYPE.TASK_SETTINGS, { task }),
     showChangeStatus: (props?: ChangeStatusProps) =>
-      safeOpen<TaskStatus>(MODAL_TYPE.CHANGE_STATUS, { ...props }),
+      safeOpen<TaskStatusId>(MODAL_TYPE.CHANGE_STATUS, { ...props }),
     showSelectAssignee: (props?: SelectAssigneeProps) =>
       safeOpen<ProjectMember>(MODAL_TYPE.SELECT_ASSIGNEE, { ...props }),
   };

@@ -1,5 +1,3 @@
-import { useLayoutEffect, useState } from "react";
-
 import { useDevice } from "../../hooks";
 
 interface DeviceBasedProps {
@@ -8,15 +6,10 @@ interface DeviceBasedProps {
   tablet?: React.ReactNode;
 }
 
+// Рисует вариант для устройства сразу, без пустого первого кадра: тип устройства useDevice
+// знает с первого рендера. Новых использований не добавляй — один адаптивный экран (ADR-0008).
 export function DeviceBased({ mobile, tablet, desktop }: DeviceBasedProps) {
-  const [mounted, setMounted] = useState(false);
   const device = useDevice();
-
-  useLayoutEffect(() => {
-    setTimeout(() => setMounted(true), 0);
-  }, []);
-
-  if (!mounted) return null;
 
   if (device === "mobile") return <>{mobile}</>;
   if (device === "tablet") return <>{tablet || desktop}</>;

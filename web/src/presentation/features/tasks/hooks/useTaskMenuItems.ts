@@ -6,61 +6,47 @@ import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { useProject } from "../../projects/hooks";
-
 import { useDeleteTask } from "./useDeleteTask";
 
-export const useTaskMenuItems = (task: Task) => {
-  // Задачу меняет и удаляет любой участник её проекта (контракт API): меню — когда проект открылся
-  const { data: project } = useProject(task.projectId);
-  const isMember = Boolean(project);
-  const { mutateAsync: deleteTask } = useDeleteTask(task.projectId);
-
+/** Действия с задачей: менять и удалять её может любой участник её проекта (контракт API). */
+export const useTaskMenuItems = (task?: Task) => {
+  const { mutate: deleteTask } = useDeleteTask();
   const { showEditTask, showMoveToArchive, showDeleteItem } = useGlobalModals();
+
+  if (!task) return { menuItems: [] };
 
   const menuItems: MenuItem[] = [
     {
       label: TEXTS.tasks.edit,
       icon: ICONS.edit,
       color: "var(--icon-tertiary)",
-      onClick: async () =>
-        await showEditTask({
-          taskId: task.id,
-          title: task.name,
-          description: task.description,
-        }),
-      isVisible: isMember,
+      onClick: () => showEditTask(task),
+      isVisible: true,
     },
     {
       label: TEXTS.tasks.moveToArchive,
       icon: ICONS.archive,
       color: "var(--icon-tertiary)",
-
       onClick: async () => {
-        const data = { id: task.id, title: task.name };
-        const result = await showMoveToArchive({ type: "task", ...data });
+        const result = await showMoveToArchive({ type: "task", id: task.id, title: task.name });
 
-        //TODO: implement move to archive logic
+        // Архива на сервере ещё нет — этап 2 (docs/roadmap.md)
         if (result) toast.warning(`Task id: ${task.id} moved to archive`);
       },
-      isVisible: isMember,
+      isVisible: true,
     },
     {
       label: TEXTS.tasks.delete,
       icon: ICONS.delete,
       color: "var(--icon-critical)",
       onClick: async () => {
-        if (!project) return;
-        const data = { id: task.id, title: task.name };
-        const result = await showDeleteItem({ type: "task", ...data }); //return taskId
+        const result = await showDeleteItem({ type: "task", id: task.id, title: task.name });
 
-        if (result) await deleteTask(result);
+        if (result) deleteTask(task);
       },
-      isVisible: isMember,
+      isVisible: true,
     },
   ];
 
-  const visibleMenuItems = menuItems.filter((item) => item.isVisible);
-
-  return { menuItems: visibleMenuItems };
+  return { menuItems };
 };

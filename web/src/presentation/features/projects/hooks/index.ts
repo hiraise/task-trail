@@ -12,5 +12,4 @@ export { useProjectDetail } from "./useProjectDetail";
 export { useProjectMembers } from "./useProjectMembers";
 export { useProjectMenuItems } from "./useProjectMenuItems";
 export { useProjects } from "./useProjects";
-export { useProjectStatuses } from "./useProjectStatuses";
 export { useRemoveMember } from "./useRemoveMember";

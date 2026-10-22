@@ -11,10 +11,12 @@ interface BottomSheetProps {
   onClose: () => void;
   children: React.ReactNode;
   fullScreen?: boolean; // Optional prop to make it full screen
+  /** false — панель сменяет другую панель: без затемнения с нуля и выезда снизу */
+  appear?: boolean;
 }
 
 export function BottomSheet(props: BottomSheetProps) {
-  const { isOpen, onClose, children, fullScreen } = props;
+  const { isOpen, onClose, children, fullScreen, appear = true } = props;
 
   const [isDragging, setIsDragging] = useState(false);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -64,7 +66,7 @@ export function BottomSheet(props: BottomSheetProps) {
             <m.div
               className={styles.overlay}
               onClick={handleOverlayClick}
-              initial={{ opacity: 0 }}
+              initial={appear ? { opacity: 0 } : false}
               animate={{ opacity: isDragging ? 0.2 : 0.32 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
@@ -72,6 +74,7 @@ export function BottomSheet(props: BottomSheetProps) {
 
             <DraggableContent
               fullScreen={fullScreen}
+              appear={appear}
               contentRef={contentRef}
               isDragging={isDragging}
             >

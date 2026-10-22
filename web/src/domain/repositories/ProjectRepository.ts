@@ -1,6 +1,5 @@
 import type { InvitationResult } from "../models/Invitation";
 import type { Project, ProjectDetails } from "../models/Project";
-import type { TaskStatus } from "../models/TaskStatus";
 import type { ProjectId } from "../types";
 
 export interface NewProject {
@@ -28,5 +27,4 @@ export interface ProjectRepository {
   create(project: NewProject): Promise<ProjectCreated>;
   update(id: ProjectId, changes: ProjectChanges): Promise<ProjectDetails>;
   delete(id: ProjectId): Promise<void>;
-  getProjectStatuses(projectId: ProjectId): Promise<TaskStatus[]>;
 }

@@ -1,15 +1,13 @@
 import z from "zod";
 
+import { taskDescriptionField, taskNameField } from "@/presentation/shared/forms/fields";
 import { tasksTexts } from "@/shared/locales/tasks";
 
+// Ответственный необязателен, как в контракте (CreateTaskRequest): его можно назначить позже
 export const CreateTaskSchema = z.object({
-  name: z
-    .string()
-    .min(6, "Task name must be at least 6 characters")
-    .max(100, "Task name must not exceed 100 characters"),
-  description: z.string().max(1000, "Description must not exceed 1000 characters").optional(),
+  name: taskNameField,
+  description: taskDescriptionField,
   projectId: z.string().min(1, tasksTexts.requiredField),
-  assigneeId: z.string().optional(),
 });
 
 export type CreateTaskFormData = z.infer<typeof CreateTaskSchema>;

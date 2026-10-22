@@ -22,8 +22,6 @@ export function ProjectPage() {
   const { menuItems } = useProjectMenuItems(projectId);
   const { showProjectSettings } = useGlobalModals();
 
-  if (!data) return null;
-
   return (
     <div className={styles.page}>
       <div className={styles.topBar}>
@@ -35,22 +33,35 @@ export function ProjectPage() {
       </div>
       <BackButton className={styles.back} />
 
-      <div className={styles.sections}>
-        <section className={styles.section}>
-          <ProjectInfo
-            project={data.project}
-            owner={data.owner && getUserDisplayName(data.owner)}
-            menuItems={menuItems}
-          />
-        </section>
-        <section className={styles.section}>
-          <ProjectMembers projectId={projectId} members={data.members} />
-        </section>
-        <section className={styles.section}>
-          <ProjectTasks projectId={projectId} tasks={data.tasks} className={styles.tasks} />
-        </section>
-      </div>
-      <FloatingButton />
+      {data ? (
+        <div className={styles.sections}>
+          <section className={styles.section}>
+            <ProjectInfo
+              project={data.project}
+              owner={data.owner && getUserDisplayName(data.owner)}
+              menuItems={menuItems}
+            />
+          </section>
+          <section className={styles.section}>
+            <ProjectMembers projectId={projectId} members={data.members} />
+          </section>
+          <section className={styles.section}>
+            <ProjectTasks
+              projectId={projectId}
+              tasks={data.tasks}
+              members={data.members}
+              className={styles.tasks}
+            />
+          </section>
+        </div>
+      ) : (
+        // Пока грузится — пустые карточки: экран не пустеет и не прыгает
+        <div className={styles.sections} aria-busy="true">
+          <section className={styles.section} />
+          <section className={styles.section} />
+        </div>
+      )}
+      {data && <FloatingButton projectId={projectId} />}
     </div>
   );
 }

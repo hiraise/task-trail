@@ -27,14 +27,16 @@ export const QUERY_KEYS = {
   },
   task: {
     all: ["task"] as const,
-    user: ["task", "user"] as const,
+    /** Задачи, назначенные на текущего пользователя */
+    mine: ["task", "mine"] as const,
     detail: (id: TaskId) => ["task", id] as const,
+    /** Статусы задач: набор общий для всех проектов */
+    statuses: ["task-statuses"] as const,
   },
   project: {
     all: ["project", "all"] as const,
     detail: (id: ProjectId) => ["project", id] as const,
     tasks: (id: ProjectId) => ["project", id, "tasks"] as const,
-    statuses: (id: ProjectId) => ["project", id, "statuses"] as const,
     members: (id: ProjectId) => ["project", id, "members"] as const,
     candidates: {
       all: ["project", "candidates"] as const,

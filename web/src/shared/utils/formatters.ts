@@ -64,27 +64,3 @@ export function getProjectId(str: string): string {
 
   return `${res}-`;
 }
-
-/**
- * Returns the initials of a user's name from a given string.
- *
- * - If the input contains only one word, returns the first two letters of that word in uppercase.
- * - If the input contains multiple words, returns the first letter of the first two words in uppercase.
- *
- * @param str - The input string representing the user's name.
- * @returns The computed initials in uppercase.
- */
-export function getUserInitials(str: string): string {
-  let res: string;
-
-  if (str.length === 0) return "";
-  const words = str.trim().split(/\s+/).filter(Boolean);
-
-  if (words.length === 1) {
-    res = words[0].slice(0, 2).toUpperCase();
-  } else {
-    res = (words[0][0] + words[1][0]).toUpperCase();
-  }
-
-  return res;
-}

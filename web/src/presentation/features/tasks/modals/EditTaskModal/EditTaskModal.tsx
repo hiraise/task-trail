@@ -1,35 +1,35 @@
-import type { Task } from "@/domain/models/Task";
-import { DeviceBased } from "@/presentation/shared";
+import type { TaskChanges } from "@/domain/repositories/TaskRepository";
 import { useGlobalModalProps } from "@/presentation/shared/hooks";
-import type { EditTaskProps } from "@/presentation/shared/hooks/useGlobalModals";
+import type { TaskProps } from "@/presentation/shared/hooks/useGlobalModals";
 import type { BaseModalProps } from "@/presentation/shared/modals/BaseModal";
 import { BaseModal } from "@/presentation/shared/modals/BaseModal";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { EditTaskFormDesktop, type FormValues } from "../../components";
+import { EditTaskForm } from "../../components";
 import { useEditTask } from "../../hooks";
 
-export function EditTaskModal(props: BaseModalProps<string>) {
-  const { taskId, title, description } = useGlobalModalProps<EditTaskProps>() ?? {};
-  const task: Partial<Task> = { name: title, description };
-
+export function EditTaskModal(props: BaseModalProps) {
+  const { task } = useGlobalModalProps<TaskProps>() ?? {};
   const { mutateAsync: editTask } = useEditTask();
 
-  if (!taskId) return;
+  if (!task) return null;
 
-  const submitHandler = async (data: FormValues) => {
-    if (data.title !== task.name || data.description !== task.description) {
-      await editTask({ taskId: taskId, title: data.title, description: data.description });
+  const handleSubmit = async (changes: TaskChanges) => {
+    // Ничего не поменяли — запрос не нужен (UpdateTaskRequest требует хотя бы одно поле)
+    if (Object.keys(changes).length > 0) {
+      try {
+        await editTask({ taskId: task.id, ...changes });
+      } catch {
+        // Ошибку показал useEditTask, окно остаётся открытым
+        return;
+      }
     }
     props.onClose();
   };
 
   return (
     <BaseModal {...props} title={TEXTS.tasks.edit}>
-      <DeviceBased
-        desktop={<EditTaskFormDesktop task={task} submitHandler={submitHandler} />}
-        mobile={<EditTaskFormDesktop task={task} submitHandler={submitHandler} />}
-      />
+      <EditTaskForm task={task} onSubmit={handleSubmit} />
     </BaseModal>
   );
 }

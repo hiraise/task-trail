@@ -1,0 +1,54 @@
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.name {
+  overflow-wrap: anywhere;
+}
+
+/* Переносы строк описания — как ввёл автор */
+.description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.menu {
+  display: none;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .info {
+    gap: 12px;
+  }
+
+  .menu {
+    display: flex;
+  }
+
+  .fields {
+    gap: 4px;
+  }
+}

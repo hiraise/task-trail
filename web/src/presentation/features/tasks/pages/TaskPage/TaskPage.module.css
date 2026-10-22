@@ -1,0 +1,76 @@
+/* До 767 px — телефон: верхняя панель и секции во всю ширину, прокручиваются секции.
+   С 768 px — карточки внутри DesktopTemplate (брейкпоинты — presentation/shared/hooks/useDevice.ts). */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  height: 100dvh;
+  background: var(--bg-primary-contrast);
+}
+
+.topBar {
+  padding: 12px 20px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  background-color: var(--bg-primary);
+}
+
+.back {
+  display: none;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background-color: var(--bg-primary);
+}
+
+.section:last-child {
+  flex: 1;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+@media (min-width: 768px) {
+  .page {
+    gap: 12px;
+    height: 100%;
+    background: transparent;
+  }
+
+  .topBar {
+    display: none;
+  }
+
+  .back {
+    display: flex;
+  }
+
+  .sections {
+    gap: 4px;
+  }
+
+  .section {
+    padding: 16px 20px;
+    background-color: var(--bg-card);
+  }
+
+  .section:first-child {
+    padding: 16px 20px 10px;
+  }
+
+  .section:last-child {
+    border-radius: 8px;
+  }
+}

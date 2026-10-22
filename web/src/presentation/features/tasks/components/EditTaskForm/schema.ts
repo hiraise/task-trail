@@ -1,8 +1,10 @@
 import z from "zod";
 
+import { taskDescriptionField, taskNameField } from "@/presentation/shared/forms/fields";
+
 export const schema = z.object({
-  title: z.string().trim().min(8, "Название должно содержать минимум 8 символов"),
-  description: z.string().trim(),
+  name: taskNameField,
+  description: taskDescriptionField,
 });
 
 export type FormValues = z.infer<typeof schema>;

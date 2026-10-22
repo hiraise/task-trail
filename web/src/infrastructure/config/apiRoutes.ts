@@ -1,4 +1,4 @@
-import type { ProjectId, TaskId, TaskStatusId, UserId } from "@/domain/types";
+import type { ProjectId, TaskId, UserId } from "@/domain/types";
 
 /** Адрес API (`VITE_API_URL`, web/README.md); на стенде — относительный `/api`. */
 export const API_URL: string = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -34,13 +34,13 @@ export const API_ROUTES = {
   GET_CANDIDATES: `${PROJECTS}/candidates`,
   LEAVE_PROJECT: (id: ProjectId) => `${PROJECTS}/${id}/leave`,
   PROJECT_TASKS: (id: ProjectId) => `${PROJECTS}/${id}/tasks`,
-  PROJECT_STATUSES: (id: ProjectId) => `${PROJECTS}/${id}/tasks/statuses`,
-  // TASKS API
+  // TASKS API: каждая операция с задачей — свой адрес (ADR-0002)
   TASKS: TASKS,
-  TASKS_BY_ID: (id: TaskId) => `${TASKS}/${id}`,
-  CHANGE_STATUS: (id: TaskId, statusId: TaskStatusId) => `${TASKS}/${id}/status/${statusId}`,
-  CHANGE_ASSIGNEE: (id: TaskId, assigneeId?: UserId) =>
-    `${TASKS}/${id}/assignee${id ? `/?assigneeId=${assigneeId}` : ""}`,
+  TASK_BY_ID: (id: TaskId) => `${TASKS}/${id}`,
+  TASK_STATUS: (id: TaskId) => `${TASKS}/${id}/status`,
+  TASK_ASSIGNEE: (id: TaskId) => `${TASKS}/${id}/assignee`,
+  TASK_PROJECT: (id: TaskId) => `${TASKS}/${id}/project`,
+  TASK_STATUSES: `${API_VERSION}/task-statuses`,
   // USERS API
   CURRENT_USER: USERS_ME,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,

@@ -25,6 +25,7 @@
   --border: rgba(0, 0, 0, 0.1);
 
   /* Shadows */
+  --shade-01: 0px 0px 24px 0px rgba(0, 0, 0, 0.04);
   --shade-02: 0px 0px 16px 0px rgba(0, 0, 0, 0.16);
 
   /* Design colors */
@@ -37,6 +38,7 @@
   --bg-card: rgba(255, 255, 255, 1);
   --bg-accent-yellow: rgba(255, 237, 205, 1);
   --bg-accent-blue: rgba(223, 235, 255, 1);
+  --bg-accent-green: rgba(194, 237, 205, 1);
 
   /* Icons */
   --icon-primary: rgba(32, 32, 32, 1);

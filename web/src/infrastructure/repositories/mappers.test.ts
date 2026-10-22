@@ -4,6 +4,8 @@ import {
   toProject,
   toProjectDetails,
   toProjectMember,
+  toTask,
+  toTaskStatus,
   toUser,
 } from "./mappers";
 
@@ -92,5 +94,48 @@ describe("toInvitationResult", () => {
     expect(
       toInvitationResult({ email: "new@example.com", result: "mail_failed", inviteUrl: null }),
     ).toEqual({ email: "new@example.com", outcome: "mail_failed", inviteUrl: undefined });
+  });
+});
+
+describe("toTask", () => {
+  const dto = {
+    id,
+    projectId: "5c3f8e21-9b4d-4e6a-8f12-3a4b5c6d7e80",
+    name: "Собрать отчёт",
+    description: null,
+    statusId: "in_review" as const,
+    authorId: avatarId,
+    assigneeId: null,
+    createdAt: "2026-10-22T08:00:00Z",
+    updatedAt: "2026-10-22T09:30:00Z",
+  };
+
+  it("нет описания и исполнителя — undefined, статус — ID из контракта", () => {
+    expect(toTask(dto)).toEqual({
+      id,
+      projectId: dto.projectId,
+      name: "Собрать отчёт",
+      description: undefined,
+      statusId: "in_review",
+      authorId: avatarId,
+      assigneeId: undefined,
+      createdAt: "2026-10-22T08:00:00Z",
+      updatedAt: "2026-10-22T09:30:00Z",
+    });
+  });
+
+  it("описание и исполнитель — как в ответе", () => {
+    expect(toTask({ ...dto, description: "К пятнице", assigneeId: id })).toMatchObject({
+      description: "К пятнице",
+      assigneeId: id,
+    });
+  });
+});
+
+describe("toTaskStatus", () => {
+  it("название с сервера, признаки статуса как в ответе", () => {
+    expect(
+      toTaskStatus({ id: "done", name: "Готово", isDefault: false, isResolved: true }),
+    ).toEqual({ id: "done", name: "Готово", isDefault: false, isResolved: true });
   });
 });

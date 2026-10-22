@@ -1,5 +1,4 @@
 import type { ProjectRepository } from "@/domain/repositories/ProjectRepository";
-import { createTaskStatus } from "@/domain/models/TaskStatus";
 
 import type {
   CreateProjectRequest,
@@ -42,13 +41,6 @@ const createProjectRepository = (http: HttpClient): ProjectRepository => ({
 
   delete: async (id) => {
     await http.delete(API_ROUTES.PROJECT_BY_ID(id));
-  },
-
-  // Старый адрес статусов: на GET /v1/task-statuses веб переходит в шаге 6.3 (docs/roadmap.md)
-  getProjectStatuses: async (id) => {
-    const dtos = await http.get<unknown[]>(API_ROUTES.PROJECT_STATUSES(id));
-
-    return dtos.map(createTaskStatus);
   },
 });
 
