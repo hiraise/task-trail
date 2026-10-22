@@ -1,29 +1,29 @@
-# ADR-0004: TaskTrail — лёгкий трекер: поля и статусы задач фиксированы, конструктора нет
+# ADR-0004: TaskTrail is a lightweight tracker: task fields and statuses are fixed, no construction kit
 
-- **Статус:** Принято
-- **Дата:** 2026-10-21
-- **Затрагивает:** модель данных (`server/migrations/`), контракт API, модели в `web/src/domain/`
+- **Status:** Accepted
+- **Date:** 2026-10-21
+- **Affects:** data model (`server/migrations/`), API contract, models in `web/src/domain/`
 
-## Контекст
+## Context
 
-TaskTrail — self-hosted трекер задач для небольших команд. Большие трекеры тяжелы прежде всего
-настройкой: свои поля, workflow-скрипты, язык запросов. Здесь нужен трекер, который
-работает сразу после установки.
+TaskTrail is a self-hosted task tracker for small teams. Large trackers are heavy above all
+because of configuration: custom fields, workflow scripts, a query language. We need a tracker
+that works right after installation.
 
-## Решение
+## Decision
 
-- Ядро (MVP, всё есть в дизайне Figma): проекты; участники с ролями
-  ([ADR-0003](0003-fixed-roles-and-statuses.md)); задачи с ключом проекта вида `DS-1`;
-  исполнитель; статусы и архив; комментарии с историей изменений задачи; канбан-доски
-  с дорожками по исполнителям; поиск по проектам, доскам и задачам; профиль.
-- Поля задачи заданы в схеме и коде. Новое поле появляется только через ADR.
-- Набор статусов фиксирован ([ADR-0003](0003-fixed-roles-and-statuses.md)) и меняется только через ADR.
-- После ядра, каждый пункт своим ADR: приоритет, срок, метки, упоминания и уведомления,
-  вложения, подзадачи и связи между задачами, фильтры, горячие клавиши.
-- Не делаем: настраиваемые поля, скрипты workflow, учёт времени, спринты и отчёты,
-  базу знаний, собственный язык запросов.
+- Core (MVP, all of it is in the Figma design): projects; members with roles
+  ([ADR-0003](0003-fixed-roles-and-statuses.md)); tasks with a project key like `DS-1`;
+  assignee; statuses and archive; comments with the task change history; kanban boards
+  with swimlanes by assignee; search across projects, boards and tasks; profile.
+- Task fields are defined in the schema and the code. Add a new field only through an ADR.
+- The set of statuses is fixed ([ADR-0003](0003-fixed-roles-and-statuses.md)); change it only through an ADR.
+- After the core, each item gets its own ADR: priority, due date, labels, mentions and notifications,
+  attachments, subtasks and links between tasks, filters, keyboard shortcuts.
+- Do not build: custom fields, workflow scripts, time tracking, sprints and reports,
+  a knowledge base, a custom query language.
 
-## Альтернативы
+## Alternatives
 
-- Настраиваемые поля и статусы, как в больших трекерах, — превращают трекер в конструктор,
-  который нужно настраивать перед работой; это то, от чего TaskTrail уходит.
+- Configurable fields and statuses, as in large trackers — they turn the tracker into a construction kit
+  that must be configured before work; this is exactly what TaskTrail moves away from.

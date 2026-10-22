@@ -1,63 +1,63 @@
-# TaskTrail — веб-клиент
+# TaskTrail — web client
 
-SPA на React и TypeScript: вход, первый аккаунт и приглашения, проекты и участники, задачи, профиль.
-Доски, комментарии и поиск пока только свёрстаны и показывают заглушки — сервер их ещё
-не отдаёт (план — в [корневом README](../README.md)).
+A React and TypeScript SPA: login, first account and invitations, projects and members, tasks,
+profile, the admin section. Boards, comments, search and the archive are only laid out so far and
+show placeholders — they come in stage 2 ([plan](../docs/plans/stage-2/README.md)).
 
-|                      Десктоп                      |                     Телефон                     |
-| :-----------------------------------------------: | :---------------------------------------------: |
-| ![Вход на десктопе](./docs/images/login-desktop.png) | ![Вход на телефоне](./docs/images/login-mobile.png) |
+|                       Desktop                        |                       Phone                       |
+| :--------------------------------------------------: | :-----------------------------------------------: |
+| ![Login on desktop](./docs/images/login-desktop.png) | ![Login on phone](./docs/images/login-mobile.png) |
 
-Стек — [ADR-0006](../docs/adr/0006-tech-stack.md), правила устройства кода —
-[ADR-0008](../docs/adr/0008-web-architecture.md), процесс разработки — [CLAUDE.md](../CLAUDE.md).
+Stack — [ADR-0006](../docs/adr/0006-tech-stack.md), code structure rules —
+[ADR-0008](../docs/adr/0008-web-architecture.md), development process — [CLAUDE.md](../CLAUDE.md).
 
-## Запуск
+## Running
 
-Нужны Node.js и npm версий из `engines` в `package.json`; другие npm отвергает сам (`.npmrc`).
-Команды — из папки `web/`:
+Requires Node.js and npm of the versions from `engines` in `package.json`; npm rejects other
+versions itself (`.npmrc`). Run the commands from the `web/` folder:
 
 ```bash
-npm ci            # зависимости по package-lock.json
-npm run dev       # dev-сервер на http://localhost:5173 (3000 занят локальным стендом)
+npm ci            # dependencies from package-lock.json
+npm run dev       # dev server at http://localhost:5173 (3000 is taken by the local stack)
 npm run lint      # ESLint
-npm run test:run  # тесты Vitest
-npm run build     # проверка типов и сборка в dist/
-npm run api:types # типы API из ../api/openapi.yaml — после каждого изменения контракта
-npm run preview   # просмотр собранной версии
+npm run test:run  # Vitest tests
+npm run build     # type check and build into dist/
+npm run api:types # API types from ../api/openapi.yaml — after every contract change
+npm run preview   # preview the built version
 ```
 
-Все проверки репозитория разом — `scripts/dev.sh check` из корня.
+All repository checks at once — `scripts/dev.sh check` from the root.
 
-## Окружение
+## Environment
 
-Переменные читаются при сборке:
+Variables are read at build time:
 
-| Переменная | По умолчанию | Что задаёт |
+| Variable | Default | What it sets |
 | --- | --- | --- |
-| `VITE_API_URL` | `http://localhost:8080` | адрес API сервера |
-| `VITE_ROOT_PATH` | пусто | путь, под которым открывается приложение, например `/tasktrail` |
+| `VITE_API_URL` | `http://localhost:8080` | server API URL |
+| `VITE_ROOT_PATH` | empty | path the app is served under, e.g. `/tasktrail` |
 
-## Структура `src/`
+## `src/` structure
 
 ```text
 src/
-├── routes/              # маршруты TanStack Router: _main/ — после входа, auth/ — вход и регистрация
-├── application/         # сценарии, DTO и payload-ы запросов
-├── domain/              # модели, интерфейсы репозиториев, типы
-├── infrastructure/      # HTTP-клиент, адреса API, репозитории API; api/generated — типы из контракта
+├── routes/              # TanStack Router routes: _main/ — after login, auth/ — login and sign-up
+├── application/         # application services, DTOs and request payloads
+├── domain/              # models, repository interfaces, types
+├── infrastructure/      # HTTP client, API URLs, API repositories; api/generated — types from the contract
 ├── presentation/
-│   ├── app/             # провайдеры и компоненты уровня приложения
-│   ├── features/        # экраны и компоненты по разделам: auth, boards, projects, tasks, user
-│   └── shared/          # общие компоненты, UI-кит, модальные окна, хуки
-├── shared/              # конфиг, константы, ошибки, тексты интерфейса, утилиты
-└── styles/              # глобальные стили и переменные дизайна
+│   ├── app/             # app-level providers and components
+│   ├── features/        # screens and components by section: admin, auth, boards, projects, tasks, user
+│   └── shared/          # shared components, UI kit, modals, hooks
+├── shared/              # config, constants, errors, UI texts, utilities
+└── styles/              # global styles and design variables
 ```
 
-Дерево маршрутов `src/routeTree.gen.ts` генерирует плагин TanStack Router в Vite. Добавил, убрал
-или переименовал файл в `routes/` — перегенерируй дерево (`npx vite build` или `npm run dev`)
-и закоммить его: `npm run build` сначала проверяет типы и на устаревшем дереве падает с ошибкой
+The route tree `src/routeTree.gen.ts` is generated by the TanStack Router plugin in Vite. Added,
+removed or renamed a file in `routes/` — regenerate the tree (`npx vite build` or `npm run dev`)
+and commit it: `npm run build` checks types first and fails on a stale tree with the error
 `not assignable to parameter of type 'keyof FileRoutesByPath'`.
 
-## Лицензия
+## License
 
 [MIT](../LICENSE).

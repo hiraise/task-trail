@@ -1,30 +1,31 @@
-# ADR-0010: Разработка и приёмка — на локальной машине, без dev-стенда
+# ADR-0010: Development and acceptance happen on the local machine, without a shared dev environment
 
-- **Статус:** Принято
-- **Дата:** 2026-10-21
-- **Затрагивает:** `.github/workflows/`, `scripts/dev.sh`, `scripts/stand-*.mjs`, `stand/`, настройки окружения сервера и веба
+- **Status:** Accepted
+- **Date:** 2026-10-21
+- **Affects:** `.github/workflows/`, `scripts/dev.sh`, `scripts/stand-*.mjs`, `stand/`, server and web environment settings
 
-## Контекст
+## Context
 
-Проект ведёт один разработчик — агент, — а заказчик принимает результат. Общий dev-стенд
-нужен был, пока над проектом работали несколько человек.
+The project has one developer — the agent — and the customer accepts the result. A shared dev environment
+was needed while several people worked on the project.
 
-## Решение
+## Decision
 
-- Результат показывается и принимается на локальной машине. Стенд — PostgreSQL, сервер и веб
-  в Docker — поднимает `scripts/dev.sh up` (`stand/compose.yaml`); порты слушают только
+- Show and accept the result on the local machine. The local stack — PostgreSQL, server and web
+  in Docker — is started by `scripts/dev.sh up` (`stand/compose.yaml`); its ports listen only on
   `127.0.0.1`.
-- Письма в разработке уходят в локальный перехватчик почты (Mailpit), настоящий SMTP не нужен.
-- Сборку образов для серверов и вебхуки деплоя не поддерживаем.
-- Выпуск для установки на сервер (образы по тегу и compose-файл) — отдельным ADR, когда понадобится.
+- In development, send emails to a local mail catcher (Mailpit); a real SMTP server is not needed.
+- Do not support building images for servers or deploy webhooks.
+- A release for installation on a server (images by tag and a compose file) — a separate ADR, when needed.
 
-## Последствия
+## Consequences
 
-Старый стенд `dev.hiraise.net/tasktrail` больше не обновляется. До шага 5 этапа 1 на локальном
-стенде работал эталон старого API из истории git, теперь — сервер из `server/`. Первый аккаунт
-и почту стенда настраивает `scripts/dev.sh up` через API администратора, а не окружение сервера
+The old shared dev environment `dev.hiraise.net/tasktrail` is no longer updated. Before stage 1, step 5
+the local stack ran the reference old API from git history; now it runs the server from `server/`.
+The first account and the mail of the local stack are configured by `scripts/dev.sh up` through
+the service administrator API, not through the server environment
 ([ADR-0015](0015-settings-in-admin-ui.md), [ADR-0017](0017-mail-in-admin-ui.md)).
 
-## Проверка
+## Verification
 
-`scripts/rules.mjs` — порты в `stand/compose.yaml` слушают только `127.0.0.1`.
+`scripts/rules.mjs` — ports in `stand/compose.yaml` listen only on `127.0.0.1`.

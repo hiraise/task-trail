@@ -1,28 +1,30 @@
-# ADR-0025: Дизайн-система описана в репозитории, новые экраны согласуются макетом, а не в Figma
+# ADR-0025: The design system is described in the repository; new screens are approved by a mockup, not in Figma
 
-- **Статус:** Принято
-- **Дата:** 2026-10-22
-- **Затрагивает:** `docs/design-system.md`, CLAUDE.md «Где что описано», `docs/roadmap.md`, `web/src/styles/`, общие компоненты `web/src/presentation/shared/`
+- **Status:** Accepted
+- **Date:** 2026-10-22
+- **Affects:** `docs/design-system.md`, CLAUDE.md "Where things are", `docs/roadmap.md`, `web/src/styles/`, shared components `web/src/presentation/shared/`
 
-## Контекст
+## Context
 
-Экраны рисовались в Figma, но на тарифе Starter у Figma MCP мало вызовов и нельзя добавить страницу:
-раздел администратора (шаг 6.4) нарисовать там не вышло. Заказчик решил Figma больше не дополнять.
+Screens were drawn in Figma, but on the Starter plan Figma MCP has few calls and cannot add a page:
+the admin section (stage 1, step 6.4) could not be drawn there. The customer decided to stop extending
+Figma.
 
-## Решение
+## Decision
 
-- Дизайн-система — `docs/design-system.md`: токены, раскладка, формы, кнопки, окна, иконки
-  со ссылками на код. Значения живут в коде, документ говорит, что когда использовать.
-- Новый экран или заметное изменение экрана: макет на 393, 768 и 1200 px на холсте Design
-  в claude.ai, только из дизайн-системы, со всеми состояниями — и согласие заказчика до кода.
-- Figma не дополняй: это справка по уже нарисованным экранам.
-- Новый общий компонент или токен добавь в дизайн-систему в том же PR.
+- The design system is `docs/design-system.md`: tokens, layout, forms, buttons, modals, icons
+  with links to code. Values live in code; the document says what to use when.
+- A new screen or a noticeable change of a screen: a mockup at 393, 768 and 1200 px on the Design
+  canvas on claude.ai, only from the design system, with all states — and the customer's approval
+  before code.
+- Do not extend Figma: it is a reference for screens already drawn.
+- Add a new shared component or token to the design system in the same PR.
 
-## Последствия
+## Consequences
 
-- Агенту не нужен доступ к Figma для новых экранов; старые экраны по-прежнему сверяются с ней.
-- Документ отстаёт от кода, если его не править вместе с общими компонентами.
+- The agent needs no Figma access for new screens; old screens are still checked against it.
+- The document lags behind the code unless it is edited together with the shared components.
 
-## Альтернативы
+## Alternatives
 
-- Платный тариф Figma — заказчик счёл Figma для новых экранов лишней.
+- A paid Figma plan — the customer considered Figma unnecessary for new screens.

@@ -1,211 +1,60 @@
-# План работ
+# Roadmap
 
-Для агентов: где проект сейчас, что делать дальше и в каком порядке. Решения — в ADR, правила —
-в [CLAUDE.md](../CLAUDE.md), здесь — очередь работ. Закрыл шаг — обнови этот файл в том же PR.
+For agents: where the project is and where it goes, in brief. Decisions live in ADRs, working rules —
+in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
+([ADR-0031](adr/0031-english-agent-docs-and-stage-plans.md)). The PR that finishes a step updates
+"Where we are".
 
-## Где мы сейчас
+## Where we are
 
-Этап 0 закрыт 2026-10-21: единый репозиторий (история `hiraise/tt-backend` и `hiraise/tt-frontend`
-перенесена в `server/` и `web/`, старые репозитории архивированы), правила и ADR 0001–0010,
-проверки `scripts/dev.sh check` и CI, локальный стенд `scripts/dev.sh up`. Шаги этапа 1 сделаны
-шагом 6.4; следующий — этап 2 (раздел «Дальше»), его порядок согласуй с заказчиком.
+- **Now:** stage 2, plan — [docs/plans/stage-2/](plans/stage-2/README.md). Next step — 0, code
+  comments in English; then 1, task keys.
+- **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
+  [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
+  reset; users and files; projects and members; fixed statuses and tasks; service administration.
+  Tests check responses against the contract ([ADR-0019](adr/0019-server-contract-tests.md)).
+- **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping
+  and errors — [ADR-0024](adr/0024-web-api-mapping-and-errors.md)): sign-in and profile, projects and
+  members, tasks, the admin section. Boards, comments, search and the archive are stubs — stage 2.
+- **Local stack** — `scripts/dev.sh up` (README, «Локальный стенд»): the server, the web, PostgreSQL
+  and Mailpit; the first `up` creates an administrator and connects mail.
+- **Design** of new screens — `docs/design-system.md` and a mockup approved by the customer
+  ([ADR-0025](adr/0025-design-system-in-repo.md)); screens drawn earlier — Figma (file key in CLAUDE.md).
 
-- `server/` реализует весь контракт: доступ — `/v1/auth/*` и `GET /v1/settings/public` (шаг 3),
-  Swagger для администратора, пользователя и файлы (шаг 4.1), проекты и участников (шаг 4.2),
-  статусы и задачи (шаг 4.3), администрирование — `/v1/admin/*` (шаг 4.4).
-  Схема БД `server/migrations/` уже по
-  [ADR-0003](adr/0003-fixed-roles-and-statuses.md) — UUID, роль и статус строками —
-  и содержит таблицы проектов, участников и задач.
-- `web/` — экраны по дизайну: вход, проекты, участники, задачи, профиль, раздел администратора;
-  доски, комментарии и поиск — заглушки. Доступ и профиль (шаг 6.1), проекты и участники
-  (шаг 6.2), задачи (шаг 6.3) и администрирование (шаг 6.4) работают по контракту.
-- Дизайн новых экранов — `docs/design-system.md` и макет на согласование, Figma не дополняется
-  ([ADR-0025](adr/0025-design-system-in-repo.md)).
-- Контракт `api/openapi.yaml` описан (шаг 1 этапа 1), соглашения — [ADR-0018](adr/0018-api-conventions.md).
-  Проверка контракта готова (шаг 2): помощник `server/test/contract` для тестов сервера
-  ([ADR-0019](adr/0019-server-contract-tests.md)) и типы веба `web/src/infrastructure/api/generated/`
-  ([ADR-0020](adr/0020-web-api-types.md)).
-- На стенде работает сервер из `server/` (шаг 5); что в вебе пока не работает —
-  [README](../README.md), «Локальный стенд».
+## Stages
 
-## Этап 1 — контракт API и сервер, на который переходит веб
+1. **Stage 0 — done (2026-10-21).** One repository (the history of `hiraise/tt-backend` and
+   `hiraise/tt-frontend` moved into `server/` and `web/`, the old repositories archived), rules and
+   ADRs, `scripts/dev.sh check` and CI, the local stack.
+2. **Stage 1 — done (2026-10-22).** The API contract and a server that implements it; the web moved
+   onto it; the old API reference removed. Details — ADRs 0011–0025 and git history.
+3. **Stage 2 — in progress.** The core of [ADR-0004](adr/0004-lightweight-tracker-scope.md): task
+   keys, archive, comments with history, boards, search. Plan — [docs/plans/stage-2/](plans/stage-2/README.md).
+4. **Stage 3.** The "after the core" items of ADR-0004, each with its own ADR: priority, due date,
+   labels, notifications, attachments, subtasks. No design yet — a mockup per
+   `docs/design-system.md` first (ADR-0025).
+5. **Stage 4.** An Android client on the same API. First an ADR about the stack; an example of the
+   process — the Babylog project (`hiraise/Babylog`).
 
-Цель: на стенде работает сервер из `server/`, веб полностью работает с ним, эталон старого API удалён.
+Also planned, outside the stages:
 
-1. ~~**Контракт.**~~ Готово: `api/openapi.yaml` по соглашениям [ADR-0018](adr/0018-api-conventions.md).
-   Меняя API дальше, меняй контракт в том же PR (ADR-0005). Эталон старого API для сверки
-   поведения — `git show 71b514e:server/docs/swagger.yaml` и обработчики
-   `git show 71b514e:server/internal/controller/http/v1/<файл>.go`.
-2. ~~**Проверка контракта.**~~ Готово: ADR-0019 и ADR-0020. Каждый новый тест обработчика сервера
-   проверяет ответы через `contract.Load(t).Check(...)`; после изменения контракта — `npm run api:types`
-   в `web/`.
-3. **Доступ** — тремя PR, по согласию заказчика.
-   - ~~3.1. Основа.~~ Готово: ошибки `{ code, message, details }` по ADR-0018 (`middleware/error.go`,
-     `middleware.Setup` — общая сборка движка для сервера и тестов), окружение по ADR-0015
-     (`APP_SECRET` и ключи из него — `infrastructure/service/keys`, константы в `internal/app/app.go`,
-     встроенные миграции через pgx), таблица `settings` с шифрованием секретов
-     (`infrastructure/service/secretbox`, `persistent/settings.go`), интеграционные тесты на
-     PostgreSQL (`test/testdb`), импорты слоёв в `scripts/rules.mjs`, часы `Clock` по ADR-0022
-     (на них уже переведены выдача JWT и cookie токенов).
-   - ~~3.2. Доступ по контракту.~~ Готово: `register`, `login`, `refresh`, `logout`, `check`,
-     `password/change` и `GET /v1/settings/public` по контракту. Первый аккаунт — администратор
-     под `pg_advisory_xact_lock` (`users.is_admin`, адрес сервиса из `serviceUrl`), почта
-     в нижнем регистре, подтверждения почты нет. Refresh-токен обменивается один раз
-     (`refresh_tokens.rotated_at`), повтор позже 30 секунд отзывает все токены пользователя после
-     транзакции; истёкшие токены удаляются раз в час. Cookie `rt` — с путём `/v1/auth/`, cookie
-     старого API удаляется. Время сервера — только из `Clock` (ADR-0022), порог в `scripts/rules.mjs` — 0.
-     Тесты обработчиков — через `test/apitest` на PostgreSQL, с контрактом. Код старого API
-     для писем удалён вместе с `SMTP_*` и `FRONTEND_*`: подтверждения почты больше нет, а письма
-     по ADR-0017 строятся заново в 3.3.
-   - ~~3.3. Почта, сброс пароля и приглашения.~~ Готово: письма через `go-mail` (принят
-     ADR-0006) по настройкам из `settings` — `service.Mailer`, реализация
-     `infrastructure/service/notification`, тексты — `application/letter`; письмо уходит в запросе,
-     отказ SMTP — `502 MAIL_SEND_FAILED`, без почты — `409 MAIL_DISABLED`. `password/forgot`
-     и `/reset`: токен — `rand.Text()`, в базе SHA-256 (`password_resets`), ссылка
-     `<адрес сервиса>/auth/reset?token=…`, сброс гасит все ссылки пользователя
-     и закрывает сессии; команда `app password-reset-link <почта>`. Приглашения: таблица
-     `invitations`, `lookup` и `accept`, `InvitationFactory` и `InvitationRepository.Create`
-     (замена приглашения той же почты в тот же проект) готовы для шага 4. Swagger UI 5
-     (`swaggo/files/v2`) по `/docs/` показывает контракт, встроенный модулем `api/` (ADR-0023), только
-     администратору (`middleware.NewAdmin`); `server/docs/`, `SWAGGER_*` и `make swag` удалены.
-4. **Модули сервера** по ADR-0007, в порядке зависимостей веба — четырьмя PR, по согласию заказчика.
-   - ~~4.1. Пользователь и файлы.~~ Готово: `GET`/`PATCH /v1/users/me`, аватарка
-     `PATCH /v1/users/me/avatar`, `GET /v1/users/{userId}` (видит себя, участников общих
-     проектов и авторов задач своих проектов) и `GET /v1/files/{fileId}` — модули
-     `application/service/user` и `file`. Файлы на диске по ADR-0013: `FILES_DIR`
-     (по умолчанию `files`), хранилище `infrastructure/service/filestorage`, тип по содержимому,
-     очистка ненужных файлов и файлов без записи старше суток — вместе с очисткой токенов
-     раз в час. Изменения пользователя — под `UserRepository.GetForUpdate`: так смена пароля,
-     имени и аватарки не затирают друг друга. Поле «нет или null» в теле запроса —
-     `request.Optional`; ID в пути не UUID — `404` через `pathID`; транзакция в тестах на моках —
-     `test/txtest`. Участников и задачи тесты 4.1 пишут прямо в базу (`apitest.AddMember`, `CreateTask`).
-   - ~~4.2. Проекты и участники.~~ Готово: `/v1/projects/*` — модуль `application/service/project`.
-     Права по ролям — методы `entity.ProjectMember` (`RequireManager`, `RequireOwner`,
-     `ChangeRoleOf`, `CheckRemove`, `CheckLeave`); не участнику — 404 до проверки роли. Сценарии,
-     которые меняют проект или участников, начинают с `ProjectRepository.GetForUpdate`: строка
-     проекта заблокирована, проверка роли и действие не расходятся. Приглашения — `inviter`
-     в `project/invite.go`: в транзакции — участие или приглашение (`InvitationFactory`, 7 дней —
-     `invitationLifetime` в `app.go`), после неё — письма параллельно, до 10 одновременно,
-     каждое не дольше 10 секунд, все — не дольше 12. Не ушло приглашение — `mail_failed`,
-     извещение добавленному — результат прежний. Ссылки на страницы веба — `application/link`.
-     Удаление — `SoftDelete` проекта и задач одним запросом; исключённый и вышедший снимаются
-     с задач проекта (`TaskRepository.UnassignInProject` — заготовка для 4.3).
-   - ~~4.3. Статусы и задачи.~~ Готово: `GET /v1/task-statuses` — фиксированный набор
-     с постоянными ID из `entity/task_status.go`; задачи — модуль `application/service/task`,
-     каждая операция — свой эндпоинт ([ADR-0002](adr/0002-task-edit-endpoints.md)), и
-     `GET /v1/users/me/tasks`. Задачу видит и меняет любой участник её проекта, не участнику — 404;
-     исполнитель — только участник (`Task.AssignTo`, иначе `422 ASSIGNEE_NOT_MEMBER`). Задачи
-     меняются под блокировкой их проекта, как проекты и участники: `editor.lock` блокирует проект,
-     читает задачу заново и, если её успели перенести, блокирует и новый проект; перенос блокирует
-     оба проекта по возрастанию ID. Списки задач — новые первыми. UUID в теле запроса приводятся
-     к нижнему регистру (`request.normalizeID`). Тесты создают задачи через API, `apitest.CreateTask` удалён.
-   - ~~4.4. Администрирование.~~ Готово: `/v1/admin/*` — модуль `application/service/admin`,
-     на всей группе `middleware.NewAdmin` после `NewAuth`. Адрес сервиса — без `/` в конце
-     (`entity.NewServiceURL`, им пользуется и регистрация). Почта сохраняется, только если
-     `Mailer.Check` подключился, вошёл и SMTP принял отправителя (`MAIL FROM`, затем `RSET`, письмо
-     не уходит), иначе `502 MAIL_CONNECTION_FAILED`; пароль не введён — берётся сохранённый для
-     того же сервера и порта (`MailSettings.KeepPassword`), иначе `422 SECRET_REQUIRED`. Тестовое
-     письмо — на почту администратора. Пользователи — по дате регистрации; администратора
-     назначает и снимает `UserAccount.SetAdmin` под `UserRepository.LockAdmins`, последнего —
-     `409 LAST_ADMIN`. Ссылку сброса для пользователя выдаёт
-     `access.PasswordResetLinkService.ForUser`. TLS почты в тестах обработчиков —
-     `app.WithSMTPRootCAs` через `apitest.New`.
+- **Release** for self-hosting — images by tag and a compose file. A separate ADR when the customer
+  wants to use TaskTrail.
+- **The service administrator's power over projects** — after the plan above, with the customer's
+  consent: a new ADR supersedes the bullet "gives no access to other people's projects" of
+  [ADR-0014](adr/0014-service-administrator.md). Through the admin section: all projects of the
+  instance, adding oneself or anyone with any role, transferring ownership, deleting a project. In the
+  regular UI the administrator is a member of their own projects; access checks stay by role
+  (ADR-0003). Everyone can still create projects; an "admins only" switch — when needed.
 
-   Время в ответах API — в UTC (`.UTC()`): PostgreSQL отдаёт его в поясе сервера, а контракт
-   ждёт `Z`. Репозитории покрывай интеграционными тестами на PostgreSQL (`test/testdb`),
-   обработчики — тестами через `test/apitest`: он собирает сервер, как `internal/app`, и сверяет
-   ответы с контрактом.
-5. ~~**Стенд на новый сервер.**~~ Готово: `stand/compose.yaml` собирает сервер из `server/`
-   с контекстом — корнем репозитория (ADR-0023), в окружении — только переменные ADR-0015. База —
-   в новом томе `database`: схема старого API новому серверу не подходит; файлы — в томе `files`,
-   прокси пропускает тело до 5 МБ + 64 КБ. На пустой базе `scripts/dev.sh up` создаёт администратора
-   (`ADMIN` в `scripts/stand-api.mjs`) с адресом `http://localhost:3000` и подключает Mailpit без
-   шифрования и входа (`scripts/stand-setup.mjs`), дальше настройки не трогает. `smoke` проверяет
-   вход, обновление сессии, Swagger, приглашение по ссылке из письма (без почты — из ответа API),
-   задачу и её статус, аватарку 5 МБ через прокси и удаляет свой проект. Cookie скрипты стенда
-   хранят по имени и пути, как браузер: сервер ставит `rt` и тем же ответом удаляет cookie
-   старого API с тем же именем.
-6. ~~**Веб**~~ — готово четырьмя PR, по согласию заказчика. Экраны, которые трогаешь, сливай из пар
-   Mobile/Desktop ([ADR-0008](adr/0008-web-architecture.md)); ответы API и ошибки — по
-   [ADR-0024](adr/0024-web-api-mapping-and-errors.md).
-   - ~~6.1. Основа и доступ.~~ Готово: `HttpClient` бросает `AppError` с кодом и подробностями
-     из `ApiError`, тексты по коду — `shared/locales/apiErrors.ts`, показ — `toastError`;
-     тайм-ауты — `infrastructure/http/timeouts.ts`. Репозитории доступа, пользователя и публичных
-     настроек — на типах контракта, перевод в модели — `infrastructure/repositories/mappers.ts`,
-     аватарка — адрес `/v1/files/{avatarId}`. Регистрация — только первого аккаунта
-     (`registrationOpen`), с именем и адресом сервиса из адреса веба; экран приглашения
-     `/auth/invite`; без почты восстановление пароля объясняет, что ссылку выдаёт администратор;
-     подтверждение почты удалено. Экраны входа и профиля — по одному адаптивному компоненту,
-     поля форм с пределами контракта — `presentation/shared/forms/fields.ts`.
-   - ~~6.2. Проекты и участники.~~ Готово: репозитории проектов и участников — на типах
-     контракта, zod-схемы проектов и `permissions` удалены; права в интерфейсе — по роли
-     (`shared/utils/userRole.ts`). Создание проекта и приглашение — с тайм-аутом
-     `MAIL_REQUEST_TIMEOUT_MS`; результат по каждой почте показывает `useInvitationReport`: всё
-     ушло письмами — тост, иначе окно `InvitationResultsModal` со ссылками для копирования
-     (без почты) и «Пригласить снова» для `mail_failed`. Владелец назначает и снимает
-     администраторов. Окно выбора участников больше не делит черновик с формой нового проекта:
-     кандидаты — без участников проекта (`projectId`). Окна открываются стеком, и видно только
-     верхнее: меню в нижней панели закрывается до действия (`ActionsMenu`), результат приглашений
-     показывается после закрытия формы. Страница проекта и `ProjectInfo` слиты из пар
-     Mobile/Desktop, участники — один список `MemberGroups` для страницы проекта и страницы
-     участников телефона, аватарки — фото или инициалы. Список неотвеченных приглашений
-     («Приглашённые пользователи» в Figma) не сделан: в контракте его нет, ADR-0016 откладывает его.
-   - ~~6.3. Задачи.~~ Готово: репозиторий задач — на типах контракта, статус, ответственный
-     и перенос в другой проект — своими методами и эндпоинтами ([ADR-0002](adr/0002-task-edit-endpoints.md)).
-     Статусы — `GET /v1/task-statuses` (`useTaskStatuses`, кэш без срока), цвет значка — по ID
-     статуса. Zod-схемы задач и статусов, `TaskCreationDraft`, сценарии `application/usecases/task`
-     и `TaskDetailResponseDto` удалены. Ответ сервера кладётся в кэш задачи, списки
-     перечитываются (`features/tasks/hooks/taskCache.ts`). Ответственный всегда участник проекта,
-     поэтому страница задачи берёт его из участников; «Мои задачи» — один запрос, над названием —
-     проект из списка проектов (ключей `DS-1` ещё нет). Перенос меняет адрес задачи из проекта
-     на новый проект, снятого сервером ответственного показывает предупреждение. Новая задача
-     со страницы проекта открывается с этим проектом (`useOpenCreateTask`); ответственный
-     необязателен, как в контракте. Страницы задачи и «Мои задачи», `TaskInfo`, списки статусов
-     и ответственных слиты из пар Mobile/Desktop; меню действий телефона `ActionsMenu` и строка
-     пользователя `UserItem` — в `presentation/shared/components`. Экран больше не моргает:
-     окно, которое сменяет другое окно стека, появляется без анимации (`app/components/modalAppear.ts`),
-     `useDevice` знает устройство с первого кадра, и `DeviceBased` не рисует пустой кадр; страницы
-     задачи и проекта на время загрузки держат пустые карточки, задача сразу берётся из списка.
-   - ~~6.4. Раздел администратора.~~ Готово: `features/admin` по согласованному макету
-     (холст «TaskTrail — раздел администратора» в claude.ai). Пункт «Администрирование» — в боковом
-     меню и кнопкой в профиле телефона, только при `isAdmin`; маршруты `/admin/*` прячет
-     `AdminGuard`: снял права с себя — уходишь в профиль. На телефоне — пункты на страницы адреса,
-     почты и пользователей, шире — карточки с формами (`AdminPage`). Почта: пустой пароль —
-     поля `password` в запросе нет, сервер оставит сохранённый; `SECRET_REQUIRED` и `details`
-     показываются под полями; на время проверки SMTP поля заблокированы; тестовое письмо
-     и отключение — пока форма не изменена. Пользователи: с почтой — письмо сброса тем же запросом,
-     что «Забыли пароль?» (`useSendPasswordResetMail`), и ссылка на случай потерянного ящика;
-     без почты — только ссылка; себе сброс не предлагается. Общие для форм и меню части вынесены
-     в `presentation/shared`: `forms/FormLayout` (бывший `ProfileFormLayout`), `MenuButton`,
-     `ConfirmModal` (`showConfirm`). Figma заменена дизайн-системой в репозитории (ADR-0025).
+## Deferred
 
-Доступ, настройки и файлы на этапе 1 строятся по решениям заказчика:
-[ADR-0014](adr/0014-service-administrator.md) — администратор сервиса,
-[ADR-0015](adr/0015-settings-in-admin-ui.md) — настройки в интерфейсе, а не в окружении,
-[ADR-0016](adr/0016-invite-only-signup-first-admin.md) — новые пользователи приходят по приглашению,
-[ADR-0017](adr/0017-mail-in-admin-ui.md) — почту подключает администратор,
-[ADR-0013](adr/0013-files-on-server-disk.md) — файлы на диске сервера.
+- A list of pending invitations («Приглашённые пользователи» in Figma) — not in the contract;
+  [ADR-0016](adr/0016-invite-only-signup-first-admin.md) defers it.
+- The home page «Недавно просмотренные» (a Figma draft) — left out of stage 2 by the customer.
+- Mentions in comments — stage 3 (ADR-0004, [ADR-0028](adr/0028-task-activity-feed.md)).
 
-## Дальше
+## Keep in mind
 
-- **Этап 2** — ядро из [ADR-0004](adr/0004-lightweight-tracker-scope.md): комментарии, доски, поиск,
-  архив, ключи задач вида `DS-1`. Экраны есть в Figma (файл — в CLAUDE.md, страницы «Доски»,
-  «Задачи», «Поиск»), в вебе — заглушки.
-- **Этап 3** — пункты «после ядра» из ADR-0004, каждый своим ADR: приоритет, срок, метки,
-  уведомления, вложения, подзадачи. Дизайна для них нет — сначала макет по `docs/design-system.md`
-  на согласование (ADR-0025).
-- **Этап 4** — Android-клиент на том же API. Сначала ADR о стеке; пример процесса —
-  проект Babylog (`hiraise/Babylog`).
-- **Выпуск** для установки на свой сервер — образы по тегу и compose-файл. Отдельный ADR,
-  когда заказчик захочет пользоваться.
-- **Власть администратора над проектами** — после плана выше, по согласию заказчика: новый ADR
-  заменит в [ADR-0014](adr/0014-service-administrator.md) пункт «доступа к чужим проектам не даёт».
-  Через раздел администратора: все проекты экземпляра, добавить себя или любого с любой ролью,
-  передать владение, удалить проект; в обычном интерфейсе администратор — участник своих проектов,
-  проверки доступа остаются по роли (ADR-0003). Создавать проекты по-прежнему могут все;
-  переключатель «только администраторы» — когда понадобится.
-
-## Что держать в голове
-
-- Стенд один на машину. Проверяй его в Chrome или Firefox: Safari не принимает Secure-cookies по http.
-- В вебе 5 старых предупреждений ESLint — убирай, когда трогаешь эти файлы.
+- One local stack per machine. Check it in Chrome or Firefox: Safari rejects Secure cookies over http.
+- The web has 5 old ESLint warnings — fix them when you touch those files.

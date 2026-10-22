@@ -1,59 +1,63 @@
 ---
 name: pr
-description: Сдача задачи TaskTrail — проверка, показ заказчику, PR только после его одобрения, CI. Используй, когда задача сделана и её пора показывать.
+description: Hand-off of a TaskTrail task — checks, showing the result to the customer, a PR only after the customer approves, CI. Use when a task is done and it is time to show it.
 ---
 
-# Сдача задачи
+# Task hand-off
 
-Правила — [CLAUDE.md](../../../CLAUDE.md), «Сборка и проверка» и «Ветки и PR». Здесь — порядок.
+Rules — [CLAUDE.md](../../../CLAUDE.md), "Build and checks" and "Branches and PRs". This file gives
+the order.
 
-## 1. Перед показом
+## 1. Before showing
 
-1. Сделано всё, что согласовано с заказчиком, а не часть. Разбить работу на этапы можно,
-   только если заказчик на это согласился.
-2. Документация в том же изменении: README, ADR (решение, о котором заказчик не просил, —
-   со статусом «Предложено»), комментарии к правилам одного экрана или функции.
-3. `git fetch`, затем `scripts/dev.sh check` — зелёный. После fetch `rules` сверяет номера
-   новых ADR с ветками параллельных сессий; совпал — по [шаблону ADR](../../../docs/adr/template.md).
+1. Everything agreed with the customer is done, not part of it. Split the work into stages
+   only if the customer agreed to that.
+2. Documentation in the same change: README, ADR (a decision the customer did not ask for —
+   with the status `Proposed`), comments for rules of a single screen or function.
+3. `git fetch`, then `scripts/dev.sh check` — green. After the fetch, `rules` checks the numbers
+   of new ADRs against branches of parallel sessions; on a clash — follow the
+   [ADR template](../../../docs/adr/template.md).
 
-## 2. Показ
+## 2. Showing
 
-1. Изменение видно в интерфейсе или API — подними стенд `scripts/dev.sh up`, прогони
-   `scripts/dev.sh smoke` ([ADR-0010](../../../docs/adr/0010-local-development.md)) и проверь сценарий сам,
-   прежде чем звать заказчика. Изменение `server/`, которого веб ещё не показывает, — в Swagger
-   стенда (`/api/docs/`), тестами и выводом `scripts/dev.sh check`.
-2. Скажи коротко: что поменялось, где это найти (экран, действие, адрес), на что посмотреть;
-   какие ADR ждут решения.
-3. Жди «да». Замечания — правка, снова `check` и показ.
+1. The change is visible in the UI or API — bring up the local stack `scripts/dev.sh up`, run
+   `scripts/dev.sh smoke` ([ADR-0010](../../../docs/adr/0010-local-development.md)) and check the
+   scenario yourself before calling the customer. A `server/` change that the web client does not
+   show yet — in the local stack's Swagger (`/api/docs/`), with tests and the `scripts/dev.sh check`
+   output.
+2. Tell the customer briefly, in Russian: what changed, where to find it (screen, action, URL), what
+   to look at; which ADRs await a decision.
+3. Wait for "yes". Feedback — fix it, run `check` again and show again.
 
 ## 3. PR
 
-1. Коммиты — по-русски, по смыслу изменения; `git push -u origin <ветка>`.
-2. Описание — в файле в scratchpad, по образцу ниже:
-   `gh pr create --base main --title "<что изменилось>" --body-file <файл>`.
-3. Описание меняй целиком из файла: `gh api -X PATCH repos/hiraise/task-trail/pulls/<N> -F body=@<файл>`.
+1. Commits — in English, split by the meaning of the change; `git push -u origin <branch>`.
+2. The PR title and description — in English. Write the description in a file in the scratchpad,
+   following the sample below: `gh pr create --base main --title "<what changed>" --body-file <file>`.
+3. Replace the description entirely from the file:
+   `gh api -X PATCH repos/hiraise/task-trail/pulls/<N> -F body=@<file>`.
 
 ```markdown
-<Одна-две фразы: что теперь может пользователь или разработчик.>
+<One or two sentences: what the user or developer can do now.>
 
-## Что меняется
+## What changes
 
-- <по пункту на заметное изменение; ссылки на ADR>
+- <one bullet per notable change; links to ADRs>
 
-<ADR: какие добавлены и в каком статусе, или почему не нужны. README обновлён — если обновлён.>
+<ADRs: which were added and with what status, or why none are needed. README updated — if it was.>
 
-## Проверка
+## Verification
 
-- `scripts/dev.sh check` зелёный; <какие тесты добавлены или изменились>.
-- Заказчик посмотрел результат и одобрил.
+- `scripts/dev.sh check` is green; <which tests were added or changed>.
+- The customer reviewed the result and approved it.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
-## 4. CI и дальше
+## 4. CI and after
 
-1. `gh pr checks <N> --watch` — в фоне. Упало — `gh run view <id> --log-failed`, повтори шаг
-   локально той же командой `scripts/dev.sh`, исправь, запушь.
-2. Скажи заказчику ссылку на PR и итог CI. Сливает PR он.
-3. Заказчик просит влить PR — скилл `/merge`. Слил сам — `scripts/dev.sh cleanup` основной папки
-   уберёт worktree и ветку.
+1. `gh pr checks <N> --watch` — in the background. Failed — `gh run view <id> --log-failed`, repeat
+   the step locally with the same `scripts/dev.sh` command, fix, push.
+2. Give the customer, in Russian, the PR link and the CI result. The customer merges the PR.
+3. The customer asks to merge the PR — the `/merge` skill. The customer merged it themselves —
+   `scripts/dev.sh cleanup` of the main folder removes the worktree and the branch.

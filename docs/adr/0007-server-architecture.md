@@ -1,30 +1,30 @@
-# ADR-0007: Сервер — слои DDD, домен не зависит от остальных слоёв
+# ADR-0007: The server is built on DDD layers, the domain does not depend on the other layers
 
-- **Статус:** Принято
-- **Дата:** 2026-10-21
-- **Затрагивает:** `server/internal/`, `server/test/mocks/`
+- **Status:** Accepted
+- **Date:** 2026-10-21
+- **Affects:** `server/internal/`, `server/test/mocks/`
 
-## Контекст
+## Context
 
-Сервер переписан по слоям DDD (переработка мая 2026). Фиксируем правила, чтобы новые модули —
-проекты, задачи, доски — строились так же.
+The server was rewritten on DDD layers (the May 2026 rework). We fix the rules so that new modules —
+projects, tasks, boards — are built the same way.
 
-## Решение
+## Decision
 
-- `internal/domain` — сущности, их правила, интерфейсы репозиториев и сервисов, ошибки `DomainError`.
-- `internal/application` — сценарии: один сервис на операцию, сборка модуля в одном конструкторе
-  (как `access.New`).
-- `internal/infrastructure` — PostgreSQL, JWT, почта; `internal/presentation` — HTTP (Gin).
-- `domain` не импортирует `application`, `infrastructure` и `presentation`;
-  `application` не импортирует `infrastructure` и `presentation`. Тестам (`_test.go`) можно:
-  они собирают сценарий с настоящими вспомогательными сервисами, например генератором ID.
-- Правила и инварианты — в методах сущностей, а не в обработчиках HTTP и не в SQL.
-- Сценарий, меняющий данные, выполняется в `TxManager.DoWithTx`.
-- Сценарий возвращает `DomainError` с кодом; HTTP-статус по коду выбирает
-  `presentation/http/middleware/error.go`.
-- Сценарии тестируются с моками из `test/mocks` (`make mock`), репозитории — интеграционными
-  тестами на PostgreSQL.
+- `internal/domain` — entities, their rules, repository and service interfaces, `DomainError` errors.
+- `internal/application` — application services: one service per operation, the module is assembled
+  in one constructor (like `access.New`).
+- `internal/infrastructure` — PostgreSQL, JWT, mail; `internal/presentation` — HTTP (Gin).
+- `domain` must not import `application`, `infrastructure` or `presentation`;
+  `application` must not import `infrastructure` or `presentation`. Tests (`_test.go`) may:
+  they assemble an application service with real helper services, such as the ID generator.
+- Put rules and invariants in entity methods, not in HTTP handlers and not in SQL.
+- Run an application service that changes data inside `TxManager.DoWithTx`.
+- An application service returns a `DomainError` with a code; `presentation/http/middleware/error.go`
+  chooses the HTTP status by the code.
+- Test application services with mocks from `test/mocks` (`make mock`), repositories with integration
+  tests on PostgreSQL.
 
-## Проверка
+## Verification
 
-`scripts/rules.mjs`: импорты между слоями, кроме тестов.
+`scripts/rules.mjs`: imports between layers, except tests.

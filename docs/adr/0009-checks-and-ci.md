@@ -1,27 +1,27 @@
-# ADR-0009: Проверки — в `scripts/dev.sh`, CI запускает их на каждый PR; `main` меняется только через PR
+# ADR-0009: Checks live in `scripts/dev.sh`, CI runs them on every PR; `main` changes only through a PR
 
-- **Статус:** Принято
-- **Дата:** 2026-10-21
-- **Затрагивает:** `scripts/`, `.github/workflows/`, `server/.golangci.yml`, CLAUDE.md «Сборка и проверка»
+- **Status:** Accepted
+- **Date:** 2026-10-21
+- **Affects:** `scripts/`, `.github/workflows/`, `server/.golangci.yml`, CLAUDE.md "Build and checks"
 
-## Контекст
+## Context
 
-Код пишет и проверяет агент, поэтому каждая проверка должна быть автоматической
-и одинаково воспроизводиться локально и в CI.
+Code is written and checked by an agent, so every check must be automatic
+and reproduce identically locally and in CI.
 
-## Решение
+## Decision
 
-- Все проверки — команды `scripts/dev.sh`; CI вызывает те же команды и ничего не проверяет сам.
-- `scripts/dev.sh check` = `rules` (правила ADR, ссылки, зависимости) + `server`
-  (vet, тесты с `-race`, golangci-lint) + `web` (линтер, тесты, типы и сборка).
-- Версия golangci-lint закреплена в `scripts/dev.sh`, скрипт сам скачивает её в `.cache/`.
-- Действия GitHub в `.github/workflows/` закрепляй по SHA коммита с версией в комментарии.
-- CI запускается на каждый PR и на push в `main`; PR сливается только с зелёным CI.
+- Make every check a `scripts/dev.sh` command; CI calls the same commands and checks nothing on its own.
+- `scripts/dev.sh check` = `rules` (ADR rules, links, dependencies) + `server`
+  (vet, tests with `-race`, golangci-lint) + `web` (linter, tests, types and build).
+- Pin the golangci-lint version in `scripts/dev.sh`; the script downloads it into `.cache/` itself.
+- Pin GitHub actions in `.github/workflows/` by commit SHA with the version in a comment.
+- Run CI on every PR and on push to `main`; merge a PR only with green CI.
 
-## Последствия
+## Consequences
 
-Новая проверка добавляется в `scripts/dev.sh` или `scripts/rules.mjs`, а не в workflow.
+Add a new check to `scripts/dev.sh` or `scripts/rules.mjs`, not to a workflow.
 
-## Проверка
+## Verification
 
-`scripts/rules.mjs` — каждое `uses:` в `.github/workflows/` закреплено по SHA с версией в комментарии.
+`scripts/rules.mjs` — every `uses:` in `.github/workflows/` is pinned by SHA with the version in a comment.

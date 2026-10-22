@@ -1,43 +1,46 @@
-# ADR-0020: Типы API в вебе генерируются из контракта через @hey-api/openapi-ts
+# ADR-0020: Web API types are generated from the contract with @hey-api/openapi-ts
 
-- **Статус:** Принято
-- **Дата:** 2026-10-21
-- **Затрагивает:** `web/src/infrastructure/api/generated/`, `web/openapi-ts.config.ts`, `web/package.json`, `web/src/infrastructure/repositories/`, `scripts/dev.sh`
+- **Status:** Accepted
+- **Date:** 2026-10-21
+- **Affects:** `web/src/infrastructure/api/generated/`, `web/openapi-ts.config.ts`, `web/package.json`, `web/src/infrastructure/repositories/`, `scripts/dev.sh`
 
-## Контекст
+## Context
 
-По [ADR-0005](0005-monorepo-api-contract.md) типы клиента генерируются из `api/openapi.yaml`.
-Сейчас веб описывает тела запросов и ответов руками (`application/payloads`, zod-схемы
-в `domain/models`), и они разошлись с сервером.
+Per [ADR-0005](0005-monorepo-api-contract.md) client types are generated from `api/openapi.yaml`.
+Currently the web describes request and response bodies by hand (`application/payloads`, zod schemas
+in `domain/models`), and they have drifted from the server.
 
-## Решение
+## Decision
 
-- Типы запросов и ответов API бери только из `web/src/infrastructure/api/generated/`. Генератор —
-  `@hey-api/openapi-ts`, плагин `@hey-api/typescript`: только типы, без клиента и кода.
-- Сгенерированное руками не правь. Изменил контракт — выполни в `web/` `npm run api:types`
-  и закоммить результат вместе с контрактом.
-- Импортируй сгенерированные типы только в `web/src/infrastructure/`: репозитории переводят их
-  в модели `domain` ([ADR-0008](0008-web-architecture.md)).
-- Сгенерированные типы не переэкспортируй из других файлов: иначе они выйдут за пределы `infrastructure`.
-- Схемы в контракте не называй как глобальные типы TypeScript (`Error`, `Date`, `Record`): сгенерированный
-  тип заслонит глобальный. Поэтому ошибка API — `ApiError`.
-- Версия генератора в `web/package.json` — точная, без `^`: другая версия может сгенерировать иначе,
-  и проверка упадёт без изменений в контракте.
-- HTTP-клиент остаётся своим (`infrastructure/http`, обновление сессии): клиент генератора не подключай.
+- Take API request and response types only from `web/src/infrastructure/api/generated/`. The generator
+  is `@hey-api/openapi-ts`, plugin `@hey-api/typescript`: types only, no client and no code.
+- Do not edit generated files by hand. Changed the contract — run `npm run api:types` in `web/`
+  and commit the result together with the contract.
+- Import generated types only in `web/src/infrastructure/`: repositories map them
+  to `domain` models ([ADR-0008](0008-web-architecture.md)).
+- Do not re-export generated types from other files: otherwise they leak outside `infrastructure`.
+- Do not name contract schemas like global TypeScript types (`Error`, `Date`, `Record`): the generated
+  type would shadow the global one. That is why the API error is `ApiError`.
+- The generator version in `web/package.json` is exact, without `^`: another version may generate
+  differently, and the check fails without any change in the contract.
+- The HTTP client stays our own (`infrastructure/http`, session refresh): do not plug in the
+  generator's client.
 
-## Последствия
+## Consequences
 
-- Репозитории и модели переходят на сгенерированные типы на шаге 6 этапа 1, тогда же решается
-  судьба zod-схем ответов в `domain/models`.
-- Генератор ещё до версии 1.0. Поднимаешь версию — смотри дифф сгенерированных файлов.
-- Генератору нужен Node.js 22.18 или новее; версия Node.js и npm для веба — `engines` в `web/package.json`.
+- Repositories and models move to the generated types at stage 1, step 6; the fate of the response
+  zod schemas in `domain/models` is decided then too.
+- The generator is still below version 1.0. When you bump its version, review the diff of the generated
+  files.
+- The generator needs Node.js 22.18 or newer; the Node.js and npm versions for the web — `engines`
+  in `web/package.json`.
 
-## Проверка
+## Verification
 
-`scripts/dev.sh web` генерирует типы во временную папку и сверяет с закоммиченными;
-`scripts/rules.mjs` не даёт импортировать их вне `infrastructure`, переэкспортировать и называть
-схемы как глобальные типы.
+`scripts/dev.sh web` generates the types into a temporary folder and compares them with the committed
+ones; `scripts/rules.mjs` forbids importing them outside `infrastructure`, re-exporting them and naming
+schemas like global types.
 
-## Альтернативы
+## Alternatives
 
-- `openapi-typescript` — требует TypeScript 5 (peer `^5.x`), а веб на TypeScript 6.
+- `openapi-typescript` — requires TypeScript 5 (peer `^5.x`), and the web is on TypeScript 6.

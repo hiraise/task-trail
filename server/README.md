@@ -1,93 +1,98 @@
-# TaskTrail — сервер
+# TaskTrail — server
 
-API на Go: Gin, pgx, PostgreSQL, контракт — [`api/openapi.yaml`](../api/openapi.yaml). Сейчас
-реализованы:
+A Go API: Gin, pgx, PostgreSQL; the contract is [`api/openapi.yaml`](../api/openapi.yaml).
+Implemented so far:
 
-- доступ (`/v1/auth/*`): первый аккаунт, вход, обновление сессии, выход, смена пароля,
-  сброс пароля по письму, принятие приглашения; настройки для веба до входа (`/v1/settings/public`);
-- пользователь (`/v1/users/me`, `/v1/users/{userId}`): имя, аватарка, другие пользователи
-  из ваших проектов; файлы (`/v1/files/{fileId}`);
-- проекты и участники (`/v1/projects/*`): роли владельца, администратора и участника, приглашения
-  по почте или ссылкой, кандидаты в проект, выход и мягкое удаление проекта;
-- задачи (`/v1/tasks/*`, `/v1/task-statuses`, `/v1/users/me/tasks`): статус, исполнитель, перенос
-  в другой проект — каждое изменение своим запросом;
-- администрирование (`/v1/admin/*`, только администратору сервиса): адрес сервиса, почта
-  с проверкой подключения и тестовым письмом, пользователи, назначение администраторов, ссылка
-  сброса пароля для пользователя.
+- access (`/v1/auth/*`): first account, login, session refresh, logout, password change,
+  password reset by email, accepting an invitation; settings for the web client before login
+  (`/v1/settings/public`);
+- user (`/v1/users/me`, `/v1/users/{userId}`): name, avatar, other users
+  from your projects; files (`/v1/files/{fileId}`);
+- projects and members (`/v1/projects/*`): owner, admin and member roles, invitations
+  by email or by link, project candidates, leaving a project and soft deletion of a project;
+- tasks (`/v1/tasks/*`, `/v1/task-statuses`, `/v1/users/me/tasks`): status, assignee, moving
+  to another project — each change is a separate request;
+- administration (`/v1/admin/*`, service administrator only): service URL, mail
+  with a connection test and a test email, users, appointing administrators, a password reset link
+  for a user.
 
-Веб на этот сервер переходит по плану в [docs/roadmap.md](../docs/roadmap.md).
+The web client works with this server through the API contract; what comes next — [docs/roadmap.md](../docs/roadmap.md).
 
-Стек — [ADR-0006](../docs/adr/0006-tech-stack.md), устройство кода —
-[ADR-0007](../docs/adr/0007-server-architecture.md), процесс разработки — [CLAUDE.md](../CLAUDE.md).
+Stack — [ADR-0006](../docs/adr/0006-tech-stack.md), code structure —
+[ADR-0007](../docs/adr/0007-server-architecture.md), development process — [CLAUDE.md](../CLAUDE.md).
 
-## Запуск и проверки
+## Running and checks
 
-Нужен Go (версия — в `go.mod`) и PostgreSQL. Сервер читает переменные окружения и файл `.env`
-из ближайшей родительской папки, при каждом запуске применяет миграции — они встроены
-в бинарник (`migrations/migrations.go`).
+Requires Go (version — in `go.mod`) and PostgreSQL. The server reads environment variables and
+the `.env` file from the nearest parent directory and applies migrations on every start — they are
+embedded in the binary (`migrations/migrations.go`).
 
 ```bash
-go run ./cmd/app    # запуск
-make mock           # пересоздать моки в test/mocks после изменения интерфейсов
-docker build -f server/docker/Dockerfile .   # образ — из корня репозитория: нужен контракт из api/
+go run ./cmd/app    # run
+make mock           # regenerate mocks in test/mocks after changing interfaces
+docker build -f server/docker/Dockerfile .   # image — from the repository root: needs the contract from api/
 ```
 
-Первый аккаунт, созданный через API, становится администратором сервиса, после него регистрация
-закрыта ([ADR-0016](../docs/adr/0016-invite-only-signup-first-admin.md)). Создайте его сразу
-после запуска, до того как открыть сервер в интернет: иначе его займёт первый, кто дойдёт до сервера.
+The first account created via the API becomes the service administrator; after it, sign-up
+is closed ([ADR-0016](../docs/adr/0016-invite-only-signup-first-admin.md)). Create it right
+after the start, before exposing the server to the internet: otherwise whoever reaches the server
+first takes it.
 
-Проверки сервера — `scripts/dev.sh server` из корня репозитория. Для интеграционных тестов
-он поднимает временный PostgreSQL в Docker и передаёт адрес в `TEST_PG_URL`; без него `go test`
-такие тесты пропускает (`test/testdb`). На этой базе работают тесты репозиториев и тесты
-обработчиков: `test/apitest` собирает сервер, как `internal/app`, с фиксированными часами
-и ходит в него запросами с cookie, сверяя каждый ответ с контрактом. Письма тесты принимают
-своим SMTP-сервером `test/smtptest` — без Docker и сети.
+Server checks — `scripts/dev.sh server` from the repository root. For integration tests
+it starts a temporary PostgreSQL in Docker and passes its URL in `TEST_PG_URL`; without it
+`go test` skips such tests (`test/testdb`). Repository tests and handler tests run on this
+database: `test/apitest` assembles the server like `internal/app` does, with a fixed clock,
+and sends requests with cookies to it, checking each response against the contract. Tests receive
+emails with their own SMTP server `test/smtptest` — without Docker or network.
 
 ## Swagger
 
-По адресу `<адрес API>/docs/` — Swagger UI с контрактом `api/openapi.yaml`, только администратору
-сервиса ([ADR-0014](../docs/adr/0014-service-administrator.md)): войдите в веб администратором
-и откройте адрес в том же браузере. Сессия веба живёт 15 минут без обновления: ответ
-`401` — обновите страницу веба и Swagger. Контракт встроен в бинарник модулем `api/`
-([ADR-0023](../docs/adr/0023-contract-embedded-from-api-module.md)), поэтому Swagger всегда
-показывает контракт той версии, что запущена.
+At `<API URL>/docs/` — Swagger UI with the `api/openapi.yaml` contract, for the service
+administrator only ([ADR-0014](../docs/adr/0014-service-administrator.md)): log in to the web client
+as an administrator and open the URL in the same browser. A web session lives 15 minutes without
+a refresh: on a `401` response, reload the web page and Swagger. The contract is embedded in the
+binary by the `api/` module ([ADR-0023](../docs/adr/0023-contract-embedded-from-api-module.md)), so
+Swagger always shows the contract of the running version.
 
-## Файлы
+## Files
 
-Аватарки сервер хранит в папке `FILES_DIR` ([ADR-0013](../docs/adr/0013-files-on-server-disk.md)):
-каждый файл — под именем-UUID из таблицы `files`, исходное имя и тип — только в базе. Отдаёт их
-только API (`GET /v1/files/{fileId}`), раздавать папку через прокси не нужно. Аватарка — JPEG,
-PNG или WebP до 5 МБ, тип определяется по содержимому.
+The server stores avatars in the `FILES_DIR` directory ([ADR-0013](../docs/adr/0013-files-on-server-disk.md)):
+each file is named by its UUID from the `files` table; the original name and type are only in the
+database. Only the API serves them (`GET /v1/files/{fileId}`); there is no need to serve the
+directory through a proxy. An avatar is JPEG, PNG or WebP up to 5 MB; the type is detected by the
+content.
 
-Заменённая аватарка сразу перестаёт отдаваться, а с диска её стирает очистка — при запуске
-сервера и затем раз в час. Она же стирает файлы старше суток, которых нет в базе: их оставляет
-прерванная загрузка. Файлы с другими именями очистка не трогает. Резервная копия — база, папка
-`FILES_DIR` и `APP_SECRET` вместе ([ADR-0015](../docs/adr/0015-settings-in-admin-ui.md)).
+A replaced avatar stops being served immediately, and the cleanup erases it from disk — at server
+start and then once an hour. The cleanup also erases files older than a day that are not in the
+database: an interrupted upload leaves them. The cleanup does not touch files with other names.
+A backup is the database, the `FILES_DIR` directory and `APP_SECRET` together
+([ADR-0015](../docs/adr/0015-settings-in-admin-ui.md)).
 
-## Команды
+## Commands
 
-Тем же бинарником и с тем же окружением, что и сервер (`app --help` — список):
+With the same binary and the same environment as the server (`app --help` — the list):
 
 ```bash
-go run ./cmd/app password-reset-link ivan@example.com             # локально
-docker compose exec server ./app password-reset-link ivan@example.com   # в Docker
+go run ./cmd/app password-reset-link ivan@example.com             # locally
+docker compose exec server ./app password-reset-link ivan@example.com   # in Docker
 ```
 
-`password-reset-link` печатает ссылку сброса пароля для любой почты
-([ADR-0017](../docs/adr/0017-mail-in-admin-ui.md)) — на случай, когда почта не подключена,
-а ни один администратор не может войти. Ссылка срабатывает один раз, её срок команда печатает
-следом.
+`password-reset-link` prints a password reset link for any email address
+([ADR-0017](../docs/adr/0017-mail-in-admin-ui.md)) — for the case when mail is not connected
+and no administrator can log in. The link works once; the command prints its expiry
+right after it.
 
-## Переменные окружения
+## Environment variables
 
-В окружении — только то, без чего сервер не запустится ([ADR-0015](../docs/adr/0015-settings-in-admin-ui.md));
-остальное — настройки администратора в интерфейсе или константы в `internal/app/app.go`.
+The environment holds only what the server cannot start without
+([ADR-0015](../docs/adr/0015-settings-in-admin-ui.md)); everything else is administrator settings
+in the UI or constants in `internal/app/app.go`.
 
-| Переменная | Обязательна | Пример или значение по умолчанию | Что задаёт |
+| Variable | Required | Example or default | What it sets |
 | --- | --- | --- | --- |
-| `PG_CONNECTION_STRING` | да | `postgresql://user:password@localhost:5432/tasktrail` | подключение к PostgreSQL; `@`, `+`, `%` и другие спецсимволы в пароле — в процент-кодировке, например `@` → `%40` |
-| `APP_SECRET` | да | `openssl rand -hex 32` | не короче 32 символов; из него выводятся ключи подписи токенов и шифрования секретов настроек. Смена завершает все сессии, секреты интеграций придётся ввести заново |
-| `PORT` | нет | `8080` | порт HTTP |
-| `APP_ROOT_PATH` | нет | пусто или `/api` | префикс путей API за прокси: от него считаются пути cookie |
-| `FILES_DIR` | нет | `files` | папка файлов — аватарок; относительный путь — от рабочей папки сервера, в Docker — том. Сервер создаёт её при запуске |
-| `APP_DEBUG` | нет | `false` | подробные логи |
+| `PG_CONNECTION_STRING` | yes | `postgresql://user:password@localhost:5432/tasktrail` | PostgreSQL connection; `@`, `+`, `%` and other special characters in the password — percent-encoded, e.g. `@` → `%40` |
+| `APP_SECRET` | yes | `openssl rand -hex 32` | at least 32 characters; the keys for signing tokens and encrypting settings secrets are derived from it. Changing it ends all sessions; integration secrets will have to be entered again |
+| `PORT` | no | `8080` | HTTP port |
+| `APP_ROOT_PATH` | no | empty or `/api` | API path prefix behind a proxy: cookie paths are counted from it |
+| `FILES_DIR` | no | `files` | files directory — for avatars; a relative path is resolved from the server's working directory, in Docker — a volume. The server creates it at start |
+| `APP_DEBUG` | no | `false` | verbose logs |

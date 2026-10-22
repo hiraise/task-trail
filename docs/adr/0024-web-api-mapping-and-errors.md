@@ -1,47 +1,47 @@
-# ADR-0024: Веб переводит ответы API в модели без схем, а ошибки различает по коду `ApiError`
+# ADR-0024: The web maps API responses to models without schemas and tells errors apart by the `ApiError` code
 
-- **Статус:** Принято
-- **Дата:** 2026-10-22
-- **Затрагивает:** `web/src/infrastructure/http/`, `web/src/infrastructure/repositories/`, `web/src/domain/models/`, `web/src/shared/errors/`, `web/src/shared/locales/apiErrors.ts`
+- **Status:** Accepted
+- **Date:** 2026-10-22
+- **Affects:** `web/src/infrastructure/http/`, `web/src/infrastructure/repositories/`, `web/src/domain/models/`, `web/src/shared/errors/`, `web/src/shared/locales/apiErrors.ts`
 
-## Контекст
+## Context
 
-Типы ответов веб берёт из контракта ([ADR-0020](0020-web-api-types.md)), а форму ответов сервера
-проверяют его тесты по контракту ([ADR-0019](0019-server-contract-tests.md)). Zod-схемы ответов
-в `domain/models` повторяли контракт руками и разошлись с ним: `avatarUrl: null` ронял вход.
-Ошибки репозитории подменяли своим текстом, и код из `ApiError` ([ADR-0018](0018-api-conventions.md))
-до экрана не доходил.
+The web takes response types from the contract ([ADR-0020](0020-web-api-types.md)), and the server's
+contract tests check the shape of its responses ([ADR-0019](0019-server-contract-tests.md)). Zod
+response schemas in `domain/models` repeated the contract by hand and drifted from it: `avatarUrl: null`
+broke sign-in. Repositories replaced errors with their own text, and the code from `ApiError`
+([ADR-0018](0018-api-conventions.md)) never reached the screen.
 
-## Решение
+## Decision
 
-- Ответ API репозиторий получает в сгенерированном типе и переводит в модель `domain` обычной
-  функцией (`infrastructure/repositories/mappers.ts`). Схемами ответы не проверяй: zod — только
-  для форм.
-- ID в моделях — строки из API, без приведения к числу и обратно.
-- Ссылку на файл (аватарку) собирает репозиторий из ID файла: `fileUrl` в
-  `infrastructure/config/apiRoutes.ts`; модель хранит готовый адрес.
-- `HttpClient` бросает `AppError` с `code` и `details` из `ApiError` (`infrastructure/http/apiError.ts`).
-  Репозитории ошибки не перехватывают и своим текстом не подменяют.
-- Список кодов веба — `ApiErrorCode` в `shared/errors/types.ts`; совпадение с `ErrorCode`
-  контракта проверяет сборка.
-- Пользователю показывай текст по коду из `shared/locales/apiErrors.ts` (`errorMessage`,
-  `toastError` в `shared/errors/errorMessage.ts`); `message` из ответа не показывай.
-- Ошибки сессии, сети, тайм-аута и неизвестные показывает `handleGlobalError`, остальные — экран,
-  который сделал запрос; `toastError` общие ошибки повторно не показывает.
-- Запросам, которые шлют письма в самом запросе ([ADR-0017](0017-mail-in-admin-ui.md)), ставь
-  тайм-аут `MAIL_REQUEST_TIMEOUT_MS`, остальным хватает `REQUEST_TIMEOUT_MS`
+- A repository receives the API response in the generated type and maps it to a `domain` model with
+  a plain function (`infrastructure/repositories/mappers.ts`). Do not validate responses with schemas:
+  zod is only for forms.
+- IDs in models are strings from the API, without converting to a number and back.
+- The repository builds the file (avatar) link from the file ID: `fileUrl` in
+  `infrastructure/config/apiRoutes.ts`; the model stores the ready URL.
+- `HttpClient` throws `AppError` with `code` and `details` from `ApiError` (`infrastructure/http/apiError.ts`).
+  Repositories do not catch errors and do not replace them with their own text.
+- The web's list of codes is `ApiErrorCode` in `shared/errors/types.ts`; the build checks that it
+  matches the contract's `ErrorCode`.
+- Show the user the text for the code from `shared/locales/apiErrors.ts` (`errorMessage`,
+  `toastError` in `shared/errors/errorMessage.ts`); do not show `message` from the response.
+- Session, network, timeout and unknown errors are shown by `handleGlobalError`, the rest by the screen
+  that made the request; `toastError` does not show global errors a second time.
+- For requests that send emails within the request itself ([ADR-0017](0017-mail-in-admin-ui.md)), set
+  the timeout `MAIL_REQUEST_TIMEOUT_MS`; `REQUEST_TIMEOUT_MS` is enough for the rest
   (`infrastructure/http/timeouts.ts`).
 
-## Последствия
+## Consequences
 
-- Zod-схемы ответов проектов, участников, задач и статусов уходят вместе с переводом их
-  репозиториев на контракт (шаги 6.2 и 6.3, [план](../roadmap.md)).
+- Zod response schemas of projects, members, tasks and statuses go away as their repositories move
+  to the contract (stage 1, steps 6.2 and 6.3, [roadmap](../roadmap.md)).
 
-## Проверка
+## Verification
 
-`npm run build` в `web/` падает, если `ApiErrorCode` и `ErrorCode` контракта разошлись; перевод
-ответов и ошибок покрывают тесты `mappers.test.ts` и `apiError.test.ts`.
+`npm run build` in `web/` fails if `ApiErrorCode` and the contract's `ErrorCode` diverge; the tests
+`mappers.test.ts` and `apiError.test.ts` cover mapping of responses and errors.
 
-## Альтернативы
+## Alternatives
 
-- Проверять ответы схемами в вебе — это вторая копия контракта, которую приходится держать руками.
+- Validating responses with schemas in the web — a second copy of the contract, kept in sync by hand.
