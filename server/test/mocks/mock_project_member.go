@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 	entity "task-trail/internal/domain/entity"
+	repository "task-trail/internal/domain/repository"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -53,4 +54,62 @@ func (m *MockProjectMemberRepository) Add(ctx context.Context, member *entity.Pr
 func (mr *MockProjectMemberRepositoryMockRecorder) Add(ctx, member any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockProjectMemberRepository)(nil).Add), ctx, member)
+}
+
+// Get mocks base method.
+func (m *MockProjectMemberRepository) Get(ctx context.Context, projectID entity.ProjectID, userID entity.UserID) (*entity.ProjectMember, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", ctx, projectID, userID)
+	ret0, _ := ret[0].(*entity.ProjectMember)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockProjectMemberRepositoryMockRecorder) Get(ctx, projectID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockProjectMemberRepository)(nil).Get), ctx, projectID, userID)
+}
+
+// List mocks base method.
+func (m *MockProjectMemberRepository) List(ctx context.Context, projectID entity.ProjectID) ([]*repository.MemberView, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "List", ctx, projectID)
+	ret0, _ := ret[0].([]*repository.MemberView)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// List indicates an expected call of List.
+func (mr *MockProjectMemberRepositoryMockRecorder) List(ctx, projectID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockProjectMemberRepository)(nil).List), ctx, projectID)
+}
+
+// Remove mocks base method.
+func (m *MockProjectMemberRepository) Remove(ctx context.Context, projectID entity.ProjectID, userID entity.UserID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Remove", ctx, projectID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Remove indicates an expected call of Remove.
+func (mr *MockProjectMemberRepositoryMockRecorder) Remove(ctx, projectID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockProjectMemberRepository)(nil).Remove), ctx, projectID, userID)
+}
+
+// UpdateRole mocks base method.
+func (m *MockProjectMemberRepository) UpdateRole(ctx context.Context, member *entity.ProjectMember) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRole", ctx, member)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateRole indicates an expected call of UpdateRole.
+func (mr *MockProjectMemberRepositoryMockRecorder) UpdateRole(ctx, member any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRole", reflect.TypeOf((*MockProjectMemberRepository)(nil).UpdateRole), ctx, member)
 }

@@ -36,7 +36,7 @@ func createUser(t *testing.T, pool *pgxpool.Pool, email entity.Email, username s
 	return user
 }
 
-// createProject вставляет проект напрямую: репозитория проектов ещё нет (шаг 4 этапа 1).
+// createProject вставляет проект напрямую, без владельца: тестам ссылок и участников он не нужен.
 func createProject(t *testing.T, pool *pgxpool.Pool, name string) entity.ProjectID {
 	t.Helper()
 	projectID := id.New().Generate()
@@ -169,7 +169,7 @@ func TestInvitationRepository(t *testing.T) {
 
 func TestProjectMemberRepository(t *testing.T) {
 	pool := testdb.New(t)
-	repo := persistent.NewProjectMemberRepo(pool)
+	repo := persistent.NewProjectMemberRepo(pool, factory.NewUserFactory(id.New(), clock.New(now)))
 	ctx := context.Background()
 	ivan := createUser(t, pool, "ivan@example.com", "Иван")
 	project := createProject(t, pool, "Дизайн-система")

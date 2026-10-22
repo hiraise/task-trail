@@ -4,7 +4,9 @@ package letter
 
 import (
 	"fmt"
+	"strings"
 	"time"
+	"unicode"
 
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/service"
@@ -26,6 +28,49 @@ func PasswordReset(to entity.Email, link string, lifetime time.Duration) service
 Если вы не запрашивали сброс, ничего не делайте: пароль останется прежним.
 `, to, link, Duration(lifetime)),
 	}
+}
+
+// Invitation — приглашение в проект почты без аккаунта (ADR-0016): по ссылке человек
+// задаёт имя и пароль. inviter — имя пригласившего, а если его нет — почта.
+func Invitation(to entity.Email, inviter, project, link string, lifetime time.Duration) service.Letter {
+	return service.Letter{
+		To:      to,
+		Subject: fmt.Sprintf("Приглашение в проект «%s» в TaskTrail", oneLine(project)),
+		Text: fmt.Sprintf(`Здравствуйте!
+
+%s приглашает вас в проект «%s» в TaskTrail — трекере задач команды. Чтобы принять
+приглашение, откройте ссылку, задайте имя и пароль:
+
+%s
+
+Ссылка действует %s. Если вы не ждали приглашения, ничего не делайте.
+`, inviter, project, link, Duration(lifetime)),
+	}
+}
+
+// AddedToProject — извещение человеку с аккаунтом, которого сразу добавили в проект (ADR-0017).
+func AddedToProject(to entity.Email, inviter, project, link string) service.Letter {
+	return service.Letter{
+		To:      to,
+		Subject: fmt.Sprintf("Вас добавили в проект «%s» в TaskTrail", oneLine(project)),
+		Text: fmt.Sprintf(`Здравствуйте!
+
+%s добавляет вас в проект «%s» в TaskTrail. Проект откроется по ссылке:
+
+%s
+`, inviter, project, link),
+	}
+}
+
+// oneLine заменяет переводы строк и другие управляющие символы пробелами: тема письма —
+// одна строка заголовка.
+func oneLine(s string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return ' '
+		}
+		return r
+	}, s)
 }
 
 // Duration называет срок по-русски: до двух суток — в часах («24 часа»), дольше — в днях

@@ -20,6 +20,7 @@ func RegisterValidators(v *validator.Validate) error {
 	}
 	v.RegisterCustomTypeFunc(optionalValue[string], Optional[string]{})
 	v.RegisterStructValidation(requireUsername, updateCurrentUserReq{})
+	v.RegisterStructValidation(checkUpdateProject, updateProjectReq{})
 	return nil
 }
 

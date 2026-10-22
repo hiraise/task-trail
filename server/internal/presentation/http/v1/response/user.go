@@ -20,6 +20,14 @@ func NewUser(u *entity.UserAccount) User {
 	return User{ID: string(u.ID), Email: string(u.Email), Username: u.Username, AvatarID: avatarID}
 }
 
+func NewUsers(users []*entity.UserAccount) []User {
+	out := make([]User, len(users))
+	for i, u := range users {
+		out[i] = NewUser(u)
+	}
+	return out
+}
+
 // CurrentUser — пользователь, который вошёл (CurrentUser в контракте).
 type CurrentUser struct {
 	User

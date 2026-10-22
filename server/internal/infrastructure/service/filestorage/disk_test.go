@@ -92,7 +92,9 @@ func TestDiskRejectsNonUUID(t *testing.T) {
 
 type failingReader struct{}
 
-func (failingReader) Read([]byte) (int, error) { return 0, errors.New("соединение оборвалось") }
+func (failingReader) Read([]byte) (int, error) {
+	return 0, errors.New("соединение оборвалось")
+}
 
 // Не записался до конца — частичного файла не остаётся.
 func TestDiskSaveFailure(t *testing.T) {

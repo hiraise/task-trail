@@ -87,6 +87,8 @@ type Server struct {
 	RootCAs  *x509.CertPool
 	username string
 	password string
+	// rejected — получатели, которых сервер не принимает, как несуществующий ящик.
+	rejected map[string]bool
 
 	mu       sync.Mutex
 	messages []Message
@@ -103,6 +105,16 @@ func WithTLS() Option { return func(s *Server) { s.mode = implicitTLS } }
 // WithAuth — письма принимаются только после AUTH PLAIN с этим логином и паролем.
 func WithAuth(username, password string) Option {
 	return func(s *Server) { s.username, s.password = username, password }
+}
+
+// WithRejected — сервер отказывает этим получателям (550), остальным письма доходят.
+func WithRejected(addresses ...string) Option {
+	return func(s *Server) {
+		s.rejected = make(map[string]bool, len(addresses))
+		for _, a := range addresses {
+			s.rejected[a] = true
+		}
+	}
 }
 
 // New запускает сервер; он останавливается после теста.
@@ -229,8 +241,12 @@ func (s *Server) session(conn net.Conn) {
 			msg = Message{From: address(arg)}
 			reply("250 OK")
 		case "RCPT":
-			msg.To = append(msg.To, address(arg))
-			reply("250 OK")
+			if to := address(arg); s.rejected[to] {
+				reply("550 нет такого ящика")
+			} else {
+				msg.To = append(msg.To, to)
+				reply("250 OK")
+			}
 		case "DATA":
 			reply("354 жду письмо")
 			data, err := text.ReadDotBytes()

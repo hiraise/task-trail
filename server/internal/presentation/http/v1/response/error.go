@@ -15,6 +15,7 @@ const (
 	CodePasswordSameAsOld  ErrorCode = "PASSWORD_SAME_AS_OLD"
 	CodeLinkInvalid        ErrorCode = "LINK_INVALID"
 	CodeInvitationAccepted ErrorCode = "INVITATION_ACCEPTED"
+	CodeOwnerCannotLeave   ErrorCode = "OWNER_CANNOT_LEAVE"
 	CodeMailDisabled       ErrorCode = "MAIL_DISABLED"
 	CodeMailSendFailed     ErrorCode = "MAIL_SEND_FAILED"
 	CodeFileTooLarge       ErrorCode = "FILE_TOO_LARGE"

@@ -18,6 +18,9 @@ type UserRepository interface {
 	// проект или пользователь — автор задачи в проекте viewer. Так автор задачи виден
 	// и после выхода из проекта (контракт, GET /v1/users/{userId}). Остальные не находятся.
 	GetVisible(ctx context.Context, id entity.UserID, viewer entity.UserID) (*entity.UserAccount, error)
+	// ListCandidates — кого userID может позвать в проект: люди из его неудалённых проектов,
+	// кроме него самого, а если задан exclude — и кроме участников этого проекта.
+	ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error)
 	// Any сообщает, есть ли в сервисе хоть один пользователь, включая удалённых:
 	// регистрация открыта, только пока их нет (ADR-0016).
 	Any(ctx context.Context) (bool, error)

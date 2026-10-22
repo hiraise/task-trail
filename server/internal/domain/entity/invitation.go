@@ -25,8 +25,7 @@ func (i *Invitation) Lifetime() time.Duration {
 	return i.ExpiredAt.Sub(i.CreatedAt)
 }
 
-// Membership — участие в проекте, которым становится приглашение: по приглашению человек
-// приходит участником, роль меняют потом (ADR-0016).
+// Membership — участие в проекте, которым становится приглашение (NewMember).
 func (i *Invitation) Membership(userID UserID, now time.Time) *ProjectMember {
-	return &ProjectMember{ProjectID: i.ProjectID, UserID: userID, Role: RoleMember, CreatedAt: now, UpdatedAt: now}
+	return NewMember(i.ProjectID, userID, now)
 }
