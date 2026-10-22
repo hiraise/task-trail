@@ -18,8 +18,10 @@ const (
 	WrongPassword      ErrorCode = "WRONG_PASSWORD"
 	PasswordSameAsOld  ErrorCode = "PASSWORD_SAME_AS_OLD"
 	RegistrationClosed ErrorCode = "REGISTRATION_CLOSED"
-	// Нужна роль администратора сервиса (ADR-0014)
+	// Не хватает роли в проекте (ADR-0003) или прав администратора сервиса (ADR-0014)
 	Forbidden ErrorCode = "FORBIDDEN"
+	// Владелец не выходит из проекта, а удаляет его
+	OwnerCannotLeave ErrorCode = "OWNER_CANNOT_LEAVE"
 
 	// Ссылка приглашения или сброса пароля неверна, использована или истекла
 	LinkInvalid ErrorCode = "LINK_INVALID"
@@ -126,6 +128,10 @@ func ErrRegistrationClosed(data ...any) *DomainError {
 
 func ErrForbidden(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, Forbidden, nil, data...)
+}
+
+func ErrOwnerCannotLeave(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, OwnerCannotLeave, nil, data...)
 }
 
 func ErrLinkInvalid(data ...any) *DomainError {

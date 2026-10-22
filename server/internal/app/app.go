@@ -6,6 +6,7 @@ import (
 	"task-trail/config"
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/application/service/file"
+	"task-trail/internal/application/service/project"
 	"task-trail/internal/application/service/user"
 	"task-trail/internal/domain/factory"
 	"task-trail/internal/domain/service"
@@ -48,14 +49,17 @@ const (
 	passwordHashCost      = 12
 	// Файл на диске без записи в базе младше суток может быть загрузкой, которая ещё идёт (ADR-0013)
 	orphanFileAge = 24 * time.Hour
+	// Приглашение в проект действует неделю (ADR-0016): срок называет письмо
+	invitationLifetime = 7 * 24 * time.Hour
 )
 
 // Server — HTTP-движок с модулями. Run запускает его, тесты обработчиков собирают так же.
 type Server struct {
-	Engine *gin.Engine
-	Access *access.AccessModule
-	User   *user.UserModule
-	File   *file.FileModule
+	Engine  *gin.Engine
+	Access  *access.AccessModule
+	User    *user.UserModule
+	File    *file.FileModule
+	Project *project.ProjectModule
 }
 
 type options struct {
@@ -96,6 +100,10 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	userFactory := factory.NewUserFactory(idGen, clk)
 	userRepo := persistent.NewUserRepo(pool, userFactory)
 	fileRepo := persistent.NewFileRepo(pool)
+	memberRepo := persistent.NewProjectMemberRepo(pool, userFactory)
+	invitationRepo := persistent.NewInvitationRepo(pool)
+	settingsRepo := persistent.NewSettingsRepo(pool, box)
+	mailer := notification.NewSMTP(clk)
 	rtFactory := factory.NewRTFactory(idGen, clk, refreshTokenLifetime)
 	accessModule := access.New(access.Deps{
 		TxManager:            txManager,
@@ -106,12 +114,12 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		RefreshTokenFactory:  rtFactory,
 		RefreshTokenRepo:     persistent.NewRefreshTokenRepo(pool, rtFactory),
 		AccessTokenService:   accessTokenService,
-		SettingsRepo:         persistent.NewSettingsRepo(pool, box),
+		SettingsRepo:         settingsRepo,
 		PasswordResetFactory: factory.NewPasswordResetFactory(linktoken.New(), clk, passwordResetLifetime),
 		PasswordResetRepo:    persistent.NewPasswordResetRepo(pool),
-		InvitationRepo:       persistent.NewInvitationRepo(pool),
-		ProjectMemberRepo:    persistent.NewProjectMemberRepo(pool),
-		Mailer:               notification.NewSMTP(clk),
+		InvitationRepo:       invitationRepo,
+		ProjectMemberRepo:    memberRepo,
+		Mailer:               mailer,
 	})
 	userModule := user.New(user.Deps{
 		TxManager:   txManager,
@@ -127,14 +135,27 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		FileStorage: storage,
 		OrphanAge:   orphanFileAge,
 	})
+	projectModule := project.New(project.Deps{
+		TxManager:         txManager,
+		Clock:             clk,
+		ProjectRepo:       persistent.NewProjectRepo(pool),
+		ProjectFactory:    factory.NewProjectFactory(idGen, clk),
+		MemberRepo:        memberRepo,
+		UserRepo:          userRepo,
+		TaskRepo:          persistent.NewTaskRepo(pool),
+		InvitationRepo:    invitationRepo,
+		InvitationFactory: factory.NewInvitationFactory(idGen, linktoken.New(), clk, invitationLifetime),
+		SettingsRepo:      settingsRepo,
+		Mailer:            mailer,
+	})
 
 	engine := gin.New()
 	middleware.Setup(engine, idGen, contextManager, l)
 	http.NewRouter(engine, contextManager,
 		middleware.NewAuth(accessTokenService, contextManager),
 		middleware.NewAdmin(accessModule.AdminCheck, contextManager),
-		v1.Modules{Access: accessModule, User: userModule, File: fileModule})
-	return &Server{Engine: engine, Access: accessModule, User: userModule, File: fileModule}, nil
+		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule})
+	return &Server{Engine: engine, Access: accessModule, User: userModule, File: fileModule, Project: projectModule}, nil
 }
 
 func Run(cfg *config.Config) {

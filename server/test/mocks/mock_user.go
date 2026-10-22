@@ -130,6 +130,21 @@ func (mr *MockUserRepositoryMockRecorder) GetVisible(ctx, id, viewer any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVisible", reflect.TypeOf((*MockUserRepository)(nil).GetVisible), ctx, id, viewer)
 }
 
+// ListCandidates mocks base method.
+func (m *MockUserRepository) ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCandidates", ctx, userID, exclude)
+	ret0, _ := ret[0].([]*entity.UserAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCandidates indicates an expected call of ListCandidates.
+func (mr *MockUserRepositoryMockRecorder) ListCandidates(ctx, userID, exclude any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCandidates", reflect.TypeOf((*MockUserRepository)(nil).ListCandidates), ctx, userID, exclude)
+}
+
 // LockRegistration mocks base method.
 func (m *MockUserRepository) LockRegistration(ctx context.Context) error {
 	m.ctrl.T.Helper()

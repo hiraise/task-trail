@@ -46,11 +46,11 @@ func TestFileIsImage(t *testing.T) {
 
 func TestCleanFileName(t *testing.T) {
 	for name, want := range map[string]string{
-		"photo.png":                 "photo.png",
+		"photo.png":                "photo.png",
 		`C:\fakepath\Моё фото.png`: "Моё фото.png",
-		"../../etc/passwd":          "passwd",
-		"dir/":                      "",
-		strings.Repeat("я", 300):    strings.Repeat("я", 255),
+		"../../etc/passwd":         "passwd",
+		"dir/":                     "",
+		strings.Repeat("я", 300):   strings.Repeat("я", 255),
 	} {
 		if got := entity.CleanFileName(name); got != want {
 			t.Errorf("%q → %q, ожидалось %q", name, got, want)

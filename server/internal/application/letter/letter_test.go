@@ -37,3 +37,22 @@ func TestPasswordReset(t *testing.T) {
 		}
 	}
 }
+
+// Тема — одна строка заголовка: переводы строк из названия проекта не попадут в заголовки письма.
+func TestProjectLetters(t *testing.T) {
+	const project = "Дизайн\r\nBcc: evil@example.com"
+	invitation := letter.Invitation("ivan@example.com", "Анна", project, "https://example.com/auth/invite?token=ABC", 7*24*time.Hour)
+	added := letter.AddedToProject("ivan@example.com", "Анна", project, "https://example.com/projects/42")
+	for _, l := range []struct{ subject, text string }{{invitation.Subject, invitation.Text}, {added.Subject, added.Text}} {
+		if strings.ContainsAny(l.subject, "\r\n") || !strings.Contains(l.subject, "«Дизайн  Bcc: evil@example.com»") {
+			t.Errorf("тема %q", l.subject)
+		}
+	}
+	if !strings.Contains(invitation.Text, "Анна приглашает вас") || !strings.Contains(invitation.Text, "действует 7 дней") ||
+		!strings.Contains(invitation.Text, "\nhttps://example.com/auth/invite?token=ABC\n") || invitation.To != "ivan@example.com" {
+		t.Errorf("приглашение:\n%s", invitation.Text)
+	}
+	if !strings.Contains(added.Text, "Анна добавляет вас") || !strings.Contains(added.Text, "\nhttps://example.com/projects/42\n") {
+		t.Errorf("извещение:\n%s", added.Text)
+	}
+}

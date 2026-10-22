@@ -187,7 +187,8 @@ func (s *Server) SaveMail(settings *entity.MailSettings) {
 // InvitationLifetime — срок приглашения (ADR-0016).
 const InvitationLifetime = 7 * 24 * time.Hour
 
-// CreateProject создаёт проект прямо в базе: API проектов появится в шаге 4.2 этапа 1.
+// CreateProject создаёт проект прямо в базе, без владельца и участников: тестам, которым нужен
+// просто проект, API проектов с его проверками ролей ни к чему.
 func (s *Server) CreateProject(name string) string {
 	s.t.Helper()
 	projectID := id.New().Generate()
@@ -197,7 +198,7 @@ func (s *Server) CreateProject(name string) string {
 	return projectID
 }
 
-// AddMember делает пользователя участником проекта прямо в базе — до API участников (шаг 4.2).
+// AddMember делает пользователя участником проекта прямо в базе, минуя проверки ролей API.
 func (s *Server) AddMember(projectID, userID string, role entity.ProjectRole) {
 	s.t.Helper()
 	_, err := s.Pool.Exec(context.Background(),
@@ -207,7 +208,7 @@ func (s *Server) AddMember(projectID, userID string, role entity.ProjectRole) {
 	}
 }
 
-// RemoveMember исключает пользователя из проекта прямо в базе — до API участников (шаг 4.2).
+// RemoveMember исключает пользователя из проекта прямо в базе, минуя проверки ролей API.
 func (s *Server) RemoveMember(projectID, userID string) {
 	s.t.Helper()
 	_, err := s.Pool.Exec(context.Background(),
@@ -231,7 +232,7 @@ func (s *Server) CreateTask(projectID, authorID, name string) string {
 }
 
 // Invite приглашает email в проект от inviterID и возвращает токен ссылки. Приглашение
-// пишется прямо в базу: приглашать через API можно будет с шага 4.2 этапа 1.
+// пишется прямо в базу, без письма и проверки ролей, — как его создаёт POST /v1/projects/{id}/members.
 func (s *Server) Invite(projectID, email, inviterID string) string {
 	s.t.Helper()
 	f := factory.NewInvitationFactory(id.New(), linktoken.New(), s.Clock, InvitationLifetime)

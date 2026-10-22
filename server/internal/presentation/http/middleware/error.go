@@ -37,7 +37,8 @@ var apiErrorFor = map[domain.ErrorCode]response.ApiError{
 	domain.WrongPassword:      {Status: http.StatusUnprocessableEntity, Code: response.CodeWrongPassword, Message: "неверный текущий пароль"},
 	domain.PasswordSameAsOld:  {Status: http.StatusUnprocessableEntity, Code: response.CodePasswordSameAsOld, Message: "новый пароль совпадает с текущим"},
 	domain.RegistrationClosed: {Status: http.StatusConflict, Code: response.CodeRegistrationClosed, Message: "регистрация закрыта: первый аккаунт уже создан"},
-	domain.Forbidden:          {Status: http.StatusForbidden, Code: response.CodeForbidden, Message: "нужны права администратора сервиса"},
+	domain.Forbidden:          {Status: http.StatusForbidden, Code: response.CodeForbidden, Message: "не хватает роли в проекте или прав администратора сервиса"},
+	domain.OwnerCannotLeave:   {Status: http.StatusConflict, Code: response.CodeOwnerCannotLeave, Message: "владелец не выходит из проекта, а удаляет его"},
 	domain.LinkInvalid:        {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "ссылка неверна, использована или истекла"},
 	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "аккаунт с этой почтой уже есть, нужно войти"},
 	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "почта не подключена"},
@@ -141,6 +142,8 @@ func messageForTag(fe validator.FieldError) string {
 		return fmt.Sprintf("не длиннее %s байт в UTF-8", fe.Param())
 	case "httpurl":
 		return "нужен адрес http(s) без параметров"
+	case "required_without":
+		return fmt.Sprintf("обязательно, если нет %s", fe.Param())
 	default:
 		return "недопустимое значение"
 	}

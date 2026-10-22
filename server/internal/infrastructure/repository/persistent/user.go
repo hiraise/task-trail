@@ -8,6 +8,7 @@ import (
 	"task-trail/internal/domain/factory"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -93,22 +94,63 @@ func (r *PGUserRepository) GetVisible(ctx context.Context, id entity.UserID, vie
 	return r.getOne(ctx, query, id, viewer)
 }
 
+// ListCandidates: люди из неудалённых проектов userID, кроме него самого и участников exclude.
+func (r *PGUserRepository) ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error) {
+	query := `
+		SELECT ` + userColumns + `
+		FROM users
+		WHERE deleted_at IS NULL AND id <> $1
+			AND EXISTS (
+				SELECT 1
+				FROM project_members mine
+				JOIN project_members theirs ON theirs.project_id = mine.project_id
+				JOIN projects p ON p.id = mine.project_id AND p.deleted_at IS NULL
+				WHERE mine.user_id = $1 AND theirs.user_id = users.id
+			)
+			AND NOT EXISTS (
+				SELECT 1 FROM project_members x WHERE x.project_id = $2::uuid AND x.user_id = users.id
+			)
+		ORDER BY COALESCE(NULLIF(username, ''), email), email`
+	rows, err := r.getDb(ctx).Query(ctx, query, userID, exclude)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	users, err := ScanRows(rows, func(row pgx.Rows) (*entity.UserAccount, error) { return scanUser(row, r.factory) })
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return users, nil
+}
+
+// userColumns — колонки пользователя для scanUser; userColumnsOf — они же с псевдонимом таблицы.
 const userColumns = `id, email, password_hash, username, avatar_id, is_admin, verified_at, created_at, updated_at`
+
+func userColumnsOf(alias string) string {
+	return alias + `.id, ` + alias + `.email, ` + alias + `.password_hash, ` + alias + `.username, ` + alias + `.avatar_id, ` +
+		alias + `.is_admin, ` + alias + `.verified_at, ` + alias + `.created_at, ` + alias + `.updated_at`
+}
 
 // getOne читает одного пользователя запросом, который выбирает колонки userColumns.
 func (r *PGUserRepository) getOne(ctx context.Context, query string, args ...any) (*entity.UserAccount, error) {
+	user, err := scanUser(r.getDb(ctx).QueryRow(ctx, query, args...), r.factory)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return user, nil
+}
+
+// scanUser читает колонки userColumns и затем extra.
+func scanUser(row pgx.Row, f *factory.UserFactory, extra ...any) (*entity.UserAccount, error) {
 	var id, email, passwordHash string
 	var username, avatarID *string
 	var isAdmin bool
 	var verifiedAt *time.Time
 	var createdAt, updatedAt time.Time
-
-	if err := r.getDb(ctx).
-		QueryRow(ctx, query, args...).
-		Scan(&id, &email, &passwordHash, &username, &avatarID, &isAdmin, &verifiedAt, &createdAt, &updatedAt); err != nil {
-		return nil, r.handleError(err)
+	dest := append([]any{&id, &email, &passwordHash, &username, &avatarID, &isAdmin, &verifiedAt, &createdAt, &updatedAt}, extra...)
+	if err := row.Scan(dest...); err != nil {
+		return nil, err
 	}
-	return r.factory.Restore(id, email, passwordHash, username, avatarID, isAdmin, verifiedAt, createdAt, updatedAt), nil
+	return f.Restore(id, email, passwordHash, username, avatarID, isAdmin, verifiedAt, createdAt, updatedAt), nil
 }
 
 func (r *PGUserRepository) Any(ctx context.Context) (bool, error) {
