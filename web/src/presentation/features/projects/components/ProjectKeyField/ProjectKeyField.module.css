@@ -1,0 +1,17 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field input {
+  text-transform: uppercase;
+}
+
+.field input::placeholder {
+  text-transform: none;
+}
+
+.hint {
+  color: var(--text-secondary);
+}

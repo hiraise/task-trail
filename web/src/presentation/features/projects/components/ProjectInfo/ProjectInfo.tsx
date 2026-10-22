@@ -18,7 +18,10 @@ interface ProjectInfoProps {
   menuItems: MenuItem[];
 }
 
-/** Name, description, owner and creation date. On a phone a long description is collapsed to 3 lines. */
+/**
+ * Name, description, then owner, creation date and project key in one line. On a phone a long
+ * description is collapsed to 3 lines.
+ */
 export function ProjectInfo({ project, owner, menuItems }: ProjectInfoProps) {
   const [isClamped, setIsClamped] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -64,8 +67,7 @@ export function ProjectInfo({ project, owner, menuItems }: ProjectInfoProps) {
         </div>
       )}
       <p className={clsx("body-reg-2", styles.owner)}>
-        {owner && `${owner}  |  `}
-        {formatDate(project.createdAt)}
+        {[owner, formatDate(project.createdAt), project.key].filter(Boolean).join("  |  ")}
       </p>
     </div>
   );

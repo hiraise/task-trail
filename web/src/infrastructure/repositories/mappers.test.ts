@@ -50,6 +50,7 @@ describe("toProject", () => {
     id,
     name: "Сайт",
     description: null,
+    key: "РМП",
     createdAt: "2026-10-22T08:00:00Z",
     tasksCount: 3,
   };
@@ -59,6 +60,7 @@ describe("toProject", () => {
       id,
       name: "Сайт",
       description: undefined,
+      key: "РМП",
       createdAt: "2026-10-22T08:00:00Z",
       tasksCount: 3,
     });
@@ -104,6 +106,8 @@ describe("toTask", () => {
   const dto = {
     id,
     projectId: "5c3f8e21-9b4d-4e6a-8f12-3a4b5c6d7e80",
+    number: 12,
+    key: "DS-12",
     name: "Собрать отчёт",
     description: null,
     statusId: "in_review" as const,
@@ -117,6 +121,8 @@ describe("toTask", () => {
     expect(toTask(dto)).toEqual({
       id,
       projectId: dto.projectId,
+      number: 12,
+      key: "DS-12",
       name: "Собрать отчёт",
       description: undefined,
       statusId: "in_review",

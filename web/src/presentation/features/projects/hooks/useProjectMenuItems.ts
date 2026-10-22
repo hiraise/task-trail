@@ -7,6 +7,7 @@ import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
 import {
   canArchiveProject,
+  canChangeProjectKey,
   canDeleteProject,
   canEditProject,
   canInviteMembers,
@@ -39,6 +40,7 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
           projectId: project.id,
           name: project.name,
           description: project.description,
+          key: canChangeProjectKey(project.role) ? project.key : undefined,
         }),
       isVisible: canEditProject(project.role),
     },

@@ -7,20 +7,25 @@ import { create } from "zustand";
 interface CreateProjectFormState {
   name: string;
   description: string;
+  key: string;
+  /** The user typed the key: it no longer follows the name */
+  keyEdited: boolean;
   emails: string[];
   setName: (name: string) => void;
   setDescription: (description: string) => void;
+  setKey: (key: string, edited: boolean) => void;
   setEmails: (emails: string[]) => void;
   removeEmail: (email: string) => void;
   reset: () => void;
 }
 
-const empty = { name: "", description: "", emails: [] };
+const empty = { name: "", description: "", key: "", keyEdited: false, emails: [] };
 
 export const useCreateProjectFormStore = create<CreateProjectFormState>((set) => ({
   ...empty,
   setName: (name) => set({ name }),
   setDescription: (description) => set({ description }),
+  setKey: (key, keyEdited) => set({ key, keyEdited }),
   setEmails: (emails) => set({ emails }),
   removeEmail: (email) => set((state) => ({ emails: state.emails.filter((e) => e !== email) })),
   reset: () => set(empty),

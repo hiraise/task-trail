@@ -47,6 +47,7 @@ describe("ProjectsListDesktop", () => {
     mockProjects = Array.from({ length: 5 }, (_, i) => ({
       id: String(i + 1),
       name: `Project ${i + 1}`,
+      key: `P${i + 1}`,
       description: `Description for project ${i + 1}`,
       createdAt: new Date().toISOString(),
       tasksCount: (i + 1) * 10,

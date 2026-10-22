@@ -10,16 +10,13 @@ import styles from "./TaskList.module.css";
 
 interface TaskListProps {
   tasks: Task[];
-  /** Project names by ID — the line above the task name */
+  /** Project names by ID — in the line above the task name, after the task key */
   projectNames: Map<ProjectId, string>;
   /** Assignee: in "My tasks" — the current user */
   assignee?: User;
 }
 
-/**
- * Tasks as cards. The task's project is above the name: keys like `DS-1` from the mockup do not exist
- * yet (stage 2, docs/roadmap.md), and the phone mockup sometimes shows the project name there too.
- */
+/** Tasks as cards; above the name — the task key and its project name: "DS-12 · Design system". */
 export function TaskList({ tasks, projectNames, assignee }: TaskListProps) {
   return (
     <ul role="list" className={styles.list}>
@@ -28,7 +25,7 @@ export function TaskList({ tasks, projectNames, assignee }: TaskListProps) {
           <Link to="/tasks/$taskId" params={{ taskId: task.id }} className={styles.card}>
             <span className={styles.text}>
               <span className={clsx("caption-reg", styles.project)}>
-                {projectNames.get(task.projectId)}
+                {[task.key, projectNames.get(task.projectId)].filter(Boolean).join(" · ")}
               </span>
               <span className={clsx("body-med", styles.name)}>{task.name}</span>
             </span>

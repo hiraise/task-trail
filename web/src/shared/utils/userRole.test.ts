@@ -1,6 +1,7 @@
 import type { ProjectRole } from "@/domain/types";
 
 import {
+  canChangeProjectKey,
   canChangeRoles,
   canDeleteProject,
   canEditProject,
@@ -21,6 +22,7 @@ describe("permissions by project role", () => {
   it("only the owner deletes the project and changes roles; anyone but the owner can leave", () => {
     expect(allowed(canDeleteProject)).toEqual(["owner"]);
     expect(allowed(canChangeRoles)).toEqual(["owner"]);
+    expect(allowed(canChangeProjectKey)).toEqual(["owner"]);
     expect(allowed(canLeaveProject)).toEqual(["admin", "member"]);
   });
 

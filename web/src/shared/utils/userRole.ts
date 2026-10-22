@@ -14,6 +14,9 @@ export const canInviteMembers = isManager;
 /** Only the owner can delete the project and change roles. */
 export const canDeleteProject = (role: ProjectRole): boolean => role === "owner";
 
+/** Only the owner changes the project key: it changes the keys of all its tasks (ADR-0026). */
+export const canChangeProjectKey = (role: ProjectRole): boolean => role === "owner";
+
 export const canChangeRoles = (role: ProjectRole): boolean => role === "owner";
 
 /** The server has no archive yet (stage 2) — the menu item stays a placeholder for the owner. */

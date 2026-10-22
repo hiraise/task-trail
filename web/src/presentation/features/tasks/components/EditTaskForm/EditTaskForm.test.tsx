@@ -9,6 +9,8 @@ import { EditTaskForm } from "./EditTaskForm";
 const task: Task = {
   id: "0b8c2f4e-3d5a-4a51-9a8e-1c2b3d4e5f60",
   projectId: "5c3f8e21-9b4d-4e6a-8f12-3a4b5c6d7e80",
+  number: 12,
+  key: "DS-12",
   name: "Собрать отчёт",
   description: "К пятнице",
   statusId: "open",

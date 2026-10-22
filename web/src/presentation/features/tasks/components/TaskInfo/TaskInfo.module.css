@@ -19,6 +19,16 @@
   min-width: 0;
 }
 
+.title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.key {
+  color: var(--text-secondary);
+}
+
 .name {
   overflow-wrap: anywhere;
 }

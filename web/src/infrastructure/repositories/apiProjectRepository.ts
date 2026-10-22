@@ -21,8 +21,8 @@ const createProjectRepository = (http: HttpClient): ProjectRepository => ({
   findAll: async () => (await http.get<Project[]>(API_ROUTES.PROJECTS)).map(toProject),
 
   // Addresses from emails are invited in the same request and emails go out at once — a longer timeout
-  create: async ({ name, description, emails }) => {
-    const body: CreateProjectRequest = { name, description: description ?? null, emails };
+  create: async ({ name, description, key, emails }) => {
+    const body: CreateProjectRequest = { name, description: description ?? null, key, emails };
     const created = await http.post<ProjectCreated>(API_ROUTES.PROJECTS, body, {
       timeout: MAIL_REQUEST_TIMEOUT_MS,
     });

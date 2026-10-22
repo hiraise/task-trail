@@ -19,6 +19,7 @@ export function TaskList({ tasks, members }: TaskListProps) {
         <li key={task.id}>
           <Link to="/projects/$id/tasks/$taskId" params={{ id: task.projectId, taskId: task.id }}>
             <ProjectTask
+              taskKey={task.key}
               title={task.name}
               assignee={members.find((member) => member.id === task.assigneeId)}
             />

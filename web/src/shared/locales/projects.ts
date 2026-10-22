@@ -3,6 +3,10 @@ import type { ProjectRole } from "@/domain/types";
 export const projectsTexts = {
   projectNamePlaceholder: "Название проекта",
   projectDescriptionPlaceholder: "Описание проекта",
+  keyLabel: "Ключ",
+  keyPlaceholder: "Ключ, например DS",
+  keyHint: "Задачи получат ключи {key}-1, {key}-2…",
+  keyChangeHint: "Ключи задач изменятся: {old}-12 станет {new}-12",
   createProject: "Создать проект",
   creatingProject: "Создание проекта...",
   userNotFound:
