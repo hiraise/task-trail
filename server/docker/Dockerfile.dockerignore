@@ -1,4 +1,4 @@
-# Контекст сборки сервера — корень репозитория; нужны только контракт и сервер
+# The server build context is the repository root; only the contract and the server are needed
 *
 !api
 !server

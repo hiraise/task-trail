@@ -17,7 +17,7 @@ func NewInvitationFactory(idGenerator service.IDGenerator, tokens service.LinkTo
 	return &InvitationFactory{idGenerator: idGenerator, tokens: tokens, clock: clock, lifetime: lifetime}
 }
 
-// New создаёт приглашение: token уходит в ссылку, в сущности — только его хеш.
+// New creates an invitation: token goes into the link, the entity keeps only its hash.
 func (f *InvitationFactory) New(projectID entity.ProjectID, email entity.Email, invitedBy entity.UserID) (token string, invitation *entity.Invitation) {
 	token = f.tokens.Generate()
 	now := f.clock.Now()

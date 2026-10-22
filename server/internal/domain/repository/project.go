@@ -6,27 +6,27 @@ import (
 	"time"
 )
 
-// ProjectView — проект, каким его видит участник: с числом задач и ролью участника.
+// ProjectView — a project as a member sees it: with the task count and the member's role.
 type ProjectView struct {
 	Project *entity.Project
-	// TasksCount — задачи проекта, кроме удалённых.
+	// TasksCount — the project's tasks, except deleted ones.
 	TasksCount int
 	Role       entity.ProjectRole
 }
 
-// ProjectRepository — проекты. Удалённый проект (ADR-0001) не находится ни одним методом.
+// ProjectRepository — projects. A deleted project (ADR-0001) is not found by any method.
 type ProjectRepository interface {
 	Create(ctx context.Context, project *entity.Project) error
-	// GetForUpdate блокирует строку проекта до конца транзакции. Сценарии, которые меняют
-	// проект, его участников или задачи, начинают с неё: так проверка роли и само действие
-	// не разойдутся с параллельным изменением.
+	// GetForUpdate locks the project row until the end of the transaction. Scenarios that change
+	// a project, its members or tasks start with it: this way the role check and the action itself
+	// do not diverge from a parallel change.
 	GetForUpdate(ctx context.Context, id entity.ProjectID) (*entity.Project, error)
-	// GetView — проект глазами участника userID; не участник — ENTITY_NOT_FOUND.
+	// GetView — the project as seen by member userID; a non-member gets ENTITY_NOT_FOUND.
 	GetView(ctx context.Context, id entity.ProjectID, userID entity.UserID) (*ProjectView, error)
-	// ListViews — проекты, где userID участник, новые первыми.
+	// ListViews — projects where userID is a member, newest first.
 	ListViews(ctx context.Context, userID entity.UserID) ([]*ProjectView, error)
-	// Update записывает название, описание и время изменения.
+	// Update writes the name, description and update time.
 	Update(ctx context.Context, project *entity.Project) error
-	// SoftDelete помечает удалёнными проект и его задачи; участие в проекте остаётся (ADR-0001).
+	// SoftDelete marks the project and its tasks as deleted; project membership stays (ADR-0001).
 	SoftDelete(ctx context.Context, id entity.ProjectID, now time.Time) error
 }

@@ -1,5 +1,5 @@
-// Package migrations встраивает SQL-миграции в бинарник сервера: он применяет их при каждом
-// запуске (ADR-0015), и папка миграций рядом с бинарником не нужна.
+// Package migrations embeds SQL migrations into the server binary: it applies them on every
+// start (ADR-0015), and no migrations folder is needed next to the binary.
 package migrations
 
 import "embed"

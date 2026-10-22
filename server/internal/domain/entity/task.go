@@ -8,8 +8,8 @@ import (
 
 type TaskID string
 
-// Task — задача проекта. Поля фиксированы (ADR-0004), каждое изменение — своя операция
-// (ADR-0002). Удаляется мягко: одна или вместе с проектом (ADR-0001).
+// Task — a project task. Fields are fixed (ADR-0004), each change is a separate operation
+// (ADR-0002). Deleted softly: alone or together with the project (ADR-0001).
 type Task struct {
 	ID          TaskID
 	ProjectID   ProjectID
@@ -17,14 +17,14 @@ type Task struct {
 	Description *string
 	Status      TaskStatus
 	AuthorID    UserID
-	// AssigneeID — исполнитель, участник проекта задачи, или nil.
+	// AssigneeID — the assignee, a member of the task's project, or nil.
 	AssigneeID *UserID
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }
 
-// NewTask — новая задача в статусе по умолчанию; assignee — участие исполнителя в проекте
-// или nil.
+// NewTask — a new task in the default status; assignee — the assignee's membership in the project
+// or nil.
 func NewTask(id TaskID, projectID ProjectID, authorID UserID, name string, description *string, assignee *ProjectMember, now time.Time) (*Task, error) {
 	t := &Task{
 		ID:          id,
@@ -47,7 +47,7 @@ func (t *Task) Rename(name string, now time.Time) {
 	t.UpdatedAt = now
 }
 
-// Describe меняет описание; nil — описания нет.
+// Describe changes the description; nil — no description.
 func (t *Task) Describe(description *string, now time.Time) {
 	t.Description = description
 	t.UpdatedAt = now
@@ -58,8 +58,8 @@ func (t *Task) ChangeStatus(status TaskStatus, now time.Time) {
 	t.UpdatedAt = now
 }
 
-// AssignTo назначает исполнителя по его участию в проекте; nil снимает исполнителя.
-// Исполнитель — только участник проекта задачи.
+// AssignTo sets the assignee by their project membership; nil removes the assignee.
+// The assignee must be a member of the task's project.
 func (t *Task) AssignTo(assignee *ProjectMember, now time.Time) error {
 	if assignee == nil {
 		t.AssigneeID = nil
@@ -75,9 +75,9 @@ func (t *Task) AssignTo(assignee *ProjectMember, now time.Time) error {
 	return nil
 }
 
-// MoveTo переносит задачу в проект projectID; статус сохраняется. assignee — участие
-// нынешнего исполнителя в новом проекте или nil: не участник нового проекта — исполнителем
-// не остаётся.
+// MoveTo moves the task to project projectID; the status is kept. assignee — the current
+// assignee's membership in the new project or nil: a non-member of the new project does not stay
+// the assignee.
 func (t *Task) MoveTo(projectID ProjectID, assignee *ProjectMember, now time.Time) {
 	stays := t.AssigneeID != nil && assignee != nil &&
 		assignee.ProjectID == projectID && assignee.UserID == *t.AssigneeID

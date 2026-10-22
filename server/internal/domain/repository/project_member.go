@@ -5,22 +5,22 @@ import (
 	"task-trail/internal/domain/entity"
 )
 
-// MemberView — участник проекта вместе с пользователем.
+// MemberView — a project member together with the user.
 type MemberView struct {
 	User   *entity.UserAccount
 	Member *entity.ProjectMember
 }
 
-// ProjectMemberRepository — участие в проектах. Участие в удалённом проекте (ADR-0001)
-// хранится, но не находится.
+// ProjectMemberRepository — project membership. Membership in a deleted project (ADR-0001)
+// is kept but not found.
 type ProjectMemberRepository interface {
-	// Add добавляет участника проекта; уже участник — ENTITY_ALREADY_EXISTS.
+	// Add adds a project member; already a member — ENTITY_ALREADY_EXISTS.
 	Add(ctx context.Context, member *entity.ProjectMember) error
-	// Get — участие пользователя в проекте; нет — ENTITY_NOT_FOUND.
+	// Get — the user's membership in the project; none — ENTITY_NOT_FOUND.
 	Get(ctx context.Context, projectID entity.ProjectID, userID entity.UserID) (*entity.ProjectMember, error)
-	// List — участники проекта: владелец, администраторы, участники; внутри роли — в порядке вступления.
+	// List — project members: owner, administrators, members; within a role — in order of joining.
 	List(ctx context.Context, projectID entity.ProjectID) ([]*MemberView, error)
-	// UpdateRole записывает роль и время изменения.
+	// UpdateRole writes the role and update time.
 	UpdateRole(ctx context.Context, member *entity.ProjectMember) error
 	Remove(ctx context.Context, projectID entity.ProjectID, userID entity.UserID) error
 }

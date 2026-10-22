@@ -2,8 +2,8 @@ package entity
 
 import "crypto/sha256"
 
-// LinkTokenHash — SHA-256 токена из ссылки приглашения или сброса пароля. Сам токен получает
-// только человек, в базе — хеш (ADR-0016): по копии базы ссылку не восстановить.
+// LinkTokenHash — SHA-256 of the token from an invitation or password reset link. Only the person
+// gets the token itself, the database keeps the hash (ADR-0016): a database copy cannot restore the link.
 type LinkTokenHash []byte
 
 func HashLinkToken(token string) LinkTokenHash {

@@ -8,7 +8,7 @@ import (
 
 type ProjectID string
 
-// ProjectRole — роль в проекте (ADR-0003); набор ролей фиксирован.
+// ProjectRole — a role in a project (ADR-0003); the set of roles is fixed.
 type ProjectRole string
 
 const (
@@ -25,16 +25,16 @@ type ProjectMember struct {
 	UpdatedAt time.Time
 }
 
-// NewMember — участие человека, которого позвали в проект: он приходит участником,
-// роль меняют потом (ADR-0016).
+// NewMember — membership of a person invited to a project: they join as a member,
+// the role is changed later (ADR-0016).
 func NewMember(projectID ProjectID, userID UserID, now time.Time) *ProjectMember {
 	return &ProjectMember{ProjectID: projectID, UserID: userID, Role: RoleMember, CreatedAt: now, UpdatedAt: now}
 }
 
-// Права в проекте — по роли (ADR-0003). Проверки ниже отвечают FORBIDDEN тому, кто участник
-// проекта; не участник до них не доходит — для него проекта нет (404, ADR-0018).
+// Project permissions follow the role (ADR-0003). The checks below answer FORBIDDEN to a project
+// member; a non-member never reaches them — for them the project does not exist (404, ADR-0018).
 
-// RequireManager — менять проект и звать людей могут владелец и администратор.
+// RequireManager — the owner and administrators can change the project and invite people.
 func (m *ProjectMember) RequireManager() error {
 	if m.Role == RoleOwner || m.Role == RoleAdmin {
 		return nil
@@ -42,7 +42,7 @@ func (m *ProjectMember) RequireManager() error {
 	return m.forbidden("owner or admin required")
 }
 
-// RequireOwner — удалять проект и менять роли может только владелец.
+// RequireOwner — only the owner can delete the project and change roles.
 func (m *ProjectMember) RequireOwner() error {
 	if m.Role == RoleOwner {
 		return nil
@@ -50,8 +50,8 @@ func (m *ProjectMember) RequireOwner() error {
 	return m.forbidden("owner required")
 }
 
-// ChangeRoleOf меняет роль target: владелец назначает администратора или участника.
-// Роль владельца не передаётся и не отнимается — так у проекта всегда один владелец.
+// ChangeRoleOf changes the role of target: the owner makes them an administrator or a member.
+// The owner role is neither handed over nor taken away — so a project always has one owner.
 func (m *ProjectMember) ChangeRoleOf(target *ProjectMember, role ProjectRole, now time.Time) error {
 	if err := m.RequireOwner(); err != nil {
 		return err
@@ -64,8 +64,8 @@ func (m *ProjectMember) ChangeRoleOf(target *ProjectMember, role ProjectRole, no
 	return nil
 }
 
-// CheckRemove — владелец исключает любого, кроме себя; администратор — только участников
-// с ролью «участник».
+// CheckRemove — the owner removes anyone except themselves; an administrator — only members
+// with the "member" role.
 func (m *ProjectMember) CheckRemove(target *ProjectMember) error {
 	switch {
 	case m.Role == RoleOwner && target.Role != RoleOwner:
@@ -76,7 +76,7 @@ func (m *ProjectMember) CheckRemove(target *ProjectMember) error {
 	return m.forbidden("cannot remove this member", "targetID", target.UserID, "targetRole", target.Role)
 }
 
-// CheckLeave — выйти может администратор или участник; владелец не выходит, а удаляет проект.
+// CheckLeave — an administrator or a member can leave; the owner does not leave but deletes the project.
 func (m *ProjectMember) CheckLeave() error {
 	if m.Role == RoleOwner {
 		return domain.ErrOwnerCannotLeave("projectID", m.ProjectID, "userID", m.UserID)

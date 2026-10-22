@@ -2,8 +2,8 @@ package entity
 
 import "time"
 
-// Project — проект. Удаляется мягко вместе с задачами (ADR-0001): удалённый проект
-// и всё, что к нему относится, пользователям не видны.
+// Project — a project. Deleted softly together with its tasks (ADR-0001): a deleted project
+// and everything related to it are invisible to users.
 type Project struct {
 	ID          ProjectID
 	Name        string
@@ -17,7 +17,7 @@ func (p *Project) Rename(name string, now time.Time) {
 	p.UpdatedAt = now
 }
 
-// Describe меняет описание; nil — описания нет.
+// Describe changes the description; nil — no description.
 func (p *Project) Describe(description *string, now time.Time) {
 	p.Description = description
 	p.UpdatedAt = now

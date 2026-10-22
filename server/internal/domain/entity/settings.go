@@ -6,13 +6,13 @@ import (
 	"task-trail/internal/domain"
 )
 
-// NewServiceURL приводит адрес сервиса к виду, от которого строятся ссылки (ADR-0015):
-// без «/» в конце, иначе в ссылке будет «//auth/reset».
+// NewServiceURL normalizes the service URL to the form links are built from (ADR-0015):
+// without a trailing "/", otherwise the link would contain "//auth/reset".
 func NewServiceURL(raw string) string {
 	return strings.TrimRight(raw, "/")
 }
 
-// MailEncryption — как защищено соединение с SMTP (ADR-0017).
+// MailEncryption — how the SMTP connection is protected (ADR-0017).
 type MailEncryption string
 
 const (
@@ -21,23 +21,23 @@ const (
 	MailEncryptionTLS      MailEncryption = "tls"
 )
 
-// MailSettings — подключение к SMTP, которое администратор задаёт в интерфейсе (ADR-0017).
+// MailSettings — the SMTP connection the administrator sets in the UI (ADR-0017).
 type MailSettings struct {
 	Host       string
 	Port       int
 	Encryption MailEncryption
 	Sender     string
-	// Username — nil, если SMTP принимает почту без входа.
+	// Username — nil if SMTP accepts mail without sign-in.
 	Username *string
-	// Password — nil, если пароля нет или он не расшифровался: секрет, который
-	// не расшифровывается, считается не заданным (ADR-0015).
+	// Password — nil if there is no password or it failed to decrypt: a secret that
+	// does not decrypt is treated as not set (ADR-0015).
 	Password *string
 }
 
-// KeepPassword ставит пароль из сохранённых настроек saved, когда администратор не ввёл новый.
-// Сохранённый секрет уходит только туда, для чего его ввели (ADR-0015): сменились сервер
-// или порт, пароля нет или он не расшифровался — SECRET_REQUIRED, пароль вводится заново.
-// Без входа на SMTP пароль не нужен и не сохраняется.
+// KeepPassword takes the password from the saved settings saved when the administrator did not enter a new one.
+// A saved secret goes only where it was entered for (ADR-0015): the server or port changed,
+// there is no password or it failed to decrypt — SECRET_REQUIRED, the password is entered again.
+// Without SMTP sign-in the password is not needed and not saved.
 func (s *MailSettings) KeepPassword(saved *MailSettings) error {
 	if s.Username == nil {
 		s.Password = nil

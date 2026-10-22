@@ -21,8 +21,8 @@ func cookies(rec *httptest.ResponseRecorder) map[string]*http.Cookie {
 	return out
 }
 
-// Срок жизни cookie отсчитывается от часов сервера (ADR-0022), пути — от префикса API;
-// cookie refresh-токена старого API удаляется, иначе она заслонит новую.
+// The cookie lifetime counts from the server clock (ADR-0022), paths — from the API prefix;
+// the old API's refresh token cookie is deleted, otherwise it shadows the new one.
 func TestSetTokens(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	now := time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)
@@ -43,7 +43,7 @@ func TestSetTokens(t *testing.T) {
 		t.Errorf("cookie rt: %+v", rt)
 	}
 	if legacy := got["rt /api/v1/auth/refresh"]; legacy == nil || legacy.MaxAge >= 0 {
-		t.Errorf("cookie rt старого API не удалена: %+v", legacy)
+		t.Errorf("old API rt cookie not deleted: %+v", legacy)
 	}
 }
 
@@ -58,7 +58,7 @@ func TestDeleteTokens(t *testing.T) {
 	got := cookies(rec)
 	for _, key := range []string{"at /", "rt /v1/auth/", "rt /v1/auth/refresh"} {
 		if cookie := got[key]; cookie == nil || cookie.MaxAge >= 0 {
-			t.Errorf("cookie %q не удалена: %+v", key, cookie)
+			t.Errorf("cookie %q not deleted: %+v", key, cookie)
 		}
 	}
 }

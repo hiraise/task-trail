@@ -15,7 +15,7 @@ func NewUserFactory(idGenerator service.IDGenerator, clock service.Clock) *UserF
 	return &UserFactory{idGenerator: idGenerator, clock: clock}
 }
 
-// New создаёт аккаунт сразу подтверждённым: подтверждения почты нет (ADR-0016).
+// New creates an account already confirmed: there is no email confirmation (ADR-0016).
 func (f *UserFactory) New(email entity.Email, passwordHash string, username string) *entity.UserAccount {
 	now := f.clock.Now()
 	return &entity.UserAccount{

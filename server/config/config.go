@@ -1,6 +1,6 @@
-// Package config читает переменные окружения сервера (ADR-0015): обязательны только
-// PG_CONNECTION_STRING и APP_SECRET, у остальных есть значения по умолчанию. То, что
-// администратор захочет поменять, — настройки в интерфейсе, а не переменные окружения.
+// Package config reads the server environment variables (ADR-0015): only
+// PG_CONNECTION_STRING and APP_SECRET are required, the rest have defaults. What
+// the administrator may want to change is a setting in the UI, not an environment variable.
 package config
 
 import (
@@ -12,15 +12,15 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// MinSecretLength — минимальная длина APP_SECRET: из него выводятся ключи подписи токенов
-// и шифрования секретов, короткий секрет подбирается по одному перехваченному токену.
+// MinSecretLength — the minimum APP_SECRET length: token signing and secret encryption keys
+// are derived from it, a short secret is brute-forced from one intercepted token.
 const MinSecretLength = 32
 
 type App struct {
 	Secret   string `env:"APP_SECRET,required,notEmpty"`
 	Port     string `env:"PORT" envDefault:"8080"`
 	RootPath string `env:"APP_ROOT_PATH"`
-	// FilesDir — папка файлов (ADR-0013); относительный путь — от рабочей папки сервера.
+	// FilesDir — the files folder (ADR-0013); a relative path is relative to the server working folder.
 	FilesDir string `env:"FILES_DIR" envDefault:"files"`
 	Debug    bool   `env:"APP_DEBUG" envDefault:"false"`
 }
@@ -45,12 +45,12 @@ func New() (*Config, error) {
 		return nil, err
 	}
 	if len(cfg.App.Secret) < MinSecretLength {
-		return nil, fmt.Errorf("APP_SECRET короче %d символов: задай случайную строку, например openssl rand -hex 32", MinSecretLength)
+		return nil, fmt.Errorf("APP_SECRET is shorter than %d characters: set a random string, e.g. openssl rand -hex 32", MinSecretLength)
 	}
 	return cfg, nil
 }
 
-// findProjectRoot ищет .env вверх от рабочей папки: удобно для запуска из любой папки репозитория.
+// findProjectRoot looks for .env up from the working folder: handy for running from any repository folder.
 func findProjectRoot() (string, bool) {
 	dir, _ := os.Getwd()
 	for dir != "/" {

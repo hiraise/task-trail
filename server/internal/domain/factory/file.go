@@ -14,8 +14,8 @@ func NewFileFactory(idGenerator service.IDGenerator, clock service.Clock) *FileF
 	return &FileFactory{idGenerator: idGenerator, clock: clock}
 }
 
-// New создаёт запись о файле. ID — случайный UUIDv4: по нему аватарку отдают без входа (ADR-0013).
-// originalName — имя из запроса, от него остаётся только имя без пути.
+// New creates a file record. ID is a random UUIDv4: avatars are served by it without sign-in (ADR-0013).
+// originalName — the name from the request; only the base name without a path is kept.
 func (f *FileFactory) New(originalName string, mimeType string, ownerID entity.UserID) *entity.File {
 	return &entity.File{
 		ID:           entity.FileID(f.idGenerator.Generate()),

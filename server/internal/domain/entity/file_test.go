@@ -9,7 +9,7 @@ import (
 	"task-trail/internal/domain/entity"
 )
 
-// Аватарка — JPEG, PNG или WebP до 5 МБ включительно (ADR-0013).
+// An avatar is JPEG, PNG or WebP up to 5 MB inclusive (ADR-0013).
 func TestCheckAvatar(t *testing.T) {
 	cases := []struct {
 		size     int64
@@ -27,12 +27,12 @@ func TestCheckAvatar(t *testing.T) {
 	for _, c := range cases {
 		err := entity.CheckAvatar(c.size, c.mimeType)
 		if (c.want == "" && err != nil) || (c.want != "" && !domain.HasCode(err, c.want)) {
-			t.Errorf("%d байт %s: %v, ожидалось %q", c.size, c.mimeType, err, c.want)
+			t.Errorf("%d bytes %s: %v, want %q", c.size, c.mimeType, err, c.want)
 		}
 	}
 }
 
-// Браузер показывает только картинки, остальное отдаётся на скачивание (ADR-0013).
+// The browser shows only images, the rest is served for download (ADR-0013).
 func TestFileIsImage(t *testing.T) {
 	for mimeType, want := range map[string]bool{
 		"image/png": true, "image/jpeg": true, "image/webp": true,
@@ -53,7 +53,7 @@ func TestCleanFileName(t *testing.T) {
 		strings.Repeat("я", 300):   strings.Repeat("я", 255),
 	} {
 		if got := entity.CleanFileName(name); got != want {
-			t.Errorf("%q → %q, ожидалось %q", name, got, want)
+			t.Errorf("%q → %q, want %q", name, got, want)
 		}
 	}
 }
@@ -62,10 +62,10 @@ func TestReplaceAvatar(t *testing.T) {
 	now := time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)
 	u := &entity.UserAccount{}
 	if previous := u.ReplaceAvatar("first", now); previous != nil {
-		t.Fatalf("прежняя аватарка у нового пользователя: %v", *previous)
+		t.Fatalf("previous avatar of a new user: %v", *previous)
 	}
 	previous := u.ReplaceAvatar("second", now.Add(time.Hour))
 	if previous == nil || *previous != "first" || *u.AvatarID != "second" || !u.UpdatedAt.Equal(now.Add(time.Hour)) {
-		t.Fatalf("прежняя %v, пользователь %+v", previous, u)
+		t.Fatalf("previous %v, user %+v", previous, u)
 	}
 }

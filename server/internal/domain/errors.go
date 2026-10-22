@@ -12,43 +12,43 @@ const sourceCodeOffset = 2
 type ErrorCode string
 
 const (
-	// INVALID_CREDENTIALS: неверная почта или пароль при входе
+	// INVALID_CREDENTIALS: wrong email or password at sign-in
 	InvalidCredentials ErrorCode = "INVALID_CREDENTIALS"
-	// Неверный текущий пароль при смене пароля — 422, а не 401: сессия действует
+	// Wrong current password on password change — 422, not 401: the session is still valid
 	WrongPassword      ErrorCode = "WRONG_PASSWORD"
 	PasswordSameAsOld  ErrorCode = "PASSWORD_SAME_AS_OLD"
 	RegistrationClosed ErrorCode = "REGISTRATION_CLOSED"
-	// Не хватает роли в проекте (ADR-0003) или прав администратора сервиса (ADR-0014)
+	// Missing project role (ADR-0003) or service administrator rights (ADR-0014)
 	Forbidden ErrorCode = "FORBIDDEN"
-	// Владелец не выходит из проекта, а удаляет его
+	// The owner does not leave a project but deletes it
 	OwnerCannotLeave ErrorCode = "OWNER_CANNOT_LEAVE"
-	// Исполнитель задачи — не участник её проекта
+	// The task assignee is not a member of its project
 	AssigneeNotMember ErrorCode = "ASSIGNEE_NOT_MEMBER"
-	// Последнего администратора сервиса снять нельзя (ADR-0014)
+	// The last service administrator cannot be removed (ADR-0014)
 	LastAdmin ErrorCode = "LAST_ADMIN"
 
-	// Ссылка приглашения или сброса пароля неверна, использована или истекла
+	// The invitation or password reset link is invalid, used or expired
 	LinkInvalid ErrorCode = "LINK_INVALID"
-	// Аккаунт с почтой приглашения уже есть: ссылка ведёт на вход (ADR-0016)
+	// An account with the invitation email already exists: the link leads to sign-in (ADR-0016)
 	InvitationAccepted ErrorCode = "INVITATION_ACCEPTED"
 
-	// Почта не подключена (ADR-0017)
+	// Mail is not connected (ADR-0017)
 	MailDisabled ErrorCode = "MAIL_DISABLED"
-	// SMTP не принял письмо: не подключился, отказал во входе или в отправке
+	// SMTP did not accept the letter: could not connect, refused sign-in or sending
 	MailSendFailed ErrorCode = "MAIL_SEND_FAILED"
-	// Проверка настроек почты: не удалось подключиться к SMTP или войти
+	// Mail settings check: could not connect to SMTP or sign in
 	MailConnectionFailed ErrorCode = "MAIL_CONNECTION_FAILED"
-	// Сохранённый секрет интеграции взять нельзя — его нужно ввести заново (ADR-0015)
+	// A stored integration secret cannot be read — it must be entered again (ADR-0015)
 	SecretRequired ErrorCode = "SECRET_REQUIRED"
 
-	// Файл больше допустимого или не того типа (ADR-0013)
+	// The file is too large or of a wrong type (ADR-0013)
 	FileTooLarge       ErrorCode = "FILE_TOO_LARGE"
 	FileTypeNotAllowed ErrorCode = "FILE_TYPE_NOT_ALLOWED"
 
 	RefreshTokenNotFound ErrorCode = "REFRESH_TOKEN_NOT_FOUND"
 	RefreshTokenWrong    ErrorCode = "WRONG_REFRESH_TOKEN"
 	RefreshTokenRevoked  ErrorCode = "REFRESH_TOKEN_REVOKED"
-	// Обменянный токен пришёл снова после окна для параллельных запросов — признак кражи
+	// An exchanged token came again after the window for parallel requests — a sign of theft
 	RefreshTokenReused  ErrorCode = "REFRESH_TOKEN_REUSED"
 	RefreshTokenExpired ErrorCode = "REFRESH_TOKEN_EXPIRED"
 
@@ -85,7 +85,7 @@ func (e *DomainError) Unwrap() error {
 	return e.sourceErr
 }
 
-// HasCode сообщает, что err — DomainError с кодом code.
+// HasCode reports whether err is a DomainError with code code.
 func HasCode(err error, code ErrorCode) bool {
 	var e *DomainError
 	return errors.As(err, &e) && e.Code == code

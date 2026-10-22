@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// InvitationDetails — приглашение и то, что человек видит по его ссылке.
+// InvitationDetails — an invitation and what a person sees by its link.
 type InvitationDetails struct {
 	Invitation      *entity.Invitation
 	ProjectName     string
@@ -15,14 +15,14 @@ type InvitationDetails struct {
 }
 
 type InvitationRepository interface {
-	// Create сохраняет приглашение. Приглашение той же почты в тот же проект заменяет
-	// прежнее, и старая ссылка перестаёт действовать (ADR-0016).
+	// Create saves an invitation. An invitation of the same email to the same project replaces
+	// the previous one, and the old link stops working (ADR-0016).
 	Create(ctx context.Context, invitation *entity.Invitation) error
-	// GetByTokenHash находит приглашение по хешу токена ссылки. Приглашения удалённого
-	// проекта не действуют (ADR-0001) и не находятся.
+	// GetByTokenHash finds an invitation by the link token hash. Invitations of a deleted
+	// project are not valid (ADR-0001) and are not found.
 	GetByTokenHash(ctx context.Context, hash entity.LinkTokenHash) (*InvitationDetails, error)
-	// ListByEmail — приглашения почты в неудалённые проекты, вместе с истёкшими.
+	// ListByEmail — invitations of the email to non-deleted projects, expired ones included.
 	ListByEmail(ctx context.Context, email entity.Email) ([]*entity.Invitation, error)
-	// DeleteExpired удаляет приглашения, истёкшие к моменту now, и возвращает, сколько удалено.
+	// DeleteExpired deletes invitations expired by now and returns how many were deleted.
 	DeleteExpired(ctx context.Context, now time.Time) (int64, error)
 }

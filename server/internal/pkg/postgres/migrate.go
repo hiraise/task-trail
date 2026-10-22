@@ -15,8 +15,8 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 )
 
-// Migrate применяет миграции из files (SQL-файлы в корне) к базе connString. Адрес разбирает
-// pgx, как и пул соединений: так миграции и сервер подключаются по одним и тем же правилам.
+// Migrate applies migrations from files (SQL files at the root) to the connString database. The address is parsed
+// by pgx, like the connection pool: so migrations and the server connect by the same rules.
 func Migrate(connString string, files fs.FS, l logger.Logger) error {
 	config, err := pgx.ParseConfig(connString)
 	if err != nil {
@@ -57,7 +57,7 @@ func Migrate(connString string, files fs.FS, l logger.Logger) error {
 	return nil
 }
 
-// waitForDB ждёт базу, пока она поднимается: в Docker сервер может стартовать раньше неё.
+// waitForDB waits for the database while it starts: in Docker the server may start before it.
 func waitForDB(db *sql.DB, l logger.Logger) error {
 	var err error
 	for attempt := 1; attempt <= _defConnAttempts; attempt++ {

@@ -1,7 +1,7 @@
 package entity
 
-// TaskStatus — статус задачи (ADR-0003). Набор фиксирован и одинаков во всех проектах
-// (ADR-0004); ID постоянны: по ним клиенты сравнивают статусы, названия — только для показа.
+// TaskStatus — a task status (ADR-0003). The set is fixed and the same in all projects
+// (ADR-0004); IDs are permanent: clients compare statuses by them, names are for display only.
 type TaskStatus string
 
 const (
@@ -11,18 +11,18 @@ const (
 	StatusDone       TaskStatus = "done"
 )
 
-// TaskStatusInfo — статус для клиента (TaskStatus в контракте).
+// TaskStatusInfo — a status for the client (TaskStatus in the contract).
 type TaskStatusInfo struct {
 	ID TaskStatus
-	// Name — название для интерфейса.
+	// Name — the name for the UI.
 	Name string
-	// IsDefault — статус новой задачи.
+	// IsDefault — the status of a new task.
 	IsDefault bool
-	// IsResolved — задача выполнена.
+	// IsResolved — the task is done.
 	IsResolved bool
 }
 
-// taskStatuses — в порядке работы над задачей.
+// taskStatuses — in the order of work on a task.
 var taskStatuses = []TaskStatusInfo{
 	{ID: StatusOpen, Name: "Открыта", IsDefault: true},
 	{ID: StatusInProgress, Name: "В работе"},
@@ -30,14 +30,14 @@ var taskStatuses = []TaskStatusInfo{
 	{ID: StatusDone, Name: "Готово", IsResolved: true},
 }
 
-// TaskStatuses — все статусы в порядке работы над задачей.
+// TaskStatuses — all statuses in the order of work on a task.
 func TaskStatuses() []TaskStatusInfo {
 	out := make([]TaskStatusInfo, len(taskStatuses))
 	copy(out, taskStatuses)
 	return out
 }
 
-// defaultTaskStatus — статус новой задачи.
+// defaultTaskStatus — the status of a new task.
 func defaultTaskStatus() TaskStatus {
 	for _, s := range taskStatuses {
 		if s.IsDefault {
@@ -47,7 +47,7 @@ func defaultTaskStatus() TaskStatus {
 	panic("no default task status")
 }
 
-// Valid — статус из набора.
+// Valid — the status is in the set.
 func (s TaskStatus) Valid() bool {
 	for _, known := range taskStatuses {
 		if known.ID == s {
