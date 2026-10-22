@@ -1,4 +1,4 @@
-// Раздел администратора сервиса (ADR-0014). Тексты ошибок по коду API — в apiErrors.ts.
+// Service admin section (ADR-0014). Error texts by API code are in apiErrors.ts.
 export const adminTexts = {
   title: "Администрирование",
   description: "Настройки сервиса и пользователи. Раздел видят только администраторы сервиса.",
@@ -77,7 +77,7 @@ export const adminTexts = {
     copyFailed: "Не удалось скопировать: выделите ссылку и скопируйте её вручную",
   },
 
-  // Тосты хуков
+  // Hook toasts
   serviceUrlSaved: "Адрес сервиса сохранён",
   serviceUrlSaveFailed: "Не удалось сохранить адрес сервиса",
   mailSaved: "Настройки почты сохранены: подключение к SMTP работает",
@@ -86,7 +86,7 @@ export const adminTexts = {
   mailDisableFailed: "Не удалось отключить почту",
   testMailSent: "Тестовое письмо отправлено на вашу почту",
   testMailFailed: "Не удалось отправить тестовое письмо",
-  // Общие тексты MAIL_SEND_FAILED и MAIL_DISABLED обращены к тому, кто сбрасывает пароль
+  // The shared MAIL_SEND_FAILED and MAIL_DISABLED texts address whoever resets a password
   testMailRejected:
     "SMTP-сервер не принял тестовое письмо: проверьте отправителя и настройки почты",
   testMailNoMail: "Почта не подключена: сохраните настройки SMTP, затем отправьте тестовое письмо",

@@ -5,7 +5,7 @@ export interface UserRepository {
   findById(id: UserId): Promise<User>;
   findCandidatesForProject(projectId?: ProjectId): Promise<User[]>;
   getCurrentUser(): Promise<CurrentUser>;
-  /** `null` — убрать имя */
+  /** `null` removes the name */
   updateCurrentUser(username: string | null): Promise<CurrentUser>;
   uploadAvatar(file: File): Promise<CurrentUser>;
 }

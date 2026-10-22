@@ -1,12 +1,12 @@
 import type { TaskStatusId } from "../types";
 
-/** Статус задачи из общего набора (ADR-0003). */
+/** A task status from the shared set (ADR-0003). */
 export interface TaskStatus {
   id: TaskStatusId;
-  /** Название для интерфейса */
+  /** Name for the UI */
   name: string;
-  /** Статус новой задачи */
+  /** Status of a new task */
   isDefault: boolean;
-  /** Задача выполнена */
+  /** The task is done */
   isResolved: boolean;
 }

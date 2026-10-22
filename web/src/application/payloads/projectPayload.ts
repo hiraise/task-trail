@@ -4,7 +4,7 @@ import type { AssignableRole, ProjectId, UserId } from "@/domain/types";
 export interface CreateProjectPayload {
   name: string;
   description?: string;
-  /** Кого позвать сразу (ADR-0016) */
+  /** Who to invite right away (ADR-0016) */
   emails: string[];
 }
 

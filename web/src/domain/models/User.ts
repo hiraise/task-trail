@@ -4,13 +4,13 @@ export interface User {
   id: UserId;
   email: string;
   username: string | null;
-  /** Адрес картинки аватарки; аватарки нет — undefined */
+  /** Avatar image URL; undefined when there is no avatar */
   avatarUrl?: string;
 }
 
-/** Текущий пользователь: вошедший в веб. */
+/** The current user: the one signed in to the web. */
 export interface CurrentUser extends User {
-  /** Администратор сервиса (ADR-0014) */
+  /** Service administrator (ADR-0014) */
   isAdmin: boolean;
 }
 

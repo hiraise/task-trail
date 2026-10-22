@@ -1,9 +1,9 @@
 /**
- * Ссылка сброса пароля, которую администратор передаёт пользователю сам — нужна, когда почта
- * не подключена (ADR-0017). Срабатывает один раз.
+ * A password reset link the administrator hands to the user directly — needed when mail
+ * is not configured (ADR-0017). Works once.
  */
 export interface PasswordResetLink {
   url: string;
-  /** До какого момента действует, ISO 8601 в UTC */
+  /** Valid until, ISO 8601 in UTC */
   expiresAt: string;
 }

@@ -1,5 +1,5 @@
-/** Роль в проекте (ADR-0003): набор фиксирован, права в интерфейсе — по роли (shared/utils/userRole.ts). */
+/** Project role (ADR-0003): the set is fixed; UI permissions depend on the role (shared/utils/userRole.ts). */
 export type ProjectRole = "owner" | "admin" | "member";
 
-/** Роль, которую владелец может назначить участнику: роль владельца не передаётся. */
+/** A role the owner can assign to a member: the owner role cannot be transferred. */
 export type AssignableRole = Exclude<ProjectRole, "owner">;

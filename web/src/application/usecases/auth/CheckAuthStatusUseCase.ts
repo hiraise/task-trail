@@ -1,8 +1,8 @@
 import type { AuthStatusDto } from "@/application/dto/AuthStatusDto";
 import { userRepository } from "@/infrastructure/repositories";
 
-// Вошёл ли пользователь: GET /v1/users/me без сессии отвечает 401, а HTTP-клиент сначала
-// пробует обновить сессию — отдельный запрос /auth/check не нужен.
+// Whether the user is signed in: GET /v1/users/me responds 401 without a session, and the HTTP client first
+// tries to refresh the session — a separate /auth/check request is not needed.
 export async function checkAuthStatusUseCase(): Promise<AuthStatusDto> {
   try {
     const currentUser = await userRepository.getCurrentUser();

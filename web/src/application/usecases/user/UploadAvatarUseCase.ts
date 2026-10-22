@@ -3,8 +3,8 @@ import type { CurrentUser } from "@/domain/models/User";
 import { userRepository } from "@/infrastructure/repositories";
 import { AppError, AppErrorType } from "@/shared/errors/types";
 
-// Те же пределы, что у сервера (uploadAvatar в контракте, ADR-0013): проверяем до загрузки,
-// чтобы не гонять 5 МБ ради отказа. Тип сервер определяет по содержимому — здесь по расширению.
+// Same limits as the server (uploadAvatar in the contract, ADR-0013): checked before uploading
+// so we don't send 5 MB just to be rejected. The server detects the type by content; here — by extension.
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 

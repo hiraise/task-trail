@@ -16,14 +16,14 @@ const id = "0b8c2f4e-3d5a-4a51-9a8e-1c2b3d4e5f60";
 const avatarId = "7d1e9a52-6f0b-4c1f-8f43-2a9e5b7c1d08";
 
 describe("toUser", () => {
-  it("собирает адрес аватарки из ID файла", () => {
+  it("builds the avatar URL from the file ID", () => {
     const user = toUser({ id, email: "user@example.com", username: "Аня", avatarId });
 
     expect(user.avatarUrl).toMatch(new RegExp(`/v1/files/${avatarId}$`));
     expect(user).toMatchObject({ id, email: "user@example.com", username: "Аня" });
   });
 
-  it("без аватарки адреса нет", () => {
+  it("no avatar — no URL", () => {
     const user = toUser({ id, email: "user@example.com", username: null, avatarId: null });
 
     expect(user.avatarUrl).toBeUndefined();
@@ -32,7 +32,7 @@ describe("toUser", () => {
 });
 
 describe("toCurrentUser", () => {
-  it("сохраняет признак администратора сервиса", () => {
+  it("keeps the service administrator flag", () => {
     const user = toCurrentUser({
       id,
       email: "admin@example.com",
@@ -54,7 +54,7 @@ describe("toProject", () => {
     tasksCount: 3,
   };
 
-  it("описания нет — undefined, остальное как в ответе", () => {
+  it("no description — undefined, the rest as in the response", () => {
     expect(toProject(dto)).toEqual({
       id,
       name: "Сайт",
@@ -64,7 +64,7 @@ describe("toProject", () => {
     });
   });
 
-  it("проект с ролью текущего пользователя", () => {
+  it("project with the current user's role", () => {
     expect(toProjectDetails({ ...dto, description: "О сайте", role: "admin" })).toMatchObject({
       description: "О сайте",
       role: "admin",
@@ -73,7 +73,7 @@ describe("toProject", () => {
 });
 
 describe("toProjectMember", () => {
-  it("пользователь с ролью и адресом аватарки", () => {
+  it("user with a role and avatar URL", () => {
     const member = toProjectMember({
       id,
       email: "owner@example.com",
@@ -88,7 +88,7 @@ describe("toProjectMember", () => {
 });
 
 describe("toInvitationResult", () => {
-  it("ссылка приглашения — только когда она есть", () => {
+  it("invitation link only when present", () => {
     const url = "http://localhost:3000/auth/invite?token=abc";
 
     expect(
@@ -113,7 +113,7 @@ describe("toTask", () => {
     updatedAt: "2026-10-22T09:30:00Z",
   };
 
-  it("нет описания и исполнителя — undefined, статус — ID из контракта", () => {
+  it("no description or assignee — undefined, status is the contract ID", () => {
     expect(toTask(dto)).toEqual({
       id,
       projectId: dto.projectId,
@@ -127,7 +127,7 @@ describe("toTask", () => {
     });
   });
 
-  it("описание и исполнитель — как в ответе", () => {
+  it("description and assignee as in the response", () => {
     expect(toTask({ ...dto, description: "К пятнице", assigneeId: id })).toMatchObject({
       description: "К пятнице",
       assigneeId: id,
@@ -136,7 +136,7 @@ describe("toTask", () => {
 });
 
 describe("toTaskStatus", () => {
-  it("название с сервера, признаки статуса как в ответе", () => {
+  it("name from the server, status flags as in the response", () => {
     expect(
       toTaskStatus({ id: "done", name: "Готово", isDefault: false, isResolved: true }),
     ).toEqual({ id: "done", name: "Готово", isDefault: false, isResolved: true });
@@ -153,21 +153,21 @@ describe("toServiceSettings", () => {
     passwordSet: true,
   };
 
-  it("почта не подключена — undefined", () => {
+  it("mail not configured — undefined", () => {
     expect(toServiceSettings({ serviceUrl: "https://example.com/tasktrail", mail: null })).toEqual({
       serviceUrl: "https://example.com/tasktrail",
       mail: undefined,
     });
   });
 
-  it("настройки SMTP как в ответе, пароля нет — только признак", () => {
+  it("SMTP settings as in the response, no password — only a flag", () => {
     const settings = toServiceSettings({ serviceUrl: "http://localhost:3000", mail });
 
     expect(settings.mail).toEqual(mail);
     expect(settings.mail).not.toHaveProperty("password");
   });
 
-  it("без входа на SMTP логина нет — undefined", () => {
+  it("no SMTP login — undefined", () => {
     const settings = toServiceSettings({
       serviceUrl: "http://localhost:3000",
       mail: { ...mail, encryption: "none", username: null, passwordSet: false },
@@ -178,7 +178,7 @@ describe("toServiceSettings", () => {
 });
 
 describe("toAdminUser", () => {
-  it("пользователь с признаком администратора, датой регистрации и адресом аватарки", () => {
+  it("user with the administrator flag, registration date and avatar URL", () => {
     const user = toAdminUser({
       id,
       email: "admin@example.com",
@@ -200,7 +200,7 @@ describe("toAdminUser", () => {
 });
 
 describe("toPasswordResetLink", () => {
-  it("ссылка и срок как в ответе", () => {
+  it("link and expiry as in the response", () => {
     const link = { url: "http://localhost:3000/auth/reset?token=abc", expiresAt: "2026-10-23T08:00:00Z" };
 
     expect(toPasswordResetLink(link)).toEqual(link);

@@ -1,9 +1,9 @@
 import type { User } from "./User";
 
-/** Пользователь в разделе администратора: все пользователи сервиса (ADR-0014). */
+/** A user in the admin section: all users of the service (ADR-0014). */
 export interface AdminUser extends User {
-  /** Администратор сервиса */
+  /** Service administrator */
   isAdmin: boolean;
-  /** Дата регистрации, ISO 8601 в UTC */
+  /** Registration date, ISO 8601 in UTC */
   createdAt: string;
 }

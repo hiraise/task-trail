@@ -5,17 +5,17 @@ import type { ProjectId } from "../types";
 export interface NewProject {
   name: string;
   description?: string;
-  /** Кого позвать сразу (ADR-0016) */
+  /** Who to invite right away (ADR-0016) */
   emails: string[];
 }
 
 export interface ProjectChanges {
   name?: string;
-  /** null — убрать описание */
+  /** null removes the description */
   description?: string | null;
 }
 
-/** Созданный проект и результат по каждой приглашённой почте. */
+/** The created project and a result for each invited email. */
 export interface ProjectCreated {
   project: ProjectDetails;
   invitations: InvitationResult[];

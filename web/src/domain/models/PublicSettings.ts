@@ -1,7 +1,7 @@
-/** Настройки сервиса, которые веб знает до входа (ADR-0017). */
+/** Service settings the web knows before sign-in (ADR-0017). */
 export interface PublicSettings {
-  /** Пользователей ещё нет: можно создать первый аккаунт, он же администратор (ADR-0016) */
+  /** No users yet: the first account can be created, and it becomes the administrator (ADR-0016) */
   registrationOpen: boolean;
-  /** Почта подключена: работает восстановление пароля по почте */
+  /** Mail is configured: password recovery by email works */
   mailEnabled: boolean;
 }

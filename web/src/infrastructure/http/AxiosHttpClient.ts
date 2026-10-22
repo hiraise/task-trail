@@ -45,8 +45,8 @@ export class AxiosHttpClient implements HttpClient {
     this.setupInterceptors();
   }
 
-  // Наружу ошибки уходят как AppError с кодом из ответа API (apiError.ts), а интерцептор
-  // обновления сессии ниже видит исходные ошибки axios.
+  // Errors leave as AppError with the code from the API response (apiError.ts), while the session
+  // refresh interceptor below sees the original axios errors.
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
     return this.send<T>(() => this.client.get<T>(url, config));
   }

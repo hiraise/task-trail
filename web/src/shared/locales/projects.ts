@@ -38,7 +38,7 @@ export const projectsTexts = {
   changeRoleFailed: "Не удалось сменить роль",
   removeAdmin: "Убрать из администраторов",
 
-  // Результат приглашения — по каждой почте (InvitationResult, ADR-0017)
+  // Invitation result per email (InvitationResult, ADR-0017)
   invitations: {
     title: "Приглашения",
     added: "Добавлен в проект",

@@ -33,7 +33,7 @@ export default defineConfig({
     },
   },
   server: {
-    // Порт 3000 занят локальным стендом (stand/compose.yaml)
+    // Port 3000 is taken by the local stack (stand/compose.yaml)
     port: 5173,
   },
   test: {

@@ -6,30 +6,30 @@ export interface NewTask {
   projectId: ProjectId;
   name: string;
   description?: string;
-  /** Исполнитель — участник проекта */
+  /** The assignee is a project member */
   assigneeId?: UserId;
 }
 
 export interface TaskChanges {
   name?: string;
-  /** null — убрать описание */
+  /** null removes the description */
   description?: string | null;
 }
 
-// Каждая операция с задачей — свой метод и свой эндпоинт (ADR-0002); сервер отвечает задачей.
+// Each task operation has its own method and endpoint (ADR-0002); the server responds with the task.
 export interface TaskRepository {
   findById(id: TaskId): Promise<Task>;
   findByProjectId(projectId: ProjectId): Promise<Task[]>;
-  /** Задачи, назначенные на текущего пользователя, во всех его проектах */
+  /** Tasks assigned to the current user across all their projects */
   findAssignedToMe(): Promise<Task[]>;
-  /** Статусы в порядке работы над задачей */
+  /** Statuses in workflow order */
   findStatuses(): Promise<TaskStatus[]>;
   create(task: NewTask): Promise<Task>;
   update(id: TaskId, changes: TaskChanges): Promise<Task>;
   changeStatus(id: TaskId, statusId: TaskStatusId): Promise<Task>;
-  /** null — снять исполнителя */
+  /** null unassigns the task */
   changeAssignee(id: TaskId, assigneeId: UserId | null): Promise<Task>;
-  /** Перенос в другой проект; исполнитель не участник нового проекта — задача без исполнителя */
+  /** Moves to another project; if the assignee is not a member of the new project, the task is unassigned */
   move(id: TaskId, projectId: ProjectId): Promise<Task>;
   delete(id: TaskId): Promise<void>;
 }

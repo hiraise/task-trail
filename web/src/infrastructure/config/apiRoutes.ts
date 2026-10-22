@@ -1,6 +1,6 @@
 import type { ProjectId, TaskId, UserId } from "@/domain/types";
 
-/** Адрес API (`VITE_API_URL`, web/README.md); на стенде — относительный `/api`. */
+/** API address (`VITE_API_URL`, web/README.md); on the local stack — the relative `/api`. */
 export const API_URL: string = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 const API_VERSION = "/v1";
@@ -38,7 +38,7 @@ export const API_ROUTES = {
   GET_CANDIDATES: `${PROJECTS}/candidates`,
   LEAVE_PROJECT: (id: ProjectId) => `${PROJECTS}/${id}/leave`,
   PROJECT_TASKS: (id: ProjectId) => `${PROJECTS}/${id}/tasks`,
-  // TASKS API: каждая операция с задачей — свой адрес (ADR-0002)
+  // TASKS API: each task operation has its own URL (ADR-0002)
   TASKS: TASKS,
   TASK_BY_ID: (id: TaskId) => `${TASKS}/${id}`,
   TASK_STATUS: (id: TaskId) => `${TASKS}/${id}/status`,
@@ -52,7 +52,7 @@ export const API_ROUTES = {
   USER_BY_ID: (id: UserId) => `${USERS}/${id}`,
   // FILES API
   FILE: (id: string) => `${FILES}/${id}`,
-  // ADMIN API: только администратору сервиса (ADR-0014)
+  // ADMIN API: service administrator only (ADR-0014)
   ADMIN_SETTINGS: ADMIN_SETTINGS,
   ADMIN_MAIL: ADMIN_MAIL,
   ADMIN_TEST_MAIL: `${ADMIN_MAIL}/test`,
@@ -61,5 +61,5 @@ export const API_ROUTES = {
   ADMIN_PASSWORD_RESET_LINK: (id: UserId) => `${ADMIN_USERS}/${id}/password-reset-link`,
 };
 
-/** Адрес файла для `<img>` и ссылок: аватарка отдаётся без входа (getFile в контракте). */
+/** File URL for `<img>` and links: avatars are served without sign-in (getFile in the contract). */
 export const fileUrl = (id: string): string => `${API_URL}${API_ROUTES.FILE(id)}`;

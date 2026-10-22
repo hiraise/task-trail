@@ -66,7 +66,7 @@ export function getProjectId(str: string): string {
   return `${res}-`;
 }
 
-/** Дата и время по-русски: «23 октября, 14:30» — срок ссылки и подобное. */
+/** Date and time in Russian, like "October 23, 14:30" — link expiry and similar. */
 export function formatDateTime(date: Date | string): string {
   return format(new Date(date), "d MMMM, HH:mm", { locale: ru });
 }

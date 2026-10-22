@@ -7,7 +7,7 @@ import type { HttpClient } from "../http/HttpClient";
 
 import { toCurrentUser, toUser } from "./mappers";
 
-// Поле multipart с файлом аватарки — uploadAvatar в контракте
+// Multipart field with the avatar file — uploadAvatar in the contract
 const AVATAR_FIELD = "file";
 
 const createUserRepository = (http: HttpClient): UserRepository => ({
