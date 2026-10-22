@@ -10,7 +10,7 @@ import (
 const (
 	someID   = "8d0c1f0e-6f2a-4b8e-9a1c-0d2e3f4a5b6c"
 	someUser = `{"id":"` + someID + `","email":"a@b.c","username":null,"avatarId":null,"isAdmin":true}`
-	someTask = `{"id":"` + someID + `","projectId":"` + someID + `","name":"n","description":null,` +
+	someTask = `{"id":"` + someID + `","projectId":"` + someID + `","number":1,"key":"DS-1","name":"n","description":null,` +
 		`"statusId":"open","authorId":"` + someID + `","assigneeId":null,` +
 		`"createdAt":"2026-10-21T10:00:00Z","updatedAt":"2026-10-21T10:00:00.123Z"}`
 	someMail = `{"host":"mailpit","port":1025,"encryption":"none","sender":"TaskTrail <a@b.c>",` +
@@ -58,7 +58,7 @@ func TestValidate(t *testing.T) {
 		{"extra field in a list item", "GET", "/v1/projects/" + someID + "/tasks", 200, nil,
 			"[" + someTask + "," + strings.Replace(someTask, `"name":"n"`, `"name":"n","permissions":[]`, 1) + "]", false},
 		{"role not in the enum", "GET", "/v1/projects/" + someID, 200, nil,
-			`{"id":"` + someID + `","name":"p","description":null,"createdAt":"2026-10-21T10:00:00Z",` +
+			`{"id":"` + someID + `","name":"p","description":null,"key":"DS","createdAt":"2026-10-21T10:00:00Z",` +
 				`"tasksCount":0,"role":"boss"}`, false},
 		{"mail not connected", "GET", "/v1/admin/settings", 200, nil,
 			`{"serviceUrl":"http://localhost:3000","mail":null}`, true},
