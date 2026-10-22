@@ -14,6 +14,6 @@ func NewRouter(
 	adminMW gin.HandlerFunc,
 	modules v1.Modules,
 ) {
-	v1.NewRouter(app, contextmanager, authMW, modules)
+	v1.NewRouter(app, contextmanager, authMW, adminMW, modules)
 	newDocsRouter(app, authMW, adminMW)
 }

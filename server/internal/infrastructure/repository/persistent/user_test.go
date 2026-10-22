@@ -3,6 +3,7 @@ package persistent_test
 import (
 	"context"
 	"errors"
+	"slices"
 	"testing"
 	"time"
 
@@ -77,46 +78,104 @@ func TestUserRepository(t *testing.T) {
 	requireCode(t, err, domain.EntityNotFound)
 }
 
-// Блокировка регистрации держится до конца транзакции: вторая регистрация ждёт первую
-// и видит созданный ею аккаунт (ADR-0016).
-func TestLockRegistration(t *testing.T) {
+// Блокировки регистрации (ADR-0016) и администраторов (ADR-0014) держатся до конца транзакции:
+// вторая транзакция с той же блокировкой ждёт первую, а с другой — нет.
+func TestAdvisoryLocks(t *testing.T) {
 	pool := testdb.New(t)
 	repo, _ := userRepo(pool)
 	tx := persistent.NewPgTxManager(pool)
 	ctx := context.Background()
+	locks := map[string]func(context.Context) error{
+		"регистрация":    repo.LockRegistration,
+		"администраторы": repo.LockAdmins,
+	}
+	for name, lock := range locks {
+		t.Run(name, func(t *testing.T) {
+			requireCode(t, lock(ctx), domain.RepoInternal)
 
-	requireCode(t, repo.LockRegistration(ctx), domain.RepoInternal)
+			locked := make(chan struct{})
+			release := make(chan struct{})
+			first := make(chan error, 1)
+			go func() {
+				first <- tx.DoWithTx(ctx, func(ctx context.Context) error {
+					if err := lock(ctx); err != nil {
+						return err
+					}
+					close(locked)
+					<-release
+					return nil
+				})
+			}()
+			<-locked
 
-	locked := make(chan struct{})
-	release := make(chan struct{})
-	first := make(chan error, 1)
-	go func() {
-		first <- tx.DoWithTx(ctx, func(ctx context.Context) error {
-			if err := repo.LockRegistration(ctx); err != nil {
-				return err
+			// Другая блокировка не ждёт
+			for other, otherLock := range locks {
+				if other != name {
+					if err := tx.DoWithTx(ctx, otherLock); err != nil {
+						t.Fatal(err)
+					}
+				}
 			}
-			close(locked)
-			<-release
-			return nil
+			second := make(chan error, 1)
+			go func() { second <- tx.DoWithTx(ctx, lock) }()
+			select {
+			case err := <-second:
+				t.Fatalf("вторая транзакция не ждала блокировку: %v", err)
+			case <-time.After(200 * time.Millisecond):
+			}
+			close(release)
+			if err := <-first; err != nil {
+				t.Fatal(err)
+			}
+			if err := <-second; err != nil {
+				t.Fatal(err)
+			}
 		})
-	}()
-	<-locked
+	}
+}
 
-	second := make(chan error, 1)
-	go func() {
-		second <- tx.DoWithTx(ctx, func(ctx context.Context) error { return repo.LockRegistration(ctx) })
-	}()
-	select {
-	case err := <-second:
-		t.Fatalf("вторая транзакция не ждала блокировку: %v", err)
-	case <-time.After(200 * time.Millisecond):
+// Список для администратора — по дате регистрации, без удалённых; администраторы считаются
+// тоже без удалённых.
+func TestUserListAndAdmins(t *testing.T) {
+	pool := testdb.New(t)
+	ctx := context.Background()
+	clk := clock.New(now)
+	f := factory.NewUserFactory(id.New(), clk)
+	repo := persistent.NewUserRepo(pool, f)
+
+	if users, err := repo.List(ctx); err != nil || len(users) != 0 {
+		t.Fatalf("пустая база: %v, %v", users, err)
 	}
-	close(release)
-	if err := <-first; err != nil {
+	var created []*entity.UserAccount
+	for i, email := range []entity.Email{"anna@example.com", "boris@example.com", "vera@example.com", "gleb@example.com"} {
+		u := f.New(email, "$2a$12$hash", "")
+		u.IsAdmin = i != 1
+		if err := repo.Create(ctx, u); err != nil {
+			t.Fatal(err)
+		}
+		created = append(created, u)
+		clk.Advance(time.Minute)
+	}
+	if _, err := pool.Exec(ctx, `UPDATE users SET deleted_at = $1 WHERE id = $2`, now, created[3].ID); err != nil {
 		t.Fatal(err)
 	}
-	if err := <-second; err != nil {
+
+	users, err := repo.List(ctx)
+	if err != nil {
 		t.Fatal(err)
+	}
+	var emails []entity.Email
+	for _, u := range users {
+		emails = append(emails, u.Email)
+	}
+	if want := []entity.Email{"anna@example.com", "boris@example.com", "vera@example.com"}; !slices.Equal(emails, want) {
+		t.Fatalf("список %v, ожидалось %v", emails, want)
+	}
+	if !users[0].IsAdmin || users[1].IsAdmin || !users[0].CreatedAt.Equal(now) {
+		t.Fatalf("первый %+v, второй %+v", users[0], users[1])
+	}
+	if admins, err := repo.CountAdmins(ctx); err != nil || admins != 2 {
+		t.Fatalf("администраторов %d, %v; ожидалось 2", admins, err)
 	}
 }
 

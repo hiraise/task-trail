@@ -62,6 +62,19 @@ func AddedToProject(to entity.Email, inviter, project, link string) service.Lett
 	}
 }
 
+// MailTest — тестовое письмо администратору: почта подключена и письма доходят (ADR-0017).
+func MailTest(to entity.Email) service.Letter {
+	return service.Letter{
+		To:      to,
+		Subject: "Проверка почты TaskTrail",
+		Text: `Здравствуйте!
+
+Это тестовое письмо TaskTrail. Раз оно дошло, почта настроена: с этого адреса будут
+уходить ссылки сброса пароля и приглашения в проекты.
+`,
+	}
+}
+
 // oneLine заменяет переводы строк и другие управляющие символы пробелами: тема письма —
 // одна строка заголовка.
 func oneLine(s string) string {

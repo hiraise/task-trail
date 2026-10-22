@@ -2,7 +2,6 @@ package access
 
 import (
 	"context"
-	"strings"
 	"task-trail/internal/application/dto"
 	"task-trail/internal/application/transaction"
 	"task-trail/internal/domain"
@@ -46,8 +45,7 @@ func (s *RegistrationService) Execute(ctx context.Context, data dto.Register) (d
 		if err := s.userRepository.Create(ctx, user); err != nil {
 			return err
 		}
-		// Адрес сервиса — без «/» в конце: от него строятся ссылки (ADR-0015)
-		if err := s.settingsRepository.SetServiceURL(ctx, strings.TrimRight(data.ServiceURL, "/")); err != nil {
+		if err := s.settingsRepository.SetServiceURL(ctx, entity.NewServiceURL(data.ServiceURL)); err != nil {
 			return err
 		}
 		tokens, err := s.sessions.open(ctx, user.ID)

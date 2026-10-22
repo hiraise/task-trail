@@ -141,3 +141,32 @@ func TestResetPasswordLinkInvalid(t *testing.T) {
 		requireCode(t, module.ResetPassword.Execute(context.Background(), resetData), domain.LinkInvalid)
 	})
 }
+
+// Администратор получает ссылку сброса для пользователя по ID: от адреса сервиса, в базе —
+// хеш её токена (ADR-0017).
+func TestPasswordResetLinkForUser(t *testing.T) {
+	module, d := newModule(t)
+	d.users.EXPECT().GetByID(gomock.Any(), userID).Return(user(), nil)
+	d.settings.EXPECT().GetServiceURL(gomock.Any()).Return("https://example.com/tasktrail", nil)
+	var stored *entity.PasswordReset
+	d.resets.EXPECT().Create(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, r *entity.PasswordReset) error {
+		stored = r
+		return nil
+	})
+	link, err := module.PasswordResetLink.ForUser(context.Background(), string(userID))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if stored.UserID != userID || !link.ExpiresAt.Equal(now.Add(resetLifetime)) {
+		t.Fatalf("ссылка %+v, в базе %+v", link, stored)
+	}
+	token := linkToken(t, link.URL, "https://example.com/tasktrail/auth/reset?token=")
+	if !bytes.Equal(entity.HashLinkToken(token), stored.TokenHash) {
+		t.Fatal("в базе не хеш токена из ссылки")
+	}
+
+	module, d = newModule(t)
+	d.users.EXPECT().GetByID(gomock.Any(), userID).Return(nil, domain.ErrEntityNotFound(0, nil))
+	_, err = module.PasswordResetLink.ForUser(context.Background(), string(userID))
+	requireCode(t, err, domain.EntityNotFound)
+}

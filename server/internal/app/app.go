@@ -2,9 +2,11 @@ package app
 
 import (
 	"context"
+	"crypto/x509"
 	"os"
 	"task-trail/config"
 	"task-trail/internal/application/service/access"
+	"task-trail/internal/application/service/admin"
 	"task-trail/internal/application/service/file"
 	"task-trail/internal/application/service/project"
 	"task-trail/internal/application/service/task"
@@ -62,10 +64,12 @@ type Server struct {
 	File    *file.FileModule
 	Project *project.ProjectModule
 	Task    *task.TaskModule
+	Admin   *admin.AdminModule
 }
 
 type options struct {
 	passwordHashCost int
+	smtpRootCAs      *x509.CertPool
 }
 
 type Option func(*options)
@@ -74,6 +78,12 @@ type Option func(*options)
 // каждый вход в тесте занимает доли секунды.
 func WithPasswordHashCost(cost int) Option {
 	return func(o *options) { o.passwordHashCost = cost }
+}
+
+// WithSMTPRootCAs задаёт корневые сертификаты для TLS почты вместо системных. Только для тестов:
+// их SMTP-сервер подписан своим сертификатом (notification.WithRootCAs).
+func WithSMTPRootCAs(pool *x509.CertPool) Option {
+	return func(o *options) { o.smtpRootCAs = pool }
 }
 
 // New собирает сервер на базе pool. Часы clk — системные в Run и фиксированные в тестах (ADR-0022).
@@ -107,7 +117,11 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	taskRepo := persistent.NewTaskRepo(pool)
 	invitationRepo := persistent.NewInvitationRepo(pool)
 	settingsRepo := persistent.NewSettingsRepo(pool, box)
-	mailer := notification.NewSMTP(clk)
+	var mailerOpts []notification.Option
+	if o.smtpRootCAs != nil {
+		mailerOpts = append(mailerOpts, notification.WithRootCAs(o.smtpRootCAs))
+	}
+	mailer := notification.NewSMTP(clk, mailerOpts...)
 	rtFactory := factory.NewRTFactory(idGen, clk, refreshTokenLifetime)
 	accessModule := access.New(access.Deps{
 		TxManager:            txManager,
@@ -160,14 +174,29 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		TaskRepo:    taskRepo,
 		TaskFactory: factory.NewTaskFactory(idGen, clk),
 	})
+	adminModule := admin.New(admin.Deps{
+		TxManager:    txManager,
+		Clock:        clk,
+		UserRepo:     userRepo,
+		SettingsRepo: settingsRepo,
+		Mailer:       mailer,
+	})
 
 	engine := gin.New()
 	middleware.Setup(engine, idGen, contextManager, l)
 	http.NewRouter(engine, contextManager,
 		middleware.NewAuth(accessTokenService, contextManager),
 		middleware.NewAdmin(accessModule.AdminCheck, contextManager),
-		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule})
-	return &Server{Engine: engine, Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule}, nil
+		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule, Admin: adminModule})
+	return &Server{
+		Engine:  engine,
+		Access:  accessModule,
+		User:    userModule,
+		File:    fileModule,
+		Project: projectModule,
+		Task:    taskModule,
+		Admin:   adminModule,
+	}, nil
 }
 
 func Run(cfg *config.Config) {

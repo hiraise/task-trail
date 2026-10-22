@@ -89,6 +89,8 @@ type Server struct {
 	password string
 	// rejected — получатели, которых сервер не принимает, как несуществующий ящик.
 	rejected map[string]bool
+	// rejectedSenders — отправители, которых сервер не принимает, как чужой адрес.
+	rejectedSenders map[string]bool
 
 	mu       sync.Mutex
 	messages []Message
@@ -113,6 +115,17 @@ func WithRejected(addresses ...string) Option {
 		s.rejected = make(map[string]bool, len(addresses))
 		for _, a := range addresses {
 			s.rejected[a] = true
+		}
+	}
+}
+
+// WithRejectedSenders — сервер отказывает письмам от этих отправителей (553), как почтовый
+// сервис, который не даёт слать от чужого адреса.
+func WithRejectedSenders(addresses ...string) Option {
+	return func(s *Server) {
+		s.rejectedSenders = make(map[string]bool, len(addresses))
+		for _, a := range addresses {
+			s.rejectedSenders[a] = true
 		}
 	}
 }
@@ -238,8 +251,12 @@ func (s *Server) session(conn net.Conn) {
 				reply("530 нужен вход")
 				continue
 			}
-			msg = Message{From: address(arg)}
-			reply("250 OK")
+			if from := address(arg); s.rejectedSenders[from] {
+				reply("553 отправитель не принадлежит вам")
+			} else {
+				msg = Message{From: from}
+				reply("250 OK")
+			}
 		case "RCPT":
 			if to := address(arg); s.rejected[to] {
 				reply("550 нет такого ящика")

@@ -56,3 +56,10 @@ func TestProjectLetters(t *testing.T) {
 		t.Errorf("извещение:\n%s", added.Text)
 	}
 }
+
+func TestMailTest(t *testing.T) {
+	l := letter.MailTest("admin@example.com")
+	if l.To != "admin@example.com" || l.Subject == "" || !strings.Contains(l.Text, "тестовое письмо") {
+		t.Fatalf("письмо %+v", l)
+	}
+}

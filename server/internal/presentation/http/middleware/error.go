@@ -40,10 +40,15 @@ var apiErrorFor = map[domain.ErrorCode]response.ApiError{
 	domain.Forbidden:          {Status: http.StatusForbidden, Code: response.CodeForbidden, Message: "не хватает роли в проекте или прав администратора сервиса"},
 	domain.OwnerCannotLeave:   {Status: http.StatusConflict, Code: response.CodeOwnerCannotLeave, Message: "владелец не выходит из проекта, а удаляет его"},
 	domain.AssigneeNotMember:  {Status: http.StatusUnprocessableEntity, Code: response.CodeAssigneeNotMember, Message: "исполнитель не участник проекта"},
+	domain.LastAdmin:          {Status: http.StatusConflict, Code: response.CodeLastAdmin, Message: "нельзя снять последнего администратора сервиса"},
 	domain.LinkInvalid:        {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "ссылка неверна, использована или истекла"},
 	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "аккаунт с этой почтой уже есть, нужно войти"},
 	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "почта не подключена"},
 	domain.MailSendFailed:     {Status: http.StatusBadGateway, Code: response.CodeMailSendFailed, Message: "SMTP не принял письмо"},
+	domain.MailConnectionFailed: {Status: http.StatusBadGateway, Code: response.CodeMailConnectionFailed,
+		Message: "не удалось подключиться к SMTP, настройки не сохранены"},
+	domain.SecretRequired: {Status: http.StatusUnprocessableEntity, Code: response.CodeSecretRequired,
+		Message: "нужно ввести пароль заново: он не сохранён или сменились сервер или порт"},
 	domain.FileTooLarge:       {Status: http.StatusUnprocessableEntity, Code: response.CodeFileTooLarge, Message: "файл больше допустимого"},
 	domain.FileTypeNotAllowed: {Status: http.StatusUnprocessableEntity, Code: response.CodeFileTypeNotAllowed, Message: "тип файла не подходит"},
 
@@ -143,6 +148,8 @@ func messageForTag(fe validator.FieldError) string {
 		return fmt.Sprintf("не длиннее %s байт в UTF-8", fe.Param())
 	case "httpurl":
 		return "нужен адрес http(s) без параметров"
+	case "mailbox":
+		return "нужен адрес почты, например TaskTrail <noreply@example.com>"
 	case "required_without":
 		return fmt.Sprintf("обязательно, если нет %s", fe.Param())
 	default:

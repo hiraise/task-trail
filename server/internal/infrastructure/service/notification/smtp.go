@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	netmail "net/mail"
 	"time"
 
 	"task-trail/internal/domain"
@@ -60,6 +61,38 @@ func (s *SMTP) Send(ctx context.Context, settings *entity.MailSettings, letter s
 	}
 	if err := client.DialAndSendWithContext(ctx, msg); err != nil {
 		return domain.ErrMailSendFailed(err, "host", settings.Host, "port", settings.Port, "to", letter.To)
+	}
+	return nil
+}
+
+// Check подключается к SMTP по настройкам: приветствие, шифрование, вход — и спрашивает,
+// примет ли сервер письмо от отправителя (MAIL FROM, затем RSET): так видно, что сервер
+// требует вход или не пускает чужой адрес отправителя. Письмо не уходит. Любой отказ —
+// MAIL_CONNECTION_FAILED с причиной для лога сервера.
+func (s *SMTP) Check(ctx context.Context, settings *entity.MailSettings) error {
+	fail := func(err error, reason string) error {
+		return domain.ErrMailConnectionFailed(err, "reason", reason, "host", settings.Host, "port", settings.Port)
+	}
+	sender, err := netmail.ParseAddress(settings.Sender)
+	if err != nil {
+		return fail(err, "invalid sender")
+	}
+	client, err := mail.NewClient(settings.Host, s.options(settings)...)
+	if err != nil {
+		return fail(err, "invalid settings")
+	}
+	conn, err := client.DialToSMTPClientWithContext(ctx)
+	if err != nil {
+		return fail(err, "connection or login failed")
+	}
+	// Отказ на QUIT проверку не портит: всё нужное сервер уже ответил
+	defer func() { _ = client.CloseWithSMTPClient(conn) }()
+	// Конверт — адрес без имени, как его отправляет go-mail
+	if err := conn.Mail((&netmail.Address{Address: sender.Address}).String()); err != nil {
+		return fail(err, "sender rejected")
+	}
+	if err := conn.Reset(); err != nil {
+		return fail(err, "reset failed")
 	}
 	return nil
 }
