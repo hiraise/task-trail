@@ -1,5 +1,4 @@
 import type { TaskDetailResponseDto } from "@/application/dto/TaskDetailResponseDto";
-import { createProjectDetails } from "@/domain/models/Project";
 import type { TaskId } from "@/domain/types";
 import { projectRepository, taskRepository, userRepository } from "@/infrastructure/repositories";
 
@@ -25,7 +24,7 @@ export async function getTaskDetailUseCase(taskId: TaskId): Promise<TaskDetailRe
 
     return {
       task,
-      project: createProjectDetails(project),
+      project,
       assignee,
       status,
     };

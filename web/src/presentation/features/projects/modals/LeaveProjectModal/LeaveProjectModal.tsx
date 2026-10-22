@@ -1,39 +1,25 @@
 import type { ProjectId } from "@/domain/types";
 import type { BaseModalProps } from "@/presentation/shared";
-import { BaseModal, DeviceBased, DialogButtons } from "@/presentation/shared";
+import { BaseModal, DialogButtons } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
 import type { LeaveProjectProps } from "@/presentation/shared/hooks/useGlobalModals";
 
 import { LeaveProject } from "../../components";
 
+import styles from "./LeaveProjectModal.module.css";
+
+/** Подтверждение выхода: возвращает ID проекта, из которого выйти. */
 export function LeaveProjectModal(props: BaseModalProps<ProjectId>) {
   const { id, title } = useGlobalModalProps<LeaveProjectProps>() ?? {};
 
-  if (!title) return;
-
-  const handleClose = () => props.onClose();
-
-  // return item ID for leaving to parent component
-  const handleLeave = () => {
-    if (id) props.onClose(id);
-  };
+  if (!id || !title) return null;
 
   return (
     <BaseModal {...props} title="">
-      <DeviceBased
-        desktop={
-          <div style={{ gap: "16px" }}>
-            <LeaveProject name={title} />
-            <DialogButtons variant="leave" onClose={handleClose} onLeave={handleLeave} />
-          </div>
-        }
-        mobile={
-          <div style={{ gap: "24px" }}>
-            <LeaveProject name={title} />
-            <DialogButtons variant="leave" onClose={handleClose} onLeave={handleLeave} />
-          </div>
-        }
-      />
+      <div className={styles.content}>
+        <LeaveProject name={title} />
+        <DialogButtons variant="leave" onClose={() => props.onClose()} onLeave={() => props.onClose(id)} />
+      </div>
     </BaseModal>
   );
 }

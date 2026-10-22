@@ -1,40 +1,26 @@
-import { BaseModal, Icon, type BaseModalProps } from "@/presentation/shared";
+import { BaseModal, type BaseModalProps } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
 import type { MemberActionsProps } from "@/presentation/shared/hooks/useGlobalModals";
 
-import { useMembersMenuItems } from "../../hooks/useMembersMenuItems";
-
-import styles from "./MemberActionsModal.module.css";
+import { ActionsMenu } from "../../components/ActionsMenu";
+import { useMembersMenuItems } from "../../hooks";
 
 export function MemberActionsModal(props: BaseModalProps<void>) {
-  const modalProps = useGlobalModalProps<MemberActionsProps>();
+  const { member, projectId } = useGlobalModalProps<MemberActionsProps>() ?? {};
 
-  const { memberId, memberDisplayName, projectId } = modalProps || {};
-  const { menuItems } = useMembersMenuItems(
-    memberId ?? "-1",
-    memberDisplayName ?? "No name",
-    projectId ?? "-1",
-  );
+  if (!member || !projectId) return null;
+
+  return <MemberActions {...props} member={member} projectId={projectId} />;
+}
+
+function MemberActions({ member, projectId, ...props }: BaseModalProps<void> & MemberActionsProps) {
+  const { menuItems } = useMembersMenuItems(member, projectId);
 
   if (menuItems.length === 0) return null;
 
   return (
     <BaseModal {...props} title="">
-      <div className={styles.menu}>
-        {menuItems.map((item, index) => (
-          <button
-            key={index}
-            className={styles.menuItem}
-            style={{ color: item.color ? item.color : undefined }}
-            onClick={() => item.onClick()}
-          >
-            {item.icon && <Icon as={item.icon} size="24px" inheritColor />}
-            <span className="btn-font-s" style={{ color: "inherit" }}>
-              {item.label}
-            </span>
-          </button>
-        ))}
-      </div>
+      <ActionsMenu items={menuItems} onClose={() => props.onClose()} />
     </BaseModal>
   );
 }

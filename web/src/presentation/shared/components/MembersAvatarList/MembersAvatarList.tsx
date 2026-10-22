@@ -1,33 +1,38 @@
 import clsx from "clsx";
 
-import type { UserId } from "@/domain/types";
+import { getUserDisplayName, type User } from "@/domain/models/User";
 
 import { UserAvatar } from "../UserAvatar";
 
 import styles from "./MembersAvatarList.module.css";
 
 interface MembersAvatarListProps {
-  memberIds: UserId[];
+  users: User[];
   maxVisible?: number;
   variant?: "small" | "standard" | "large";
   bgColor?: string;
 }
 
 export function MembersAvatarList({
-  memberIds,
+  users,
   maxVisible = 8,
   variant = "small",
   bgColor,
 }: MembersAvatarListProps) {
-  const visibleMembers = memberIds.slice(0, maxVisible);
-  const remainingCount = memberIds.length - maxVisible;
+  const visibleUsers = users.slice(0, maxVisible);
+  const remainingCount = users.length - maxVisible;
 
   const outlineStyle = { "--outline-color": bgColor } as React.CSSProperties;
 
   return (
     <div className={clsx(styles.membersList, styles[variant])} style={outlineStyle}>
-      {visibleMembers.map((memberId) => (
-        <UserAvatar key={memberId} variant={variant} />
+      {visibleUsers.map((user) => (
+        <UserAvatar
+          key={user.id}
+          variant={variant}
+          src={user.avatarUrl}
+          name={getUserDisplayName(user)}
+        />
       ))}
       {remainingCount > 0 && (
         <div className={styles.remainingCount}>

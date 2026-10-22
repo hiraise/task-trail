@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import type { ProjectMember } from "@/domain/models/ProjectMember";
+import { getUserDisplayName } from "@/domain/models/User";
 import type { UserId } from "@/domain/types";
 import { Icon } from "@/presentation/shared";
 import { UserItem } from "@/presentation/shared/components/UserItem/UserItem";
@@ -43,7 +44,7 @@ export function MembersListDesktop(props: MembersListProps) {
             onClick={() => onSelect(user)}
             role="button"
           >
-            <UserItem username={user.username} email={user.email} />
+            <UserItem username={getUserDisplayName(user)} email={user.email} />
             {user.id === userId && (
               <div className={styles.icon}>
                 <Icon as={ICONS.checkMark} size="16px" inheritColor />

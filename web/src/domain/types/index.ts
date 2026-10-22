@@ -1,2 +1,2 @@
 export * from "./EntityIds";
-export * from "./Permission";
+export * from "./ProjectRole";

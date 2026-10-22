@@ -4,6 +4,7 @@ import { selectProjectForTaskUseCase } from "@/application/usecases";
 import type { Project } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { TaskCreationDraft } from "@/domain/models/TaskCreationDraft";
+import { getUserDisplayName } from "@/domain/models/User";
 import type { ProjectId, UserId } from "@/domain/types";
 import { logger } from "@/infrastructure/config/clientLogger";
 
@@ -66,7 +67,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set, get) => 
       if (!state.draft || !projectMember) return state;
       const data: AssigneeData = {
         id: projectMember.id,
-        name: projectMember.username,
+        name: getUserDisplayName(projectMember),
         email: projectMember.email,
       };
 

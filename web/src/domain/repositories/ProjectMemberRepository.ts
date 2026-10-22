@@ -1,10 +1,12 @@
+import type { InvitationResult } from "../models/Invitation";
 import type { ProjectMember } from "../models/ProjectMember";
-import type { ProjectId, UserId } from "../types";
+import type { AssignableRole, ProjectId, UserId } from "../types";
 
 export interface ProjectMemberRepository {
-  findById(id: UserId): Promise<ProjectMember | null>;
   findByProjectId(projectId: ProjectId): Promise<ProjectMember[]>;
-  addByEmails(projectId: ProjectId, emails: string[]): Promise<void>;
-  removeMember(projectId: ProjectId, memberId: UserId): Promise<void>;
+  /** Зовёт в проект по почте; результат — по каждой почте в порядке запроса */
+  addByEmails(projectId: ProjectId, emails: string[]): Promise<InvitationResult[]>;
+  changeRole(projectId: ProjectId, userId: UserId, role: AssignableRole): Promise<ProjectMember>;
+  removeMember(projectId: ProjectId, userId: UserId): Promise<void>;
   leaveProject(projectId: ProjectId): Promise<void>;
 }

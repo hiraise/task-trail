@@ -9,6 +9,7 @@ import {
 } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
+/** Страница проекта: проект с ролью текущего пользователя, участники и задачи. */
 export const useProjectDetail = (projectId: ProjectId) => {
   const [projectQuery, membersQuery, tasksQuery] = useQueries({
     queries: [
@@ -28,20 +29,12 @@ export const useProjectDetail = (projectId: ProjectId) => {
   });
 
   const data = useMemo(() => {
-    if (!projectQuery.data || !membersQuery.data || !tasksQuery.data) {
-      return undefined;
-    }
-
-    const owner = membersQuery.data.find((member) => member.userRole === "OWNER");
-
-    if (!owner) {
-      return undefined;
-    }
+    if (!projectQuery.data || !membersQuery.data || !tasksQuery.data) return undefined;
 
     return {
       project: projectQuery.data,
       members: membersQuery.data,
-      owner,
+      owner: membersQuery.data.find((member) => member.role === "owner"),
       tasks: tasksQuery.data,
     };
   }, [projectQuery.data, membersQuery.data, tasksQuery.data]);
@@ -51,10 +44,5 @@ export const useProjectDetail = (projectId: ProjectId) => {
     isLoading: projectQuery.isLoading || membersQuery.isLoading || tasksQuery.isLoading,
     isError: projectQuery.isError || membersQuery.isError || tasksQuery.isError,
     error: projectQuery.error || membersQuery.error || tasksQuery.error,
-    refetch: () => {
-      projectQuery.refetch();
-      membersQuery.refetch();
-      tasksQuery.refetch();
-    },
   };
 };

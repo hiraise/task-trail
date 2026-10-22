@@ -184,7 +184,7 @@ function checkWebImports() {
 
 // Компонентов с Mobile/Desktop в имени не становится больше: новые экраны — один адаптивный
 // компонент (ADR-0008). Слил пару — снизь порог; превышение — ошибка, снижение — подсказка.
-const DEVICE_SPLIT_LIMIT = { Mobile: 23, Desktop: 21 };
+const DEVICE_SPLIT_LIMIT = { Mobile: 20, Desktop: 17 };
 
 function checkDeviceSplit() {
   const components = FILES.filter(

@@ -14,8 +14,7 @@ interface ProjectItemProps {
 }
 
 export function ProjectItem({ project, isSelected, onClick }: ProjectItemProps) {
-  const { data: members } = useProjectMembers(project.id);
-  const memberIds = members?.map((member) => member.id) || [];
+  const { data: members = [] } = useProjectMembers(project.id);
 
   return (
     <button
@@ -27,7 +26,7 @@ export function ProjectItem({ project, isSelected, onClick }: ProjectItemProps) 
         {project.description && <span className="body-reg-2">{project.description}</span>}
       </div>
       <div className={styles.infoWrapper}>
-        {memberIds.length > 0 && <MembersAvatarList memberIds={memberIds} />}
+        {members.length > 0 && <MembersAvatarList users={members} />}
         <span className="caption-reg">{pluralizeTasks(project.tasksCount)}</span>
       </div>
     </button>

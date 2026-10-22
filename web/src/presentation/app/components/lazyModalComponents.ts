@@ -36,6 +36,12 @@ export const InviteUserModal = lazy(() =>
   import("@/presentation/features/projects/modals").then((m) => ({ default: m.InviteUserModal })),
 );
 
+export const InvitationResultsModal = lazy(() =>
+  import("@/presentation/features/projects/modals").then((m) => ({
+    default: m.InvitationResultsModal,
+  })),
+);
+
 export const LeaveProjectModal = lazy(() =>
   import("@/presentation/features/projects/modals").then((m) => ({ default: m.LeaveProjectModal })),
 );

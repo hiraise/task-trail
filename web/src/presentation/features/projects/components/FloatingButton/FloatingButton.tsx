@@ -3,9 +3,9 @@ import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
 
-import styles from "./FloatingButtonDesktop.module.css";
+import styles from "./FloatingButton.module.css";
 
-export function FloatingButtonDesktop() {
+export function FloatingButton() {
   const { showCreateTask } = useGlobalModals();
 
   return (

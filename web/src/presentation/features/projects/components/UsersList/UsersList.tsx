@@ -1,7 +1,8 @@
 import { clsx } from "clsx";
-import { z } from "zod";
 
+import type { ProjectId } from "@/domain/types";
 import { Spinner } from "@/presentation/shared";
+import { emailField } from "@/presentation/shared/forms/fields";
 import { projectsTexts } from "@/shared/locales/projects";
 
 import { useGetProjectCandidates } from "../../hooks";
@@ -11,30 +12,25 @@ import { UserItemCheckBox } from "./UserItemCheckbox";
 import styles from "./UsersList.module.css";
 
 interface UsersListProps {
+  /** Проект, куда зовут: его участников в списке нет. Без него — новый проект */
+  projectId?: ProjectId;
   onUserSelect: (email: string) => void;
   selectedUsers?: string[];
   searchQuery?: string;
 }
 
-export function UsersList({ onUserSelect, selectedUsers = [], searchQuery = "" }: UsersListProps) {
-  const { data: usersToDisplay, isLoading } = useGetProjectCandidates();
-
-  if (!usersToDisplay || (usersToDisplay.length === 0 && !searchQuery)) {
-    return (
-      <div className={clsx(styles.container, styles.emptyState)}>
-        Уппппссс... Похоже, что у вас нет кандидатов для добавления в проект.
-      </div>
-    );
-  }
-
-  // Filter users based on search query
-  const filteredUsers = searchQuery
-    ? usersToDisplay.filter(
-        (user) =>
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.username?.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    : usersToDisplay;
+/**
+ * Кого позвать: люди из общих проектов (listProjectCandidates), поиск по имени и почте.
+ * Никого не нашли, а введена почта — её можно выбрать: незнакомой почте уйдёт приглашение.
+ */
+export function UsersList({
+  projectId,
+  onUserSelect,
+  selectedUsers = [],
+  searchQuery = "",
+}: UsersListProps) {
+  const { data: candidates = [], isLoading } = useGetProjectCandidates(projectId);
+  const query = searchQuery.trim().toLowerCase();
 
   if (isLoading) {
     return (
@@ -44,37 +40,43 @@ export function UsersList({ onUserSelect, selectedUsers = [], searchQuery = "" }
     );
   }
 
-  if (filteredUsers.length === 0) {
-    const isValidEmail = z.email().safeParse(searchQuery).success;
+  const found = query
+    ? candidates.filter(
+        (user) =>
+          user.email.includes(query) || user.username?.toLowerCase().includes(query),
+      )
+    : candidates;
 
-    return isValidEmail ? (
-      <div
-        className={clsx(styles.container, styles.selectUser)}
-        onClick={() => onUserSelect(searchQuery)}
-      >
-        <UserItem email={searchQuery} />
-      </div>
-    ) : (
-      <div className={clsx(styles.container, styles.emptyState)}>
-        {searchQuery && projectsTexts.userNotFound}
+  if (found.length > 0) {
+    return (
+      <div className={styles.container}>
+        {found.map((user) => (
+          <UserItemCheckBox
+            key={user.id}
+            user={user}
+            isSelected={selectedUsers.includes(user.email)}
+            onSelect={onUserSelect}
+          />
+        ))}
       </div>
     );
   }
 
-  return (
-    <div className={styles.container}>
-      {filteredUsers.map((user) => {
-        const isSelected = selectedUsers.some((selected) => selected === user.email);
+  if (emailField.safeParse(query).success) {
+    return (
+      <button
+        type="button"
+        className={clsx(styles.container, styles.selectUser)}
+        onClick={() => onUserSelect(query)}
+      >
+        <UserItem email={query} />
+      </button>
+    );
+  }
 
-        return (
-          <UserItemCheckBox
-            key={user.email}
-            email={user.email}
-            isSelected={isSelected}
-            onSelect={onUserSelect}
-          />
-        );
-      })}
+  return (
+    <div className={clsx(styles.container, styles.emptyState)}>
+      {query ? projectsTexts.userNotFound : projectsTexts.noCandidates}
     </div>
   );
 }

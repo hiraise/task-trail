@@ -19,3 +19,9 @@
 .selectUser {
   cursor: pointer;
 }
+
+button.selectUser {
+  border: none;
+  width: 100%;
+  text-align: left;
+}

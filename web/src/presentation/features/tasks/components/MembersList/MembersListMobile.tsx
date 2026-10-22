@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useState } from "react";
 
 import type { ProjectMember } from "@/domain/models/ProjectMember";
+import { getUserDisplayName } from "@/domain/models/User";
 import type { UserId } from "@/domain/types";
 import { UserItem } from "@/presentation/shared/components/UserItem/UserItem";
 import { Input } from "@/presentation/shared/ui/Input";
@@ -42,7 +43,7 @@ export function MembersListMobile(props: MembersListProps) {
             onClick={() => onSelect(user)}
             role="button"
           >
-            <UserItem username={user.username} email={user.email} />
+            <UserItem username={getUserDisplayName(user)} email={user.email} />
           </div>
         ))}
       </div>

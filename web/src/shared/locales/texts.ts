@@ -16,8 +16,6 @@ export const TEXTS = {
   searchPlaceholder: "Проект, доска, задача",
   emptySearch: "Чтобы что-то нашлось, нужно что-то ввести. Пока что тут пусто",
   userQueryPlaceholder: "Введите Email или имя пользователя",
-  userInviteDescription:
-    "Если пользователь не использует Tasktrail, то мы вышлем ему приглашение с ссылкой для подключения к проекту",
   showMore: "Показать больше",
   hide: "Скрыть",
   drawer: {
@@ -72,6 +70,7 @@ export const TEXTS = {
     makeAdmin: "Назначить администратором",
     kick: "Удалить участника",
     kickMemberDescription: "Вы действительно хотите удалить участника {displayName}?",
+    noMembers: "Пригласите участников, чтобы работать над задачами вместе.",
   },
   tasks: {
     edit: "Редактировать задачу",

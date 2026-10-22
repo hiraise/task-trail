@@ -1,6 +1,16 @@
+import type { InvitationResult } from "@/domain/models/Invitation";
+import type { Project, ProjectDetails } from "@/domain/models/Project";
+import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { CurrentUser, User } from "@/domain/models/User";
 
-import type { CurrentUser as CurrentUserDto, User as UserDto } from "../api/generated";
+import type {
+  CurrentUser as CurrentUserDto,
+  InvitationResult as InvitationResultDto,
+  Member as MemberDto,
+  ProjectDetails as ProjectDetailsDto,
+  Project as ProjectDto,
+  User as UserDto,
+} from "../api/generated";
 import { fileUrl } from "../config/apiRoutes";
 
 // Ответы API приходят в типах из контракта (ADR-0020) и переводятся в модели domain здесь,
@@ -16,4 +26,28 @@ export const toUser = (dto: UserDto): User => ({
 export const toCurrentUser = (dto: CurrentUserDto): CurrentUser => ({
   ...toUser(dto),
   isAdmin: dto.isAdmin,
+});
+
+export const toProject = (dto: ProjectDto): Project => ({
+  id: dto.id,
+  name: dto.name,
+  description: dto.description ?? undefined,
+  createdAt: dto.createdAt,
+  tasksCount: dto.tasksCount,
+});
+
+export const toProjectDetails = (dto: ProjectDetailsDto): ProjectDetails => ({
+  ...toProject(dto),
+  role: dto.role,
+});
+
+export const toProjectMember = (dto: MemberDto): ProjectMember => ({
+  ...toUser(dto),
+  role: dto.role,
+});
+
+export const toInvitationResult = (dto: InvitationResultDto): InvitationResult => ({
+  email: dto.email,
+  outcome: dto.result,
+  inviteUrl: dto.inviteUrl ?? undefined,
 });

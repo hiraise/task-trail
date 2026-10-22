@@ -6,7 +6,7 @@ import { useGetProjectTasks } from "@/presentation/shared/hooks";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { FloatingButtonDesktop, TaskList } from "../../components";
+import { FloatingButton, TaskList } from "../../components";
 
 export function ProjectTasksMobilePage() {
   const { id } = useParams({ from: "/_main/projects/$id/tasks/" });
@@ -26,7 +26,7 @@ export function ProjectTasksMobilePage() {
       >
         <TaskList tasks={tasks} />
       </PagesMobileTemplate>
-      <FloatingButtonDesktop />
+      <FloatingButton />
     </>
   );
 }

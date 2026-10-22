@@ -13,7 +13,7 @@ export function LeaveProject({ name }: { name: string }) {
         <Icon as={DESIGN_ELEMENTS.leave} size="32px" />
       </div>
       <span className="body-reg">
-        {name && interpolate(TEXTS.projects.deleteDescription, { projectName: name })}
+        {name && interpolate(TEXTS.projects.leaveDescription, { projectName: name })}
       </span>
     </div>
   );

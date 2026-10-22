@@ -1,51 +1,27 @@
-import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import type { LeaveProjectPayload } from "@/application/payloads";
-import { logger } from "@/infrastructure/config/clientLogger";
 import { projectMemberRepository } from "@/infrastructure/repositories";
+import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+import { toastError } from "@/shared/errors/errorMessage";
+import { projectsTexts } from "@/shared/locales/projects";
 
-/**
- * Custom hook to handle the process of leaving a project.
- *
- * This hook provides a mutation that allows a user to leave a project by calling the `leaveProject` function
- * from the `projectMemberRepository`. It also manages query invalidation and navigation upon success or failure.
- *
- * @returns A mutation object from `useMutation` that can be used to trigger the leave project action.
- *
- * @example
- * const leaveProjectMutation = useLeaveProject();
- * leaveProjectMutation.mutate({ projectId: "123" });
- *
- * @remarks
- * - On success, the hook removes related project queries from the cache, navigates to the projects page,
- *   and displays a success toast message.
- * - On error, it logs the error and displays an error toast message.
- * - On settled (whether success or error), it invalidates the projects query to ensure data consistency.
- *
- * @see {@link useMutation} for more details on the mutation object.
- * @see {@link QUERY_KEYS} for query key definitions.
- */
+/** Выход из проекта (администратор или участник; владелец — OWNER_CANNOT_LEAVE). */
 export function useLeaveProject() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { leaveProject } = projectMemberRepository;
 
   return useMutation<void, Error, LeaveProjectPayload>({
-    mutationFn: (payload) => leaveProject(payload.projectId),
+    mutationFn: ({ projectId }) => projectMemberRepository.leaveProject(projectId),
     onSuccess: (_, { projectId }) => {
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.project.detail(projectId) });
-      navigate({ to: "/projects", replace: true });
-      toast.success("You have left the project");
+      toast.success(projectsTexts.projectLeft);
+      navigate({ to: ROUTES.projects, replace: true });
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.invalidate.project(projectId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.all });
     },
-    onError: (error) => {
-      logger.error("Failed to leave project", { error });
-      toast.error("Failed to leave project. Please try again.");
-    },
-    onSettled: (_, __, { projectId }) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(projectId) });
-    },
+    onError: (error) => toastError(error, projectsTexts.leaveProjectFailed),
   });
 }

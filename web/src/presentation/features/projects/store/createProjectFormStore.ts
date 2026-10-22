@@ -1,85 +1,27 @@
 import { create } from "zustand";
 
-import { ProjectCreationDraft } from "@/domain/models/ProjectCreationDraft";
+// Черновик нового проекта. Окна открываются стеком и показывается только верхнее: пока открыто
+// окно выбора участников, форма проекта размонтирована, поэтому её поля живут здесь, а не
+// в состоянии формы. Черновик стирается после создания проекта.
 
 interface CreateProjectFormState {
-  draft: ProjectCreationDraft | null;
-  initialize: () => void;
+  name: string;
+  description: string;
+  emails: string[];
   setName: (name: string) => void;
   setDescription: (description: string) => void;
-  addParticipant: (email: string) => void;
-  removeParticipant: (email: string) => void;
-  toggleParticipant: (email: string) => void;
-  setParticipants: (emails: string[]) => void;
+  setEmails: (emails: string[]) => void;
+  removeEmail: (email: string) => void;
   reset: () => void;
 }
 
+const empty = { name: "", description: "", emails: [] };
+
 export const useCreateProjectFormStore = create<CreateProjectFormState>((set) => ({
-  draft: null,
-
-  initialize: () => {
-    set((state) => {
-      if (state.draft) return state;
-
-      return { draft: new ProjectCreationDraft() };
-    });
-  },
-
-  setName: (name: string) => {
-    set((state) => {
-      if (!state.draft) return state;
-      state.draft.setName(name);
-
-      return { draft: state.draft };
-    });
-  },
-
-  setDescription: (description: string) => {
-    set((state) => {
-      if (!state.draft) return state;
-      state.draft.setDescription(description);
-
-      return { draft: state.draft };
-    });
-  },
-
-  addParticipant: (email: string) => {
-    set((state) => {
-      if (!state.draft) return state;
-      state.draft.addMemberByEmail(email);
-
-      return { draft: state.draft };
-    });
-  },
-
-  removeParticipant: (email: string) => {
-    set((state) => {
-      if (!state.draft) return state;
-      state.draft.removeMember(email);
-
-      return { draft: state.draft };
-    });
-  },
-
-  toggleParticipant: (email: string) => {
-    set((state) => {
-      if (!state.draft) return state;
-      state.draft.toggleMember(email);
-
-      return { draft: state.draft };
-    });
-  },
-
-  setParticipants: (emails: string[]) => {
-    set((state) => {
-      if (!state.draft) return state;
-      state.draft.setMembers(emails);
-
-      return { draft: state.draft };
-    });
-  },
-
-  reset: () => {
-    set({ draft: null });
-  },
+  ...empty,
+  setName: (name) => set({ name }),
+  setDescription: (description) => set({ description }),
+  setEmails: (emails) => set({ emails }),
+  removeEmail: (email) => set((state) => ({ emails: state.emails.filter((e) => e !== email) })),
+  reset: () => set(empty),
 }));

@@ -28,10 +28,10 @@ export const API_ROUTES = {
   // PROJECTS API
   PROJECTS: PROJECTS,
   PROJECT_BY_ID: (id: ProjectId) => `${PROJECTS}/${id}`,
-  PROJECT_MEMBERS: (id?: ProjectId) => `${PROJECTS}${id ? `/${id}` : ""}/members`,
+  PROJECT_MEMBERS: (id: ProjectId) => `${PROJECTS}/${id}/members`,
+  PROJECT_MEMBER: (projectId: ProjectId, userId: UserId) =>
+    `${PROJECTS}/${projectId}/members/${userId}`,
   GET_CANDIDATES: `${PROJECTS}/candidates`,
-  KICK_MEMBER: (projectId: ProjectId, memberId: UserId) =>
-    `${PROJECTS}/${projectId}/members/${memberId}`,
   LEAVE_PROJECT: (id: ProjectId) => `${PROJECTS}/${id}/leave`,
   PROJECT_TASKS: (id: ProjectId) => `${PROJECTS}/${id}/tasks`,
   PROJECT_STATUSES: (id: ProjectId) => `${PROJECTS}/${id}/tasks/statuses`,
