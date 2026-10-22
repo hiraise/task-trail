@@ -11,8 +11,8 @@ import { toastError } from "@/shared/errors/errorMessage";
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 
 /**
- * Вход. После входа — на страницу, с которой отправила на вход защита маршрутов (`from`),
- * иначе в проекты.
+ * Sign-in. After it, go to the page from which route protection sent to sign-in (`from`),
+ * otherwise to projects.
  */
 export function useLogin() {
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export function useLogin() {
     mutationFn: (payload) => authRepository.login(payload.email, payload.password),
     onSuccess: (user) => {
       toast.success(successTexts.loginSuccess);
-      // Защита маршрутов перечитает состояние входа, а текущий пользователь уже известен
+      // Route protection will refetch the sign-in state, and the current user is already known
       queryClient.removeQueries({ queryKey: QUERY_KEYS.auth.session });
       queryClient.setQueryData(QUERY_KEYS.user.current, user);
       navigate({ to: from, replace: true });

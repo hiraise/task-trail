@@ -9,13 +9,13 @@ import styles from "./FormSelectionOptions.module.css";
 interface SelectionFieldProps {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   placeholder: string;
-  /** Выбранное значение; не выбрано — подсказка */
+  /** Selected value; nothing selected — the hint */
   value?: string;
   invalid?: boolean;
   onClick: () => void;
 }
 
-/** Поле формы, значение которого выбирают в отдельном окне: ответственный, проект. */
+/** A form field whose value is picked in a separate modal: assignee, project. */
 export function SelectionField({ icon, placeholder, value, invalid, onClick }: SelectionFieldProps) {
   return (
     <button

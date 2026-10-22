@@ -10,9 +10,9 @@ import { adminTexts } from "@/shared/locales/admin";
 import { interpolate } from "@/shared/utils/interpolate";
 
 /**
- * Письмо со ссылкой сброса пароля пользователю — тем же запросом, что «Забыли пароль» на входе:
- * с почтой администратору не нужно передавать ссылку самому (ADR-0017). Письмо не ушло —
- * подсказываем выдать ссылку из того же меню.
+ * A password reset email to a user, with the same request as "Forgot password" on sign-in:
+ * with mail the administrator does not need to hand over the link personally (ADR-0017). Email not sent:
+ * suggest issuing a link from the same menu.
  */
 export function useSendPasswordResetMail() {
   const queryClient = useQueryClient();
@@ -23,7 +23,7 @@ export function useSendPasswordResetMail() {
       toast.success(interpolate(adminTexts.resetMailSent, { email }));
     },
     onError: (error) => {
-      // Почту успели отключить — перечитываем настройки, меню покажет только ссылку
+      // Mail was disabled meanwhile: refetch the settings, the menu will show only the link
       if (hasErrorCode(error, "MAIL_DISABLED")) {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.settings });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.settings.public });

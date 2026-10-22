@@ -33,7 +33,7 @@ export const navItems: NavMenuItem[] = [
   },
 ];
 
-/** Раздел администратора сервиса — в меню только у администратора (ADR-0014) */
+/** Service administrator section: in the menu only for the administrator (ADR-0014) */
 export const adminItem: NavMenuItem = {
   href: ROUTES.admin,
   icon: ASSETS.icons.settings,

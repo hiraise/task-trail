@@ -8,7 +8,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { toastError } from "@/shared/errors/errorMessage";
 import { projectsTexts } from "@/shared/locales/projects";
 
-/** Меняет название или описание; сервер отвечает изменённым проектом (ADR-0018). */
+/** Changes the name or description; the server responds with the updated project (ADR-0018). */
 export function useEditProject() {
   const queryClient = useQueryClient();
 

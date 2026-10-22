@@ -10,15 +10,15 @@ import styles from "./TaskList.module.css";
 
 interface TaskListProps {
   tasks: Task[];
-  /** Названия проектов по ID — строка над названием задачи */
+  /** Project names by ID — the line above the task name */
   projectNames: Map<ProjectId, string>;
-  /** Ответственный: в «Моих задачах» — текущий пользователь */
+  /** Assignee: in "My tasks" — the current user */
   assignee?: User;
 }
 
 /**
- * Задачи карточками. Над названием — проект задачи: ключей вида `DS-1` из макета ещё нет
- * (этап 2, docs/roadmap.md), а в макете телефона на этом месте бывает и название проекта.
+ * Tasks as cards. The task's project is above the name: keys like `DS-1` from the mockup do not exist
+ * yet (stage 2, docs/roadmap.md), and the phone mockup sometimes shows the project name there too.
  */
 export function TaskList({ tasks, projectNames, assignee }: TaskListProps) {
   return (

@@ -11,7 +11,7 @@ import { schema, type FormValues } from "./schema";
 
 interface EditTaskFormProps {
   task: Task;
-  /** Изменения — только то, что поменяли; ничего не поменяли — пустой объект */
+  /** Only the changed fields; nothing changed — an empty object */
   onSubmit: (changes: TaskChanges) => Promise<void>;
 }
 
@@ -28,7 +28,7 @@ export function EditTaskForm({ task, onSubmit }: EditTaskFormProps) {
 
   const submitHandler = async (values: FormValues) => {
     const changes: TaskChanges = {};
-    // Пустое описание — описания нет (null в контракте)
+    // Empty description — no description (null in the contract)
     const description = values.description || null;
 
     if (values.name !== task.name) changes.name = values.name;

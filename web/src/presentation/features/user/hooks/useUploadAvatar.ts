@@ -8,7 +8,7 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { toastError } from "@/shared/errors/errorMessage";
 import { TEXTS } from "@/shared/locales/texts";
 
-/** Аватарка текущего пользователя: JPEG, PNG или WebP до 5 МБ (ADR-0013). */
+/** Avatar of the current user: JPEG, PNG or WebP up to 5 MB (ADR-0013). */
 export function useUploadAvatar() {
   const queryClient = useQueryClient();
 

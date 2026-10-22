@@ -18,7 +18,7 @@ import type { CreateTaskFormData } from "./schema";
 import { CreateTaskSchema } from "./schema";
 
 interface CreateTaskFormProps {
-  /** Закрыть окно формы: задача создана */
+  /** Close the form modal: the task is created */
   onSubmit: () => void;
 }
 
@@ -40,17 +40,17 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
   } = useForm<CreateTaskFormData>({
     resolver: zodResolver(CreateTaskSchema),
     mode: "onChange",
-    // Проект выбирают в своём окне — форма к тому времени уже смонтирована заново из черновика
+    // The project is picked in its own modal — by then the form is remounted from the draft
     defaultValues: { name: store.name, description: store.description, projectId: projectId ?? "" },
   });
 
-  // Поля — в черновике: окна выбора проекта и ответственного закрывают форму (createTaskFormStore.ts)
+  // Fields live in the draft: the project and assignee pickers close the form (createTaskFormStore.ts)
   const [name, description] = useWatch({ control, name: ["name", "description"] });
 
   useEffect(() => setName(name ?? ""), [name, setName]);
   useEffect(() => setDescription(description ?? ""), [description, setDescription]);
 
-  // Сменили проект — ответственный, который не его участник, снимается: сервер его не примет
+  // Project changed — an assignee who is not its member is cleared: the server would reject them
   useEffect(() => {
     if (members && assigneeId && !members.some((member) => member.id === assigneeId)) {
       setAssigneeId(undefined);
@@ -70,7 +70,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
   };
 
   const submitHandler = async (values: CreateTaskFormData) => {
-    // Проект из старого черновика мог стать недоступен: из него вышли или его удалили
+    // The project from an old draft may be unavailable now: the user left it or it was deleted
     if (!project) {
       setError("projectId", { message: tasksTexts.requiredField });
 
@@ -87,7 +87,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
       store.reset();
       onSubmit();
     } catch {
-      // Ошибку показал useCreateTask
+      // useCreateTask has shown the error
     }
   };
 

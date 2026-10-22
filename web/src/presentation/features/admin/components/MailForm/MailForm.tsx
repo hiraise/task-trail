@@ -24,10 +24,10 @@ const ENCRYPTIONS = [
 ] as const;
 
 /**
- * Настройки SMTP (ADR-0017). Сохранение проверяет подключение на сервере до 10 секунд — поля
- * на это время заблокированы. Тестовое письмо и отключение видны, пока форма не изменена: они
- * работают с сохранёнными настройками. В карточке раздела — «Отменить» и «Сохранить» по
- * изменению, без почты — «Подключить»; на телефоне — кнопка внизу страницы.
+ * SMTP settings (ADR-0017). Saving checks the connection on the server for up to 10 seconds; the fields
+ * are disabled meanwhile. Test email and disabling are visible while the form is unchanged: they
+ * work with the saved settings. In the section card, "Cancel" and "Save" appear on
+ * change, without mail "Connect"; on a phone, a button at the bottom of the page.
  */
 export function MailForm({ layout }: { layout: FormLayout }) {
   const inline = layout === "inline";
@@ -122,7 +122,7 @@ interface MailFormFooterProps {
   onCancel: () => void;
 }
 
-/** Текст кнопки и подсказка: идёт проверка, сохранить настройки или подключить почту. */
+/** Button text and hint: checking in progress, save the settings, or connect mail. */
 function footerTexts(connected: boolean, submitting: boolean) {
   if (submitting) return { submitLabel: texts.checkingButton, hint: texts.checking };
   if (connected) return { submitLabel: TEXTS.save, hint: undefined };
@@ -160,8 +160,8 @@ function MailFormFooter(props: MailFormFooterProps) {
 }
 
 /**
- * Без почты «Подключить» видна всегда; с почтой — «Отменить» и «Сохранить» только по изменению:
- * фокус от кнопок тестового письма и отключения не должен их показывать.
+ * Without mail "Connect" is always visible; with mail, "Cancel" and "Save" only on change:
+ * focus on the test email and disable buttons must not show them.
  */
 function InlineButtons({
   connected,

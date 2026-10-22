@@ -23,7 +23,7 @@
   overflow-wrap: anywhere;
 }
 
-/* Переносы строк описания — как ввёл автор */
+/* Description line breaks — as the author typed them */
 .description {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

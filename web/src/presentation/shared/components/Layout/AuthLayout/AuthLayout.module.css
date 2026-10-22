@@ -1,5 +1,5 @@
-/* Брейкпоинты — как в presentation/shared/hooks/useDevice.ts: до 767 px телефон,
-   768–1024 px планшет, от 1025 px десктоп (ADR-0008) */
+/* Breakpoints as in presentation/shared/hooks/useDevice.ts: up to 767 px phone,
+   768–1024 px tablet, from 1025 px desktop (ADR-0008) */
 
 .container {
   display: flex;
@@ -21,7 +21,7 @@
   display: inline-flex;
 }
 
-/* Один логотип на все ширины: на телефоне он ниже — 32 px вместо 40 */
+/* One logo for all widths: on a phone it is smaller, 32 px instead of 40 */
 .logo {
   display: block;
   width: auto;

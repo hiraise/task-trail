@@ -6,7 +6,7 @@ import { adminTexts } from "@/shared/locales/admin";
 
 const texts = adminTexts.mail;
 
-// Пределы — как в MailSettingsRequest контракта; адрес отправителя проверяет сервер
+// Limits as in MailSettingsRequest of the contract; the server checks the sender address
 export const schema = z.object({
   host: z.string().trim().min(1, texts.hostRequired),
   port: z
@@ -32,8 +32,8 @@ export const toFormValues = (mail?: MailSettings): FormValues => ({
 });
 
 /**
- * Пустой пароль — поля `password` в запросе нет: сервер оставит сохранённый (ADR-0015). Без логина
- * входа на SMTP нет, и пароль сервер не хранит.
+ * Empty password: no `password` field in the request, the server keeps the saved one (ADR-0015). Without a login
+ * there is no SMTP auth, and the server does not store a password.
  */
 export const toNewMailSettings = (values: FormValues): NewMailSettings => ({
   host: values.host,

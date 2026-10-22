@@ -16,7 +16,7 @@
   border-bottom: none;
 }
 
-/* Телефон — одна колонка; шире — две, на больших экранах больше (макет «Адаптация») */
+/* Phone — one column; wider — two, more on large screens (adaptive layout mockup) */
 .members {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

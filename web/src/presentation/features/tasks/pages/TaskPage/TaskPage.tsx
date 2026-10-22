@@ -15,9 +15,9 @@ import { useTaskDetail, useTaskMenuItems } from "../../hooks";
 import styles from "./TaskPage.module.css";
 
 /**
- * Страница задачи — из «Моих задач» (`/tasks/$taskId`) и из проекта (`/projects/$id/tasks/$taskId`).
- * На телефоне — верхняя панель с меню задачи в нижней панели; с 768 px — карточки и меню «…»
- * у названия. Раскладку переключает CSS (ADR-0008).
+ * Task page — from "My tasks" (`/tasks/$taskId`) and from a project (`/projects/$id/tasks/$taskId`).
+ * On a phone — a top bar with the task menu in a bottom sheet; from 768 px — cards and a "…" menu
+ * next to the name. CSS switches the layout (ADR-0008).
  */
 export function TaskPage({ taskId }: { taskId: TaskId }) {
   const { data, error } = useTaskDetail(taskId);
@@ -56,7 +56,7 @@ export function TaskPage({ taskId }: { taskId: TaskId }) {
       );
     }
 
-    // Пока грузится — те же карточки пустыми: экран не пустеет и не прыгает
+    // While loading — the same cards, empty: the screen does not go blank or jump
     return (
       <>
         <section className={styles.section} aria-busy="true" />
@@ -80,7 +80,7 @@ export function TaskPage({ taskId }: { taskId: TaskId }) {
   );
 }
 
-/** Задачу перенесли в другой проект — адрес из проекта ведёт в новый проект. */
+/** The task moved to another project — the project-based URL leads to the new project. */
 function useProjectInPath(projectId: string | undefined, taskId: TaskId) {
   const navigate = useNavigate();
   const { id: pathProjectId } = useParams({ strict: false });

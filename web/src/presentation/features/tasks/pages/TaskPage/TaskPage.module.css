@@ -1,5 +1,5 @@
-/* До 767 px — телефон: верхняя панель и секции во всю ширину, прокручиваются секции.
-   С 768 px — карточки внутри DesktopTemplate (брейкпоинты — presentation/shared/hooks/useDevice.ts). */
+/* Up to 767 px — phone: top bar and full-width sections; the sections scroll.
+   From 768 px — cards inside DesktopTemplate (breakpoints — presentation/shared/hooks/useDevice.ts). */
 .page {
   display: flex;
   flex-direction: column;

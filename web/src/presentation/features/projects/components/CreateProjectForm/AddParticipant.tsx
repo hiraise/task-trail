@@ -9,7 +9,7 @@ interface AddParticipantProps {
 
 export function AddParticipant({ onClick }: AddParticipantProps) {
   return (
-    // type="button": кнопка внутри формы проекта и не должна её отправлять
+    // type="button": the button is inside the project form and must not submit it
     <SubmitButton type="button" className={styles.container} variant="text" onClick={onClick}>
       <Icon as={ICONS.plus} size="24px" />
       <span className={styles.buttonText}>Пригласить участника</span>

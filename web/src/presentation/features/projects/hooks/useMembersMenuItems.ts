@@ -14,9 +14,9 @@ import { useProject } from "./useProject";
 import { useRemoveMember } from "./useRemoveMember";
 
 /**
- * Действия с участником по роли текущего пользователя: роли меняет владелец, исключает владелец
- * (любого, кроме себя) или администратор (только участников). Себя в меню нет — из проекта
- * выходят через меню проекта.
+ * Member actions based on the current user's role: the owner changes roles; the owner removes
+ * (anyone but themselves) or an admin removes (members only). There is no self entry — users
+ * leave via the project menu.
  */
 export const useMembersMenuItems = (member: ProjectMember, projectId: ProjectId) => {
   const { data: project } = useProject(projectId);

@@ -36,8 +36,8 @@ interface ChangePasswordFormProps {
 }
 
 /**
- * Смена пароля. В карточке профиля после успеха форма очищается, на отдельной странице —
- * возврат в профиль.
+ * Password change. In the profile card the form is cleared after success, on a separate page it
+ * returns to the profile.
  */
 export function ChangePasswordForm({ layout }: ChangePasswordFormProps) {
   const inline = layout === "inline";
@@ -63,7 +63,7 @@ export function ChangePasswordForm({ layout }: ChangePasswordFormProps) {
     try {
       await changePassword({ oldPassword: data.oldPassword, newPassword: data.newPassword });
     } catch {
-      return; // ошибку показал useChangePassword
+      return; // useChangePassword has shown the error
     }
 
     if (!inline) {

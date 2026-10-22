@@ -8,11 +8,11 @@ import { interpolate } from "@/shared/utils/interpolate";
 
 const texts = projectsTexts.invitations;
 
-/** Пригласившему нужно что-то сделать: отправить ссылку сам или позвать снова (ADR-0017). */
+/** The inviter must act: send a link themselves or invite again (ADR-0017). */
 export const needsAttention = (results: InvitationResult[]): boolean =>
   results.some((result) => result.inviteUrl || result.outcome === "mail_failed");
 
-/** Короткий итог для тоста: сколько добавлено, приглашено и уже было в проекте. */
+/** Short summary for a toast: how many were added, invited and already in the project. */
 export function invitationSummary(results: InvitationResult[]): string {
   const count = (outcome: InvitationResult["outcome"]) =>
     results.filter((result) => result.outcome === outcome).length;
@@ -29,9 +29,9 @@ export function invitationSummary(results: InvitationResult[]): string {
 }
 
 /**
- * Показывает результат приглашения по каждой почте. Ссылки для отправки вручную (почта
- * выключена) и письма, которые не ушли, — в окне InvitationResultsModal; остальное — тостом.
- * Вызывай, когда окно, из которого звали, уже закрыто: окна открываются стеком.
+ * Shows the invitation result per email. Links to send manually (mail disabled) and emails
+ * that were not sent go to the InvitationResultsModal; the rest — to a toast.
+ * Call it after the modal that invited is closed: modals open as a stack.
  */
 export function useInvitationReport() {
   const { showInvitationResults } = useGlobalModals();

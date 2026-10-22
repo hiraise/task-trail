@@ -7,7 +7,7 @@ import { useOpenCreateTask } from "../../../tasks/hooks";
 
 import styles from "./FloatingButton.module.css";
 
-/** «Создать задачу» на странице проекта: форма открывается сразу с этим проектом. */
+/** "Create task" on the project page: the form opens with this project preselected. */
 export function FloatingButton({ projectId }: { projectId: ProjectId }) {
   const openCreateTask = useOpenCreateTask();
 

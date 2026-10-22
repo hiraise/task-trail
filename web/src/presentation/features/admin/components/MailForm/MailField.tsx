@@ -19,7 +19,7 @@ interface MailFieldProps {
   password?: boolean;
 }
 
-/** Поле формы почты: подпись, ввод и ошибка либо подсказка под ним. */
+/** Mail form field: label, input, and an error or a hint below it. */
 export function MailField(props: MailFieldProps) {
   const { name, label, labelClass, input, error, disabled, placeholder, hint, wide, password } =
     props;

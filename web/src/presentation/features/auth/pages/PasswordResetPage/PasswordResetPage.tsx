@@ -9,8 +9,8 @@ import { AuthScreen, PasswordResetForm } from "../../components";
 import { useResetPassword } from "../../hooks";
 
 /**
- * Новый пароль по ссылке `<адрес сервиса>/auth/reset?token=…`. Ссылка неверна, истекла или
- * уже использована (`LINK_INVALID`) — предлагаем запросить новую.
+ * A new password via the link `<service URL>/auth/reset?token=…`. If the link is wrong, expired or
+ * already used (`LINK_INVALID`), suggest requesting a new one.
  */
 export function PasswordResetPage() {
   const navigate = useNavigate();

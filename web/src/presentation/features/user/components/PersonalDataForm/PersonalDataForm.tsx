@@ -22,7 +22,7 @@ interface PersonalDataFormProps {
   layout: FormLayout;
 }
 
-/** Имя и почта текущего пользователя; почту сервер менять пока не даёт. */
+/** Name and email of the current user; the server does not allow changing the email yet. */
 export function PersonalDataForm({ layout }: PersonalDataFormProps) {
   const inline = layout === "inline";
   const { data: user } = useGetCurrentUser();
@@ -55,7 +55,7 @@ export function PersonalDataForm({ layout }: PersonalDataFormProps) {
       try {
         await update({ username: data.username });
       } catch {
-        return; // ошибку показал useUpdateUser
+        return; // useUpdateUser has shown the error
       }
     }
     setFocused(false);

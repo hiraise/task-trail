@@ -11,7 +11,7 @@ import { useBoardMenuItems } from "../../hooks";
 import styles from "./BoardListItem.module.css";
 
 export function BoardListItem({ board }: { board: MockBoardDto }) {
-  // Доски — заглушка с выдуманными людьми: их внешние аватарки не грузим
+  // Boards are a stub with made-up people: their external avatars are not loaded
   const members = board.members.map((member) => ({ ...member, avatarUrl: undefined }));
 
   const { menuItems } = useBoardMenuItems();

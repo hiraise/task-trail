@@ -9,7 +9,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { AssigneeList } from "../../components";
 
-/** Ответственный — из участников проекта задачи; на телефоне окно закрывается выбором. */
+/** Assignee — one of the task project's members; on a phone the modal closes on selection. */
 export function SelectAssigneeModal(props: BaseModalProps<ProjectMember>) {
   const { onClose, ...rest } = props;
   const { projectId, userId } = useGlobalModalProps<SelectAssigneeProps>() ?? {};

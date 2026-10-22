@@ -9,8 +9,8 @@ const values: FormValues = {
   password: "",
 };
 
-describe("форма почты → запрос", () => {
-  it("пустой пароль — поля password нет: сервер оставит сохранённый", () => {
+describe("mail form → request", () => {
+  it("empty password: no password field, the server keeps the saved one", () => {
     const request = toNewMailSettings(values);
 
     expect(request).toEqual({
@@ -23,25 +23,25 @@ describe("форма почты → запрос", () => {
     expect("password" in request).toBe(false);
   });
 
-  it("введённый пароль уходит строкой", () => {
+  it("an entered password is sent as a string", () => {
     expect(toNewMailSettings({ ...values, password: "secret" }).password).toBe("secret");
   });
 
-  it("без логина — username: null, пароль не отправляется", () => {
+  it("without a login: username null, the password is not sent", () => {
     const request = toNewMailSettings({ ...values, username: "", password: "secret" });
 
     expect(request.username).toBeNull();
     expect("password" in request).toBe(false);
   });
 
-  it("порт — число от 1 до 65535", () => {
+  it("port is a number from 1 to 65535", () => {
     expect(schema.safeParse({ ...values, port: "0" }).success).toBe(false);
     expect(schema.safeParse({ ...values, port: "65536" }).success).toBe(false);
     expect(schema.safeParse({ ...values, port: "25a" }).success).toBe(false);
     expect(schema.safeParse({ ...values, port: "465" }).success).toBe(true);
   });
 
-  it("без почты — пустая форма со STARTTLS", () => {
+  it("without mail: an empty form with STARTTLS", () => {
     expect(toFormValues(undefined)).toEqual({
       host: "",
       port: "",

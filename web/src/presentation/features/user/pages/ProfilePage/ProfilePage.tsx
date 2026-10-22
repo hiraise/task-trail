@@ -10,9 +10,9 @@ import { useGetCurrentUser } from "../../hooks";
 import styles from "./ProfilePage.module.css";
 
 /**
- * Профиль. На телефоне — шапка, кнопки на отдельные страницы данных и пароля (администратору —
- * и в раздел администратора: шире он в боковом меню) и выход внизу;
- * с 768 px — карточка с формами прямо на странице. Раскладку переключает CSS.
+ * Profile. On a phone: the header, buttons to separate pages for data and password (for an administrator,
+ * also to the administrator section: wider, it is in the side menu) and sign-out at the bottom;
+ * from 768 px, a card with forms right on the page. CSS switches the layout.
  */
 export function ProfilePage() {
   const { data: user } = useGetCurrentUser();

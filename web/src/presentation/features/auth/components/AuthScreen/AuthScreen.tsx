@@ -5,16 +5,16 @@ import styles from "./AuthScreen.module.css";
 interface AuthScreenProps {
   title: string;
   description?: React.ReactNode;
-  /** Декоративные иконки карточки — только на десктопе, как в макетах */
+  /** Decorative card icons: desktop only, as in the mockups */
   decorations?: React.ReactNode;
-  /** Строка внизу экрана, например «Нет аккаунта? Зарегистрироваться» */
+  /** Line at the bottom of the screen, e.g. "No account? Sign up" */
   footer?: React.ReactNode;
   children?: React.ReactNode;
 }
 
 /**
- * Экран доступа: на телефоне и планшете содержимое лежит прямо на странице, на десктопе —
- * в белой карточке по центру (Figma, страница «Вход»).
+ * Auth screen: on a phone and a tablet the content sits right on the page, on a desktop
+ * in a white card in the center (Figma, page "Sign in").
  */
 export function AuthScreen({ title, description, decorations, footer, children }: AuthScreenProps) {
   return (
@@ -38,7 +38,7 @@ export function AuthScreen({ title, description, decorations, footer, children }
   );
 }
 
-/** Нижняя строка экрана: приглушённый текст и ссылка. */
+/** Bottom line of the screen: muted text and a link. */
 export function AuthFooterText({ children }: { children: React.ReactNode }) {
   return <span className={clsx("body-reg-2", styles.footerText)}>{children}</span>;
 }

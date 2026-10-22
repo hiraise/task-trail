@@ -30,7 +30,7 @@ const statusText = (result: InvitationResult): string => {
 
 async function copyLink(url: string) {
   try {
-    // Буфер обмена есть только на https и localhost — иначе ссылку копируют из поля руками
+    // The clipboard is available only on https and localhost — otherwise the link is copied from the field by hand
     await navigator.clipboard.writeText(url);
     toast.success(texts.linkCopied);
   } catch {
@@ -39,9 +39,9 @@ async function copyLink(url: string) {
 }
 
 /**
- * Результат приглашения по каждой почте (ADR-0017): без почты сервиса — ссылки, которые
- * пригласивший отправляет сам; письмо не ушло — «Пригласить снова» создаёт новое приглашение
- * и шлёт новое письмо. Открывает его useInvitationReport, когда тосту не хватает места.
+ * Invitation result per email (ADR-0017): without service mail — links the inviter sends
+ * themselves; email not sent — "Invite again" creates a new invitation and sends a new
+ * email. Opened by useInvitationReport when a toast is not enough.
  */
 export function InvitationResultsModal(props: BaseModalProps<void>) {
   const { projectId, results: initial = [] } =
@@ -60,7 +60,7 @@ export function InvitationResultsModal(props: BaseModalProps<void>) {
 
       setResults((prev) => prev.map((result) => byEmail.get(result.email) ?? result));
     } catch {
-      // Ошибку показал useAddMembers
+      // useAddMembers has shown the error
     }
   };
 

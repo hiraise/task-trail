@@ -8,7 +8,7 @@ import { tasksTexts } from "@/shared/locales/tasks";
 
 import { storeTask } from "./taskCache";
 
-/** Назначает исполнителя из участников проекта задачи (иначе ASSIGNEE_NOT_MEMBER). */
+/** Assigns a member of the task's project (otherwise ASSIGNEE_NOT_MEMBER). */
 export function useChangeTaskAssignee() {
   const queryClient = useQueryClient();
 

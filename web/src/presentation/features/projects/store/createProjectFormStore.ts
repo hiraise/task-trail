@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
-// Черновик нового проекта. Окна открываются стеком и показывается только верхнее: пока открыто
-// окно выбора участников, форма проекта размонтирована, поэтому её поля живут здесь, а не
-// в состоянии формы. Черновик стирается после создания проекта.
+// Draft of a new project. Modals open as a stack and only the top one is shown: while the member
+// picker is open, the project form is unmounted, so its fields live here rather than in the
+// form state. The draft is cleared after the project is created.
 
 interface CreateProjectFormState {
   name: string;

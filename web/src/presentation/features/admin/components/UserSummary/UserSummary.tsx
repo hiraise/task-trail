@@ -9,7 +9,7 @@ import { StatusTag } from "../StatusTag";
 
 import styles from "./UserSummary.module.css";
 
-/** Аватарка, имя с метками «вы» и «Администратор» и почта; без имени — только почта. */
+/** Avatar, name with the "you" and "Administrator" tags, and email; without a name, only the email. */
 export function UserSummary({ user }: { user: AdminUser }) {
   const { data: currentUser } = useGetCurrentUser();
   const name = user.username?.trim();

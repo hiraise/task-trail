@@ -11,7 +11,7 @@ import { tasksTexts } from "@/shared/locales/tasks";
 
 import { invalidateTaskLists } from "./taskCache";
 
-/** Создаёт задачу (статус — по умолчанию, автор — текущий пользователь) и открывает её. */
+/** Creates a task (default status, the current user as author) and opens it. */
 export function useCreateTask() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();

@@ -20,7 +20,7 @@ const boris: ProjectMember = {
 };
 
 describe("AssigneeList", () => {
-  it("ищет по имени и почте, выбранный отмечен", async () => {
+  it("searches by name and email, marks the selected one", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
@@ -35,14 +35,14 @@ describe("AssigneeList", () => {
     expect(onSelect).toHaveBeenCalledWith(boris);
   });
 
-  it("без проекта выбирать не из кого — просит сначала выбрать проект", () => {
+  it("without a project there is no one to pick — asks to choose a project first", () => {
     render(<AssigneeList onSelect={vi.fn()} />);
 
     expect(screen.getByText(/Сначала выберите проект/)).toBeInTheDocument();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 
-  it("никого не нашли — так и пишет", async () => {
+  it("says so when no one is found", async () => {
     const user = userEvent.setup();
 
     render(<AssigneeList members={[anna]} onSelect={vi.fn()} />);

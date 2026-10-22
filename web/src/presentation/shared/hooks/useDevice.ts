@@ -15,8 +15,8 @@ const getDeviceType = (width: number): DeviceType => {
   return "desktop";
 };
 
-// Тип устройства известен уже в первом кадре: иначе экран сначала рисуется как на десктопе
-// или пустым, а потом перерисовывается — это видно как моргание.
+// The device type is known already in the first frame: otherwise the screen is first drawn as on a desktop
+// or empty and then redrawn, which shows as a flicker.
 export const useDevice = (): DeviceType => {
   const [device, setDevice] = useState<DeviceType>(() => getDeviceType(window.innerWidth));
 

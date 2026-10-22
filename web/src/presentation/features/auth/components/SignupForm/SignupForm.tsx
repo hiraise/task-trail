@@ -16,7 +16,7 @@ const schema = z.object({ username: usernameField, email: emailField, password: 
 
 type FormData = z.infer<typeof schema>;
 
-/** Первый аккаунт сервиса — он же администратор (ADR-0016). */
+/** The first account of the service, which is also the administrator (ADR-0016). */
 export function SignupForm() {
   const { mutate: signUp, isPending } = useSignUp();
   const form = useForm<FormData>({ resolver: zodResolver(schema) });

@@ -21,11 +21,11 @@ interface TaskInfoProps {
   project: ProjectDetails;
   status?: TaskStatus;
   assignee?: ProjectMember;
-  /** Меню «…» у названия — с 768 px; на телефоне меню открывает верхняя панель страницы */
+  /** The "…" menu next to the name — from 768 px; on a phone the page top bar opens the menu */
   menuItems: MenuItem[];
 }
 
-/** Задача: статус, название, описание, ответственный и проект — каждое меняется своим окном. */
+/** Task: status, name, description, assignee and project — each is changed in its own modal. */
 export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInfoProps) {
   const { changeStatus, selectAssignee, selectProject } = useTaskActions(task);
 

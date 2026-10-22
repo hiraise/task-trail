@@ -5,7 +5,7 @@
   min-height: 0;
 }
 
-/* Список — на серой плашке, как в макете окна «Ответственный» */
+/* The list sits on a grey panel, as in the "Assignee" modal mockup */
 .list {
   display: flex;
   flex-direction: column;

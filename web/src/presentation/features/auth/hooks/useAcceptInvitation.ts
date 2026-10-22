@@ -11,7 +11,7 @@ import { errorMessage, toastError } from "@/shared/errors/errorMessage";
 import { hasErrorCode } from "@/shared/errors/types";
 import { errorTexts, successTexts } from "@/shared/locales/messages";
 
-/** Принять приглашение: аккаунт создаётся и сразу входит (ADR-0016). */
+/** Accept an invitation: the account is created and signed in right away (ADR-0016). */
 export function useAcceptInvitation() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -25,7 +25,7 @@ export function useAcceptInvitation() {
       navigate({ to: ROUTES.projects, replace: true });
     },
     onError: (error) => {
-      // Аккаунт уже создан, например по этой же ссылке в другой вкладке, — дальше только вход
+      // The account already exists, e.g. via this same link in another tab: only sign-in is left
       if (hasErrorCode(error, "INVITATION_ACCEPTED")) {
         toast.error(errorMessage(error, errorTexts.somethingWentWrong));
         navigate({ to: ROUTES.login, replace: true });

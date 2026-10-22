@@ -5,7 +5,7 @@ import { BaseModal, type BaseModalProps } from "../BaseModal";
 
 import styles from "./ConfirmModal.module.css";
 
-/** Подтверждение действия: «Отменить» и кнопка действия; согласие возвращает `true`. */
+/** Action confirmation: "Cancel" and the action button; consent returns `true`. */
 export function ConfirmModal(props: BaseModalProps<boolean>) {
   const { title, description, confirmText } = useGlobalModalProps<ConfirmProps>() ?? {};
 

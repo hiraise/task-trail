@@ -3,7 +3,7 @@ import z from "zod";
 import { taskDescriptionField, taskNameField } from "@/presentation/shared/forms/fields";
 import { tasksTexts } from "@/shared/locales/tasks";
 
-// Ответственный необязателен, как в контракте (CreateTaskRequest): его можно назначить позже
+// The assignee is optional, as in the contract (CreateTaskRequest): it can be set later
 export const CreateTaskSchema = z.object({
   name: taskNameField,
   description: taskDescriptionField,

@@ -11,7 +11,7 @@ import { UserItemCheckBox } from "./UserItemCheckbox";
 import styles from "./UsersList.module.css";
 
 interface UsersListProps {
-  /** Проект, куда зовут: его участников в списке нет. Без него — новый проект */
+  /** The project people are invited to: its members are not listed. Without it — a new project */
   projectId?: ProjectId;
   onUserSelect: (email: string) => void;
   selectedUsers?: string[];
@@ -19,8 +19,8 @@ interface UsersListProps {
 }
 
 /**
- * Кого позвать: люди из общих проектов (listProjectCandidates), поиск по имени и почте.
- * Никого не нашли, а введена почта — её можно выбрать: незнакомой почте уйдёт приглашение.
+ * Whom to invite: people from shared projects (listProjectCandidates), search by name and email.
+ * No one found but an email is typed — it can be selected: an unknown email gets an invitation.
  */
 export function UsersList({
   projectId,

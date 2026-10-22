@@ -13,8 +13,8 @@ import { adminTexts } from "@/shared/locales/admin";
 import { interpolate } from "@/shared/utils/interpolate";
 
 /**
- * Назначает или снимает администратора сервиса (ADR-0014). Сервер отвечает пользователем — он
- * заменяет прежнего в списке. Последнего администратора снять нельзя — `LAST_ADMIN`.
+ * Grants or revokes service administrator rights (ADR-0014). The server responds with the user, which
+ * replaces the old one in the list. The last administrator cannot be removed: `LAST_ADMIN`.
  */
 export function useChangeServiceAdmin() {
   const queryClient = useQueryClient();
@@ -25,7 +25,7 @@ export function useChangeServiceAdmin() {
       queryClient.setQueryData<AdminUser[]>(QUERY_KEYS.admin.users, (users) =>
         users?.map((current) => (current.id === user.id ? user : current)),
       );
-      // Сняли администратора с себя: от isAdmin текущего пользователя зависит доступ к разделу
+      // Removed own administrator rights: access to the section depends on the current user's isAdmin
       const currentUser = queryClient.getQueryData<CurrentUser>(QUERY_KEYS.user.current);
 
       if (currentUser?.id === user.id) {
@@ -36,7 +36,7 @@ export function useChangeServiceAdmin() {
       toast.success(interpolate(template, { name: getUserDisplayName(user) }));
     },
     onError: (error) => {
-      // Список устарел: остальных администраторов уже сняли — показываем, как есть
+      // The list is stale: the other administrators were already removed; show it as is
       if (hasErrorCode(error, "LAST_ADMIN")) {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.users });
       }

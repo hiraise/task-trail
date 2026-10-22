@@ -5,13 +5,13 @@ import styles from "./ActionsMenu.module.css";
 
 interface ActionsMenuProps {
   items: MenuItem[];
-  /** Закрыть окно меню: вызывается до действия пункта */
+  /** Close the menu modal: called before the item's action */
   onClose: () => void;
 }
 
 /**
- * Меню действий в нижней панели телефона. Окна открываются стеком: меню закрывается до действия,
- * иначе после окна действия (подтверждения, формы) оно вернётся на экран.
+ * Action menu in a phone bottom sheet. Modals open as a stack: the menu closes before the action,
+ * otherwise it returns to the screen after the action's modal (confirmation, form).
  */
 export function ActionsMenu({ items, onClose }: ActionsMenuProps) {
   return (

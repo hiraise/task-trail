@@ -1,4 +1,4 @@
-/* Телефон и планшет — одна колонка; с десктопа 1025 px — две, как поля форм раздела */
+/* Phone and tablet: one column; from desktop 1025 px: two, like the section's form fields */
 .list {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -37,7 +37,7 @@
   background-color: var(--bg-secondary-2);
 }
 
-/* Меню видно всегда, а не только при наведении: без него не понять, что действия есть */
+/* The menu is always visible, not only on hover: without it, it is unclear that there are actions */
 .menu {
   flex-shrink: 0;
   color: var(--icon-secondary);

@@ -7,18 +7,18 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { toastError } from "@/shared/errors/errorMessage";
 import { adminTexts } from "@/shared/locales/admin";
 
-/** Отключает почту: настройки SMTP и пароль удаляются (ADR-0017). */
+/** Disables mail: SMTP settings and the password are deleted (ADR-0017). */
 export function useDisableMail() {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, void>({
     mutationFn: () => adminRepository.disableMail(),
     onSuccess: () => {
-      // Сервер отвечает без тела (204) — убираем почту из настроек сами
+      // The server responds without a body (204), so remove mail from the settings ourselves
       queryClient.setQueryData<ServiceSettings>(QUERY_KEYS.admin.settings, (settings) =>
         settings ? { ...settings, mail: undefined } : settings,
       );
-      // Без почты веб прячет восстановление пароля по почте и шлёт ссылки приглашений в ответе
+      // Without mail the web hides password recovery by email and gets invitation links in the response
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.settings.public });
       toast.success(adminTexts.mailDisabled);
     },

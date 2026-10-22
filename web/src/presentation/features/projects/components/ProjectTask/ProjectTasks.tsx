@@ -21,8 +21,8 @@ interface ProjectTasksProps {
 }
 
 /**
- * Задачи на странице проекта. На телефоне стрелка ведёт на страницу задач проекта,
- * шире — кнопка сортировки, список остаётся на месте.
+ * Tasks on the project page. On a phone an arrow leads to the project tasks page;
+ * wider — a sort button, the list stays in place.
  */
 export function ProjectTasks({ projectId, tasks, members, className }: ProjectTasksProps) {
   const { showSortOptions } = useGlobalModals();

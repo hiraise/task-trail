@@ -14,9 +14,9 @@ import { usePublicSettings } from "../../hooks";
 import styles from "./LoginPage.module.css";
 
 /**
- * Вход. С параметром `from` сюда отправила защита маршрутов: показываем, что нужен вход,
- * а после входа useLogin вернёт на `from`. Ссылка на регистрацию — только пока в сервисе
- * нет ни одного пользователя (ADR-0016).
+ * Sign-in. With the `from` parameter, route protection sent the user here: show that sign-in is needed,
+ * and after sign-in useLogin returns to `from`. The registration link is shown only while the service
+ * has no users at all (ADR-0016).
  */
 export function LoginPage() {
   const { from } = useSearch({ from: "/auth/" });

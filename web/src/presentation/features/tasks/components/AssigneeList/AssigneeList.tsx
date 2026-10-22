@@ -12,14 +12,14 @@ import { tasksTexts } from "@/shared/locales/tasks";
 import styles from "./AssigneeList.module.css";
 
 interface AssigneeListProps {
-  /** Участники проекта задачи; undefined — проект не выбран */
+  /** Members of the task's project; undefined — no project selected */
   members?: ProjectMember[];
   isLoading?: boolean;
   selectedId?: UserId;
   onSelect: (member: ProjectMember) => void;
 }
 
-/** Выбор ответственного из участников проекта: поиск по имени и почте, выбранный — с галочкой. */
+/** Assignee picker among project members: search by name and email, the selected one has a check mark. */
 export function AssigneeList({ members, isLoading, selectedId, onSelect }: AssigneeListProps) {
   const [query, setQuery] = useState("");
   const search = query.trim().toLowerCase();

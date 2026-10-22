@@ -16,7 +16,7 @@ interface AuthFieldProps {
   autoComplete?: string;
 }
 
-/** Поле формы доступа с иконкой; связано с формой по имени через FormProvider. */
+/** Auth form field with an icon; bound to the form by name via FormProvider. */
 export function AuthField({ name, icon, placeholder, type = "text", autoComplete }: AuthFieldProps) {
   const {
     register,
@@ -44,11 +44,11 @@ export function AuthField({ name, icon, placeholder, type = "text", autoComplete
 interface PasswordFieldProps {
   name: string;
   placeholder?: string;
-  /** `current-password` для входа, `new-password` там, где пароль придумывают */
+  /** `current-password` for sign-in, `new-password` where a password is invented */
   autoComplete: "current-password" | "new-password";
 }
 
-/** Поле пароля с кнопкой «показать». */
+/** Password field with a "show" button. */
 export function PasswordField({
   name,
   placeholder = authTexts.passwordPlaceholder,

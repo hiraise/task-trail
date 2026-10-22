@@ -44,7 +44,7 @@ describe("InvitePage", () => {
     } as unknown as ReturnType<typeof useAcceptInvitation>);
   });
 
-  it("действующее приглашение — форма с почтой из приглашения, имя и пароль уходят с токеном", async () => {
+  it("a valid invitation: a form with the invitation email, name and password are sent with the token", async () => {
     vi.mocked(useInvitation).mockReturnValue(
       invitationQuery({
         data: { email: "new@example.com", projectName: "Ремонт", invitedBy: "Анна" },
@@ -68,7 +68,7 @@ describe("InvitePage", () => {
     });
   });
 
-  it("аккаунт с почтой уже есть (INVITATION_ACCEPTED) — предлагает войти", async () => {
+  it("an account with the email already exists (INVITATION_ACCEPTED): suggests signing in", async () => {
     vi.mocked(useInvitation).mockReturnValue(
       invitationQuery({ error: apiError("INVITATION_ACCEPTED") }),
     );
@@ -84,7 +84,7 @@ describe("InvitePage", () => {
     expect(navigate).toHaveBeenCalledWith(expect.objectContaining({ to: "/auth" }));
   });
 
-  it("ссылка неверна или истекла (LINK_INVALID) — сообщает об этом без формы", () => {
+  it("the link is wrong or expired (LINK_INVALID): says so without a form", () => {
     vi.mocked(useInvitation).mockReturnValue(invitationQuery({ error: apiError("LINK_INVALID") }));
 
     render(<InvitePage />);
@@ -93,7 +93,7 @@ describe("InvitePage", () => {
     expect(screen.queryByRole("button", { name: authTexts.invite.accept })).not.toBeInTheDocument();
   });
 
-  it("ссылка без токена — та же недействительная ссылка, запроса нет", () => {
+  it("a link without a token: the same invalid link, no request", () => {
     search = {};
     vi.mocked(useInvitation).mockReturnValue(invitationQuery({ isPending: true }));
 

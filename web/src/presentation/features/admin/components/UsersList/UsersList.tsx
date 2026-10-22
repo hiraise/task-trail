@@ -12,7 +12,7 @@ import { UserSummary } from "../UserSummary";
 
 import styles from "./UsersList.module.css";
 
-/** Все пользователи сервиса по дате регистрации (ADR-0014). */
+/** All users of the service by registration date (ADR-0014). */
 export function UsersList() {
   const { data: users = [] } = useAdminUsers();
 
@@ -26,8 +26,8 @@ export function UsersList() {
 }
 
 /**
- * Пользователь с действиями: на телефоне — нижняя панель по нажатию на строку, шире — меню «…»
- * при наведении, как у участников проекта.
+ * A user with actions: on a phone, a bottom sheet on tapping the row; wider, a "…" menu
+ * on hover, like project members.
  */
 function UserRow({ user }: { user: AdminUser }) {
   const { menuItems } = useAdminUserMenuItems(user);

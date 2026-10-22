@@ -11,7 +11,7 @@ interface BottomSheetProps {
   onClose: () => void;
   children: React.ReactNode;
   fullScreen?: boolean; // Optional prop to make it full screen
-  /** false — панель сменяет другую панель: без затемнения с нуля и выезда снизу */
+  /** false: the sheet replaces another sheet, without the overlay from scratch and the slide-up */
   appear?: boolean;
 }
 

@@ -6,7 +6,7 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { AddParticipantForm } from "../../components";
 
-/** Выбор, кого позвать в проект; возвращает выбранные почты, звать — тому, кто открыл. */
+/** Picks whom to invite to the project; returns the selected emails, the opener does the inviting. */
 export function InviteUserModal(props: BaseModalProps<string[]>) {
   const { projectId, emails } = useGlobalModalProps<InviteUserProps>() ?? {};
   const { onClose, ...rest } = props;

@@ -50,7 +50,7 @@
   opacity: 0.7;
 }
 
-/* Планшет: форма шириной 600 px по центру экрана */
+/* Tablet: a 600 px wide form centered on the screen */
 @media (min-width: 768px) {
   .main {
     justify-content: center;
@@ -62,7 +62,7 @@
   }
 }
 
-/* Десктоп: карточка 680 px, поля внутри — те же 600 px */
+/* Desktop: a 680 px card, the fields inside are the same 600 px */
 @media (min-width: 1025px) {
   .card {
     width: 680px;

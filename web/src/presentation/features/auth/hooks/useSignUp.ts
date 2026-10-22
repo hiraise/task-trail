@@ -13,8 +13,8 @@ import { errorTexts, successTexts } from "@/shared/locales/messages";
 import { currentServiceUrl } from "@/shared/utils/serviceUrl";
 
 /**
- * Регистрация первого аккаунта — он же администратор сервиса (ADR-0016). Адрес сервиса —
- * тот, с которого открыт веб; администратор поменяет его в настройках (ADR-0015).
+ * Registration of the first account, which is also the service administrator (ADR-0016). The service URL
+ * is the one the web is opened from; the administrator can change it in the settings (ADR-0015).
  */
 export function useSignUp() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export function useSignUp() {
       navigate({ to: ROUTES.projects, replace: true });
     },
     onError: (error) => {
-      // Первый аккаунт уже кто-то создал — регистрация закрыта, остаётся вход
+      // Someone has already created the first account: registration is closed, only sign-in is left
       if (hasErrorCode(error, "REGISTRATION_CLOSED")) {
         toast.error(errorMessage(error, errorTexts.somethingWentWrong));
         queryClient.removeQueries({ queryKey: QUERY_KEYS.settings.public });

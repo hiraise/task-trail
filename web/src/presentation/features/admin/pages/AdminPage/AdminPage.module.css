@@ -1,5 +1,5 @@
-/* До 767 px — телефон: пункты на отдельные страницы. С 768 px — карточки с формами
-   в DesktopTemplate (брейкпоинты — presentation/shared/hooks/useDevice.ts). */
+/* Up to 767 px, phone: items lead to separate pages. From 768 px, cards with forms
+   in DesktopTemplate (breakpoints: presentation/shared/hooks/useDevice.ts). */
 .page {
   display: flex;
   flex-direction: column;

@@ -14,8 +14,8 @@ interface FormFooterProps {
 }
 
 /**
- * Кнопки формы: в карточке — «Отменить» и «Сохранить», пока форма в фокусе или изменена;
- * на отдельной странице — одна кнопка внизу.
+ * Form buttons: in a card, "Cancel" and "Save" while the form is focused or changed;
+ * on a separate page, one button at the bottom.
  */
 export function FormFooter({
   layout,

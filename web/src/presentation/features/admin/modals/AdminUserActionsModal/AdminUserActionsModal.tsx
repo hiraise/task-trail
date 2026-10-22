@@ -7,7 +7,7 @@ import { useAdminUserMenuItems } from "../../hooks";
 
 import styles from "./AdminUserActionsModal.module.css";
 
-/** Действия с пользователем на телефоне — нижняя панель по нажатию на строку списка. */
+/** User actions on a phone: a bottom sheet on tapping a list row. */
 export function AdminUserActionsModal(props: BaseModalProps<void>) {
   const { user } = useGlobalModalProps<AdminUserActionsProps>() ?? {};
 

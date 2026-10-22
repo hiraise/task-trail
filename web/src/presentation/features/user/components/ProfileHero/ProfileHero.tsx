@@ -10,8 +10,8 @@ import { ProfileAvatar } from "./ProfileAvatar";
 import styles from "./ProfileHero.module.css";
 
 /**
- * Шапка профиля: обложка, аватарка, имя и почта. На телефоне на обложке заголовок, а выход —
- * внизу страницы (ProfilePage); с 768 px выход — кнопкой на обложке.
+ * Profile header: cover, avatar, name and email. On a phone the cover has the title, and sign-out
+ * is at the bottom of the page (ProfilePage); from 768 px sign-out is a button on the cover.
  */
 export function ProfileHero({ user }: { user: User }) {
   const { mutate: logout, isPending: loading } = useLogout();

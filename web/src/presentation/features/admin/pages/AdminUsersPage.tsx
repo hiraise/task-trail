@@ -7,7 +7,7 @@ import { UsersList } from "../components";
 
 import styles from "./AdminSubpage.module.css";
 
-/** Пользователи отдельной страницей — с телефона; шире тот же список стоит в разделе. */
+/** Users as a separate page, from a phone; wider, the same list is in the section. */
 export function AdminUsersPage() {
   return (
     <PagesMobileTemplate topBarBackTitle={adminTexts.users.title}>

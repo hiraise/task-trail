@@ -4,7 +4,7 @@ import type { TaskProps } from "@/presentation/shared/hooks/useGlobalModals";
 
 import { useTaskMenuItems } from "../../hooks";
 
-/** Меню задачи в нижней панели телефона: шире то же меню — «…» у названия задачи. */
+/** Task menu in the phone bottom sheet; wider, the same menu is the "…" next to the task name. */
 export function TaskSettingsModal(props: BaseModalProps<void>) {
   const { task } = useGlobalModalProps<TaskProps>() ?? {};
   const { menuItems } = useTaskMenuItems(task);

@@ -5,7 +5,7 @@ import type { ProjectId } from "@/domain/types";
 import { taskRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 
-/** Задачи проекта; новые первыми. */
+/** Project tasks; newest first. */
 export function useProjectTasks(projectId: ProjectId) {
   return useQuery<Task[], Error>({
     queryKey: QUERY_KEYS.project.tasks(projectId),

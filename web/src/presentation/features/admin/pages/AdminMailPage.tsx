@@ -7,7 +7,7 @@ import { useServiceSettings } from "../hooks";
 import { MailHeading } from "./AdminPage";
 import styles from "./AdminSubpage.module.css";
 
-/** Почта отдельной страницей — с телефона; шире та же форма стоит в разделе. */
+/** Mail as a separate page, from a phone; wider, the same form is in the section. */
 export function AdminMailPage() {
   const { data: settings } = useServiceSettings();
 

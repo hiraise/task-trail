@@ -4,8 +4,8 @@ import { useGetCurrentUser } from "@/presentation/shared/hooks";
 import { ROUTES } from "@/shared/config/routes";
 
 /**
- * Раздел только администратору сервиса (ADR-0014): сервер проверяет права в каждом запросе,
- * веб прячет раздел. Снял права с себя — уходим в профиль, иначе запросы получат 403.
+ * The section is for the service administrator only (ADR-0014): the server checks rights on every request,
+ * the web hides the section. Removed own rights: go to the profile, otherwise requests get 403.
  */
 export function AdminGuard({ children }: { children: React.ReactNode }) {
   const { data: user } = useGetCurrentUser();

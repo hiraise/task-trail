@@ -23,7 +23,7 @@ import { schema, type FormValues } from "./schema";
 
 const texts = adminTexts.serviceUrl;
 
-/** Адрес сервиса: в карточке раздела — с «Отменить» и «Сохранить», на телефоне — страницей. */
+/** Service URL: in the section card with "Cancel" and "Save", on a phone as a page. */
 export function ServiceUrlForm({ layout }: { layout: FormLayout }) {
   const inline = layout === "inline";
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ export function ServiceUrlForm({ layout }: { layout: FormLayout }) {
     try {
       await update({ serviceUrl: data.serviceUrl });
     } catch {
-      return; // ошибку показал useUpdateServiceUrl
+      return; // useUpdateServiceUrl has shown the error
     }
     if (!inline) {
       navigate({ to: ROUTES.admin });

@@ -14,7 +14,7 @@ const texts = adminTexts.resetLink;
 
 async function copyLink(url: string) {
   try {
-    // Буфер обмена есть только на https и localhost — иначе ссылку выделяют и копируют руками
+    // The clipboard exists only on https and localhost; otherwise the link is selected and copied by hand
     await navigator.clipboard.writeText(url);
     toast.success(texts.copied);
   } catch {
@@ -22,7 +22,7 @@ async function copyLink(url: string) {
   }
 }
 
-/** Ссылка сброса пароля, которую администратор передаёт пользователю сам (ADR-0017). */
+/** A password reset link that the administrator hands over to the user personally (ADR-0017). */
 export function PasswordResetLinkModal(props: BaseModalProps<void>) {
   const { name, link } = useGlobalModalProps<PasswordResetLinkProps>() ?? {};
 

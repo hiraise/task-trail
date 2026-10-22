@@ -14,7 +14,7 @@ interface DeleteContext {
   previousProjects: Project[] | undefined;
 }
 
-/** Удаляет проект (только владелец): сразу убирает его из списка, при ошибке возвращает. */
+/** Deletes the project (owner only): removes it from the list at once, restores it on error. */
 export function useDeleteProject() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
