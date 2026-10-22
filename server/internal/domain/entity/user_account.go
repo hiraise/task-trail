@@ -86,6 +86,21 @@ func (u *UserAccount) ReplaceAvatar(fileID FileID, now time.Time) (previous *Fil
 	return previous
 }
 
+// SetAdmin назначает или снимает администратора сервиса (ADR-0014). admins — сколько
+// администраторов в сервисе сейчас: последнего снять нельзя, LAST_ADMIN. Считай их
+// под UserRepository.LockAdmins, иначе два встречных снятия оставят сервис без администраторов.
+func (u *UserAccount) SetAdmin(isAdmin bool, admins int, now time.Time) error {
+	if u.IsAdmin == isAdmin {
+		return nil
+	}
+	if !isAdmin && admins <= 1 {
+		return domain.ErrLastAdmin("userID", u.ID)
+	}
+	u.IsAdmin = isAdmin
+	u.UpdatedAt = now
+	return nil
+}
+
 // DisplayName — как называть человека другим: имя, а если его нет — почта.
 func DisplayName(username *string, email Email) string {
 	if username != nil && *username != "" {

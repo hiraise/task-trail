@@ -24,6 +24,8 @@ const (
 	OwnerCannotLeave ErrorCode = "OWNER_CANNOT_LEAVE"
 	// Исполнитель задачи — не участник её проекта
 	AssigneeNotMember ErrorCode = "ASSIGNEE_NOT_MEMBER"
+	// Последнего администратора сервиса снять нельзя (ADR-0014)
+	LastAdmin ErrorCode = "LAST_ADMIN"
 
 	// Ссылка приглашения или сброса пароля неверна, использована или истекла
 	LinkInvalid ErrorCode = "LINK_INVALID"
@@ -34,6 +36,10 @@ const (
 	MailDisabled ErrorCode = "MAIL_DISABLED"
 	// SMTP не принял письмо: не подключился, отказал во входе или в отправке
 	MailSendFailed ErrorCode = "MAIL_SEND_FAILED"
+	// Проверка настроек почты: не удалось подключиться к SMTP или войти
+	MailConnectionFailed ErrorCode = "MAIL_CONNECTION_FAILED"
+	// Сохранённый секрет интеграции взять нельзя — его нужно ввести заново (ADR-0015)
+	SecretRequired ErrorCode = "SECRET_REQUIRED"
 
 	// Файл больше допустимого или не того типа (ADR-0013)
 	FileTooLarge       ErrorCode = "FILE_TOO_LARGE"
@@ -140,6 +146,10 @@ func ErrAssigneeNotMember(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, AssigneeNotMember, nil, data...)
 }
 
+func ErrLastAdmin(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, LastAdmin, nil, data...)
+}
+
 func ErrLinkInvalid(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, LinkInvalid, nil, data...)
 }
@@ -154,6 +164,14 @@ func ErrMailDisabled(data ...any) *DomainError {
 
 func ErrMailSendFailed(sourceErr error, data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, MailSendFailed, sourceErr, data...)
+}
+
+func ErrMailConnectionFailed(sourceErr error, data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, MailConnectionFailed, sourceErr, data...)
+}
+
+func ErrSecretRequired(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, SecretRequired, nil, data...)
 }
 
 func ErrFileTooLarge(data ...any) *DomainError {

@@ -11,6 +11,7 @@ import (
 //   - maxbytes=N — строка не длиннее N байт в UTF-8 (пароль и предел bcrypt);
 //   - httpurl — полный адрес http(s) без параметров и якоря: от него строятся ссылки (ADR-0015);
 //   - taskstatus — статус задачи из фиксированного набора (ADR-0003);
+//   - mailbox — отправитель письма: адрес почты, можно с именем (ADR-0017);
 //   - значения полей Optional и обязательные поля, которые могут быть null.
 func RegisterValidators(v *validator.Validate) error {
 	if err := v.RegisterValidation("maxbytes", maxBytes); err != nil {
@@ -20,6 +21,9 @@ func RegisterValidators(v *validator.Validate) error {
 		return err
 	}
 	if err := v.RegisterValidation("taskstatus", taskStatus); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("mailbox", mailbox); err != nil {
 		return err
 	}
 	v.RegisterCustomTypeFunc(optionalValue[string], Optional[string]{})

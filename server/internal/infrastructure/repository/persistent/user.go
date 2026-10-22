@@ -12,8 +12,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// registrationLockKey — ключ pg_advisory_xact_lock для регистрации первого аккаунта (ADR-0016).
-const registrationLockKey int64 = 0x7461736b_00000001
+// Ключи pg_advisory_xact_lock.
+const (
+	// registrationLockKey — регистрация первого аккаунта (ADR-0016).
+	registrationLockKey int64 = 0x7461736b_00000001
+	// adminsLockKey — назначение и снятие администраторов сервиса (ADR-0014).
+	adminsLockKey int64 = 0x7461736b_00000002
+)
 
 type PGUserRepository struct {
 	PgRepository
@@ -153,6 +158,30 @@ func scanUser(row pgx.Row, f *factory.UserFactory, extra ...any) (*entity.UserAc
 	return f.Restore(id, email, passwordHash, username, avatarID, isAdmin, verifiedAt, createdAt, updatedAt), nil
 }
 
+func (r *PGUserRepository) List(ctx context.Context) ([]*entity.UserAccount, error) {
+	rows, err := r.getDb(ctx).Query(ctx, `SELECT `+userColumns+` FROM users WHERE deleted_at IS NULL ORDER BY created_at, id`)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	users, err := ScanRows(rows, func(row pgx.Rows) (*entity.UserAccount, error) { return scanUser(row, r.factory) })
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return users, nil
+}
+
+func (r *PGUserRepository) CountAdmins(ctx context.Context) (int, error) {
+	var count int
+	if err := r.getDb(ctx).QueryRow(ctx, `SELECT count(*) FROM users WHERE is_admin AND deleted_at IS NULL`).Scan(&count); err != nil {
+		return 0, r.handleError(err)
+	}
+	return count, nil
+}
+
+func (r *PGUserRepository) LockAdmins(ctx context.Context) error {
+	return r.advisoryLock(ctx, adminsLockKey, "LockAdmins")
+}
+
 func (r *PGUserRepository) Any(ctx context.Context) (bool, error) {
 	var exists bool
 	if err := r.getDb(ctx).QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM users)`).Scan(&exists); err != nil {
@@ -162,11 +191,16 @@ func (r *PGUserRepository) Any(ctx context.Context) (bool, error) {
 }
 
 func (r *PGUserRepository) LockRegistration(ctx context.Context) error {
+	return r.advisoryLock(ctx, registrationLockKey, "LockRegistration")
+}
+
+// advisoryLock берёт pg_advisory_xact_lock с ключом key до конца транзакции; method — для ошибки.
+func (r *PGUserRepository) advisoryLock(ctx context.Context, key int64, method string) error {
 	if extractTx(ctx) == nil {
 		// Вне транзакции блокировка снимется сразу после запроса и ничего не защитит
-		return domain.ErrRepoInternal(0, errors.New("LockRegistration вызван вне транзакции"))
+		return domain.ErrRepoInternal(1, errors.New(method+" вызван вне транзакции"))
 	}
-	if _, err := r.getDb(ctx).Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, registrationLockKey); err != nil {
+	if _, err := r.getDb(ctx).Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, key); err != nil {
 		return r.handleError(err)
 	}
 	return nil

@@ -857,7 +857,9 @@ paths:
       tags: [admin]
       operationId: updateServiceSettings
       summary: Изменить адрес сервиса
-      description: Только администратору сервиса.
+      description: |
+        Только администратору сервиса. `/` в конце адреса отбрасывается. Ссылки, выданные раньше,
+        ведут на прежний адрес.
       requestBody:
         required: true
         content:
@@ -881,10 +883,11 @@ paths:
       summary: Подключить почту или изменить её настройки
       description: |
         Только администратору сервиса.
-        Перед сохранением сервер подключается к SMTP с этими настройками, не дольше 10 секунд
-        (ADR-0017). Поле `password` не передано — остаётся сохранённый пароль. `SECRET_REQUIRED`
-        возвращается, если задан `username`, а пароля нет: он не передан и либо не сохранён,
-        либо сменились сервер или порт (ADR-0015).
+        Перед сохранением сервер подключается к SMTP с этими настройками, входит и спрашивает,
+        примет ли SMTP письмо от `sender`, — не дольше 10 секунд, письмо не уходит (ADR-0017).
+        Поле `password` не передано — остаётся сохранённый пароль. `SECRET_REQUIRED` возвращается,
+        если задан `username`, а пароля нет: он не передан и либо не сохранён, либо сменились
+        сервер или порт (ADR-0015). Без `username` пароль не сохраняется.
       requestBody:
         required: true
         content:
@@ -905,7 +908,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ApiError" }
         "502":
-          description: "`MAIL_CONNECTION_FAILED` — не удалось подключиться к SMTP, настройки не сохранены"
+          description: "`MAIL_CONNECTION_FAILED` — не удалось подключиться к SMTP, войти или SMTP не принимает отправителя; настройки не сохранены"
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiError" }
@@ -946,7 +949,7 @@ paths:
       tags: [admin]
       operationId: listUsers
       summary: Все пользователи сервиса
-      description: Только администратору сервиса.
+      description: Только администратору сервиса. По дате регистрации, первые — раньше.
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "200":
@@ -998,6 +1001,7 @@ paths:
       summary: Получить ссылку сброса пароля для пользователя
       description: |
         Только администратору сервиса. Нужна, когда почта не подключена (ADR-0017). Администратор передаёт ссылку сам.
+        Ссылка срабатывает один раз; срок — в `expiresAt`.
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "201":
@@ -1455,12 +1459,17 @@ components:
         host: { type: string, minLength: 1 }
         port: { type: integer, minimum: 1, maximum: 65535 }
         encryption: { $ref: "#/components/schemas/MailEncryption" }
-        sender: { type: string, minLength: 1 }
+        sender:
+          type: string
+          minLength: 1
+          description: Адрес почты, можно с именем, — `TaskTrail <noreply@example.com>`; иначе `VALIDATION_FAILED`
         username:
           type: [string, "null"]
+          minLength: 1
           description: "`null` — без входа на SMTP"
         password:
           type: [string, "null"]
+          minLength: 1
           description: Не передан — остаётся сохранённый; `null` — удалить пароль
     AdminUser:
       allOf:

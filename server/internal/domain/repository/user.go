@@ -21,6 +21,15 @@ type UserRepository interface {
 	// ListCandidates — кого userID может позвать в проект: люди из его неудалённых проектов,
 	// кроме него самого, а если задан exclude — и кроме участников этого проекта.
 	ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error)
+	// List — все пользователи сервиса для администратора (ADR-0014), по дате регистрации:
+	// первые — раньше.
+	List(ctx context.Context) ([]*entity.UserAccount, error)
+	// CountAdmins — сколько в сервисе администраторов (ADR-0014).
+	CountAdmins(ctx context.Context) (int, error)
+	// LockAdmins до конца транзакции не пускает другое назначение или снятие администратора
+	// (ADR-0014): без блокировки два встречных снятия оставят сервис без администраторов.
+	// Вне транзакции — ошибка.
+	LockAdmins(ctx context.Context) error
 	// Any сообщает, есть ли в сервисе хоть один пользователь, включая удалённых:
 	// регистрация открыта, только пока их нет (ADR-0016).
 	Any(ctx context.Context) (bool, error)

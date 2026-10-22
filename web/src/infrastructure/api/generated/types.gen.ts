@@ -280,6 +280,9 @@ export type MailSettingsRequest = {
     host: string;
     port: number;
     encryption: MailEncryption;
+    /**
+     * Адрес почты, можно с именем, — `TaskTrail <noreply@example.com>`; иначе `VALIDATION_FAILED`
+     */
     sender: string;
     /**
      * `null` — без входа на SMTP
@@ -1716,7 +1719,7 @@ export type SaveMailSettingsErrors = {
      */
     500: ApiError;
     /**
-     * `MAIL_CONNECTION_FAILED` — не удалось подключиться к SMTP, настройки не сохранены
+     * `MAIL_CONNECTION_FAILED` — не удалось подключиться к SMTP, войти или SMTP не принимает отправителя; настройки не сохранены
      */
     502: ApiError;
 };

@@ -42,6 +42,20 @@ func (m *MockMailer) EXPECT() *MockMailerMockRecorder {
 	return m.recorder
 }
 
+// Check mocks base method.
+func (m *MockMailer) Check(ctx context.Context, settings *entity.MailSettings) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Check", ctx, settings)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Check indicates an expected call of Check.
+func (mr *MockMailerMockRecorder) Check(ctx, settings any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Check", reflect.TypeOf((*MockMailer)(nil).Check), ctx, settings)
+}
+
 // Send mocks base method.
 func (m *MockMailer) Send(ctx context.Context, settings *entity.MailSettings, letter service.Letter) error {
 	m.ctrl.T.Helper()

@@ -64,15 +64,17 @@ func (nopLogger) Info(string, ...any)  {}
 func (nopLogger) Warn(string, ...any)  {}
 func (nopLogger) Error(string, ...any) {}
 
-// New поднимает сервер на чистой базе. Контракт передаёт тест: contract.Load(t).
-func New(t testing.TB, v *contract.Validator) *Server {
+// New поднимает сервер на чистой базе. Контракт передаёт тест: contract.Load(t); opts —
+// параметры сборки только для тестов, например app.WithSMTPRootCAs.
+func New(t testing.TB, v *contract.Validator, opts ...app.Option) *Server {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
 	pool := testdb.New(t)
 	clk := clock.New(Start)
 	filesDir := t.TempDir()
 	cfg := &config.Config{App: config.App{Secret: Secret, FilesDir: filesDir}}
-	srv, err := app.New(pool, cfg, clk, nopLogger{}, app.WithPasswordHashCost(bcrypt.MinCost))
+	opts = append([]app.Option{app.WithPasswordHashCost(bcrypt.MinCost)}, opts...)
+	srv, err := app.New(pool, cfg, clk, nopLogger{}, opts...)
 	if err != nil {
 		t.Fatalf("сборка сервера: %v", err)
 	}

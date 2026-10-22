@@ -18,4 +18,7 @@ type Letter struct {
 type Mailer interface {
 	// Send возвращает ошибку MAIL_SEND_FAILED, если SMTP не принял письмо.
 	Send(ctx context.Context, settings *entity.MailSettings, letter Letter) error
+	// Check подключается к SMTP и входит, если задан логин, — без письма: так настройки
+	// проверяются до сохранения (ADR-0017). Не вышло — MAIL_CONNECTION_FAILED.
+	Check(ctx context.Context, settings *entity.MailSettings) error
 }
