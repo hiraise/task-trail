@@ -1,57 +1,30 @@
-import type { Permission } from "../../domain/types";
+import type { ProjectRole } from "../../domain/types";
 
-export const getUserRole = (permissions: Permission[]): UserRole => {
-  if (permissions.includes("PROJECT_OWNER")) return "OWNER";
-  if (permissions.includes("PROJECT_ADMIN")) return "ADMIN";
-  if (permissions.includes("PROJECT_EDIT")) return "EDITOR";
-  if (permissions.length > 0) return "VIEWER";
+// Права в интерфейсе — по роли в проекте (ADR-0003), как их проверяет сервер (контракт API,
+// описания операций проектов). Интерфейс прячет недоступные действия; запрет всё равно
+// решает сервер, и ответ FORBIDDEN показывается текстом из shared/locales/apiErrors.ts.
 
-  return "NONE";
-};
+const isManager = (role: ProjectRole): boolean => role === "owner" || role === "admin";
 
-export const canEditProject = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_EDIT") ||
-  permissions.includes("PROJECT_ADMIN") ||
-  permissions.includes("PROJECT_OWNER");
+/** Название, описание и приглашения — владелец и администратор. */
+export const canEditProject = isManager;
 
-export const canDeleteProject = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_OWNER");
+export const canInviteMembers = isManager;
 
-export const canArchiveProject = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_OWNER");
+/** Удалить проект и менять роли может только владелец. */
+export const canDeleteProject = (role: ProjectRole): boolean => role === "owner";
 
-export const canManageMembers = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_SET_ROLES") ||
-  permissions.includes("PROJECT_ADMIN") ||
-  permissions.includes("PROJECT_OWNER");
+export const canChangeRoles = (role: ProjectRole): boolean => role === "owner";
 
-export const canInviteUsers = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_INVITE_USERS") ||
-  permissions.includes("PROJECT_ADMIN") ||
-  permissions.includes("PROJECT_OWNER");
+/** Архива на сервере ещё нет (этап 2) — пункт меню остаётся заглушкой для владельца. */
+export const canArchiveProject = (role: ProjectRole): boolean => role === "owner";
 
-export const canDeleteTask = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_DELETE_TASK") ||
-  permissions.includes("PROJECT_ADMIN") ||
-  permissions.includes("PROJECT_OWNER");
+/** Владелец не выходит из проекта, а удаляет его. */
+export const canLeaveProject = (role: ProjectRole): boolean => role !== "owner";
 
-export const canUpdateTask = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_UPDATE_TASK") ||
-  permissions.includes("PROJECT_ADMIN") ||
-  permissions.includes("PROJECT_OWNER");
+/** Владелец исключает любого, кроме себя; администратор — только участников с ролью «участник». */
+export const canRemoveMember = (role: ProjectRole, memberRole: ProjectRole): boolean =>
+  (role === "owner" && memberRole !== "owner") || (role === "admin" && memberRole === "member");
 
-export const isOwner = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_OWNER");
-
-export const isAdmin = (permissions: Permission[]): boolean =>
-  permissions.includes("PROJECT_ADMIN");
-
-export const isEditor = (permissions: Permission[]): boolean =>
-  canUpdateTask(permissions) || canEditProject(permissions) || isAdmin(permissions);
-
-export const isViewer = (permissions: Permission[]): boolean => permissions.length > 0;
-
-export const hasPermission = (permissions: Permission[], permission: Permission): boolean =>
-  permissions.includes(permission);
-
-export type UserRole = "OWNER" | "ADMIN" | "EDITOR" | "VIEWER" | "NONE";
+/** Владелец и администраторы — в группе «Администраторы проекта». */
+export const isProjectAdmin = isManager;

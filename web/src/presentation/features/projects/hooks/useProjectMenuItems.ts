@@ -1,100 +1,101 @@
 import { toast } from "sonner";
 
-import {
-  canUserArchiveProject,
-  canUserDeleteProject,
-  canUserEditProject,
-  canUserManageMembers,
-  isProjectOwner,
-} from "@/domain/models/Project";
 import type { ProjectId } from "@/domain/types";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
+import {
+  canArchiveProject,
+  canDeleteProject,
+  canEditProject,
+  canInviteMembers,
+  canLeaveProject,
+} from "@/shared/utils/userRole";
 
-import { useAddMember, useLeaveProject } from "../../projects/hooks";
-
+import { useAddMembers } from "./useAddMembers";
 import { useDeleteProject } from "./useDeleteProject";
+import { useLeaveProject } from "./useLeaveProject";
 import { useProject } from "./useProject";
 
+/** Действия с проектом по роли текущего пользователя в нём (shared/utils/userRole.ts). */
 export const useProjectMenuItems = (projectId: ProjectId) => {
   const { data: project } = useProject(projectId);
-  const { mutateAsync: leave } = useLeaveProject();
-  const { mutateAsync: deleteById } = useDeleteProject();
-  const { mutateAsync: addMembers } = useAddMember();
+  const { mutate: leave } = useLeaveProject();
+  const { mutate: deleteById } = useDeleteProject();
+  const { mutate: addMembers } = useAddMembers();
   const { showEditProject, showMoveToArchive, showDeleteItem, showLeaveProject, showInviteUser } =
     useGlobalModals();
+
+  if (!project) return { menuItems: [] };
 
   const menuItems: MenuItem[] = [
     {
       label: TEXTS.projects.edit,
       icon: ICONS.edit,
       color: "var(--icon-tertiary)",
-      onClick: async () => {
-        if (!project) return;
-        await showEditProject({
+      onClick: () =>
+        showEditProject({
           projectId: project.id,
           name: project.name,
           description: project.description,
-        });
-      },
-      isVisible: project ? canUserEditProject(project) : false,
+        }),
+      isVisible: canEditProject(project.role),
     },
     {
       label: TEXTS.projects.inviteMember,
       icon: ICONS.addUser,
       color: "var(--icon-tertiary)",
       onClick: async () => {
-        const emails = await showInviteUser();
+        const emails = await showInviteUser({ projectId });
 
-        if (!emails || emails.length === 0) return;
-        await addMembers({ projectId, emails });
+        if (emails && emails.length > 0) addMembers({ projectId, emails });
       },
-      isVisible: project ? canUserManageMembers(project) : false,
+      isVisible: canInviteMembers(project.role),
     },
     {
       label: TEXTS.projects.moveToArchive,
       icon: ICONS.archive,
       color: "var(--icon-tertiary)",
       onClick: async () => {
-        if (!project) return;
-        const data = { id: project.id, title: project.name };
-        const result = await showMoveToArchive({ type: "project", ...data });
+        const result = await showMoveToArchive({
+          type: "project",
+          id: project.id,
+          title: project.name,
+        });
 
-        //TODO: implement move to archive logic
+        // Архива на сервере ещё нет — этап 2 (docs/roadmap.md)
         if (result) toast.warning(`Project id: ${result} moved to archive`);
       },
-      isVisible: project ? canUserArchiveProject(project) : false,
+      isVisible: canArchiveProject(project.role),
     },
     {
       label: TEXTS.projects.leave,
       icon: ICONS.leave,
       color: "var(--icon-tertiary)",
       onClick: async () => {
-        if (!project) return;
         const result = await showLeaveProject({ id: project.id, title: project.name });
 
-        if (result) await leave({ projectId: result });
+        if (result) leave({ projectId: result });
       },
-      isVisible: project ? !isProjectOwner(project) : false,
+      isVisible: canLeaveProject(project.role),
     },
     {
       label: TEXTS.projects.delete,
       icon: ICONS.delete,
       color: "var(--icon-critical)",
       onClick: async () => {
-        if (!project) return;
-        const data = { id: project.id, title: project.name };
-        const result = await showDeleteItem({ type: "project", ...data });
+        const result = await showDeleteItem({
+          type: "project",
+          id: project.id,
+          title: project.name,
+        });
 
-        if (result) await deleteById(projectId);
+        if (result) deleteById(projectId);
       },
-      isVisible: project ? canUserDeleteProject(project) : false,
+      isVisible: canDeleteProject(project.role),
     },
   ];
 
-  const visibleMenuItems = menuItems.filter((item) => item.isVisible);
-
-  return { menuItems: visibleMenuItems };
+  return { menuItems: menuItems.filter((item) => item.isVisible) };
 };

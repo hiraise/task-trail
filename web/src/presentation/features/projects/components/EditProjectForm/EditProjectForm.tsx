@@ -1,35 +1,28 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import type { Project } from "@/domain/models/Project";
 import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
 import { TEXTS } from "@/shared/locales/texts";
 
-import styles from "./EditProjectFormDesktop.module.css";
+import styles from "./EditProjectForm.module.css";
 import type { FormValues } from "./schema";
 import { schema } from "./schema";
 
-interface EditProjectFormDesktop {
-  project?: Partial<Project>;
+interface EditProjectFormProps {
+  defaultValues: FormValues;
   submitHandler: (data: FormValues) => Promise<void>;
 }
 
-export function EditProjectFormDesktop({ project, submitHandler }: EditProjectFormDesktop) {
-  const form = useForm<FormValues>({
-    mode: "onChange",
-    resolver: zodResolver(schema),
-    defaultValues: {
-      name: project?.name || "",
-      description: project?.description || "",
-    },
-  });
+export function EditProjectForm({ defaultValues, submitHandler }: EditProjectFormProps) {
   const {
     handleSubmit,
     register,
     formState: { errors, isSubmitting, isValid },
-  } = form;
-
-  const isLoading = false;
+  } = useForm<FormValues>({
+    mode: "onChange",
+    resolver: zodResolver(schema),
+    defaultValues,
+  });
 
   return (
     <form className={styles.form} onSubmit={handleSubmit(submitHandler)}>
@@ -39,16 +32,17 @@ export function EditProjectFormDesktop({ project, submitHandler }: EditProjectFo
             id="name"
             type="text"
             placeholder={TEXTS.projects.titlePlaceholder}
-            {...register("name", { required: "Это поле обязательно" })}
+            aria-invalid={!!errors.name}
+            disabled={isSubmitting}
+            {...register("name")}
           />
-          {errors.name && <FormFieldError>{errors.name.message as string}</FormFieldError>}
+          {errors.name && <FormFieldError>{errors.name.message}</FormFieldError>}
         </div>
         <Textarea
           rows={3}
           id="description"
           aria-invalid={!!errors.description}
-          aria-describedby="description-error"
-          placeholder={TEXTS.tasks.descriptionPlaceholder}
+          placeholder={TEXTS.projects.descriptionPlaceholder}
           disabled={isSubmitting}
           autoComplete="off"
           className="textarea"
@@ -57,7 +51,7 @@ export function EditProjectFormDesktop({ project, submitHandler }: EditProjectFo
       </div>
       <div className={styles.buttons}>
         <SubmitButton variant="primary" type="submit" disabled={!isValid || isSubmitting}>
-          {isSubmitting || isLoading ? TEXTS.saving : TEXTS.save}
+          {isSubmitting ? TEXTS.saving : TEXTS.save}
         </SubmitButton>
       </div>
     </form>

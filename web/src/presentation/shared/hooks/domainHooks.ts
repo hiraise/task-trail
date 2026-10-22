@@ -8,7 +8,7 @@
  */
 
 // Auth domain hooks
-export { useChangePassword, useLogout } from "@/presentation/features/auth/hooks";
+export { useChangePassword, useLogout, usePublicSettings } from "@/presentation/features/auth/hooks";
 
 // User domain hooks
 export { useGetCurrentUser } from "@/presentation/features/user/hooks";

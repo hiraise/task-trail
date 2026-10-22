@@ -1,7 +1,7 @@
 import z from "zod";
 
 // Поля форм с теми же пределами, что в контракте (api/openapi.yaml, схемы Email, Password,
-// Username): веб не принимает то, что сервер отвергнет, и не строже сервера.
+// Username, Project): веб не принимает то, что сервер отвергнет, и не строже сервера.
 
 const encoder = new TextEncoder();
 
@@ -23,3 +23,16 @@ export const usernameField = z
   .trim()
   .min(1, "Введите имя")
   .max(100, "Имя длиннее 100 символов");
+
+// Название проекта — 1–254 символа; пробелы по краям веб обрезает сам: сервер их не трогает
+export const projectNameField = z
+  .string()
+  .trim()
+  .min(1, "Введите название проекта")
+  .max(254, "Название длиннее 254 символов");
+
+// Описание в контракте без предела; пустое — описания нет
+export const projectDescriptionField = z.string().trim();
+
+/** Сколько почт за раз принимает сервер (AddMembersRequest, CreateProjectRequest). */
+export const MAX_INVITE_EMAILS = 50;

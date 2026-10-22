@@ -6,7 +6,7 @@ import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/sh
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { projectsTexts } from "@/shared/locales/projects";
 
-import { useCreateProject } from "../../hooks";
+import { useCreateProject, useInvitationReport } from "../../hooks";
 import { useCreateProjectFormStore } from "../../store/createProjectFormStore";
 import { SelectedUsers } from "../SelectedUsers";
 
@@ -16,18 +16,16 @@ import type { CreateProjectFormData } from "./schema";
 import { CreateProjectSchema } from "./schema";
 
 interface CreateProjectFormProps {
+  /** Закрыть окно формы: проект создан */
   onSubmit: () => void;
 }
 
 export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
   const store = useCreateProjectFormStore();
+  const { setName, setDescription, setEmails } = store;
   const { showInviteUser } = useGlobalModals();
-
   const { mutateAsync: createProject } = useCreateProject();
-
-  useEffect(() => {
-    store.initialize();
-  }, [store]);
+  const reportInvitations = useInvitationReport();
 
   const {
     register,
@@ -37,49 +35,37 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
   } = useForm<CreateProjectFormData>({
     resolver: zodResolver(CreateProjectSchema),
     mode: "onChange",
-    defaultValues: {
-      name: store.draft?.getName() || "",
-      description: store.draft?.getDescription() || "",
-    },
+    defaultValues: { name: store.name, description: store.description },
   });
 
-  const formValues = useWatch({ control });
+  // Поля — в черновике: окно выбора участников закрывает форму (createProjectFormStore.ts)
+  const [name, description] = useWatch({ control, name: ["name", "description"] });
 
-  // Sync name with state
-  useEffect(() => {
-    if (formValues.name !== undefined && formValues.name !== store.draft?.getName()) {
-      store.setName(formValues.name);
-    }
-  }, [formValues.name, store]);
-
-  // Sync description with state
-  useEffect(() => {
-    if (
-      formValues.description !== undefined &&
-      formValues.description !== store.draft?.getDescription()
-    ) {
-      store.setDescription(formValues.description || "");
-    }
-  }, [formValues.description, store]);
+  useEffect(() => setName(name ?? ""), [name, setName]);
+  useEffect(() => setDescription(description ?? ""), [description, setDescription]);
 
   const handleInviteUser = async () => {
-    const emails = await showInviteUser();
+    const emails = await showInviteUser({ emails: store.emails });
 
-    if (emails && emails.length > 0) {
-      store.setParticipants(emails);
+    if (emails) setEmails(emails);
+  };
+
+  const submitHandler = async (values: CreateProjectFormData) => {
+    try {
+      const { project, invitations } = await createProject({
+        name: values.name,
+        description: values.description || undefined,
+        emails: store.emails,
+      });
+
+      store.reset();
+      onSubmit();
+      // Окно формы уже закрыто — результат приглашений можно показать своим окном
+      reportInvitations(project.id, invitations);
+    } catch {
+      // Ошибку показал useCreateProject
     }
   };
-
-  const submitHandler = async () => {
-    if (!store.draft) return;
-    const dto = store.draft.toPersistenceDto();
-
-    await createProject(dto);
-    store.reset();
-    onSubmit();
-  };
-
-  const emails = store.draft?.getMembers().map((member) => member.toString()) || [];
 
   return (
     <form onSubmit={handleSubmit(submitHandler)} className={styles.formContainer}>
@@ -109,9 +95,8 @@ export function CreateProjectForm({ onSubmit }: CreateProjectFormProps) {
         {errors.description && <FormFieldError>{errors.description.message}</FormFieldError>}
         <AddParticipant onClick={handleInviteUser} />
 
-        {/* Display selected participants */}
-        {emails.length > 0 && (
-          <SelectedUsers emails={emails} onDeleteUser={(email) => store.removeParticipant(email)} />
+        {store.emails.length > 0 && (
+          <SelectedUsers emails={store.emails} onDeleteUser={store.removeEmail} />
         )}
       </div>
       <SubmitButton type="submit" disabled={isSubmitting}>

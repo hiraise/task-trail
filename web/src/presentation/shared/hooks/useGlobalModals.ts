@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+import type { InvitationResult } from "@/domain/models/Invitation";
 import type { Project } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { Task } from "@/domain/models/Task";
@@ -36,10 +37,20 @@ export interface LeaveProjectProps {
 }
 
 export interface MemberActionsProps {
-  memberId: UserId;
-  memberDisplayName: string;
-  currentUserId: UserId;
+  member: ProjectMember;
   projectId: ProjectId;
+}
+
+export interface InviteUserProps {
+  /** Проект, куда зовут: кандидаты — без его участников. Без него — новый проект */
+  projectId?: ProjectId;
+  /** Почты, выбранные раньше */
+  emails?: string[];
+}
+
+export interface InvitationResultsProps {
+  projectId: ProjectId;
+  results: InvitationResult[];
 }
 
 export interface ActionProps {
@@ -74,7 +85,10 @@ export const useGlobalModals = () => {
     // Creation modals
     showCreateTask: () => safeOpen<void>(MODAL_TYPE.CREATE_TASK),
     showCreateProject: () => safeOpen<void>(MODAL_TYPE.CREATE_PROJECT),
-    showInviteUser: () => safeOpen<string[]>(MODAL_TYPE.INVITE_USER),
+    showInviteUser: (props?: InviteUserProps) =>
+      safeOpen<string[]>(MODAL_TYPE.INVITE_USER, { ...props }),
+    showInvitationResults: (props: InvitationResultsProps) =>
+      safeOpen<void>(MODAL_TYPE.INVITATION_RESULTS, { ...props }),
 
     // Common actions
     showMoveToArchive: (props?: ActionProps) =>
@@ -88,7 +102,8 @@ export const useGlobalModals = () => {
       safeOpen<void>(MODAL_TYPE.EDIT_PROJECT, { ...props }),
     showLeaveProject: (props: LeaveProjectProps) =>
       safeOpen<ProjectId | null>(MODAL_TYPE.LEAVE_PROJECT, { ...props }),
-    showProjectSettings: () => safeOpen<void>(MODAL_TYPE.PROJECT_SETTINGS),
+    showProjectSettings: (projectId: ProjectId) =>
+      safeOpen<void>(MODAL_TYPE.PROJECT_SETTINGS, { projectId }),
     showMemberActions: (props: MemberActionsProps) =>
       safeOpen<void>(MODAL_TYPE.MEMBER_ACTIONS, { ...props }),
 

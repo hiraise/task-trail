@@ -1,1 +1,1 @@
-export { FloatingButtonDesktop } from "./FloatingButtonDesktop";
+export { FloatingButton } from "./FloatingButton";

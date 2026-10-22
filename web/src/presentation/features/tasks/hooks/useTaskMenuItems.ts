@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 
-import { canUserEditProject } from "@/domain/models/Project";
 import type { Task } from "@/domain/models/Task";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
@@ -12,7 +11,9 @@ import { useProject } from "../../projects/hooks";
 import { useDeleteTask } from "./useDeleteTask";
 
 export const useTaskMenuItems = (task: Task) => {
+  // Задачу меняет и удаляет любой участник её проекта (контракт API): меню — когда проект открылся
   const { data: project } = useProject(task.projectId);
+  const isMember = Boolean(project);
   const { mutateAsync: deleteTask } = useDeleteTask(task.projectId);
 
   const { showEditTask, showMoveToArchive, showDeleteItem } = useGlobalModals();
@@ -28,7 +29,7 @@ export const useTaskMenuItems = (task: Task) => {
           title: task.name,
           description: task.description,
         }),
-      isVisible: project ? canUserEditProject(project) : false,
+      isVisible: isMember,
     },
     {
       label: TEXTS.tasks.moveToArchive,
@@ -42,7 +43,7 @@ export const useTaskMenuItems = (task: Task) => {
         //TODO: implement move to archive logic
         if (result) toast.warning(`Task id: ${task.id} moved to archive`);
       },
-      isVisible: project ? canUserEditProject(project) : false,
+      isVisible: isMember,
     },
     {
       label: TEXTS.tasks.delete,
@@ -55,7 +56,7 @@ export const useTaskMenuItems = (task: Task) => {
 
         if (result) await deleteTask(result);
       },
-      isVisible: project ? canUserEditProject(project) : false,
+      isVisible: isMember,
     },
   ];
 

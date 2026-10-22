@@ -1,66 +1,31 @@
-import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import type { CreateProjectPayload } from "@/application/payloads";
-import { createProjectUseCase } from "@/application/usecases";
-import type { ProjectDetails } from "@/domain/models/Project";
-import { logger } from "@/infrastructure/config/clientLogger";
+import type { ProjectCreated } from "@/domain/repositories/ProjectRepository";
+import { projectRepository } from "@/infrastructure/repositories";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+import { toastError } from "@/shared/errors/errorMessage";
+import { projectsTexts } from "@/shared/locales/projects";
 
 /**
- * Custom hook for creating a new project with mutation handling.
- *
- * This hook wraps the project creation mutation and provides:
- * - Automatic cache updates on successful creation
- * - Navigation to the newly created project page
- * - Toast notifications for success/error states
- * - Query invalidation to refresh project lists
- * - Comprehensive logging of creation events and errors
- *
- * @returns A mutation object from `useMutation` with methods to trigger project creation
- *
- * @example
- * ```tsx
- * const createProject = useCreateProject();
- *
- * const handleCreate = () => {
- *   createProject.mutate({
- *     name: "New Project",
- *     description: "Project description"
- *   });
- * };
- * ```
+ * Создаёт проект и зовёт в него почты из `emails` тем же запросом (ADR-0016). Результат
+ * приглашений показывает форма — после того как закроет своё окно (useInvitationReport).
  */
 export function useCreateProject() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  return useMutation<ProjectDetails, Error, CreateProjectPayload>({
-    mutationFn: (payload) => createProjectUseCase(payload),
-
-    onSuccess: async (newProject) => {
-      queryClient.setQueryData(QUERY_KEYS.project.detail(newProject.id), newProject);
-
-      logger.info("Project created successfully", {
-        projectId: newProject.id,
-        name: newProject.name,
-      });
-
-      toast.success("Project created successfully");
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      navigate({ to: "/projects/$id", params: { id: newProject.id } });
+  return useMutation<ProjectCreated, Error, CreateProjectPayload>({
+    mutationFn: ({ name, description, emails }) =>
+      projectRepository.create({ name, description, emails }),
+    onSuccess: ({ project }) => {
+      queryClient.setQueryData(QUERY_KEYS.project.detail(project.id), project);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.all });
+      toast.success(projectsTexts.projectCreated);
+      navigate({ to: "/projects/$id", params: { id: project.id } });
     },
-
-    onError: (error) => {
-      logger.error("Failed to create project", { error, timestamp: new Date().toISOString() });
-
-      toast.error(`Failed to create project: ${error.message}`);
-    },
-    onSettled: (newProject) => {
-      if (newProject) {
-        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(newProject.id) });
-      }
-    },
+    onError: (error) => toastError(error, projectsTexts.createProjectFailed),
   });
 }

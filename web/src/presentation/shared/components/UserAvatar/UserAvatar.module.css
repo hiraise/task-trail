@@ -24,3 +24,30 @@
   height: 48px;
   background-color: var(--bg-tertiary);
 }
+
+.avatar {
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initials {
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.small .initials {
+  font-size: 10px;
+}
+
+.standard .initials {
+  font-size: 12px;
+}
+
+.large .initials {
+  font-size: 16px;
+}

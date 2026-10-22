@@ -12,8 +12,7 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const { data: members } = useProjectMembers(project.id);
-  const memberIds = members?.map((member) => member.id) || [];
+  const { data: members = [] } = useProjectMembers(project.id);
 
   const [isHovered, setIsHovered] = useState(false);
 
@@ -36,8 +35,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </p>
       </div>
       <div className={styles.infoWrapper}>
-        {memberIds.length > 0 && (
-          <MembersAvatarList memberIds={memberIds} bgColor={bgColor} variant="standard" />
+        {members.length > 0 && (
+          <MembersAvatarList users={members} bgColor={bgColor} variant="standard" />
         )}
         <span className="caption-reg">{pluralizeTasks(project.tasksCount)}</span>
       </div>

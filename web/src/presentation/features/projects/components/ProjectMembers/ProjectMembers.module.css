@@ -12,24 +12,25 @@
   height: 32px;
 }
 
-/* MembersDetailView styles */
-.membersWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.toggle {
+  transition: transform 0.2s ease;
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  border-bottom: 1px solid var(--border-secondary-2);
-  padding-bottom: 8px;
+.toggle.expanded {
+  transform: rotate(90deg);
 }
 
-.members {
-  display: grid;
-  grid-auto-rows: 1fr;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  column-gap: 20px;
+/* До 767 px — телефон (presentation/shared/hooks/useDevice.ts) */
+.wideOnly {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .phoneOnly {
+    display: none;
+  }
+
+  .wideOnly {
+    display: block;
+  }
 }

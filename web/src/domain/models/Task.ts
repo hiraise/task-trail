@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import type { TaskId, UserId } from "../types";
+import type { ProjectId, TaskId, UserId } from "../types";
 
-import { ProjectIdSchema } from "./Project";
 import { TaskStatusIdSchema } from "./TaskStatus";
 
+const ProjectIdSchema = z.union([z.string(), z.number()]).transform(String) as z.ZodType<ProjectId>;
 const UserIdSchema = z.union([z.string(), z.number()]).transform(String) as z.ZodType<UserId>;
 
 export const TaskSchema = z.object({

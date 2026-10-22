@@ -1,100 +1,124 @@
 import { useRef, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
 
-import { SubmitButton } from "@/presentation/shared";
+import type { ProjectId } from "@/domain/types";
+import { FormFieldError, SubmitButton } from "@/presentation/shared";
+import { emailField, MAX_INVITE_EMAILS } from "@/presentation/shared/forms/fields";
+import { usePublicSettings } from "@/presentation/shared/hooks";
 import { useClickOutside } from "@/presentation/shared/hooks/useClickOutside";
 import { Input } from "@/presentation/shared/ui/Input";
+import { projectsTexts } from "@/shared/locales/projects";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { useCreateProjectFormStore } from "../../store/createProjectFormStore";
 import { SelectedUsers } from "../SelectedUsers";
 import { UsersList } from "../UsersList";
 
 import styles from "./AddParticipantForm.module.css";
 
-interface FormValues {
-  query: string;
-}
-
 interface AddParticipantFormProps {
-  onSubmit?: (emails: string[]) => void | Promise<void>;
+  /** Проект, куда зовут; без него — новый проект */
+  projectId?: ProjectId;
+  /** Почты, выбранные раньше */
+  initialEmails?: string[];
+  onSubmit: (emails: string[]) => void;
 }
 
-export function AddParticipantForm({ onSubmit }: AddParticipantFormProps) {
+// Почту сервер приводит к нижнему регистру и обрезает (ADR-0016) — веб сравнивает так же
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
+
+/**
+ * Выбор, кого позвать: кандидаты из общих проектов и любая почта. Enter в поле добавляет
+ * введённую почту к выбранным, кнопка зовёт всех выбранных вместе с введённой.
+ */
+export function AddParticipantForm({
+  projectId,
+  initialEmails = [],
+  onSubmit,
+}: AddParticipantFormProps) {
+  const [emails, setEmails] = useState(initialEmails);
+  const [query, setQuery] = useState("");
+  const [error, setError] = useState<string>();
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  // Use a ref for the dropdown to handle clicks outside of it
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { data: settings } = usePublicSettings();
+  const hint = settings?.mailEnabled === false ? projectsTexts.inviteHintNoMail : projectsTexts.inviteHint;
 
   useClickOutside([inputRef, dropdownRef], () => setShowDropdown(false));
 
-  // Use the custom hook to access the project form state and methods
-  const store = useCreateProjectFormStore();
+  const typedEmail = (): string | undefined => {
+    const email = normalizeEmail(query);
 
-  const emails = store.draft?.getMembers().map((member) => member.toString()) || [];
-
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = useForm<FormValues>({
-    mode: "onChange",
-    defaultValues: { query: "" },
-  });
-
-  const queryValue = useWatch({ control, name: "query" });
-
-  const submitHandler = () => {
-    if (!onSubmit || emails.length === 0) return;
-    onSubmit(emails);
+    return emailField.safeParse(email).success ? email : undefined;
   };
 
-  //TODO: replace (email: string) with propper DTO with user data
+  const toggle = (value: string) => {
+    const email = normalizeEmail(value);
 
-  const handleUserSelect = (email: string) => store.toggleParticipant(email);
+    setError(undefined);
+    setEmails((prev) =>
+      prev.includes(email) ? prev.filter((selected) => selected !== email) : [...prev, email],
+    );
+    if (email === normalizeEmail(query)) setQuery("");
+  };
 
-  const handleUserDelete = (email: string) => store.removeParticipant(email);
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    const email = typedEmail();
+
+    if (email && !emails.includes(email)) toggle(email);
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const email = typedEmail();
+    const all = email && !emails.includes(email) ? [...emails, email] : emails;
+
+    if (all.length === 0) return;
+    if (all.length > MAX_INVITE_EMAILS) {
+      setError(projectsTexts.tooManyEmails);
+
+      return;
+    }
+    onSubmit(all);
+  };
 
   return (
-    <form onSubmit={handleSubmit(submitHandler)} className={styles.container}>
+    <form onSubmit={handleSubmit} className={styles.container}>
       <div className={styles.form}>
-        {/* Input field for user query */}
-        <Controller
-          name={"query"}
-          control={control}
-          render={({ field }) => (
-            <Input
-              {...field}
-              ref={inputRef}
-              id="query"
-              type="text"
-              placeholder={TEXTS.userQueryPlaceholder}
-              onFocus={() => setShowDropdown(true)}
-              autoComplete="off"
-            />
-          )}
-        ></Controller>
+        <Input
+          ref={inputRef}
+          id="query"
+          type="text"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setShowDropdown(true)}
+          placeholder={TEXTS.userQueryPlaceholder}
+          autoComplete="off"
+        />
+        {error && <FormFieldError>{error}</FormFieldError>}
       </div>
-      {/* Show info message when no dropdown is shown */}
-      {!showDropdown && <span className="caption-reg">{TEXTS.userInviteDescription}</span>}
 
-      {/* Middle section that contains both dropdown and selected users */}
+      {!showDropdown && <span className="caption-reg">{hint}</span>}
+
       {showDropdown && (
         <div className={styles.dropDown} ref={dropdownRef}>
           <UsersList
-            onUserSelect={handleUserSelect}
+            projectId={projectId}
+            onUserSelect={toggle}
             selectedUsers={emails}
-            searchQuery={queryValue}
+            searchQuery={query}
           />
         </div>
       )}
       {showDropdown && <div className={styles.middle} />}
       {emails.length > 0 && (
-        <SelectedUsers emails={emails} onDeleteUser={handleUserDelete} isExpanded={!showDropdown} />
+        <SelectedUsers emails={emails} onDeleteUser={toggle} isExpanded={!showDropdown} />
       )}
 
       <div className={styles.btnContainer}>
-        <SubmitButton type="submit" className="btn-font-m" disabled={isSubmitting}>
+        <SubmitButton type="submit" className="btn-font-m">
           {TEXTS.projects.invite}
         </SubmitButton>
       </div>

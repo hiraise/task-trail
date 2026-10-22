@@ -11,7 +11,8 @@ import { useBoardMenuItems } from "../../hooks";
 import styles from "./BoardListItem.module.css";
 
 export function BoardListItem({ board }: { board: MockBoardDto }) {
-  const memberIds = board.members.map((m) => m.id);
+  // Доски — заглушка с выдуманными людьми: их внешние аватарки не грузим
+  const members = board.members.map((member) => ({ ...member, avatarUrl: undefined }));
 
   const { menuItems } = useBoardMenuItems();
 
@@ -23,7 +24,7 @@ export function BoardListItem({ board }: { board: MockBoardDto }) {
           <span className="caption-reg">{pluralizeTasks(board.taskCount)}</span>
         </div>
 
-        {board.members.length > 0 && <MembersAvatarList maxVisible={6} memberIds={memberIds} />}
+        {board.members.length > 0 && <MembersAvatarList maxVisible={6} users={members} />}
       </Link>
       <div className={styles.menu}>
         <DropdownMenu

@@ -1,19 +1,15 @@
-import type { ProjectId, UserId } from "@/domain/types";
+import type { ProjectChanges } from "@/domain/repositories/ProjectRepository";
+import type { AssignableRole, ProjectId, UserId } from "@/domain/types";
 
 export interface CreateProjectPayload {
   name: string;
   description?: string;
-  participants?: string[]; //emails
+  /** Кого позвать сразу (ADR-0016) */
+  emails: string[];
 }
 
-export interface EditProjectPayload {
-  /**
-   * Project ID is used for routing (endpoint URL),
-   * NOT included in request body
-   */
+export interface EditProjectPayload extends ProjectChanges {
   projectId: ProjectId;
-  name?: string;
-  description?: string;
 }
 
 export interface AddMembersPayload {
@@ -24,6 +20,12 @@ export interface AddMembersPayload {
 export interface RemoveMemberPayload {
   projectId: ProjectId;
   memberId: UserId;
+}
+
+export interface ChangeMemberRolePayload {
+  projectId: ProjectId;
+  memberId: UserId;
+  role: AssignableRole;
 }
 
 export interface LeaveProjectPayload {
