@@ -11,6 +11,7 @@ export const apiErrorTexts: Partial<Record<ApiErrorCode, string>> = {
   PASSWORD_SAME_AS_OLD: "Новый пароль совпадает с текущим",
   LINK_INVALID: "Ссылка недействительна или устарела",
   INVITATION_ACCEPTED: "Аккаунт с этой почтой уже есть — войдите",
+  ASSIGNEE_NOT_MEMBER: "Ответственный должен быть участником проекта",
   OWNER_CANNOT_LEAVE: "Владелец не может покинуть проект — его можно только удалить",
   FILE_TOO_LARGE: "Файл больше 5 МБ",
   FILE_TYPE_NOT_ALLOWED: "Подходят только изображения JPEG, PNG и WebP",

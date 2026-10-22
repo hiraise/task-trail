@@ -1,6 +1,8 @@
 import type { InvitationResult } from "@/domain/models/Invitation";
 import type { Project, ProjectDetails } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
+import type { Task } from "@/domain/models/Task";
+import type { TaskStatus } from "@/domain/models/TaskStatus";
 import type { CurrentUser, User } from "@/domain/models/User";
 
 import type {
@@ -9,6 +11,8 @@ import type {
   Member as MemberDto,
   ProjectDetails as ProjectDetailsDto,
   Project as ProjectDto,
+  TaskStatus as TaskStatusDto,
+  Task as TaskDto,
   User as UserDto,
 } from "../api/generated";
 import { fileUrl } from "../config/apiRoutes";
@@ -50,4 +54,23 @@ export const toInvitationResult = (dto: InvitationResultDto): InvitationResult =
   email: dto.email,
   outcome: dto.result,
   inviteUrl: dto.inviteUrl ?? undefined,
+});
+
+export const toTask = (dto: TaskDto): Task => ({
+  id: dto.id,
+  projectId: dto.projectId,
+  name: dto.name,
+  description: dto.description ?? undefined,
+  statusId: dto.statusId,
+  authorId: dto.authorId,
+  assigneeId: dto.assigneeId ?? undefined,
+  createdAt: dto.createdAt,
+  updatedAt: dto.updatedAt,
+});
+
+export const toTaskStatus = (dto: TaskStatusDto): TaskStatus => ({
+  id: dto.id,
+  name: dto.name,
+  isDefault: dto.isDefault,
+  isResolved: dto.isResolved,
 });

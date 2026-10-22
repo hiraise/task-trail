@@ -1,2 +1,1 @@
-export { TasksDesktopPage } from "./TasksDesktopPage";
-export { TasksMobilePage } from "./TasksMobilePage";
+export { TasksPage } from "./TasksPage";

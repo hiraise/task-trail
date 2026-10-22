@@ -29,6 +29,11 @@
   outline: none;
 }
 
+/* Поле с ошибкой — красная рамка, как в макете */
+.textarea[aria-invalid="true"] {
+  box-shadow: inset 0 0 0 1px var(--border-critical);
+}
+
 .textarea:-webkit-autofill {
   background-color: var(--grey) !important;
   -webkit-box-shadow: 0 0 0px 1000px var(--grey) inset;

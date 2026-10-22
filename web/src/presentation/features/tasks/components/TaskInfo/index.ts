@@ -1,2 +1,1 @@
-export { TaskInfoMobile } from "./TaskInfoMobile";
-export { TaskInfoDesktop } from "./TaskInfoDesktop";
+export { TaskInfo } from "./TaskInfo";

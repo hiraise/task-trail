@@ -1,4 +1,3 @@
-export * from "./ActionsMenu";
 export * from "./AddParticipantForm";
 export * from "./EditProjectForm";
 export * from "./FloatingButton";

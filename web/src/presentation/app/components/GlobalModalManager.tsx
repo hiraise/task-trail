@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 
 import { MODAL_TYPE, useGlobalModalContext } from "./GlobalModalContext";
 import {
@@ -20,6 +20,7 @@ import {
   TaskSettingsModal,
   ChangeTaskStatusModal,
 } from "./lazyModalComponents";
+import { ModalAppearContext } from "./modalAppear";
 
 const MODAL_COMPONENTS = {
   [MODAL_TYPE.CREATE_TASK]: CreateTaskModal,
@@ -44,6 +45,15 @@ const MODAL_COMPONENTS = {
 export function GlobalModalManager() {
   const { stack, close, back } = useGlobalModalContext();
   const topModal = stack[stack.length - 1];
+  // Видно только верхнее окно. Сменилось окно на окне (выбор из формы, возврат в форму) —
+  // новое появляется без анимации: затемнение и панель остаются на месте (ModalAppearContext)
+  const [shownModal, setShownModal] = useState(topModal);
+  const [appear, setAppear] = useState(true);
+
+  if (topModal !== shownModal) {
+    setShownModal(topModal);
+    setAppear(!shownModal);
+  }
 
   if (!topModal) return null;
 
@@ -51,8 +61,10 @@ export function GlobalModalManager() {
   const ModalComponent = MODAL_COMPONENTS[type];
 
   return (
-    <Suspense>
-      <ModalComponent isOpen onClose={close} onBack={back} {...props} />
-    </Suspense>
+    <ModalAppearContext value={appear}>
+      <Suspense>
+        <ModalComponent isOpen onClose={close} onBack={back} {...props} />
+      </Suspense>
+    </ModalAppearContext>
   );
 }

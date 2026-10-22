@@ -1,15 +1,18 @@
+import type { ProjectId } from "@/domain/types";
 import { Icon } from "@/presentation/shared";
-import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
 
+import { useOpenCreateTask } from "../../../tasks/hooks";
+
 import styles from "./FloatingButton.module.css";
 
-export function FloatingButton() {
-  const { showCreateTask } = useGlobalModals();
+/** «Создать задачу» на странице проекта: форма открывается сразу с этим проектом. */
+export function FloatingButton({ projectId }: { projectId: ProjectId }) {
+  const openCreateTask = useOpenCreateTask();
 
   return (
-    <button className={styles.container} onClick={showCreateTask}>
+    <button type="button" className={styles.container} onClick={() => openCreateTask(projectId)}>
       <span className="btn-font-m">{TEXTS.tasks.createButton}</span>
       <div className={styles.icon}>
         <Icon as={ICONS.plus} size="32px" inheritColor />

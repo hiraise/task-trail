@@ -1,0 +1,36 @@
+/* Цвета статусов — по ID (TaskStatusId), макет: страница «Задачи», «Статусы задач и их ховеры». */
+.badge {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  transition: filter 0.2s ease;
+  cursor: pointer;
+}
+
+.badge:hover {
+  filter: brightness(0.95);
+}
+
+.badge:disabled {
+  cursor: default;
+  filter: none;
+}
+
+.in_progress {
+  background-color: var(--bg-accent-blue);
+}
+
+.in_review {
+  background-color: var(--bg-accent-yellow);
+}
+
+.done {
+  background-color: var(--bg-accent-green);
+}

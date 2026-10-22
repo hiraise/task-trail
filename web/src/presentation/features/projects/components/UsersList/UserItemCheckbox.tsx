@@ -1,8 +1,7 @@
 import type { User } from "@/domain/models/User";
-import { CheckBox } from "@/presentation/shared";
+import { CheckBox, UserItem } from "@/presentation/shared";
 
-import { UserItem } from "./UserItem";
-import styles from "./UserItem.module.css";
+import styles from "./UserItemCheckbox.module.css";
 
 interface UserItemCheckBoxProps {
   user: User;

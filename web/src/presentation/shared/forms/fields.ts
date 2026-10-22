@@ -1,7 +1,7 @@
 import z from "zod";
 
 // Поля форм с теми же пределами, что в контракте (api/openapi.yaml, схемы Email, Password,
-// Username, Project): веб не принимает то, что сервер отвергнет, и не строже сервера.
+// Username, Project, Task): веб не принимает то, что сервер отвергнет, и не строже сервера.
 
 const encoder = new TextEncoder();
 
@@ -33,6 +33,16 @@ export const projectNameField = z
 
 // Описание в контракте без предела; пустое — описания нет
 export const projectDescriptionField = z.string().trim();
+
+// Название задачи — 1–254 символа, как у проекта; «Заполните поле» — текст макета
+export const taskNameField = z
+  .string()
+  .trim()
+  .min(1, "Заполните поле")
+  .max(254, "Название длиннее 254 символов");
+
+// Описание задачи в контракте без предела; пустое — описания нет
+export const taskDescriptionField = z.string().trim();
 
 /** Сколько почт за раз принимает сервер (AddMembersRequest, CreateProjectRequest). */
 export const MAX_INVITE_EMAILS = 50;

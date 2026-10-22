@@ -2,54 +2,37 @@ import { useState } from "react";
 
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { BaseModalProps } from "@/presentation/shared";
-import { BaseModal, DeviceBased, DialogButtons } from "@/presentation/shared";
-import { useGlobalModalProps, useProjectMembers } from "@/presentation/shared/hooks";
+import { BaseModal, DialogButtons } from "@/presentation/shared";
+import { useDevice, useGlobalModalProps, useProjectMembers } from "@/presentation/shared/hooks";
 import type { SelectAssigneeProps } from "@/presentation/shared/hooks/useGlobalModals";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { MembersListDesktop, MembersListMobile } from "../../components/MembersList";
+import { AssigneeList } from "../../components";
 
+/** Ответственный — из участников проекта задачи; на телефоне окно закрывается выбором. */
 export function SelectAssigneeModal(props: BaseModalProps<ProjectMember>) {
+  const { onClose, ...rest } = props;
   const { projectId, userId } = useGlobalModalProps<SelectAssigneeProps>() ?? {};
+  const { data: members, isLoading } = useProjectMembers(projectId ?? "");
+  const [selectedId, setSelectedId] = useState(userId);
+  const isPhone = useDevice() === "mobile";
 
-  const { data: members = [] } = useProjectMembers(projectId!);
-  const currentUser = members.find((user) => user.id === userId);
-  const [selectedUser, setSelectedUser] = useState<ProjectMember | undefined>(currentUser);
-
-  const handleMobileSelect = (value: ProjectMember) => {
-    setSelectedUser(value);
-    props.onClose(value);
+  const handleSelect = (member: ProjectMember) => {
+    setSelectedId(member.id);
+    if (isPhone) onClose(member);
   };
 
-  const handleOnSelect = (user: ProjectMember) => {
-    setSelectedUser(user);
-  };
-
-  const handleApply = () => {
-    props.onClose(selectedUser);
-  };
+  const handleApply = () => onClose(members?.find((member) => member.id === selectedId));
 
   return (
-    <BaseModal {...props} fullScreen title={TEXTS.tasks.assignee}>
-      <DeviceBased
-        desktop={
-          <>
-            <MembersListDesktop
-              selectedUserId={selectedUser?.id}
-              members={members}
-              onSelect={handleOnSelect}
-            />
-            <DialogButtons onApply={handleApply} onClose={() => props.onClose()} />
-          </>
-        }
-        mobile={
-          <MembersListMobile
-            selectedUserId={userId}
-            members={members}
-            onSelect={handleMobileSelect}
-          />
-        }
+    <BaseModal {...rest} onClose={() => onClose()} fullScreen title={TEXTS.tasks.assignee}>
+      <AssigneeList
+        members={projectId ? members : undefined}
+        isLoading={Boolean(projectId) && isLoading}
+        selectedId={selectedId}
+        onSelect={handleSelect}
       />
+      {!isPhone && <DialogButtons onClose={() => onClose()} onApply={handleApply} />}
     </BaseModal>
   );
 }

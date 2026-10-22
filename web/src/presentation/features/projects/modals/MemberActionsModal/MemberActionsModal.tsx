@@ -1,8 +1,7 @@
-import { BaseModal, type BaseModalProps } from "@/presentation/shared";
+import { ActionsMenu, BaseModal, type BaseModalProps } from "@/presentation/shared";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
 import type { MemberActionsProps } from "@/presentation/shared/hooks/useGlobalModals";
 
-import { ActionsMenu } from "../../components/ActionsMenu";
 import { useMembersMenuItems } from "../../hooks";
 
 export function MemberActionsModal(props: BaseModalProps<void>) {

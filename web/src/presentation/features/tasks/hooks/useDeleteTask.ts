@@ -1,99 +1,37 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import type { Task } from "@/domain/models/Task";
-import type { ProjectId, TaskId } from "@/domain/types";
-import { logger } from "@/infrastructure/config/clientLogger";
 import { taskRepository } from "@/infrastructure/repositories";
+import { ROUTES } from "@/shared/config/routes";
 import { QUERY_KEYS } from "@/shared/constants/queryKeys";
+import { toastError } from "@/shared/errors/errorMessage";
+import { tasksTexts } from "@/shared/locales/tasks";
 
-interface DeleteTaskContext {
-  previousTaskDetails: Task | undefined;
-  previousTasks: Task[] | undefined;
-  taskId: TaskId;
-  projectId: ProjectId;
-}
+import { invalidateTaskLists } from "./taskCache";
 
-/**
- * Custom hook for deleting a task with optimistic updates and error handling.
- *
- * Implements optimistic UI updates by immediately removing the task from the cache
- * before the server request completes. If the deletion fails, the previous state
- * is restored.
- *
- * @param projectId - The ID of the project containing the task to delete
- *
- * @returns A mutation object from React Query with the following behavior:
- * - `mutationFn`: Calls the task repository to delete the task
- * - `onMutate`: Cancels related queries, stores previous state, and optimistically removes the task
- * - `onSuccess`: Logs success, shows success toast, and redirects to project page after 300ms delay
- * - `onError`: Restores previous state, logs error details, and shows error toast
- *
- * @example
- * ```typescript
- * const deleteTask = useDeleteTask(projectId);
- * deleteTask.mutate(taskId);
- * ```
- */
-export function useDeleteTask(projectId: ProjectId) {
+/** Удаляет задачу (мягко) и уводит со страницы задачи: в «Мои задачи» или в её проект. */
+export function useDeleteTask() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-  return useMutation<void, Error, TaskId, DeleteTaskContext>({
-    mutationFn: (taskId) => taskRepository.delete(taskId),
-    onMutate: async (taskId) => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task.all });
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.task.detail(taskId) });
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.project.tasks(projectId) });
+  return useMutation<void, Error, Task>({
+    mutationFn: (task) => taskRepository.delete(task.id),
+    onSuccess: async (_, task) => {
+      toast.success(tasksTexts.taskDeleted);
 
-      const previousTaskDetails = queryClient.getQueryData<Task>(QUERY_KEYS.task.detail(taskId));
-      const previousTasks = queryClient.getQueryData<Task[]>(QUERY_KEYS.project.tasks(projectId));
-
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.task.detail(taskId) });
-
-      queryClient.setQueryData<Task[]>(QUERY_KEYS.project.tasks(projectId), (old) =>
-        old?.filter((task) => task.id !== taskId),
-      );
-
-      return {
-        previousTaskDetails,
-        previousTasks,
-        taskId,
-        projectId,
-      };
-    },
-    onSuccess: async (_, taskId) => {
-      logger.info("Task deleted successfully", { taskId, projectId });
-
-      toast.success("Task deleted successfully");
-
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      navigate({ to: "/projects/$id", params: { id: projectId }, replace: true });
-    },
-    onError: (error, taskId, context) => {
-      if (context?.previousTaskDetails) {
-        queryClient.setQueryData(
-          QUERY_KEYS.task.detail(context.taskId),
-          context.previousTaskDetails,
-        );
-      }
-      if (context?.previousTasks) {
-        queryClient.setQueryData(
-          QUERY_KEYS.project.tasks(context.projectId),
-          context.previousTasks,
-        );
+      // Сначала уходим со страницы задачи, иначе она перечитает удалённую задачу
+      if (pathname.startsWith(ROUTES.tasks)) {
+        await navigate({ to: ROUTES.tasks, replace: true });
+      } else {
+        await navigate({ to: "/projects/$id", params: { id: task.projectId }, replace: true });
       }
 
-      logger.error("Failed to delete task", {
-        taskId,
-        projectId: context?.projectId,
-        error,
-        timestamp: new Date().toISOString(),
-      });
-
-      toast.error(`Failed to delete task: ${error.message}`);
+      queryClient.removeQueries({ queryKey: QUERY_KEYS.task.detail(task.id) });
+      invalidateTaskLists(queryClient, task.projectId, { countChanged: true });
     },
+    onError: (error) => toastError(error, tasksTexts.deleteTaskFailed),
   });
 }

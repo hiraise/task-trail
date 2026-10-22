@@ -1,13 +1,12 @@
 import { BaseModal, type BaseModalProps } from "@/presentation/shared";
+import { tasksTexts } from "@/shared/locales/tasks";
 
 import { CreateTaskForm } from "../../components/CreateTaskForm";
 
 export function CreateTaskModal(props: BaseModalProps) {
-  const handleSubmit = () => props.onClose();
-
   return (
-    <BaseModal {...props} title="Новая задача">
-      <CreateTaskForm onSubmit={handleSubmit} />
+    <BaseModal {...props} title={tasksTexts.newTask}>
+      <CreateTaskForm onSubmit={() => props.onClose()} />
     </BaseModal>
   );
 }

@@ -1,5 +1,6 @@
 import clsx from "clsx";
 
+import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { Task } from "@/domain/models/Task";
 import type { ProjectId } from "@/domain/types";
 import { IconButton } from "@/presentation/shared";
@@ -15,6 +16,7 @@ import { TaskList } from "./TaskList";
 interface ProjectTasksProps {
   projectId: ProjectId;
   tasks: Task[];
+  members: ProjectMember[];
   className?: string;
 }
 
@@ -22,7 +24,7 @@ interface ProjectTasksProps {
  * Задачи на странице проекта. На телефоне стрелка ведёт на страницу задач проекта,
  * шире — кнопка сортировки, список остаётся на месте.
  */
-export function ProjectTasks({ projectId, tasks, className }: ProjectTasksProps) {
+export function ProjectTasks({ projectId, tasks, members, className }: ProjectTasksProps) {
   const { showSortOptions } = useGlobalModals();
   const hasTasks = tasks.length > 0;
 
@@ -43,7 +45,7 @@ export function ProjectTasks({ projectId, tasks, className }: ProjectTasksProps)
         </div>
       </div>
       {hasTasks ? (
-        <TaskList tasks={tasks} />
+        <TaskList tasks={tasks} members={members} />
       ) : (
         <div className={styles.empty} role="status">
           <p className="caption-reg">{TEXTS.projects.noTasks}</p>

@@ -7,6 +7,8 @@ import styles from "./DraggableContent.module.css";
 interface DraggableContentProps {
   children: React.ReactNode;
   fullScreen?: boolean;
+  /** false — без выезда снизу: панель сменяет другую */
+  appear: boolean;
   contentRef: React.RefObject<HTMLDivElement | null>;
   isDragging: boolean;
 }
@@ -14,6 +16,7 @@ interface DraggableContentProps {
 export function DraggableContent({
   children,
   fullScreen,
+  appear,
   contentRef,
   isDragging,
 }: DraggableContentProps) {
@@ -35,7 +38,7 @@ export function DraggableContent({
       }}
       className={clsx(styles.content, { [styles.fullScreen]: fullScreen })}
       style={containerStyles}
-      initial={{ y: "100%" }}
+      initial={appear ? { y: "100%" } : false}
       animate={{ y: isDragging ? finalTransform : 0 }}
       exit={{ y: "100%" }}
       transition={{

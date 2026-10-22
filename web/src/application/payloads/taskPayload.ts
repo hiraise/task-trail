@@ -1,34 +1,28 @@
-import type { ProjectId, TaskId, UserId } from "@/domain/types";
+import type { Project } from "@/domain/models/Project";
+import type { Task } from "@/domain/models/Task";
+import type { NewTask, TaskChanges } from "@/domain/repositories/TaskRepository";
+import type { TaskId, TaskStatusId, UserId } from "@/domain/types";
 
-export interface CreateTaskPayload {
-  name: string;
-  description?: string;
-  assigneeId: UserId | undefined;
-  projectId: ProjectId;
+export type CreateTaskPayload = NewTask;
+
+export interface EditTaskPayload extends TaskChanges {
+  taskId: TaskId;
 }
 
-export interface EditTaskPayload {
+export interface ChangeTaskStatusPayload {
   taskId: TaskId;
-  title: string;
-  description?: string;
+  statusId: TaskStatusId;
 }
 
-export interface ChangeAssigneePayload {
+export interface ChangeTaskAssigneePayload {
   taskId: TaskId;
-  assigneeId?: UserId;
+  /** null — снять исполнителя */
+  assigneeId: UserId | null;
 }
 
-export interface ChangeStatusPayload {
-  taskId: TaskId;
-  statusId: string;
-}
-
-export interface UpdateTaskPayload {
-  /**
-   * Task ID is used for routing (endpoint URL),
-   * NOT included in request body
-   */
-  taskId: TaskId;
-  name?: string;
-  description?: string;
+export interface MoveTaskPayload {
+  /** Задача до переноса: по ней видно, снял ли сервер исполнителя */
+  task: Task;
+  /** Проект, куда переносим */
+  project: Project;
 }

@@ -1,4 +1,4 @@
-import { useGlobalModalContext } from "@/presentation/app";
+import { useGlobalModalContext, useModalAppear } from "@/presentation/app";
 
 import { DeviceBased } from "../../components";
 import { useScrollLock } from "../../hooks";
@@ -15,6 +15,7 @@ export function BaseModal<T = void>({
 }: BaseModalComponentProps<T>) {
   const { isOpen, onClose, onBack, fullScreen } = props;
   const { stack } = useGlobalModalContext();
+  const appear = useModalAppear();
 
   // Automatically determine if back button should be shown
   // Show back button if there's more than one modal in the stack, unless explicitly disabled
@@ -43,7 +44,7 @@ export function BaseModal<T = void>({
         </Dialog>
       }
       mobile={
-        <BottomSheet isOpen={isOpen} onClose={onClose} fullScreen={fullScreen}>
+        <BottomSheet isOpen={isOpen} onClose={onClose} fullScreen={fullScreen} appear={appear}>
           {title && (
             <BottomSheetTitle title={title} onBack={onBack} showBackButton={shouldShowBackButton} />
           )}

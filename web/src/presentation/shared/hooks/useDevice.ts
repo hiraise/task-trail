@@ -15,8 +15,10 @@ const getDeviceType = (width: number): DeviceType => {
   return "desktop";
 };
 
-export const useDevice = (): DeviceType | null => {
-  const [device, setDevice] = useState<DeviceType | null>(null);
+// Тип устройства известен уже в первом кадре: иначе экран сначала рисуется как на десктопе
+// или пустым, а потом перерисовывается — это видно как моргание.
+export const useDevice = (): DeviceType => {
+  const [device, setDevice] = useState<DeviceType>(() => getDeviceType(window.innerWidth));
 
   useEffect(() => {
     const detectDevice = () => {

@@ -14,13 +14,9 @@ export { useChangePassword, useLogout, usePublicSettings } from "@/presentation/
 export { useGetCurrentUser } from "@/presentation/features/user/hooks";
 
 // Project domain hooks
-export {
-  useProjectMembers,
-  useProjects,
-  useProjectStatuses,
-} from "@/presentation/features/projects/hooks";
+export { useProjectMembers, useProjects } from "@/presentation/features/projects/hooks";
 
 // Task domain hooks
-export { useGetProjectTasks } from "@/presentation/features/tasks/hooks";
+export { useProjectTasks } from "@/presentation/features/tasks/hooks";
 
 // Add more domain hooks as needed...

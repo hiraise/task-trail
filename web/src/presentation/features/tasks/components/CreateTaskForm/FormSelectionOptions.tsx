@@ -1,73 +1,34 @@
+import clsx from "clsx";
+import type { ComponentType, SVGProps } from "react";
+
 import { Icon } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
 
 import styles from "./FormSelectionOptions.module.css";
 
-
-interface FormSelectionButtonProps {
-  children: React.ReactNode;
-  onClick?: () => void;
-}
-
-function FormSelectionButton(props: FormSelectionButtonProps) {
-  const handleClick = () => {
-    if (props.onClick) props.onClick();
-  };
-
-  return (
-    <div
-      className={styles.container}
-      onClick={handleClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === "Enter" && handleClick()}
-    >
-      {props.children}
-      <Icon as={ICONS.downArrow} size="15px" />
-    </div>
-  );
-}
-
-function ContentWrapper({ children }: { children: React.ReactNode }) {
-  return <div className={styles.contentWrapper}>{children}</div>;
-}
-
-interface PlaceholderProps {
+interface SelectionFieldProps {
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   placeholder: string;
+  /** Выбранное значение; не выбрано — подсказка */
   value?: string;
-}
-function Placeholder({ value, placeholder }: PlaceholderProps) {
-  return <span className={!value ? styles.placeholder : undefined}>{value || placeholder}</span>;
-}
-
-interface AssigneeSelectionProps {
-  username?: string;
+  invalid?: boolean;
   onClick: () => void;
 }
 
-export function AssigneeSelection({ username, onClick }: AssigneeSelectionProps) {
+/** Поле формы, значение которого выбирают в отдельном окне: ответственный, проект. */
+export function SelectionField({ icon, placeholder, value, invalid, onClick }: SelectionFieldProps) {
   return (
-    <FormSelectionButton onClick={onClick}>
-      <ContentWrapper>
-        <Icon as={ICONS.profile} size="18px" />
-        <Placeholder placeholder="Ответственный" value={username} />
-      </ContentWrapper>
-    </FormSelectionButton>
-  );
-}
-
-interface ProjectSelectionProps {
-  project?: string;
-  onClick: () => void;
-}
-
-export function ProjectSelection({ project, onClick }: ProjectSelectionProps) {
-  return (
-    <FormSelectionButton onClick={onClick}>
-      <ContentWrapper>
-        <Icon as={ICONS.project} size="18px" />
-        <Placeholder placeholder="Проект" value={project} />
-      </ContentWrapper>
-    </FormSelectionButton>
+    <button
+      type="button"
+      className={clsx(styles.container, invalid && styles.invalid)}
+      onClick={onClick}
+      aria-invalid={invalid}
+    >
+      <span className={styles.content}>
+        <Icon as={icon} size="18px" />
+        <span className={clsx(styles.text, !value && styles.placeholder)}>{value || placeholder}</span>
+      </span>
+      <Icon as={ICONS.downArrow} size="15px" />
+    </button>
   );
 }

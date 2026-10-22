@@ -1,13 +1,12 @@
 import { clsx } from "clsx";
 
 import type { ProjectId } from "@/domain/types";
-import { Spinner } from "@/presentation/shared";
+import { Spinner, UserItem } from "@/presentation/shared";
 import { emailField } from "@/presentation/shared/forms/fields";
 import { projectsTexts } from "@/shared/locales/projects";
 
 import { useGetProjectCandidates } from "../../hooks";
 
-import { UserItem } from "./UserItem";
 import { UserItemCheckBox } from "./UserItemCheckbox";
 import styles from "./UsersList.module.css";
 

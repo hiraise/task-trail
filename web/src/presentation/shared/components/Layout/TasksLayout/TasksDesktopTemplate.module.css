@@ -11,5 +11,5 @@
   overflow: hidden;
   border-radius: 12px;
   background-color: var(--bg-card);
-  box-shadow: 0px 0px 24px 0px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shade-01);
 }
