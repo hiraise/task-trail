@@ -55,4 +55,5 @@ description: Сдача задачи TaskTrail — проверка, показ 
 1. `gh pr checks <N> --watch` — в фоне. Упало — `gh run view <id> --log-failed`, повтори шаг
    локально той же командой `scripts/dev.sh`, исправь, запушь.
 2. Скажи заказчику ссылку на PR и итог CI. Сливает PR он.
-3. PR слит — `scripts/dev.sh cleanup` уберёт его worktree и ветку.
+3. Заказчик просит влить PR — скилл `/merge`. Слил сам — `scripts/dev.sh cleanup` основной папки
+   уберёт worktree и ветку.
