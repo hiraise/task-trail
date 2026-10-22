@@ -1,9 +1,10 @@
 // Smoke test of the running local stack (ADR-0010): calls the API through /api, like a browser.
-// The stack administrator signs in, refreshes the session and opens Swagger; creates a project with an invitation;
-// the invitee accepts it via the link from the email in Mailpit (without mail, from the API response), gets
-// a task and changes its status, uploads an avatar of the maximum size through the proxy. At the end the project
-// is deleted; the invitee stays a user of the stack. Run: scripts/dev.sh smoke.
-import { ADMIN, MAIL, WEB, createSession } from "./stand-api.mjs";
+// The stack administrator signs in, refreshes the session and opens Swagger; creates a project with
+// a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
+// mail, from the API response), gets a task with the key <project key>-1 and changes its status, uploads
+// an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
+// a user of the stack. Run: scripts/dev.sh smoke.
+import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
 
 const invitee = {
   email: `smoke-${Date.now()}@tasktrail.local`,
@@ -82,8 +83,9 @@ try {
   const statuses = await call(admin, "GET", "/v1/task-statuses", 200);
   check(statuses?.map?.((status) => status.id).join() === "open,in_progress,in_review,done", "task statuses are the fixed set");
 
+  const projectKey = randomProjectKey();
   const created = await call(admin, "POST", "/v1/projects", 201, {
-    json: { name: "Дымовой проект", description: "scripts/dev.sh smoke", emails: [invitee.email] },
+    json: { name: "Дымовой проект", description: "scripts/dev.sh smoke", key: projectKey, emails: [invitee.email] },
   });
   projectId = created?.project?.id;
   const invitation = created?.invitations?.[0];
@@ -106,6 +108,7 @@ try {
   const task = await call(admin, "POST", "/v1/tasks", 201, {
     json: { projectId, name: "Дымовая задача", description: null, assigneeId: joined?.id },
   });
+  check(task?.key === `${projectKey}-1`, `the first task's key is ${projectKey}-1 → ${task?.key}`);
   const myTasks = await call(member, "GET", "/v1/users/me/tasks", 200);
   check(myTasks?.some?.((item) => item.id === task?.id), "the task is in the assignee's \"My tasks\"");
   const moved = await call(member, "PATCH", `/v1/tasks/${task?.id}/status`, 200, { json: { statusId: "in_progress" } });
