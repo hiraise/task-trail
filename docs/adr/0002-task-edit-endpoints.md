@@ -1,22 +1,23 @@
-# ADR-0002: Задача меняется отдельным эндпоинтом на каждую операцию
+# ADR-0002: A task is changed through a separate endpoint per operation
 
-- **Статус:** Принято
-- **Дата:** 2025-09-15
-- **Затрагивает:** эндпоинты задач в `server/internal/presentation/http/v1/`, контракт API
+- **Status:** Accepted
+- **Date:** 2025-09-15
+- **Affects:** task endpoints in `server/internal/presentation/http/v1/`, API contract
 
-## Контекст
+## Context
 
-Задачу нужно редактировать, переводить по статусам, переназначать и переносить между проектами.
+A task needs to be edited, moved through statuses, reassigned and moved between projects.
 
-## Решение
+## Decision
 
-- Каждая операция с задачей — свой эндпоинт: изменить текст, сменить статус,
-  сменить исполнителя, перенести в другой проект.
+- Give each task operation its own endpoint: edit the text, change the status,
+  change the assignee, move to another project.
 
-## Последствия
+## Consequences
 
-Эндпоинтов больше, зато каждый отвечает за одно действие, а логи читаются проще.
+There are more endpoints, but each is responsible for one action, and logs are easier to read.
 
-## Альтернативы
+## Alternatives
 
-- Один эндпоинт на все изменения задачи — отклонён: он отвечает сразу за всё, а в логах не видно, что именно меняли.
+- One endpoint for all task changes — rejected: it is responsible for everything at once,
+  and logs do not show what exactly changed.

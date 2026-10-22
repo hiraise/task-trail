@@ -1,61 +1,61 @@
-# Как писать ADR
+# How to write an ADR
 
-Когда ADR нужен, а когда правило пишется в комментарии к коду, — в [CLAUDE.md](../../CLAUDE.md),
-«Когда нужен ADR». ADR читают прежде всего агенты, причём в каждой задаче, попавшей в его
-«Затрагивает». Поэтому ADR короткий и проверяемый.
+When an ADR is needed and when a rule goes into a code comment instead — [CLAUDE.md](../../CLAUDE.md),
+"When an ADR is needed". ADRs are read mostly by agents, in every task that falls under the ADR's
+"Affects". So an ADR is short and checkable.
 
-- Имя файла — `docs/adr/NNNN-slug.md`, номер — следующий свободный, номера не переиспользуются.
-  Новый ADR сразу добавь строкой в индекс [README.md](README.md).
-- Свободный номер — и в ветках параллельных сессий: после `git fetch` его сверяет
-  `scripts/dev.sh rules` по веткам `origin` и локальным веткам других worktree, ещё не влитым
-  в `main`. При совпадении номер остаётся за ADR, который раньше попал в `main` или в открытый
-  PR. Свой переименуй: файл, строка индекса, ссылки `ADR-NNNN` в коде, документации и скриптах.
-- Заголовок формулирует само решение («Доступ по трём фиксированным ролям», а не «Про роли»).
-- Одно решение на ADR, около 30 строк. Без истории обсуждений и пересказа кода — вместо них
-  пути и идентификаторы в `обратных кавычках`, чтобы их находил поиск.
-- «Решение» — проверяемые правила в повелительном наклонении, по одному на пункт.
-- «Затрагивает» — только места, где изменение может нарушить решение: по ним агент находит ADR
-  для своей задачи. Строка индекса повторяет заголовок, статус и «Затрагивает» дословно —
-  это сверяет `scripts/rules.mjs`.
-- Правило, которое ловится поиском по коду, добавь в `scripts/rules.mjs`, а в «Проверке»
-  назови проверку одной строкой.
-- Решение, о котором заказчик не просил, получает статус «Предложено» и становится
-  «Принято» только после его согласия.
-- Заменяешь часть ADR — поставь у заменённого пункта старого ADR ссылку на новый. Когда у ADR
-  набирается вторая частичная замена, напиши сводный ADR, который заменит его целиком: иначе
-  действующее правило приходится собирать из нескольких документов.
+- File name — `docs/adr/NNNN-slug.md`, the next free number; numbers are never reused.
+  Add the new ADR to the index [README.md](README.md) right away.
+- The free number also counts branches of parallel sessions: after `git fetch`, `scripts/dev.sh rules`
+  checks it against `origin` branches and local branches of other worktrees not yet merged
+  into `main`. On a clash the number stays with the ADR that reached `main` or an open PR first.
+  Rename yours: the file, the index row, `ADR-NNNN` references in code, docs and scripts.
+- The title states the decision itself ("Access by three fixed roles", not "About roles").
+- One decision per ADR, about 30 lines. No discussion history and no retelling of the code — use
+  paths and identifiers in `backticks` instead, so search finds them.
+- "Decision" — checkable rules in the imperative mood, one rule per bullet.
+- "Affects" — only the places where a change can break the decision: an agent finds the ADR for its
+  task by them. The index row repeats the title, status and "Affects" verbatim —
+  `scripts/rules.mjs` checks this.
+- A rule that a code search can catch goes into `scripts/rules.mjs`; name the check in one line
+  under "Verification".
+- A decision the customer did not ask for gets the status `Proposed` and becomes `Accepted` only after
+  the customer agrees. Summarize it for the customer in Russian in the chat (ADR-0031).
+- Replacing part of an ADR — put a link to the new ADR next to the replaced bullet of the old one.
+  When an ADR collects a second partial replacement, write a consolidated ADR that supersedes it
+  entirely: otherwise the rule in force has to be assembled from several documents.
 
-## Шаблон
+## Template
 
-Скопируй блок в новый файл и заполни; необязательный раздел удали, если писать в нём нечего.
+Copy the block into a new file and fill it in; delete an optional section if there is nothing to say.
 
 ```markdown
-# ADR-NNNN: <Решение одной фразой — по заголовку должно быть понятно, что решили>
+# ADR-NNNN: <The decision in one phrase — the title alone should tell what was decided>
 
-- **Статус:** Предложено | Принято | Заменено [ADR-NNNN](NNNN-slug.md) | Отменено
-- **Дата:** ГГГГ-ММ-ДД
-- **Затрагивает:** <где изменение может нарушить решение: пути, пакеты, файлы>
-- **Заменяет:** [ADR-NNNN](NNNN-slug.md) <!-- удали строку, если ADR ничего не заменяет -->
+- **Status:** Proposed | Accepted | Superseded by [ADR-NNNN](NNNN-slug.md) | Deprecated
+- **Date:** YYYY-MM-DD
+- **Affects:** <where a change can break the decision: paths, packages, files>
+- **Supersedes:** [ADR-NNNN](NNNN-slug.md) <!-- delete the line if the ADR supersedes nothing -->
 
-## Контекст
+## Context
 
-<1–2 предложения: проблема или ограничение, из-за которых понадобилось решение.>
+<1–2 sentences: the problem or constraint that called for the decision.>
 
-## Решение
+## Decision
 
-<Проверяемые правила в повелительном наклонении: одно правило — один пункт.>
+<Checkable rules in the imperative mood: one rule per bullet.>
 
 - …
 
-## Последствия
+## Consequences
 
-<Необязательно: что учитывать при следующих изменениях, если это не следует из правил.>
+<Optional: what to keep in mind for future changes, if it does not follow from the rules.>
 
-## Проверка
+## Verification
 
-<Необязательно: проверка в `scripts/rules.mjs` или тест — одной строкой.>
+<Optional: a check in `scripts/rules.mjs` or a test — in one line.>
 
-## Альтернативы
+## Alternatives
 
-<Необязательно: отклонённый вариант, который агент может предложить снова, — почему нет, одной строкой.>
+<Optional: a rejected option an agent may suggest again — why not, in one line.>
 ```

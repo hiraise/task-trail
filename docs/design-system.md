@@ -1,88 +1,93 @@
-# Дизайн-система TaskTrail
+# TaskTrail design system
 
-Для агентов: как выглядит и из чего собирается интерфейс веба, и как рисовать новый экран.
-Решение, что макеты новых экранов — не в Figma, а здесь и в макетах на согласование, —
-[ADR-0025](adr/0025-design-system-in-repo.md). Устройство кода веба — [ADR-0008](adr/0008-web-architecture.md).
+For agents: what the web UI looks like, what it is built from and how to draw a new screen.
+The decision that new screen mockups live here and in mockups for approval, not in Figma —
+[ADR-0025](adr/0025-design-system-in-repo.md). Web code structure — [ADR-0008](adr/0008-web-architecture.md).
 
-Значения — в коде, здесь — что когда использовать. Меняешь токен или компонент — поправь этот файл
-в том же PR, если изменилось правило.
+Values live in code; this file says what to use when. Changing a design token or component — update
+this file in the same PR if a rule changed.
 
-## Новый экран
+## New screen
 
-1. Найди похожий экран в вебе и возьми его раскладку: профиль, страница проекта, участники.
-2. Нарисуй макет на 393, 768 и 1200 px — холст Design в claude.ai, как макет раздела
-   администратора (шаг 6.4 [плана](roadmap.md)). Только токены и компоненты отсюда; новый
-   компонент или цвет — отдельной строкой в сообщении заказчику.
-3. Состояния — отдельными артбордами: пусто, загрузка, ошибки по кодам `ApiError`, окна, уведомления.
-4. Код — после «да» заказчика. Новый общий компонент или токен — сюда же.
+1. Find a similar screen in the web client and take its layout: profile, project page, members.
+2. Draw a mockup at 393, 768 and 1200 px on a Design canvas on claude.ai, like the admin section
+   mockup (canvas «TaskTrail — раздел администратора»). Only design tokens and components from here;
+   a new component or color — a separate line in the message to the customer.
+3. States — separate artboards: empty, loading, errors by `ApiError` codes, modals, notifications.
+4. Code — after the customer's "yes". A new shared component or design token goes here too.
 
-Существующие экраны нарисованы в Figma (файл — в [CLAUDE.md](../CLAUDE.md)). Это справка
-по ним, а не место для новых макетов.
+Existing screens are drawn in Figma (the file is in [CLAUDE.md](../CLAUDE.md)). It is a reference
+for them, not a place for new mockups.
 
-## Токены
+## Tokens
 
-Только переменные, значения не повторяй — так проверяет `scripts/rules.mjs` (ADR-0008).
+Variables only, do not repeat values — `scripts/rules.mjs` checks this (ADR-0008).
 
-| Что | Где | Главное |
+| What | Where | Key points |
 | --- | --- | --- |
-| Фоны, иконки, рамки, тени | `web/src/styles/globals.css` | страница — `--bg-secondary`, карточка — `--bg-card` и `--shade-01`, поле и кнопка «Отменить» — `--bg-secondary`, блок формы в карточке — `--bg-primary`, тёмная кнопка — `--bg-primary-contrast` |
-| Текст и шрифт | `web/src/styles/text.css` | шрифт — `var(--font-family)` (Manrope); текст `--text-primary`, подпись и пояснение — `--text-secondary`, описание в окне — `--text-tertiary`, ошибка — `--text-critical` |
-| Метки | `--bg-accent-yellow` — администратор, `--bg-accent-blue` — участник, `--bg-accent-green` — включено, `--bg-secondary` — выключено | |
-| Акцент | `--icon-accent` | выбранная радиокнопка, ссылка |
+| Backgrounds, icons, borders, shadows | `web/src/styles/globals.css` | page — `--bg-secondary`, card — `--bg-card` and `--shade-01`, field and the «Отменить» button — `--bg-secondary`, form block in a card — `--bg-primary`, dark button — `--bg-primary-contrast` |
+| Text and font | `web/src/styles/text.css` | font — `var(--font-family)` (Manrope); text `--text-primary`, label and explanation — `--text-secondary`, description in a modal — `--text-tertiary`, error — `--text-critical` |
+| Badges | `--bg-accent-yellow` — admin, `--bg-accent-blue` — member, `--bg-accent-green` — on, `--bg-secondary` — off | |
+| Accent | `--icon-accent` | selected radio button, link |
 
-Классы текста (`text.css`): `h2` — заголовок страницы и окна, `h4` — заголовок карточки,
-`body-med` — имя, пункт, кнопка на телефоне, `body-reg-2` — подписи полей в карточке и пояснения,
-`caption-reg`/`caption-med` — подсказки и метки, `btn-font-s`/`btn-font-m` — текст кнопок.
-У голого элемента без класса шрифт не Manrope (глобальный `*` в `globals.css`) — ставь класс
-или `font-family: var(--font-family)`.
+Text classes (`text.css`): `h2` — page and modal title, `h4` — card title,
+`body-med` — name, menu item, button on a phone, `body-reg-2` — field labels in a card and explanations,
+`caption-reg`/`caption-med` — hints and badges, `btn-font-s`/`btn-font-m` — button text.
+A bare element without a class does not get Manrope (global `*` in `globals.css`) — set a class
+or `font-family: var(--font-family)`.
 
-## Раскладка
+## Layout
 
-Брейкпоинты — `presentation/shared/hooks/useDevice.ts`: до 767 px телефон, 768–1024 планшет,
-с 1025 px десктоп.
+Breakpoints — `presentation/shared/hooks/useDevice.ts`: phone up to 767 px, tablet 768–1024,
+desktop from 1025 px.
 
-- **Телефон.** Экран раздела — нижняя навигация `BottomNavBar`; вложенная страница —
-  `PagesMobileTemplate` с верхней панелью «назад». Пункты на вложенные страницы — `MenuButton`
-  (серая «пилюля» с иконкой в белом круге). Основная кнопка формы — внизу страницы во всю ширину.
-- **Планшет и десктоп.** `DesktopTemplate`: боковое меню `Drawer` и колонка карточек с отступом
-  16 px. Карточка: `--bg-card`, радиус 12, тень `--shade-01`, поля 20–24 px.
-- **Один компонент на экран** (ADR-0008): телефонные пункты и карточки — в одном компоненте,
-  переключает CSS (`@media (min-width: 768px)`), как `ProfilePage` и `AdminPage`.
+- **Phone.** A section screen — bottom navigation `BottomNavBar`; a nested page —
+  `PagesMobileTemplate` with a top "back" bar. Items leading to nested pages — `MenuButton`
+  (a gray "pill" with an icon in a white circle). The main form button — at the bottom of the page,
+  full width.
+- **Tablet and desktop.** `DesktopTemplate`: the `Drawer` sidebar and a column of cards with a 16 px
+  gap. Card: `--bg-card`, radius 12, shadow `--shade-01`, padding 20–24 px.
+- **One component per screen** (ADR-0008): phone items and cards are in one component,
+  CSS switches between them (`@media (min-width: 768px)`), like `ProfilePage` and `AdminPage`.
 
-## Формы
+## Forms
 
-- Поля — `InputFieldMobile` (подпись над полем, ошибка — `FormFieldError` под ним), пределы —
-  `presentation/shared/forms/fields.ts`, схема — zod.
-- Раскладка — `presentation/shared/forms/FormLayout`: `inline` — блок формы в карточке,
-  две колонки с 1025 px, «Отменить» и «Сохранить» появляются, когда форма изменена;
-  `page` — отдельная страница телефона с кнопкой внизу.
-- Ошибка, которая относится к полю (`SECRET_REQUIRED`, `details` у `VALIDATION_FAILED`), — под полем;
-  остальные — уведомлением (ADR-0024).
-- Запрос дольше пары секунд — заблокируй поля, на кнопке «Проверяем…», рядом — сколько ждать.
+- Fields — `InputFieldMobile` (label above the field, error — `FormFieldError` below it), limits —
+  `presentation/shared/forms/fields.ts`, schema — zod.
+- Layout — `presentation/shared/forms/FormLayout`: `inline` — a form block in a card,
+  two columns from 1025 px, «Отменить» and «Сохранить» appear when the form is changed;
+  `page` — a separate phone page with the button at the bottom.
+- An error that belongs to a field (`SECRET_REQUIRED`, `details` of `VALIDATION_FAILED`) — under
+  the field; the rest — as a notification (ADR-0024).
+- A request longer than a couple of seconds — disable the fields, put «Проверяем…» on the button,
+  and next to it — how long to wait.
 
-## Кнопки
+## Buttons
 
-`SubmitButton`: `primary` — тёмная, главное действие; `secondary` — серая, «Отменить», «Готово»;
-`text` — с иконкой без фона, второстепенное действие. Опасное действие — `text` с цветом
-`--text-critical` и подтверждением. В окне — две кнопки поровну: слева отмена, справа действие.
+`SubmitButton`: `primary` — dark, the main action; `secondary` — gray, «Отменить», «Готово»;
+`text` — an icon without a background, a minor action. A dangerous action — `text` colored
+`--text-critical`, with a confirmation. In a modal — two equal buttons: cancel on the left, action
+on the right.
 
-## Окна, меню, уведомления
+## Modals, menus and notifications
 
-- Окно — `BaseModal` через `useGlobalModals`: на телефоне нижняя шторка, шире — диалог.
-  Подтверждение — `showConfirm` (`ConfirmModal`): заголовок-вопрос, что случится, кнопка с глаголом.
-- Действия со строкой списка: шире телефона — меню «…» (`DropdownMenu`), на телефоне — нажатие
-  на строку открывает шторку `ActionsMenu`. Пункты собирает один хук для обоих
+- Modal — `BaseModal` via `useGlobalModals`: a bottom sheet on a phone, a dialog on wider screens.
+  Confirmation — `showConfirm` (`ConfirmModal`): a question as the title, what will happen, a button
+  with a verb.
+- Actions on a list row: wider than a phone — the «…» menu (`DropdownMenu`); on a phone — tapping
+  the row opens the `ActionsMenu` sheet. One hook builds the items for both
   (`useMembersMenuItems`, `useAdminUserMenuItems`).
-- Уведомления — `sonner` (`toast`, `toastError`), внизу справа: успех — что сделано и с кем,
-  ошибка — что не так и что делать.
+- Notifications — `sonner` (`toast`, `toastError`), bottom right: success — what was done and to
+  whom, error — what is wrong and what to do.
 
-## Списки людей
+## People lists
 
-Строка — `UserAvatar` (фото или инициалы), имя `body-med`, почта `body-reg-2` серым; без имени —
-только почта. Метки рядом с именем: «вы», роль. Одна колонка на телефоне, шире — сетка
+Row — `UserAvatar` (photo or initials), name `body-med`, email `body-reg-2` in gray; no name —
+email only. Badges next to the name: «вы», role. One column on a phone, wider — a grid
 `repeat(auto-fill, minmax(320px, 1fr))`.
 
-## Иконки
+## Icons
 
-SVG в `web/src/assets/icons/`, обводка `currentColor` толщиной 1,1–1,4 на сетке 24 px; подключение —
-`shared/config/icons.ts`, показ — `Icon`. Новая иконка — в том же стиле, своя, без чужих наборов.
+SVG in `web/src/assets/icons/`, `currentColor` stroke 1.1–1.4 thick on a 24 px grid; registration —
+`shared/config/icons.ts`, rendering — `Icon`. A new icon — in the same style, our own, no third-party
+icon sets.

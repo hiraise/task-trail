@@ -1,48 +1,49 @@
-# ADR-0016: Новые пользователи приходят по приглашению, первый аккаунт — администратор сервиса
+# ADR-0016: New users join by invitation; the first account is the service administrator
 
-- **Статус:** Принято
-- **Дата:** 2026-10-21
-- **Затрагивает:** `server/internal/application/service/`, `server/internal/domain/entity/`, `server/internal/presentation/http/v1/`, `server/migrations/`, `web/src/presentation/features/auth/`, `web/src/presentation/features/projects/`, доступ и участники в контракте API
-- **Заменяет:** [ADR-0011](0011-invite-only-signup.md)
+- **Status:** Accepted
+- **Date:** 2026-10-21
+- **Affects:** `server/internal/application/service/`, `server/internal/domain/entity/`, `server/internal/presentation/http/v1/`, `server/migrations/`, `web/src/presentation/features/auth/`, `web/src/presentation/features/projects/`, access and members in the API contract
+- **Supersedes:** [ADR-0011](0011-invite-only-signup.md)
 
-## Контекст
+## Context
 
-Небольшой команде открытая регистрация не нужна: людей зовут в проект. Открытой регистрации
-к тому же нужно подтверждение почты, а почта необязательна ([ADR-0017](0017-mail-in-admin-ui.md)).
-От ADR-0011 отличается тем, что первый аккаунт — администратор сервиса, а срок приглашения
-не задаётся окружением ([ADR-0015](0015-settings-in-admin-ui.md)).
+A small team does not need open sign-up: people are invited to a project. Open sign-up also needs
+email confirmation, and mail is optional ([ADR-0017](0017-mail-in-admin-ui.md)).
+It differs from ADR-0011 in that the first account is the service administrator, and the invitation
+lifetime is not set by the environment ([ADR-0015](0015-settings-in-admin-ui.md)).
 
-## Решение
+## Decision
 
-- Открывай регистрацию, только пока в базе нет пользователей: так создаётся первый аккаунт,
-  он же администратор сервиса ([ADR-0014](0014-service-administrator.md)). Проверку и создание
-  делай в одной транзакции под `pg_advisory_xact_lock`: `DoWithTx` работает в READ COMMITTED,
-  и без блокировки два запроса создадут двух «первых».
-- Остальные аккаунты создавай только по приглашению. Звать в проект могут владелец
-  и администратор проекта ([ADR-0003](0003-fixed-roles-and-statuses.md)) — одну или несколько
-  почт сразу, в том числе при создании проекта.
-- Почта уже зарегистрирована — сразу добавь человека в проект с ролью «участник».
-- Почта не зарегистрирована — создай запись в `invitations`: проект, почта, кто пригласил, срок.
-  Пользователя до принятия не создавай. Новое приглашение той же почты в тот же проект заменяет
-  прежнее; приглашения удалённого проекта не действуют ([ADR-0001](0001-soft-delete-project.md)).
-- По ссылке приглашения человек задаёт имя и пароль и сразу входит. Все действующие приглашения
-  его почты в этот момент превращай в участие с ролью «участник»; их ссылки дальше ведут на вход.
-- Каждый аккаунт создавай подтверждённым (`verified_at`). Удали `verify`, `resend-verification`
-  и `UserAccount.CheckVerification` при входе и сбросе пароля.
-- Почту приводи к нижнему регистру и обрезай пробелы по краям — до сравнения и до записи.
-- Токены ссылок — приглашения и сброса пароля — делай случайными, в базе храни только их хеш
-  SHA-256. Приглашение действует 7 дней — константа в коде.
+- Open sign-up only while the database has no users: this creates the first account,
+  which is also the service administrator ([ADR-0014](0014-service-administrator.md)). Do the check
+  and the creation in one transaction under `pg_advisory_xact_lock`: `DoWithTx` runs in READ COMMITTED,
+  and without the lock two requests create two "first" accounts.
+- Create all other accounts only by invitation. The project owner and project admins
+  ([ADR-0003](0003-fixed-roles-and-statuses.md)) can invite to a project — one or several
+  email addresses at once, including when creating the project.
+- Email already registered — add the person to the project right away with the member role.
+- Email not registered — create a row in `invitations`: project, email, inviter, expiry.
+  Do not create the user before acceptance. A new invitation of the same email to the same project
+  replaces the previous one; invitations to a deleted project are void ([ADR-0001](0001-soft-delete-project.md)).
+- Via the invitation link the person sets a name and a password and is signed in right away. At that
+  moment turn all active invitations of their email into memberships with the member role; their links
+  then lead to sign-in.
+- Create every account as confirmed (`verified_at`). Remove `verify`, `resend-verification`
+  and `UserAccount.CheckVerification` on sign-in and password reset.
+- Lowercase the email and trim surrounding whitespace — before comparing and before writing.
+- Make link tokens — invitation and password reset — random; store only their SHA-256 hash
+  in the database. An invitation is valid for 7 days — a constant in code.
 
-## Последствия
+## Consequences
 
-- Пока первого аккаунта нет, его займёт любой, кто дойдёт до сервера: создай его сразу после
-  запуска, до открытия сервера в интернет. Инструкция установки должна об этом сказать.
-- Любой пользователь создаёт проекты и зовёт в них, а по ответу на приглашение видно, есть ли
-  такая почта. Для небольшой команды это приемлемо.
-- Список неотвеченных приглашений и их отзыв — позже, если понадобятся.
+- Until the first account exists, anyone who reaches the server can take it: create it right after
+  startup, before exposing the server to the internet. The installation guide must say so.
+- Any user creates projects and invites to them, and the response to an invitation reveals whether
+  such an email exists. For a small team this is acceptable.
+- A list of pending invitations and revoking them — later, if needed.
 
-## Альтернативы
+## Alternatives
 
-- Первый пользователь из переменных окружения или командой сервера — лишний шаг при установке.
-- Регистрация с пустым паролем, как `AutoRegister` в старом API, — нет: появляются аккаунты,
-  в которые никто не может войти.
+- The first user from environment variables or a server command — an extra step at installation.
+- Sign-up with an empty password, like `AutoRegister` in the old API — no: it creates accounts
+  nobody can sign in to.

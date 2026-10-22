@@ -1,30 +1,31 @@
-# ADR-0005: Один репозиторий: сервер, веб-клиент и контракт API `api/openapi.yaml`
+# ADR-0005: One repository: server, web client and API contract `api/openapi.yaml`
 
-- **Статус:** Принято
-- **Дата:** 2026-10-21
-- **Затрагивает:** `api/`, HTTP-слой `server/internal/presentation/`, клиент API `web/src/infrastructure/`
+- **Status:** Accepted
+- **Date:** 2026-10-21
+- **Affects:** `api/`, the HTTP layer `server/internal/presentation/`, the API client `web/src/infrastructure/`
 
-## Контекст
+## Context
 
-Сервер и веб-клиент жили в разных репозиториях, и контракт между ними разошёлся: клиент
-обращается к `/v1/auth/*`, а сервер после переработки отвечает на `/v1/access/*`.
+The server and the web client lived in separate repositories, and the contract between them diverged:
+the client calls `/v1/auth/*`, while the server, after the rework, responds on `/v1/access/*`.
 
-## Решение
+## Decision
 
-- Сервер лежит в `server/`, веб-клиент — в `web/`, контракт API — в `api/openapi.yaml` (OpenAPI 3).
-- Изменение API делается одним PR: контракт, сервер и клиент вместе.
-- Контракт — источник истины: типы клиента генерируются из него, ответы сервера проверяются
-  по нему тестами.
-- Swagger, который генерируется из аннотаций сервера (`server/docs/swagger.*`, `make swag`),
-  перестаёт быть описанием API, как только появится `api/openapi.yaml`.
-- История `hiraise/tt-backend` и `hiraise/tt-frontend` перенесена в `server/` и `web/`;
-  старые репозитории архивируются.
+- Keep the server in `server/`, the web client in `web/`, the API contract in `api/openapi.yaml` (OpenAPI 3).
+- Make an API change in one PR: contract, server and client together.
+- The contract is the source of truth: generate client types from it, check server responses
+  against it with tests.
+- The Swagger generated from server annotations (`server/docs/swagger.*`, `make swag`)
+  stops being the API description as soon as `api/openapi.yaml` appears. It is removed entirely:
+  Swagger shows the contract itself ([ADR-0023](0023-contract-embedded-from-api-module.md)).
+- The history of `hiraise/tt-backend` and `hiraise/tt-frontend` is moved into `server/` and `web/`;
+  the old repositories are archived.
 
-## Проверка
+## Verification
 
-Появится вместе с `api/openapi.yaml`: тесты контракта в `scripts/dev.sh check`.
+Contract checks in `scripts/dev.sh check`: server responses — [ADR-0019](0019-server-contract-tests.md), web types — [ADR-0020](0020-web-api-types.md).
 
-## Альтернативы
+## Alternatives
 
-- Два репозитория с общим контрактом — разработчик один, а синхронизировать версии
-  контракта между репозиториями пришлось бы вручную.
+- Two repositories with a shared contract — there is one developer, and contract versions
+  would have to be synchronized between the repositories by hand.

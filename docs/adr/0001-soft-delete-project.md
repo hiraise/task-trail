@@ -1,22 +1,24 @@
-# ADR-0001: Проект удаляется мягко: `deleted_at` у проекта и у всех его сущностей
+# ADR-0001: A project is soft-deleted: `deleted_at` on the project and on all its entities
 
-- **Статус:** Принято
-- **Дата:** 2025-09-15
-- **Затрагивает:** репозитории проектов и задач в `server/internal/infrastructure/repository/persistent/`, `server/migrations/`
+- **Status:** Accepted
+- **Date:** 2025-09-15
+- **Affects:** project and task repositories in `server/internal/infrastructure/repository/persistent/`, `server/migrations/`
 
-## Контекст
+## Context
 
-Удалённые проекты нужны для разбора и метрик, но пользователи не должны видеть ни их,
-ни то, что к ним относится.
+Deleted projects are needed for analysis and metrics, but users must see neither them
+nor anything that belongs to them.
 
-## Решение
+## Decision
 
-- Удаление проекта проставляет `deleted_at` проекту и всем связанным сущностям: задачам,
-  а также ролям и статусам, пока они были таблицами (с [ADR-0003](0003-fixed-roles-and-statuses.md) — строки в записях).
-- Связи пользователей с удалённым проектом (`project_members`) сохраняются.
-- Любой запрос репозитория к проекту или его сущности фильтрует `deleted_at IS NULL`.
-- При доступе к сущности проекта сам проект не проверяется: она помечена вместе с ним.
+- On project deletion, set `deleted_at` on the project and on all related entities: tasks, and also
+  roles and statuses while they were tables (since [ADR-0003](0003-fixed-roles-and-statuses.md),
+  strings in rows).
+- Keep users' links to a deleted project (`project_members`).
+- Filter every repository query to a project or its entity by `deleted_at IS NULL`.
+- When accessing a project's entity, do not check the project itself: the entity is marked
+  together with it.
 
-## Последствия
+## Consequences
 
-Удалённые данные остаются в базе; запросы чуть сложнее из-за фильтра по `deleted_at`.
+Deleted data stays in the database; queries are slightly more complex because of the `deleted_at` filter.

@@ -1,42 +1,47 @@
 ---
 name: merge
-description: Слияние PR TaskTrail в main по просьбе заказчика («влей», «вливай», «слей», «мержи») — свежая ветка, зелёный CI, merge-коммит, уборка ветки и worktree, CI на main. Используй, только когда заказчик сам попросил влить PR.
+description: Merging a TaskTrail PR into main at the customer's request («влей», «вливай», «слей», «мержи») — a fresh branch, green CI, a merge commit, cleanup of the branch and worktree, CI on main. Use only when the customer has asked to merge the PR.
 ---
 
-# Слияние PR
+# Merging a PR
 
-Правила — [CLAUDE.md](../../../CLAUDE.md), «Ветки и PR»: сливает PR заказчик, агент — только по его
-просьбе и при зелёном CI. Здесь — порядок. PR Dependabot сливается так же, свою ветку он удаляет сам.
+Rules — [CLAUDE.md](../../../CLAUDE.md), "Branches and PRs": the customer merges PRs; the agent does
+so only at the customer's request and with green CI. This file gives the order. A Dependabot PR is
+merged the same way; Dependabot deletes its branch itself.
 
-## 1. Перед слиянием
+## 1. Before merging
 
-1. Просьба заказчика касается именно этого PR. Номер не ясен — `gh pr list` и уточни.
-2. `gh pr view <N> --json state,isDraft,mergeStateStatus` — PR открыт и не черновик.
-3. `main` защищён и принимает только ветку, свежую относительно него. `mergeStateStatus` —
-   `BEHIND`: `gh pr update-branch <N>`, затем снова жди CI.
-4. `gh pr checks <N> --watch` — в фоне. Нужна зелёная «Проверка» на последнем коммите. Упала —
-   `gh run view <id> --log-failed`, почини в ветке (скилл `/pr`, раздел 4) и вернись сюда.
-   Проверок нет через пару минут — GitHub не запустил CI: `gh pr close <N> && gh pr reopen <N>`.
+1. The customer's request is about this exact PR. The number is unclear — `gh pr list` and ask.
+2. `gh pr view <N> --json state,isDraft,mergeStateStatus` — the PR is open and not a draft.
+3. `main` is protected and accepts only a branch that is up to date with it. `mergeStateStatus` is
+   `BEHIND`: `gh pr update-branch <N>`, then wait for CI again.
+4. `gh pr checks <N> --watch` — in the background. A green «Проверка» on the latest commit is
+   required. It failed — `gh run view <id> --log-failed`, fix it in the branch (the `/pr` skill,
+   section 4) and come back here. No checks after a couple of minutes — GitHub did not start CI:
+   `gh pr close <N> && gh pr reopen <N>`.
 
-## 2. Слияние
+## 2. Merging
 
-`gh pr merge <N> --merge` — обычным merge-коммитом, как все PR проекта: коммиты ветки остаются
-в истории со своими сообщениями. Не squash и не rebase. Разрешения не пускают — дай заказчику
-команду `! gh pr merge <N> --merge`.
+`gh pr merge <N> --merge` — a regular merge commit, like all PRs of the project: the branch commits
+stay in history with their messages. No squash, no rebase. Permissions do not allow it — give the
+customer the command `! gh pr merge <N> --merge`.
 
-## 3. Уборка
+## 3. Cleanup
 
-1. Ветка ещё есть на GitHub (`git ls-remote --heads origin <ветка>`) — `git push origin --delete <ветка>`.
-2. Worktree слитых PR убирает `scripts/dev.sh cleanup`, но не тот, в котором лежит запущенный
-   скрипт. Поэтому запускай скрипт основной папки — она первая в `git worktree list`:
-   `bash <основная папка>/scripts/dev.sh cleanup`. Там ещё нет команды `cleanup` — убери worktree
-   вручную: папка чистая (`git -C <папка> status --porcelain` пуст) → `git worktree remove <папка>`,
-   `git branch -D <ветка>`.
-3. Слитая ветка стоит в основной папке и папка чистая — `git switch main && git pull --ff-only`,
-   затем `git branch -d <ветка>`. Незакоммиченные правки — не трогай, скажи заказчику.
+1. The branch still exists on GitHub (`git ls-remote --heads origin <branch>`) —
+   `git push origin --delete <branch>`.
+2. `scripts/dev.sh cleanup` removes worktrees of merged PRs, but not the one that holds the running
+   script. So run the script of the main folder — it is the first in `git worktree list`:
+   `bash <main folder>/scripts/dev.sh cleanup`. If that script has no `cleanup` command (an old checkout),
+   remove the worktree manually: the folder is clean (`git -C <folder> status --porcelain` is empty) →
+   `git worktree remove <folder>`, `git branch -D <branch>`.
+3. The merged branch is checked out in the main folder and the folder is clean —
+   `git switch main && git pull --ff-only`, then `git branch -d <branch>`. Uncommitted changes —
+   do not touch them, tell the customer.
 
-## 4. После слияния
+## 4. After merging
 
-1. `gh run list --workflow ci.yml --branch main --limit 1` — CI на `main` по коммиту слияния,
-   дождись итога. Упал — скажи заказчику и почини отдельным PR.
-2. Скажи заказчику: PR влит (коммит слияния), что убрано, итог CI на `main`.
+1. `gh run list --workflow ci.yml --branch main --limit 1` — CI on `main` for the merge commit,
+   wait for the result. Failed — tell the customer and fix it in a separate PR.
+2. Tell the customer, in Russian: the PR is merged (the merge commit), what was cleaned up, the CI
+   result on `main`.

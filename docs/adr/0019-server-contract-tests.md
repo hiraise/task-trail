@@ -1,45 +1,46 @@
-# ADR-0019: Ответы сервера проверяются по контракту в тестах через kin-openapi
+# ADR-0019: Server responses are checked against the contract in tests with kin-openapi
 
-- **Статус:** Принято
-- **Дата:** 2026-10-21
-- **Затрагивает:** `server/test/contract/`, тесты обработчиков в `server/internal/presentation/http/v1/`, `server/go.mod`, `server/docker/Dockerfile`, `api/openapi.yaml`
+- **Status:** Accepted
+- **Date:** 2026-10-21
+- **Affects:** `server/test/contract/`, handler tests in `server/internal/presentation/http/v1/`, `server/go.mod`, `server/docker/Dockerfile`, `api/openapi.yaml`
 
-## Контекст
+## Context
 
-По [ADR-0005](0005-monorepo-api-contract.md) ответы сервера проверяются по `api/openapi.yaml`
-тестами. Для этого нужна библиотека, которая понимает OpenAPI 3.1 и JSON Schema 2020-12.
+Per [ADR-0005](0005-monorepo-api-contract.md) tests check server responses against `api/openapi.yaml`.
+This needs a library that understands OpenAPI 3.1 and JSON Schema 2020-12.
 
-## Решение
+## Decision
 
-- Проверяй ответы через `server/test/contract`: `contract.Load(t)` читает и проверяет контракт,
-  `Check(t, req, rec)` сверяет записанный ответ с операцией контракта: статус есть в контракте,
-  обязательные заголовки на месте, тело по схеме и без полей, которых в схеме нет.
-- Каждый тест обработчика в `server/internal/presentation/http/v1/` пропускает через `Check`
-  все свои ответы, и успешные, и ошибки.
-- Библиотека — `github.com/getkin/kin-openapi`, только в `_test.go` и `server/test/`; `server/test/`
-  тоже импортируют только тесты. Так библиотека не попадает в бинарник сервера.
-- Форматы `uuid`, `email`, `uri` и `date-time` (только UTC) проверяет сам помощник: в JSON Schema
-  2020-12 форматы — лишь пометки, и без этого числовой ID прошёл бы проверку.
-- Каждая операция контракта перечисляет свои статусы явно, `500` — тоже. `default` не используй:
-  с ним любой статус считается описанным.
-- Контракт, который kin-openapi не может разобрать (битая ссылка, неверная структура), роняет
-  тесты сервера.
+- Check responses with `server/test/contract`: `contract.Load(t)` reads and validates the contract,
+  `Check(t, req, rec)` matches the recorded response against the contract operation: the status is in
+  the contract, required headers are present, the body matches the schema and has no fields the schema
+  lacks.
+- Every handler test in `server/internal/presentation/http/v1/` passes all its responses through `Check`,
+  both successes and errors.
+- The library is `github.com/getkin/kin-openapi`, only in `_test.go` and `server/test/`; `server/test/`
+  is also imported only by tests. This keeps the library out of the server binary.
+- The helper itself checks the formats `uuid`, `email`, `uri` and `date-time` (UTC only): in JSON Schema
+  2020-12 formats are only annotations, and without this a numeric ID would pass the check.
+- Every contract operation lists its statuses explicitly, `500` included. Do not use `default`:
+  with it any status counts as described.
+- A contract that kin-openapi cannot parse (broken reference, wrong structure) fails
+  the server tests.
 
-## Последствия
+## Consequences
 
-- kin-openapi нужен Go 1.25+, поэтому сервер переходит на Go 1.27 (`go.mod`, `server/docker/Dockerfile`):
-  Go 1.24 уже не получает исправлений.
-- Поддержка OpenAPI 3.1 в kin-openapi ещё меняется. Поднимаешь версию — прогони `go test ./test/contract/`:
-  он проверяет, что валидатор по-прежнему ловит неверные ответы.
+- kin-openapi needs Go 1.25+, so the server moves to Go 1.27 (`go.mod`, `server/docker/Dockerfile`):
+  Go 1.24 no longer gets fixes.
+- OpenAPI 3.1 support in kin-openapi is still changing. When you bump its version, run
+  `go test ./test/contract/`: it checks that the validator still catches invalid responses.
 
-## Проверка
+## Verification
 
-`scripts/rules.mjs`: kin-openapi и `server/test/` не импортируются вне тестов, тесты обработчиков
-в `v1/` вызывают `contract.Load`; `go test ./test/contract/` проверяет сам помощник.
+`scripts/rules.mjs`: kin-openapi and `server/test/` are not imported outside tests, handler tests
+in `v1/` call `contract.Load`; `go test ./test/contract/` checks the helper itself.
 
-## Альтернативы
+## Alternatives
 
-- `pb33f/libopenapi-validator` — требует Go 1.26 и распространён меньше.
-- Redocly CLI в `check` — ещё один инструмент: контракт уже разбирают тесты сервера и генератор
-  типов веба ([ADR-0020](0020-web-api-types.md)). Он строже к схемам, поэтому, меняя контракт,
-  прогони его вручную: `npx --yes @redocly/cli@1 lint api/openapi.yaml`.
+- `pb33f/libopenapi-validator` — requires Go 1.26 and is less widespread.
+- Redocly CLI in `check` — one more tool: the server tests and the web type generator already parse
+  the contract ([ADR-0020](0020-web-api-types.md)). It is stricter about schemas, so when changing the
+  contract, run it manually: `npx --yes @redocly/cli@1 lint api/openapi.yaml`.

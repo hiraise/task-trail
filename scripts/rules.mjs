@@ -31,8 +31,8 @@ const DIR_SET = new Set([
 const read = (file) => readFileSync(join(ROOT, file), "utf8");
 const field = (text, name) => new RegExp(`^- \\*\\*${name}:\\*\\* (.+)$`, "m").exec(text)?.[1];
 
-// ADR: имя, номер, заголовок и статус по шаблону; строка индекса повторяет решение, статус
-// и «Затрагивает» из самого ADR (docs/adr/template.md)
+// ADR: file name, number, title and status follow the template; the index row repeats the decision,
+// status and Affects from the ADR itself (docs/adr/template.md)
 function checkAdr() {
   const dir = "docs/adr";
   const rows = new Map();
@@ -41,7 +41,7 @@ function checkAdr() {
     const cells = line.split("|").slice(1, -1).map((cell) => cell.trim());
     const file = /^\[\d{4}\]\(([^)]+)\)$/.exec(cells[0])?.[1];
     if (!file || cells.length !== 4) {
-      errors.push(`${dir}/README.md: строка индекса не по образцу «| [NNNN](файл) | решение | статус | затрагивает |»: ${line}`);
+      errors.push(`${dir}/README.md: index row does not match "| [NNNN](file) | decision | status | affects |": ${line}`);
       continue;
     }
     rows.set(file, cells);
@@ -55,36 +55,36 @@ function checkAdr() {
     const file = basename(path);
     const match = /^(\d{4})-[a-z0-9-]+\.md$/.exec(file);
     if (!match) {
-      errors.push(`${path}: имя не по шаблону NNNN-slug.md`);
+      errors.push(`${path}: file name does not match NNNN-slug.md`);
       continue;
     }
     const number = match[1];
-    if (numbers.has(number)) errors.push(`${dir}: номер ${number} у двух ADR — ${numbers.get(number)} и ${file}`);
+    if (numbers.has(number)) errors.push(`${dir}: number ${number} is used by two ADRs — ${numbers.get(number)} and ${file}`);
     numbers.set(number, file);
 
     const text = read(path);
     const title = /^# ADR-(\d{4}): (.+)$/m.exec(text.split("\n")[0]);
-    if (!title || title[1] !== number) errors.push(`${path}: заголовок должен начинаться с «# ADR-${number}: »`);
-    const status = field(text, "Статус");
-    if (!status || !/^(Предложено|Принято|Отменено|Заменено \[ADR-\d{4}\]\(\d{4}-[a-z0-9-]+\.md\))$/.test(status)) {
-      errors.push(`${path}: статус «${status ?? "нет"}» не по шаблону`);
+    if (!title || title[1] !== number) errors.push(`${path}: title must start with "# ADR-${number}: "`);
+    const status = field(text, "Status");
+    if (!status || !/^(Proposed|Accepted|Deprecated|Superseded by \[ADR-\d{4}\]\(\d{4}-[a-z0-9-]+\.md\))$/.test(status)) {
+      errors.push(`${path}: status "${status ?? "none"}" does not match the template`);
     }
-    const affects = field(text, "Затрагивает");
-    if (!affects) errors.push(`${path}: нет поля «Затрагивает»`);
+    const affects = field(text, "Affects");
+    if (!affects) errors.push(`${path}: no "Affects" field`);
 
     const row = rows.get(file);
     if (!row) {
-      errors.push(`${dir}/README.md: нет строки для ${file}`);
+      errors.push(`${dir}/README.md: no index row for ${file}`);
       continue;
     }
     rows.delete(file);
-    if (title && row[1] !== title[2]) errors.push(`${dir}/README.md: решение ${file} не совпадает с заголовком ADR`);
+    if (title && row[1] !== title[2]) errors.push(`${dir}/README.md: decision of ${file} differs from the ADR title`);
     if (status && row[2].split(" ")[0] !== status.split(" ")[0]) {
-      errors.push(`${dir}/README.md: у ${file} статус «${row[2]}», а в ADR — «${status}»`);
+      errors.push(`${dir}/README.md: ${file} has status "${row[2]}" in the index, but "${status}" in the ADR`);
     }
-    if (affects && row[3] !== affects) errors.push(`${dir}/README.md: «Затрагивает» у ${file} не совпадает с ADR — скопируй из ADR`);
+    if (affects && row[3] !== affects) errors.push(`${dir}/README.md: "Affects" of ${file} differs from the ADR — copy it from the ADR`);
   }
-  for (const file of rows.keys()) errors.push(`${dir}/README.md: строка для несуществующего ${file}`);
+  for (const file of rows.keys()) errors.push(`${dir}/README.md: index row for a missing ${file}`);
 }
 
 // Номер нового ADR могли занять параллельные сессии (docs/adr/template.md): ADR этой ветки, которых
