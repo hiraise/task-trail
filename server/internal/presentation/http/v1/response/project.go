@@ -7,7 +7,7 @@ import (
 	"task-trail/internal/domain/repository"
 )
 
-// Project — проект в списке (Project в контракте).
+// Project is a project in a list (Project in the contract).
 type Project struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`
@@ -16,7 +16,7 @@ type Project struct {
 	TasksCount  int       `json:"tasksCount"`
 }
 
-// ProjectDetails — проект и роль текущего пользователя в нём.
+// ProjectDetails is a project and the current user's role in it.
 type ProjectDetails struct {
 	Project
 	Role string `json:"role"`
@@ -24,7 +24,7 @@ type ProjectDetails struct {
 
 func NewProject(v *repository.ProjectView) Project {
 	p := v.Project
-	// Время — в UTC (ADR-0018): из базы оно приходит в поясе сервера
+	// Time is in UTC (ADR-0018): the database returns it in the server's time zone
 	return Project{ID: string(p.ID), Name: p.Name, Description: p.Description, CreatedAt: p.CreatedAt.UTC(), TasksCount: v.TasksCount}
 }
 
@@ -40,7 +40,7 @@ func NewProjects(views []*repository.ProjectView) []Project {
 	return out
 }
 
-// InvitationResult — что стало с почтой, которую позвали в проект.
+// InvitationResult is what happened to an email invited to the project.
 type InvitationResult struct {
 	Email     string  `json:"email"`
 	Result    string  `json:"result"`
@@ -55,13 +55,13 @@ func NewInvitationResults(results []dto.InvitationResult) []InvitationResult {
 	return out
 }
 
-// ProjectCreated — созданный проект и результат по почтам из запроса.
+// ProjectCreated is the created project and the result for each email in the request.
 type ProjectCreated struct {
 	Project     ProjectDetails     `json:"project"`
 	Invitations []InvitationResult `json:"invitations"`
 }
 
-// Member — участник проекта: пользователь и его роль.
+// Member is a project member: the user and their role.
 type Member struct {
 	User
 	Role string `json:"role"`

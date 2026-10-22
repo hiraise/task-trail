@@ -13,8 +13,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// taskRoutes — задачи и их статусы: /v1/tasks/*, /v1/task-statuses, задачи проекта
-// и задачи текущего пользователя в контракте.
+// taskRoutes are tasks and their statuses: /v1/tasks/*, /v1/task-statuses, project tasks
+// and the current user's tasks in the contract.
 type taskRoutes struct {
 	cm       *contextmanager.GinContextManager
 	services *task.TaskModule
@@ -24,7 +24,7 @@ func (r *taskRoutes) userID(c *gin.Context) string {
 	return utils.Must(r.cm.GetUserID(c))
 }
 
-// Набор статусов фиксирован (ADR-0003) — сценарий ему не нужен.
+// The status set is fixed (ADR-0003), so it needs no use case.
 func (r *taskRoutes) statuses(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewTaskStatuses(entity.TaskStatuses()))
 }

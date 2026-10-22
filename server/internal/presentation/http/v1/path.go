@@ -7,8 +7,8 @@ import (
 	"task-trail/internal/domain"
 )
 
-// pathID — ID ресурса из пути. Не UUID — 404 NOT_FOUND, как для несуществующего ресурса
-// (контракт): иначе PostgreSQL откажет в разборе UUID, и ответ был бы 500.
+// pathID is the resource ID from the path. Not a UUID — 404 NOT_FOUND, as for a missing resource
+// (contract): otherwise PostgreSQL would fail to parse the UUID and the response would be 500.
 func pathID(c *gin.Context, name string) (string, error) {
 	value := c.Param(name)
 	if !isUUID(value) {
@@ -17,8 +17,8 @@ func pathID(c *gin.Context, name string) (string, error) {
 	return value, nil
 }
 
-// queryID — необязательный ID из параметра запроса: нет параметра — nil, не UUID — 404,
-// как и в пути (контракт).
+// queryID is an optional ID from a query parameter: no parameter — nil, not a UUID — 404,
+// as in the path (contract).
 func queryID(c *gin.Context, name string) (*string, error) {
 	value, ok := c.GetQuery(name)
 	if !ok {

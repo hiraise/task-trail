@@ -18,7 +18,7 @@ func newValidator(t *testing.T) *validator.Validate {
 	return v
 }
 
-// Предел пароля — 72 байта в UTF-8, а не 72 символа: русская буква занимает 2 байта.
+// The password limit is 72 bytes in UTF-8, not 72 characters: a Cyrillic letter takes 2 bytes.
 func TestMaxBytes(t *testing.T) {
 	v := newValidator(t)
 	for value, ok := range map[string]bool{
@@ -28,7 +28,7 @@ func TestMaxBytes(t *testing.T) {
 		strings.Repeat("я", 37): false,
 	} {
 		if err := v.Var(value, "maxbytes=72"); (err == nil) != ok {
-			t.Errorf("%d байт: ошибка %v, ожидалось годно=%v", len(value), err, ok)
+			t.Errorf("%d bytes: error %v, expected valid=%v", len(value), err, ok)
 		}
 	}
 }
@@ -47,7 +47,7 @@ func TestHTTPURL(t *testing.T) {
 		"https://user:pass@example.com": false,
 	} {
 		if err := v.Var(value, "httpurl"); (err == nil) != ok {
-			t.Errorf("%q: ошибка %v, ожидалось годно=%v", value, err, ok)
+			t.Errorf("%q: error %v, expected valid=%v", value, err, ok)
 		}
 	}
 }

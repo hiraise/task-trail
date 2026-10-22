@@ -48,14 +48,14 @@ func avatar(name string, content []byte) apitest.Multipart {
 	return apitest.Multipart{{Name: "file", FileName: name, Content: content}}
 }
 
-// withPNGSignature — содержимое размером size, которое по первым байтам — PNG.
+// withPNGSignature is content of the given size whose first bytes make it a PNG.
 func withPNGSignature(size int) []byte {
 	content := make([]byte, size)
 	copy(content, "\x89PNG\x0D\x0A\x1A\x0A")
 	return content
 }
 
-// filesOnDisk — имена файлов в папке FILES_DIR сервера.
+// filesOnDisk are the file names in the server's FILES_DIR folder.
 func filesOnDisk(t *testing.T, s *apitest.Server) []string {
 	t.Helper()
 	entries, err := os.ReadDir(s.FilesDir)
@@ -69,7 +69,7 @@ func filesOnDisk(t *testing.T, s *apitest.Server) []string {
 	return names
 }
 
-// anonymous забывает cookie: следующие запросы — без входа.
+// anonymous forgets the cookies: next requests are unauthenticated.
 func anonymous(t *testing.T, s *apitest.Server) {
 	t.Helper()
 	jar, err := cookiejar.New(nil)
@@ -86,23 +86,23 @@ func TestCurrentUser(t *testing.T) {
 	rec := s.Do(http.MethodGet, "/v1/users/me", nil)
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if got := apitest.Decode[currentUser](t, rec); got.ID != admin.ID || got.Email != "admin@example.com" || !got.IsAdmin {
-		t.Fatalf("текущий пользователь: %+v", got)
+		t.Fatalf("current user: %+v", got)
 	}
 
 	rec = s.Do(http.MethodPatch, "/v1/users/me", map[string]any{"username": "Анна Петрова"})
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if got := apitest.Decode[currentUser](t, rec); got.Username == nil || *got.Username != "Анна Петрова" || !got.IsAdmin {
-		t.Fatalf("после смены имени: %+v", got)
+		t.Fatalf("after renaming: %+v", got)
 	}
-	// null убирает имя
+	// null removes the name
 	rec = s.Do(http.MethodPatch, "/v1/users/me", `{"username": null}`)
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if got := apitest.Decode[currentUser](t, rec); got.Username != nil {
-		t.Fatalf("имя не убрано: %+v", got)
+		t.Fatalf("name not removed: %+v", got)
 	}
 	rec = s.Do(http.MethodGet, "/v1/users/me", nil)
 	if got := apitest.Decode[currentUser](t, rec); got.Username != nil {
-		t.Fatalf("имя не сохранилось: %+v", got)
+		t.Fatalf("name not saved: %+v", got)
 	}
 
 	anonymous(t, s)
@@ -110,7 +110,7 @@ func TestCurrentUser(t *testing.T) {
 	apitest.RequireError(t, s.Do(http.MethodPatch, "/v1/users/me", map[string]any{"username": "Анна"}), http.StatusUnauthorized, "UNAUTHENTICATED")
 }
 
-// Имя обязательно в запросе, но может быть null; пустое и длиннее 100 символов — ошибка.
+// The name is required in the request but may be null; empty or longer than 100 characters is an error.
 func TestRenameValidation(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -119,20 +119,20 @@ func TestRenameValidation(t *testing.T) {
 		`{"username": ""}`: "username",
 		`{"username": "` + strings.Repeat("я", 101) + `"}`: "username",
 		`{"username": "Анна", "email": "a@b.c"}`:           "email",
-		// Неверный тип в поле, которое может быть null, encoding/json сообщает без имени поля
+		// encoding/json reports a wrong type in a nullable field without the field name
 		`{"username": 5}`: "",
 	} {
 		apiErr := apitest.RequireError(t, s.Do(http.MethodPatch, "/v1/users/me", body), http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 		if _, ok := apiErr.Details[field]; field != "" && !ok {
-			t.Errorf("%s: в details нет %s: %v", body, field, apiErr.Details)
+			t.Errorf("%s: details lack %s: %v", body, field, apiErr.Details)
 		}
 	}
 	rec := s.Do(http.MethodPatch, "/v1/users/me", map[string]any{"username": strings.Repeat("я", 100)})
 	apitest.RequireStatus(t, rec, http.StatusOK)
 }
 
-// Аватарка заменяет прежнюю: прежний файл больше не отдаётся, а очистка стирает его с диска.
-// Файл отдаётся без входа, с заголовками из ADR-0013.
+// An avatar replaces the previous one: the previous file is no longer served, and cleanup erases it from disk.
+// The file is served without sign-in, with the headers from ADR-0013.
 func TestAvatar(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -142,21 +142,21 @@ func TestAvatar(t *testing.T) {
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	me := apitest.Decode[currentUser](t, rec)
 	if me.AvatarID == nil || !me.IsAdmin {
-		t.Fatalf("после загрузки: %+v", me)
+		t.Fatalf("after upload: %+v", me)
 	}
 	firstID := *me.AvatarID
 	rec = s.Do(http.MethodGet, "/v1/users/me", nil)
 	if got := apitest.Decode[currentUser](t, rec); got.AvatarID == nil || *got.AvatarID != firstID {
-		t.Fatalf("аватарка не сохранилась: %+v", got)
+		t.Fatalf("avatar not saved: %+v", got)
 	}
 
-	// Тип — по содержимому: JPEG с именем .png остаётся JPEG
+	// The type comes from the content: a JPEG named .png stays JPEG
 	second := jpegImage(t)
 	rec = s.Do(http.MethodPatch, "/v1/users/me/avatar", avatar("photo.png", second))
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	secondID := *apitest.Decode[currentUser](t, rec).AvatarID
 	if secondID == firstID {
-		t.Fatal("ID аватарки не сменился")
+		t.Fatal("avatar ID did not change")
 	}
 
 	anonymous(t, s)
@@ -169,34 +169,34 @@ func TestAvatar(t *testing.T) {
 		"Content-Disposition":    `inline; filename=photo.png`,
 	} {
 		if got := rec.Header().Get(header); got != want {
-			t.Errorf("%s: %q, ожидалось %q", header, got, want)
+			t.Errorf("%s: %q, expected %q", header, got, want)
 		}
 	}
 	if !bytes.Equal(rec.Body.Bytes(), second) {
-		t.Error("содержимое файла отличается от загруженного")
+		t.Error("file content differs from the uploaded one")
 	}
 
-	// Прежняя аватарка не отдаётся, но лежит на диске до очистки
+	// The previous avatar is not served but stays on disk until cleanup
 	apitest.RequireError(t, s.Do(http.MethodGet, "/v1/files/"+firstID, nil), http.StatusNotFound, "NOT_FOUND")
 	if got := filesOnDisk(t, s); len(got) != 2 {
-		t.Fatalf("на диске до очистки: %v", got)
+		t.Fatalf("on disk before cleanup: %v", got)
 	}
 	erased, err := s.App.File.Cleanup.Execute(context.Background())
 	if err != nil || erased != 1 {
-		t.Fatalf("стёрто %d, %v", erased, err)
+		t.Fatalf("erased %d, %v", erased, err)
 	}
 	if got := filesOnDisk(t, s); len(got) != 1 || got[0] != secondID {
-		t.Fatalf("на диске после очистки: %v", got)
+		t.Fatalf("on disk after cleanup: %v", got)
 	}
 	var deletedAt *time.Time
 	if err := s.Pool.QueryRow(context.Background(), `SELECT deleted_at FROM files WHERE id = $1`, firstID).Scan(&deletedAt); err != nil || deletedAt == nil {
-		t.Fatalf("стёртый файл не отмечен в базе: %v, %v", deletedAt, err)
+		t.Fatalf("erased file not marked in the database: %v, %v", deletedAt, err)
 	}
 
 	apitest.RequireError(t, s.Do(http.MethodPatch, "/v1/users/me/avatar", avatar("a.png", first)), http.StatusUnauthorized, "UNAUTHENTICATED")
 }
 
-// Имя файла не по-английски уходит в filename*, а файл, кроме картинок, — только на скачивание.
+// A non-ASCII file name goes into filename*, and any file except images is download-only.
 func TestFileContentDisposition(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	admin := registerAdmin(t, s)
@@ -209,7 +209,7 @@ func TestFileContentDisposition(t *testing.T) {
 		t.Errorf("Content-Disposition: %q", got)
 	}
 
-	// Вложений ещё нет (этап 3): файл другого типа кладётся прямо в базу и на диск
+	// There are no attachments yet (stage 3): a file of another type is put straight into the database and onto disk
 	const fileID = "0b8f8a52-9c2e-4d5f-8a1b-3c4d5e6f7a8b"
 	if _, err := s.Pool.Exec(ctx, `INSERT INTO files (id, original_name, mime_type, owner_id) VALUES ($1, 'page.html', 'text/html; charset=utf-8', $2)`,
 		fileID, admin.ID); err != nil {
@@ -229,27 +229,27 @@ func TestAvatarRejected(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
 
-	// Ровно 5 МБ — можно
+	// Exactly 5 MB is allowed
 	rec := s.Do(http.MethodPatch, "/v1/users/me/avatar", avatar("big.png", withPNGSignature(entity.MaxAvatarSize)))
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	avatarID := *apitest.Decode[currentUser](t, rec).AvatarID
 
 	for name, body := range map[string]apitest.Multipart{
-		"на байт больше 5 МБ": avatar("big.png", withPNGSignature(entity.MaxAvatarSize+1)),
-		"намного больше":      avatar("big.png", withPNGSignature(8<<20)),
+		"one byte over 5 MB": avatar("big.png", withPNGSignature(entity.MaxAvatarSize+1)),
+		"much larger":        avatar("big.png", withPNGSignature(8<<20)),
 	} {
 		t.Run(name, func(t *testing.T) {
 			apitest.RequireError(t, s.Do(http.MethodPatch, "/v1/users/me/avatar", body), http.StatusUnprocessableEntity, "FILE_TOO_LARGE")
 		})
 	}
 	for name, content := range map[string][]byte{
-		"SVG":     []byte(`<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>`),
-		"HTML":    []byte(`<!DOCTYPE html><script>alert(1)</script>`),
-		"GIF":     []byte("GIF89a\x01\x00\x01\x00\x00\x00\x00;"),
-		"пустой":  {},
-		"текст":   []byte("hello"),
-		"PDF":     []byte("%PDF-1.7\n"),
-		"обрывок": []byte("\x89PN"),
+		"SVG":       []byte(`<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>`),
+		"HTML":      []byte(`<!DOCTYPE html><script>alert(1)</script>`),
+		"GIF":       []byte("GIF89a\x01\x00\x01\x00\x00\x00\x00;"),
+		"empty":     {},
+		"text":      []byte("hello"),
+		"PDF":       []byte("%PDF-1.7\n"),
+		"truncated": []byte("\x89PN"),
 	} {
 		t.Run(name, func(t *testing.T) {
 			rec := s.Do(http.MethodPatch, "/v1/users/me/avatar", avatar("photo.png", content))
@@ -260,27 +260,27 @@ func TestAvatarRejected(t *testing.T) {
 		body  any
 		field string
 	}{
-		"без файла":   {apitest.Multipart{{Name: "comment", Content: []byte("x")}}, "comment"},
-		"пусто":       {apitest.Multipart{}, "file"},
-		"лишнее поле": {apitest.Multipart{{Name: "file", FileName: "a.png", Content: pngImage(t)}, {Name: "comment", Content: []byte("x")}}, "comment"},
-		"два файла":   {apitest.Multipart{{Name: "file", FileName: "a.png", Content: pngImage(t)}, {Name: "file", FileName: "b.png", Content: pngImage(t)}}, "file"},
-		"JSON":        {map[string]string{"file": "x"}, ""},
+		"no file":       {apitest.Multipart{{Name: "comment", Content: []byte("x")}}, "comment"},
+		"nothing":       {apitest.Multipart{}, "file"},
+		"unknown field": {apitest.Multipart{{Name: "file", FileName: "a.png", Content: pngImage(t)}, {Name: "comment", Content: []byte("x")}}, "comment"},
+		"two files":     {apitest.Multipart{{Name: "file", FileName: "a.png", Content: pngImage(t)}, {Name: "file", FileName: "b.png", Content: pngImage(t)}}, "file"},
+		"JSON":          {map[string]string{"file": "x"}, ""},
 	} {
 		t.Run(name, func(t *testing.T) {
 			apiErr := apitest.RequireError(t, s.Do(http.MethodPatch, "/v1/users/me/avatar", c.body), http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 			if _, ok := apiErr.Details[c.field]; c.field != "" && !ok {
-				t.Errorf("в details нет %s: %v", c.field, apiErr.Details)
+				t.Errorf("details lack %s: %v", c.field, apiErr.Details)
 			}
 		})
 	}
 
-	// Отклонённые файлы не меняют аватарку и не остаются на диске
+	// Rejected files do not change the avatar and do not stay on disk
 	rec = s.Do(http.MethodGet, "/v1/users/me", nil)
 	if got := apitest.Decode[currentUser](t, rec); got.AvatarID == nil || *got.AvatarID != avatarID {
-		t.Fatalf("аватарка: %+v", got)
+		t.Fatalf("avatar: %+v", got)
 	}
 	if got := filesOnDisk(t, s); len(got) != 1 || got[0] != avatarID {
-		t.Fatalf("на диске: %v", got)
+		t.Fatalf("on disk: %v", got)
 	}
 }
 
@@ -291,8 +291,8 @@ func TestFileNotFound(t *testing.T) {
 	}
 }
 
-// Очистка стирает файлы старше суток, у которых нет записи в базе, — мусор прерванной
-// загрузки. Свежие, известные базе и чужие (не UUID) файлы остаются (ADR-0013).
+// Cleanup erases files older than a day that have no database record — leftovers of an interrupted
+// upload. Fresh files, files known to the database and foreign (non-UUID) files stay (ADR-0013).
 func TestCleanupOrphanFiles(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
@@ -315,16 +315,16 @@ func TestCleanupOrphanFiles(t *testing.T) {
 	}
 	erased, err := s.App.File.Cleanup.Execute(context.Background())
 	if err != nil || erased != 1 {
-		t.Fatalf("стёрто %d, %v", erased, err)
+		t.Fatalf("erased %d, %v", erased, err)
 	}
 	got := strings.Join(filesOnDisk(t, s), " ")
 	if strings.Contains(got, orphan) || !strings.Contains(got, fresh) || !strings.Contains(got, known) || !strings.Contains(got, "notes.txt") {
-		t.Fatalf("на диске после очистки: %s", got)
+		t.Fatalf("on disk after cleanup: %s", got)
 	}
 }
 
-// Пользователь виден, если это вы, у вас общий проект или он автор задачи в вашем проекте —
-// и после выхода из проекта. Удалённые проекты и задачи не в счёт; остальные — 404.
+// A user is visible if it is you, you share a project, or they authored a task in your project —
+// even after leaving the project. Deleted projects and tasks do not count; others get 404.
 func TestGetUser(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	ctx := context.Background()
@@ -356,7 +356,7 @@ func TestGetUser(t *testing.T) {
 			}
 			apitest.RequireStatus(t, rec, http.StatusOK)
 			if got := apitest.Decode[user](t, rec); got.ID != id || got.Email == "" {
-				t.Errorf("%s видит %+v", viewer, got)
+				t.Errorf("%s sees %+v", viewer, got)
 			}
 		}
 	}

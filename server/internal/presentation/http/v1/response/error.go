@@ -1,7 +1,7 @@
 package response
 
-// ErrorCode — код ошибки API, значение из ErrorCode в api/openapi.yaml (ADR-0018).
-// По коду клиент выбирает реакцию, поэтому новый код сначала добавляется в контракт.
+// ErrorCode is an API error code, a value of ErrorCode in api/openapi.yaml (ADR-0018).
+// The client chooses its reaction by the code, so a new code is added to the contract first.
 type ErrorCode string
 
 const (
@@ -27,12 +27,12 @@ const (
 	CodeInternal             ErrorCode = "INTERNAL"
 )
 
-// ApiError — тело любого ответа с ошибкой (ApiError в контракте).
+// ApiError is the body of any error response (ApiError in the contract).
 type ApiError struct {
 	Status  int       `json:"-"`
 	Code    ErrorCode `json:"code"`
 	Message string    `json:"message"`
-	// Details — поле запроса → что с ним не так; только у VALIDATION_FAILED, иначе null.
+	// Details maps a request field → what is wrong with it; only for VALIDATION_FAILED, otherwise null.
 	Details map[string]string `json:"details"`
 }
 

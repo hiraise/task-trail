@@ -16,7 +16,7 @@ type updateCurrentUserReq struct {
 	Username Optional[string] `json:"username" binding:"omitnil,min=1,max=100"`
 }
 
-// BindUpdateCurrentUser возвращает новое имя; nil — убрать имя.
+// BindUpdateCurrentUser returns the new name; nil removes the name.
 func BindUpdateCurrentUser(c *gin.Context) (*string, error) {
 	body, err := validate[updateCurrentUserReq](c)
 	if err != nil {
@@ -25,21 +25,21 @@ func BindUpdateCurrentUser(c *gin.Context) (*string, error) {
 	return body.Username.Value, nil
 }
 
-// multipartOverhead — запас тела запроса на границы и заголовки частей multipart сверх файла.
-// Предел тела entity.MaxAvatarSize+multipartOverhead повторяет client_max_body_size прокси
-// стенда (stand/nginx.conf.template): меняешь здесь — поменяй и там (ADR-0013).
+// multipartOverhead is the request body allowance for multipart boundaries and part headers beyond the file.
+// The body limit entity.MaxAvatarSize+multipartOverhead mirrors client_max_body_size of the stand
+// proxy (stand/nginx.conf.template): change it here — change it there too (ADR-0013).
 const multipartOverhead = 64 << 10
 
-// avatarField — поле multipart/form-data с файлом аватарки (контракт, PATCH /v1/users/me/avatar).
+// avatarField is the multipart/form-data field with the avatar file (contract, PATCH /v1/users/me/avatar).
 const avatarField = "file"
 
-// BindAvatar читает файл аватарки из multipart/form-data. Больше entity.MaxAvatarSize файл
-// не дочитывается: размер проверит сценарий, а тело сверх предела с запасом — FILE_TOO_LARGE.
+// BindAvatar reads the avatar file from multipart/form-data. The file is not read beyond
+// entity.MaxAvatarSize: the use case checks the size, and a body over the limit with allowance is FILE_TOO_LARGE.
 func BindAvatar(c *gin.Context) (dto.Upload, error) {
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, entity.MaxAvatarSize+multipartOverhead)
 	reader, err := c.Request.MultipartReader()
 	if err != nil {
-		// offset 1 — источник ошибки в логе: обработчик, а не эта функция
+		// offset 1: the error source in the log is the handler, not this function
 		return dto.Upload{}, domain.ErrInputValidation(1, err)
 	}
 	var upload *dto.Upload
@@ -60,7 +60,7 @@ func BindAvatar(c *gin.Context) (dto.Upload, error) {
 		}
 		upload = &dto.Upload{Name: part.FileName(), Content: content}
 		if len(content) > entity.MaxAvatarSize {
-			// Остаток не читаем: файл всё равно слишком большой
+			// Do not read the rest: the file is too large anyway
 			break
 		}
 	}
@@ -70,7 +70,7 @@ func BindAvatar(c *gin.Context) (dto.Upload, error) {
 	return *upload, nil
 }
 
-// bodyError — тело запроса не дочитано: сверх предела — FILE_TOO_LARGE, иначе тело не разобрано.
+// bodyError: the request body was not read fully: over the limit — FILE_TOO_LARGE, otherwise the body could not be parsed.
 func bodyError(err error) error {
 	var tooLarge *http.MaxBytesError
 	if errors.As(err, &tooLarge) {

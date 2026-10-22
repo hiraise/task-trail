@@ -6,7 +6,7 @@ import (
 	"task-trail/internal/domain/entity"
 )
 
-// Task — задача (Task в контракте).
+// Task is a task (Task in the contract).
 type Task struct {
 	ID          string    `json:"id"`
 	ProjectID   string    `json:"projectId"`
@@ -25,7 +25,7 @@ func NewTask(t *entity.Task) Task {
 		id := string(*t.AssigneeID)
 		assignee = &id
 	}
-	// Время — в UTC (ADR-0018): из базы оно приходит в поясе сервера
+	// Time is in UTC (ADR-0018): the database returns it in the server's time zone
 	return Task{
 		ID:          string(t.ID),
 		ProjectID:   string(t.ProjectID),
@@ -47,7 +47,7 @@ func NewTasks(tasks []*entity.Task) []Task {
 	return out
 }
 
-// TaskStatus — статус задачи (TaskStatus в контракте).
+// TaskStatus is a task status (TaskStatus in the contract).
 type TaskStatus struct {
 	ID         string `json:"id"`
 	Name       string `json:"name"`

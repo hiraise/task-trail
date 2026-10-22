@@ -7,14 +7,14 @@ import (
 	"task-trail/internal/domain/entity"
 )
 
-// ServiceSettings — настройки сервиса (ServiceSettings в контракте).
+// ServiceSettings are the service settings (ServiceSettings in the contract).
 type ServiceSettings struct {
 	ServiceURL string `json:"serviceUrl"`
-	// Mail — null, если почта не подключена.
+	// Mail is null if mail is not configured.
 	Mail *MailSettings `json:"mail"`
 }
 
-// MailSettings — настройки SMTP. Пароль API не отдаёт, только признак, что он сохранён (ADR-0015).
+// MailSettings are the SMTP settings. The API never returns the password, only whether it is saved (ADR-0015).
 type MailSettings struct {
 	Host        string  `json:"host"`
 	Port        int     `json:"port"`
@@ -39,7 +39,7 @@ func NewServiceSettings(s dto.ServiceSettings) ServiceSettings {
 	return out
 }
 
-// AdminUser — пользователь в разделе администратора (AdminUser в контракте).
+// AdminUser is a user in the admin section (AdminUser in the contract).
 type AdminUser struct {
 	User
 	IsAdmin   bool      `json:"isAdmin"`
@@ -47,7 +47,7 @@ type AdminUser struct {
 }
 
 func NewAdminUser(u *entity.UserAccount) AdminUser {
-	// Время — в UTC (ADR-0018): из базы оно приходит в поясе сервера
+	// Time is in UTC (ADR-0018): the database returns it in the server's time zone
 	return AdminUser{User: NewUser(u), IsAdmin: u.IsAdmin, CreatedAt: u.CreatedAt.UTC()}
 }
 
@@ -59,7 +59,7 @@ func NewAdminUsers(users []*entity.UserAccount) []AdminUser {
 	return out
 }
 
-// PasswordResetLink — ссылка сброса пароля, которую администратор передаёт сам (PasswordResetLink в контракте).
+// PasswordResetLink is a password reset link the administrator hands over personally (PasswordResetLink in the contract).
 type PasswordResetLink struct {
 	URL       string    `json:"url"`
 	ExpiresAt time.Time `json:"expiresAt"`

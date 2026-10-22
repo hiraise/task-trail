@@ -13,8 +13,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// adminRoutes — настройки сервиса и пользователи: /v1/admin/* в контракте. Права администратора
-// сервиса проверяет middleware.NewAdmin на всей группе (ADR-0014).
+// adminRoutes are service settings and users: /v1/admin/* in the contract. Service administrator
+// rights are checked by middleware.NewAdmin on the whole group (ADR-0014).
 type adminRoutes struct {
 	cm       *contextmanager.GinContextManager
 	services *admin.AdminModule

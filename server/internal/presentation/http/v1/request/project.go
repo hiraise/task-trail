@@ -16,8 +16,8 @@ type createProjectReq struct {
 
 func (r *createProjectReq) normalize() { normalizeEmails(r.Emails) }
 
-// renameReq — новое название или описание проекта или задачи (UpdateProjectRequest
-// и UpdateTaskRequest в контракте).
+// renameReq is a new name or description of a project or task (UpdateProjectRequest
+// and UpdateTaskRequest in the contract).
 type renameReq struct {
 	Name        Optional[string] `json:"name" binding:"omitnil,min=1,max=254"`
 	Description Optional[string] `json:"description"`
@@ -33,14 +33,14 @@ type changeRoleReq struct {
 	Role string `json:"role" binding:"required,oneof=admin member"`
 }
 
-// normalizeEmails приводит почты к норме до проверки (ADR-0016).
+// normalizeEmails normalizes emails before validation (ADR-0016).
 func normalizeEmails(emails []string) {
 	for i, email := range emails {
 		emails[i] = string(entity.NewEmail(email))
 	}
 }
 
-// checkRename: название не может быть null, и хотя бы одно поле нужно (minProperties 1).
+// checkRename: the name cannot be null, and at least one field is required (minProperties 1).
 func checkRename(sl validator.StructLevel) {
 	r := sl.Current().Interface().(renameReq)
 	switch {
@@ -71,7 +71,7 @@ func BindUpdateProject(c *gin.Context) (dto.ProjectChanges, error) {
 	}, nil
 }
 
-// BindAddMembers возвращает почты, приведённые к норме.
+// BindAddMembers returns normalized emails.
 func BindAddMembers(c *gin.Context) ([]string, error) {
 	body, err := validate[addMembersReq](c)
 	if err != nil {

@@ -38,16 +38,16 @@ type moveTaskReq struct {
 
 func (r *moveTaskReq) normalize() { normalizeID(&r.ProjectID) }
 
-// normalizeID приводит UUID из тела к нижнему регистру, как его хранит и отдаёт PostgreSQL:
-// иначе ID из запроса и из базы не совпадут при сравнении.
+// normalizeID lowercases a UUID from the body, as PostgreSQL stores and returns it:
+// otherwise IDs from the request and the database would not match when compared.
 func normalizeID(id *string) {
 	if id != nil {
 		*id = strings.ToLower(*id)
 	}
 }
 
-// requireAssignee: исполнитель обязателен в запросе, null — снять исполнителя
-// (ChangeTaskAssigneeRequest в контракте).
+// requireAssignee: the assignee is required in the request, null removes the assignee
+// (ChangeTaskAssigneeRequest in the contract).
 func requireAssignee(sl validator.StructLevel) {
 	if r := sl.Current().Interface().(changeTaskAssigneeReq); !r.AssigneeID.Set {
 		sl.ReportError(r.AssigneeID, "assigneeId", "AssigneeID", "required", "")
@@ -86,7 +86,7 @@ func BindChangeTaskStatus(c *gin.Context) (entity.TaskStatus, error) {
 	return entity.TaskStatus(body.StatusID), nil
 }
 
-// BindChangeTaskAssignee возвращает исполнителя; nil — снять исполнителя.
+// BindChangeTaskAssignee returns the assignee; nil removes the assignee.
 func BindChangeTaskAssignee(c *gin.Context) (*string, error) {
 	body, err := validate[changeTaskAssigneeReq](c)
 	if err != nil {
@@ -95,7 +95,7 @@ func BindChangeTaskAssignee(c *gin.Context) (*string, error) {
 	return body.AssigneeID.Value, nil
 }
 
-// BindMoveTask возвращает ID проекта, куда перенести задачу.
+// BindMoveTask returns the ID of the project to move the task to.
 func BindMoveTask(c *gin.Context) (string, error) {
 	body, err := validate[moveTaskReq](c)
 	if err != nil {

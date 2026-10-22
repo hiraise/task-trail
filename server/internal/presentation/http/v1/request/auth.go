@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
-// Пароль — от 8 символов и не длиннее 72 байт в UTF-8: дальше bcrypt не считает (контракт, Password).
+// A password is at least 8 characters and at most 72 bytes in UTF-8: bcrypt ignores the rest (contract, Password).
 type registerReq struct {
 	Email      string `json:"email" binding:"required,email,max=254"`
 	Password   string `json:"password" binding:"required,min=8,maxbytes=72"`
@@ -77,7 +77,7 @@ func BindChangePassword(c *gin.Context) (dto.ChangePassword, error) {
 	return dto.ChangePassword{OldPassword: body.OldPassword, NewPassword: body.NewPassword}, nil
 }
 
-// BindForgotPassword возвращает почту, приведённую к норме.
+// BindForgotPassword returns the normalized email.
 func BindForgotPassword(c *gin.Context) (string, error) {
 	body, err := validate[forgotPasswordReq](c)
 	if err != nil {
@@ -94,7 +94,7 @@ func BindResetPassword(c *gin.Context) (dto.ResetPassword, error) {
 	return dto.ResetPassword{Token: body.Token, Password: body.Password}, nil
 }
 
-// BindInvitationToken возвращает токен из ссылки приглашения.
+// BindInvitationToken returns the token from the invitation link.
 func BindInvitationToken(c *gin.Context) (string, error) {
 	body, err := validate[invitationTokenReq](c)
 	if err != nil {
@@ -111,13 +111,13 @@ func BindAcceptInvitation(c *gin.Context) (dto.AcceptInvitation, error) {
 	return dto.AcceptInvitation{Token: body.Token, Username: body.Username, Password: body.Password}, nil
 }
 
-// normalizer приводит поля к виду, в котором их проверяют и хранят, например почту
-// без пробелов по краям: « Ivan@Example.com » — верная почта, а не ошибка проверки.
+// normalizer brings fields to the form in which they are validated and stored, e.g. an email
+// without surrounding spaces: " Ivan@Example.com " is a valid email, not a validation error.
 type normalizer interface {
 	normalize()
 }
 
-// validate разбирает тело JSON (лишние поля — ошибка), приводит поля к норме и проверяет их.
+// validate parses the JSON body (unknown fields are an error), normalizes the fields and validates them.
 func validate[T any](c *gin.Context) (*T, error) {
 	var body T
 	decoder := json.NewDecoder(c.Request.Body)

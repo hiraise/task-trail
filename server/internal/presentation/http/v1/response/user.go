@@ -2,12 +2,12 @@ package response
 
 import "task-trail/internal/domain/entity"
 
-// User — пользователь, каким его видят другие (User в контракте).
+// User is a user as others see them (User in the contract).
 type User struct {
 	ID       string  `json:"id"`
 	Email    string  `json:"email"`
 	Username *string `json:"username"`
-	// AvatarID — ID файла для GET /v1/files/{fileId} или null.
+	// AvatarID is the file ID for GET /v1/files/{fileId}, or null.
 	AvatarID *string `json:"avatarId"`
 }
 
@@ -28,7 +28,7 @@ func NewUsers(users []*entity.UserAccount) []User {
 	return out
 }
 
-// CurrentUser — пользователь, который вошёл (CurrentUser в контракте).
+// CurrentUser is the signed-in user (CurrentUser in the contract).
 type CurrentUser struct {
 	User
 	IsAdmin bool `json:"isAdmin"`
@@ -38,13 +38,13 @@ func NewCurrentUser(u *entity.UserAccount) CurrentUser {
 	return CurrentUser{User: NewUser(u), IsAdmin: u.IsAdmin}
 }
 
-// PublicSettings — настройки, нужные вебу до входа.
+// PublicSettings are the settings the web needs before sign-in.
 type PublicSettings struct {
 	RegistrationOpen bool `json:"registrationOpen"`
 	MailEnabled      bool `json:"mailEnabled"`
 }
 
-// InvitationInfo — куда ведёт ссылка приглашения (InvitationInfo в контракте).
+// InvitationInfo is where an invitation link leads (InvitationInfo in the contract).
 type InvitationInfo struct {
 	Email       string `json:"email"`
 	ProjectName string `json:"projectName"`

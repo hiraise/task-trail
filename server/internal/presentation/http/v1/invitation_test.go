@@ -20,7 +20,7 @@ func acceptBody(token string) map[string]string {
 	return map[string]string{"token": token, "username": "Иван", "password": password}
 }
 
-// memberRole — роль пользователя в проекте или пустая строка, если он не участник.
+// memberRole is the user's role in the project, or an empty string if they are not a member.
 func memberRole(t *testing.T, s *apitest.Server, projectID, userID string) string {
 	t.Helper()
 	var role string
@@ -32,8 +32,8 @@ func memberRole(t *testing.T, s *apitest.Server, projectID, userID string) strin
 	return role
 }
 
-// По ссылке видно, кто и куда зовёт; принятие создаёт аккаунт, сразу открывает сессию
-// и превращает все действующие приглашения почты в участие (ADR-0016). Дальше ссылки ведут на вход.
+// The link shows who invites and where; accepting creates an account, opens a session at once
+// and turns all active invitations of the email into memberships (ADR-0016). After that links lead to sign-in.
 func TestAcceptInvitation(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	admin := registerAdmin(t, s)
@@ -46,19 +46,19 @@ func TestAcceptInvitation(t *testing.T) {
 	rec := s.Do(http.MethodPost, "/v1/auth/invitations/lookup", map[string]string{"token": token})
 	apitest.RequireStatus(t, rec, http.StatusOK)
 	if got := apitest.Decode[invitationInfo](t, rec); got != (invitationInfo{Email: "ivan@example.com", ProjectName: "Дизайн-система", InvitedBy: "Админ"}) {
-		t.Fatalf("приглашение: %+v", got)
+		t.Fatalf("invitation: %+v", got)
 	}
 
 	rec = s.Do(http.MethodPost, "/v1/auth/invitations/accept", acceptBody(token))
 	apitest.RequireStatus(t, rec, http.StatusCreated)
 	user := apitest.Decode[currentUser](t, rec)
 	if user.Email != "ivan@example.com" || user.IsAdmin || user.Username == nil || *user.Username != "Иван" {
-		t.Fatalf("пользователь: %+v", user)
+		t.Fatalf("user: %+v", user)
 	}
 	apitest.RequireStatus(t, s.Do(http.MethodGet, "/v1/auth/check", nil), http.StatusNoContent)
 	for _, project := range []string{design, backend} {
 		if role := memberRole(t, s, project, user.ID); role != "member" {
-			t.Errorf("роль в проекте %s: %q", project, role)
+			t.Errorf("role in project %s: %q", project, role)
 		}
 	}
 
@@ -71,7 +71,7 @@ func TestAcceptInvitation(t *testing.T) {
 	login(t, s, "ivan@example.com", password)
 }
 
-// Истёкшее приглашение и приглашение удалённого проекта в участие не превращаются.
+// An expired invitation and an invitation to a deleted project do not become memberships.
 func TestAcceptInvitationSkipsInactive(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	admin := registerAdmin(t, s)
@@ -91,7 +91,7 @@ func TestAcceptInvitationSkipsInactive(t *testing.T) {
 	user := apitest.Decode[currentUser](t, rec)
 	for project, want := range map[string]string{old: "", deleted: "", active: "member"} {
 		if role := memberRole(t, s, project, user.ID); role != want {
-			t.Errorf("роль в проекте %s: %q, ожидалась %q", project, role, want)
+			t.Errorf("role in project %s: %q, expected %q", project, role, want)
 		}
 	}
 }
@@ -112,11 +112,11 @@ func TestInvitationLinkInvalid(t *testing.T) {
 	body := apitest.RequireError(t, s.Do(http.MethodPost, "/v1/auth/invitations/accept", map[string]string{"token": expired, "password": password}),
 		http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 	if _, ok := body.Details["username"]; !ok {
-		t.Errorf("в details нет username: %v", body.Details)
+		t.Errorf("details lack username: %v", body.Details)
 	}
 }
 
-// Одновременные принятия одной ссылки создают один аккаунт, остальные ведут на вход.
+// Concurrent acceptances of one link create one account; the rest lead to sign-in.
 func TestAcceptInvitationRace(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	admin := registerAdmin(t, s)
@@ -140,10 +140,10 @@ func TestAcceptInvitationRace(t *testing.T) {
 			created++
 		case http.StatusConflict:
 		default:
-			t.Errorf("ответ %d", code)
+			t.Errorf("response %d", code)
 		}
 	}
 	if created != 1 {
-		t.Fatalf("создано аккаунтов: %d", created)
+		t.Fatalf("accounts created: %d", created)
 	}
 }
