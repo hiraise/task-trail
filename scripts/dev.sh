@@ -1,41 +1,41 @@
 #!/usr/bin/env bash
-# Проверки TaskTrail (ADR-0009). CI вызывает те же команды, поэтому любой его шаг
-# воспроизводится локально: scripts/dev.sh <команда>.
+# TaskTrail checks (ADR-0009). CI runs the same commands, so any of its steps
+# can be reproduced locally: scripts/dev.sh <command>.
 set -euo pipefail
 
 ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 CACHE="$ROOT/.cache"
 GOLANGCI_LINT_VERSION=2.15.0
 
-# Стенд (ADR-0010): сервер из server/, веб из web/, PostgreSQL и перехватчик почты
+# Local stack (ADR-0010): server from server/, web from web/, PostgreSQL and a mail catcher
 COMPOSE=(docker compose -f "$ROOT/stand/compose.yaml")
 
 usage() {
 	cat <<'EOF'
-Использование: scripts/dev.sh <команда>
+Usage: scripts/dev.sh <command>
 
-Проверки (их же запускает CI):
-  check   всё сразу: rules, server, web
-  rules   правила проекта: ADR, ссылки в документации, зависимости и экраны веба
-  server  сервер: go vet, тесты с -race (с PostgreSQL в Docker и ответами по контракту), golangci-lint
-  web     веб: типы API из контракта, линтер, тесты, проверка типов и сборка
+Checks (CI runs the same):
+  check   everything: rules, server, web
+  rules   project rules: ADRs, links in docs, web dependencies and screens
+  server  server: go vet, tests with -race (PostgreSQL in Docker, responses checked against the contract), golangci-lint
+  web     web: API types from the contract, linter, tests, type check and build
 
-Локальный стенд в Docker:
-  up              собрать и запустить: веб, сервер, PostgreSQL, перехватчик почты;
-                  на пустой базе — создать администратора и подключить почту
-  smoke           дымовая проверка поднятого стенда: вход, приглашение по письму,
-                  задача, аватарка
-  down            остановить, данные сохраняются
-  reset           остановить и стереть базу и файлы
-  logs [сервис]   логи: server, web, postgres, mailpit
+Local stack in Docker:
+  up              build and start: web, server, PostgreSQL, mail catcher;
+                  on an empty database, create the administrator and set up mail
+  smoke           smoke test of the running stack: sign-in, invitation by email,
+                  task, avatar
+  down            stop, data is kept
+  reset           stop and wipe the database and files
+  logs [service]  logs: server, web, postgres, mailpit
 
-Ветки:
-  cleanup         убрать worktree и ветки, чьи PR уже слиты
+Branches:
+  cleanup         remove worktrees and branches whose PRs are merged
 EOF
 }
 
-# Контрольные суммы архивов golangci-lint $GOLANGCI_LINT_VERSION — из файла
-# golangci-lint-<версия>-checksums.txt релиза. Меняешь версию — обнови и суммы.
+# Checksums of the golangci-lint $GOLANGCI_LINT_VERSION archives, from the release file
+# golangci-lint-<version>-checksums.txt. When you change the version, update the checksums too.
 golangci_lint_sha256() {
 	case "$1" in
 	darwin-amd64) echo 767b899a28285e88ded2823d5dcc4bc5ef681173eb2d80f029a7b17ee4ece3b8 ;;
@@ -54,9 +54,9 @@ sha256_of() {
 	fi
 }
 
-# Кладёт в GOLANGCI_LINT путь к golangci-lint закреплённой версии: из PATH, если версия
-# совпадает, иначе скачивает релиз в .cache/ и сверяет его с закреплённой суммой.
-# Вызывать напрямую, не через $(…): внутри подстановки bash не наследует set -e.
+# Sets GOLANGCI_LINT to the path of golangci-lint of the pinned version: from PATH if the version
+# matches, otherwise downloads the release into .cache/ and verifies it against the pinned checksum.
+# Call it directly, not via $(…): bash does not inherit set -e inside a command substitution.
 ensure_golangci_lint() {
 	if command -v golangci-lint >/dev/null 2>&1 &&
 		golangci-lint --version 2>/dev/null | grep -q "version $GOLANGCI_LINT_VERSION "; then
@@ -77,18 +77,18 @@ ensure_golangci_lint() {
 	platform="$os-$arch"
 	expected=$(golangci_lint_sha256 "$platform")
 	if [ -z "$expected" ]; then
-		echo "golangci-lint: для платформы $platform нет закреплённой суммы — поставь golangci-lint $GOLANGCI_LINT_VERSION в PATH" >&2
+		echo "golangci-lint: no pinned checksum for platform $platform; install golangci-lint $GOLANGCI_LINT_VERSION into PATH" >&2
 		exit 1
 	fi
 	name="golangci-lint-$GOLANGCI_LINT_VERSION-$platform"
 	archive="$dir/$name.tar.gz"
-	echo "== golangci-lint $GOLANGCI_LINT_VERSION: скачиваю в $dir"
+	echo "== golangci-lint $GOLANGCI_LINT_VERSION: downloading into $dir"
 	mkdir -p "$dir"
 	curl -sSfL "https://github.com/golangci/golangci-lint/releases/download/v$GOLANGCI_LINT_VERSION/$name.tar.gz" -o "$archive"
 	actual=$(sha256_of "$archive")
 	if [ "$expected" != "$actual" ]; then
 		rm -f "$archive"
-		echo "golangci-lint: контрольная сумма $name.tar.gz не совпала (ожидалась $expected, получена $actual)" >&2
+		echo "golangci-lint: checksum of $name.tar.gz does not match (expected $expected, got $actual)" >&2
 		exit 1
 	fi
 	tar -xzf "$archive" -C "$dir" --strip-components=1 "$name/golangci-lint"
@@ -99,19 +99,19 @@ rules() {
 	node "$ROOT/scripts/rules.mjs"
 }
 
-# Временный PostgreSQL для интеграционных тестов репозиториев (ADR-0007): тот же образ, что
-# у стенда, на случайном порту; контейнер удаляется, когда завершается вызвавшая функция.
-# Адрес — в TEST_PG_URL, его читает server/test/testdb.
+# Temporary PostgreSQL for repository integration tests (ADR-0007): the same image as the
+# local stack, on a random port; the container is removed when the calling function exits.
+# The address goes to TEST_PG_URL, read by server/test/testdb.
 start_test_postgres() {
 	ensure_docker
 	local image name port attempt
 	image=$(sed -n 's/^ *image: *\(postgres:[^ ]*\).*/\1/p' "$ROOT/stand/compose.yaml" | head -1)
 	name="tasktrail-test-pg-$$"
-	echo "== server: временный $image для интеграционных тестов"
+	echo "== server: temporary $image for integration tests"
 	docker run -d --rm --name "$name" -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test \
 		-p 127.0.0.1::5432 "$image" >/dev/null
 	trap "docker rm -f '$name' >/dev/null 2>&1" EXIT
-	# Готов, только когда слушает TCP: на время инициализации сервер доступен лишь через сокет
+	# Ready only when it listens on TCP: during initialization the server is reachable only via the socket
 	for attempt in $(seq 1 60); do
 		docker exec "$name" pg_isready -q -h 127.0.0.1 -U test -d test && break
 		sleep 1
@@ -126,13 +126,13 @@ server() (
 	cd "$ROOT/server"
 	echo "== server: go vet"
 	go vet ./...
-	echo "== server: тесты"
+	echo "== server: tests"
 	go test -race ./...
 	echo "== server: golangci-lint"
 	"$GOLANGCI_LINT" run ./...
 )
 
-# Зависимости веба ставятся заново, если package.json или package-lock.json новее установленных
+# Web dependencies are reinstalled if package.json or package-lock.json is newer than the installed ones
 ensure_web_deps() (
 	cd "$ROOT/web"
 	local installed=node_modules/.package-lock.json
@@ -145,32 +145,32 @@ ensure_web_deps() (
 web() (
 	ensure_web_deps
 	cd "$ROOT/web"
-	echo "== web: типы API совпадают с контрактом (ADR-0020)"
+	echo "== web: API types match the contract (ADR-0020)"
 	local generated=src/infrastructure/api/generated fresh
 	fresh=$(mktemp -d)
 	trap 'rm -rf "$fresh"' EXIT
 	API_TYPES_OUT="$fresh" npm run --silent api:types
 	if ! diff -r "$fresh" "$generated"; then
-		echo "Типы в web/$generated устарели: выполни в web/ npm run api:types и закоммить результат" >&2
+		echo "Types in web/$generated are outdated: run npm run api:types in web/ and commit the result" >&2
 		exit 1
 	fi
-	echo "== web: линтер"
+	echo "== web: linter"
 	npm run lint
-	echo "== web: тесты"
+	echo "== web: tests"
 	npm run test:run
-	echo "== web: типы и сборка"
+	echo "== web: types and build"
 	npm run build
 )
 
-# Docker нужен стенду. На macOS Docker Desktop запускается сам, если ещё не запущен.
+# The local stack needs Docker. On macOS, Docker Desktop is started automatically if it is not running.
 ensure_docker() {
 	if ! command -v docker >/dev/null 2>&1; then
-		echo "Команды docker нет: поставь Docker и повтори команду" >&2
+		echo "No docker command: install Docker and run the command again" >&2
 		exit 1
 	fi
 	docker info >/dev/null 2>&1 && return
 	if [ "$(uname -s)" = Darwin ] && [ -d /Applications/Docker.app ]; then
-		echo "== Docker: запускаю Docker Desktop"
+		echo "== Docker: starting Docker Desktop"
 		open -a Docker
 		local attempt
 		for attempt in $(seq 1 90); do
@@ -178,27 +178,27 @@ ensure_docker() {
 			sleep 2
 		done
 	fi
-	echo "Docker недоступен:" >&2
+	echo "Docker is unavailable:" >&2
 	docker info 2>&1 >/dev/null | head -3 >&2 || true
 	exit 1
 }
 
-# Первый аккаунт и почту настраивает API администратора, а не окружение сервера (ADR-0015):
-# scripts/stand-setup.mjs, он же печатает адреса и вход
+# The first account and mail are set up via the admin API, not the server environment (ADR-0015):
+# scripts/stand-setup.mjs, which also prints the addresses and sign-in
 stand_up() {
 	ensure_docker
-	echo "== стенд: сборка и запуск"
+	echo "== stack: build and start"
 	"${COMPOSE[@]}" up -d --build --wait
 	node "$ROOT/scripts/stand-setup.mjs"
 }
 
-# Убирает worktree веток, чей PR слит (CLAUDE.md, «Ветки и PR»): исходники остаются в истории git.
-# Ветка слита, если её последний коммит — последний коммит слитого PR; так видно и слияние
-# без merge-коммита. Основную папку, текущий worktree и папки с незакоммиченными правками
-# не трогает. Перед кириллицей — ${var}: bash 3.2 в локали C иначе берёт её байт в имя переменной.
+# Removes worktrees of branches whose PR is merged (CLAUDE.md, "Branches and PRs"): the sources stay in git history.
+# A branch is merged if its last commit is the last commit of a merged PR; this also detects a merge
+# without a merge commit. Leaves alone the main folder, the current worktree and folders with uncommitted
+# changes. Use ${var} before non-ASCII text: otherwise bash 3.2 in the C locale takes its bytes into the variable name.
 cleanup() (
 	if ! command -v gh >/dev/null 2>&1; then
-		echo "Нужен GitHub CLI (gh): по нему видно, что PR ветки слит" >&2
+		echo "GitHub CLI (gh) is required: it tells whether a branch's PR is merged" >&2
 		exit 1
 	fi
 	cd "$ROOT"
@@ -215,20 +215,20 @@ cleanup() (
 			--jq ".[] | select(.headRefOid == \"$head\") | .number" | head -1)
 		[ -n "$pr" ] || continue
 		if [ -n "$(git -C "$tree" status --porcelain)" ]; then
-			echo "Оставлен ${tree}: в нём незакоммиченные правки" >&2
+			echo "Kept ${tree}: it has uncommitted changes" >&2
 			continue
 		fi
 		if ! git worktree remove "$tree"; then
-			echo "Не удалось убрать ${tree}" >&2
+			echo "Failed to remove ${tree}" >&2
 			continue
 		fi
 		git branch -q -D "$branch"
-		echo "Убран $tree и ветка ${branch} (PR #${pr})"
+		echo "Removed $tree and branch ${branch} (PR #${pr})"
 		removed=$((removed + 1))
 	done < <(git worktree list --porcelain |
 		awk '/^worktree /{tree=substr($0, 10)} /^branch refs\/heads\//{print tree "\t" substr($0, 19)}')
 	git worktree prune
-	echo "== cleanup: убрано worktree — $removed"
+	echo "== cleanup: worktrees removed: $removed"
 )
 
 case "${1:-}" in
@@ -236,7 +236,7 @@ check)
 	rules
 	server
 	web
-	echo "== check: всё зелёное"
+	echo "== check: all green"
 	;;
 rules) rules ;;
 server) server ;;
@@ -247,7 +247,7 @@ down) "${COMPOSE[@]}" down ;;
 reset) "${COMPOSE[@]}" down --volumes ;;
 logs)
 	shift
-	# В терминале — следить за логами; в скрипте или у агента — последние 200 строк и выйти
+	# In a terminal, follow the logs; in a script or for an agent, print the last 200 lines and exit
 	if [ -t 1 ]; then
 		"${COMPOSE[@]}" logs --follow --tail=200 "$@"
 	else
@@ -257,7 +257,7 @@ logs)
 cleanup) cleanup ;;
 "" | -h | --help | help) usage ;;
 *)
-	echo "Неизвестная команда: $1" >&2
+	echo "Unknown command: $1" >&2
 	usage >&2
 	exit 1
 	;;

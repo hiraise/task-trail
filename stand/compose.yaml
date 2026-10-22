@@ -1,6 +1,6 @@
-# Локальный стенд для разработки и приёмки (ADR-0010). Поднимается через scripts/dev.sh up:
-# compose собирает и запускает сервисы, а scripts/stand-setup.mjs создаёт первый аккаунт
-# и подключает почту через API администратора (ADR-0015, ADR-0017).
+# Local stack for development and acceptance (ADR-0010). Started via scripts/dev.sh up:
+# compose builds and starts the services, and scripts/stand-setup.mjs creates the first account
+# and connects mail via the admin API (ADR-0015, ADR-0017).
 name: tasktrail
 
 services:
@@ -10,8 +10,8 @@ services:
       POSTGRES_DB: tasktrail
       POSTGRES_USER: tasktrail
       POSTGRES_PASSWORD: tasktrail
-    # С PostgreSQL 18 данные лежат в /var/lib/postgresql/<версия>/docker, поэтому том — на
-    # /var/lib/postgresql: при следующем переходе версии новый том не понадобится
+    # Since PostgreSQL 18 data lives in /var/lib/postgresql/<version>/docker, so the volume is mounted on
+    # /var/lib/postgresql: the next version upgrade will not need a new volume
     volumes:
       - database:/var/lib/postgresql
     healthcheck:
@@ -20,9 +20,9 @@ services:
       timeout: 3s
       retries: 30
 
-  # Перехватчик почты: письма видны в веб-интерфейсе, наружу ничего не уходит. Сервер шлёт
-  # в него без шифрования и без входа — так его подключает scripts/stand-setup.mjs.
-  # Снаружи — порт 3025, а не обычный 8025: его часто занимает Mailpit других проектов.
+  # Mail catcher: emails are visible in its web UI, nothing leaves the machine. The server sends
+  # to it without encryption and without authentication, as scripts/stand-setup.mjs configures it.
+  # Exposed on port 3025, not the usual 8025: Mailpit of other projects often takes that one.
   mailpit:
     image: axllent/mailpit:v1.31.6
     ports:
@@ -30,15 +30,15 @@ services:
 
   server:
     build:
-      # Контекст — корень репозитория: сервер встраивает контракт из api/ (ADR-0023)
+      # The context is the repository root: the server embeds the contract from api/ (ADR-0023)
       context: ..
       dockerfile: server/docker/Dockerfile
     environment:
       APP_DEBUG: "true"
-      # Веб обращается к API по /api, nginx срезает префикс; от него считаются пути cookie
+      # The web calls the API at /api, nginx strips the prefix; cookie paths are based on it
       APP_ROOT_PATH: /api
       PG_CONNECTION_STRING: postgresql://tasktrail:tasktrail@postgres:5432/tasktrail?sslmode=disable
-      # Секрет только для стенда: он слушает 127.0.0.1. На своём сервере — openssl rand -hex 32
+      # A secret for the local stack only: it listens on 127.0.0.1. On your own server, use openssl rand -hex 32
       APP_SECRET: stand-only-secret-do-not-use-in-production
       FILES_DIR: /app/files
     volumes:
@@ -69,8 +69,8 @@ services:
       server:
         condition: service_healthy
 
-# База стенда — в томе database: схема старого API в прежнем томе postgres новому серверу
-# не подходит. Файлы (ADR-0013) — в томе files; scripts/dev.sh reset стирает оба.
+# The stack database is in the database volume: the old API schema in the former postgres volume does not
+# fit the new server. Files (ADR-0013) are in the files volume; scripts/dev.sh reset wipes both.
 volumes:
   database:
   files:

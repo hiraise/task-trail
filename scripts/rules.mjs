@@ -1,5 +1,5 @@
-// Правила проекта, которые ловятся поиском по коду (ADR-0009). Запуск: scripts/dev.sh rules.
-// Каждая проверка ссылается на ADR, из которого она следует.
+// Project rules that a code search can catch (ADR-0009). Run: scripts/dev.sh rules.
+// Each check refers to the ADR it follows from.
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { builtinModules } from "node:module";
@@ -10,8 +10,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const errors = [];
 const hints = [];
 
-// Файлы репозитория с точным регистром путей: закоммиченные и новые, кроме игнорируемых.
-// -z — чтобы пути с кириллицей не приходили в кавычках; --deduplicate — при конфликте слияния.
+// Repository files with exact path case: committed and new, except ignored ones.
+// -z keeps paths with Cyrillic from coming quoted; --deduplicate handles a merge conflict.
 const FILES = execFileSync(
   "git",
   ["ls-files", "-z", "--cached", "--others", "--exclude-standard", "--deduplicate"],
@@ -87,9 +87,9 @@ function checkAdr() {
   for (const file of rows.keys()) errors.push(`${dir}/README.md: index row for a missing ${file}`);
 }
 
-// Номер нового ADR могли занять параллельные сессии (docs/adr/template.md): ADR этой ветки, которых
-// нет в origin/main, сверяются с main, с ветками origin и с локальными ветками других worktree,
-// ещё не влитыми в main. Ветки origin видны после git fetch; в CI origin/main нет — проверка молчит.
+// Parallel sessions may have taken the number of a new ADR (docs/adr/template.md): ADRs of this branch that
+// are not in origin/main are compared with main, with origin branches and with local branches of other worktrees
+// not yet merged into main. Origin branches are visible after git fetch; CI has no origin/main, so the check is silent.
 function checkAdrNumbers() {
   const git = (...args) =>
     execFileSync("git", args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
@@ -107,7 +107,7 @@ function checkAdrNumbers() {
   const numberOf = (file) => /^(\d{4})-[a-z0-9-]+\.md$/.exec(file)?.[1];
   const adrsIn = (ref) => git("ls-tree", "--name-only", ref, `${dir}/`).split("\n").map((path) => basename(path)).filter(numberOf);
   const inMain = new Set(adrsIn("origin/main"));
-  const mine = new Map(); // номер → новый ADR этой ветки
+  const mine = new Map(); // number → new ADR of this branch
   for (const path of FILES.filter((file) => dirname(file) === dir)) {
     const file = basename(path);
     if (numberOf(file) && !inMain.has(file)) mine.set(numberOf(file), file);
@@ -117,7 +117,7 @@ function checkAdrNumbers() {
   const conflict = (other, where) => {
     const own = mine.get(numberOf(other));
     if (own && own !== other) {
-      errors.push(`${dir}/${own}: номер ${numberOf(other)} занят в ${where} (${other}) — кому он остаётся, в ${dir}/template.md`);
+      errors.push(`${dir}/${own}: number ${numberOf(other)} is taken in ${where} (${other}); who keeps it: see ${dir}/template.md`);
     }
   };
   for (const file of inMain) conflict(file, "origin/main");
@@ -126,14 +126,14 @@ function checkAdrNumbers() {
   const refs = git("for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes/origin").split("\n");
   for (const ref of refs) {
     if (!ref || ["origin", "origin/HEAD", current, `origin/${current}`].includes(ref)) continue;
-    // Ветка влита в main или вся вошла в эту ветку — её ADR не чужие
+    // The branch is merged into main or fully contained in this branch: its ADRs are not someone else's
     if (succeeds("merge-base", "--is-ancestor", ref, "origin/main") || succeeds("merge-base", "--is-ancestor", ref, "HEAD")) continue;
-    for (const file of adrsIn(ref)) if (!inMain.has(file)) conflict(file, `ветке ${ref}`);
+    for (const file of adrsIn(ref)) if (!inMain.has(file)) conflict(file, `branch ${ref}`);
   }
 }
 
-// Относительные ссылки в Markdown ведут на файлы и папки репозитория с точным регистром
-// (CLAUDE.md, «Где что описано»): CI на Linux различает регистр, macOS — нет.
+// Relative links in Markdown lead to repository files and folders with exact case
+// (CLAUDE.md, "Where things are"): CI on Linux is case-sensitive, macOS is not.
 function checkLinks() {
   const withoutCode = (text) =>
     text.replace(/^(```|~~~)[^\n]*\n[\s\S]*?^\1[^\n]*$/gm, "").replace(/`[^`\n]*`/g, "");
@@ -144,20 +144,20 @@ function checkLinks() {
       try {
         file = decodeURIComponent(target.split("#")[0]);
       } catch {
-        errors.push(`${path}: ссылка с некорректной кодировкой ${target}`);
+        errors.push(`${path}: link with invalid encoding ${target}`);
         continue;
       }
       const resolved = (
         file.startsWith("/") ? posix.normalize(file.slice(1)) : posix.join(posix.dirname(path), file)
       ).replace(/\/$/, "");
       if (!FILE_SET.has(resolved) && !DIR_SET.has(resolved)) {
-        errors.push(`${path}: ссылка на несуществующий ${target}`);
+        errors.push(`${path}: link to a missing ${target}`);
       }
     }
   }
 }
 
-// Каждый импортируемый в вебе пакет объявлен в web/package.json (ADR-0006)
+// Every package imported in the web is declared in web/package.json (ADR-0006)
 function checkWebImports() {
   const pkg = JSON.parse(read("web/package.json"));
   const declared = new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})]);
@@ -165,8 +165,8 @@ function checkWebImports() {
   const sources = FILES.filter(
     (file) => /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs)$/.test(file) && (file.startsWith("web/src/") || /^web\/[^/]+$/.test(file)),
   );
-  // `… from "x"`, `import "x"` в начале строки и `import("x")`; комментарии вырезаются,
-  // строки вроде `"import"` в конфигах не задеваются
+  // `… from "x"`, `import "x"` at the start of a line and `import("x")`; comments are stripped,
+  // strings like `"import"` in configs are not matched
   const importRe = /\sfrom\s+["']([^"']+)["']|^\s*import\s+["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']/gm;
   const missing = new Map();
   for (const path of sources) {
@@ -179,11 +179,11 @@ function checkWebImports() {
       if (!builtins.has(name) && !declared.has(name) && !missing.has(name)) missing.set(name, path);
     }
   }
-  for (const [name, path] of missing) errors.push(`web/package.json: пакет ${name} не объявлен, а импортируется (${path})`);
+  for (const [name, path] of missing) errors.push(`web/package.json: package ${name} is imported but not declared (${path})`);
 }
 
-// Компонентов с Mobile/Desktop в имени не становится больше: новые экраны — один адаптивный
-// компонент (ADR-0008). Слил пару — снизь порог; превышение — ошибка, снижение — подсказка.
+// Components with Mobile/Desktop in the name do not grow in number: a new screen is one adaptive
+// component (ADR-0008). Merged a pair — lower the limit; exceeding it is an error, going below is a hint.
 const DEVICE_SPLIT_LIMIT = { Mobile: 13, Desktop: 9 };
 
 function checkDeviceSplit() {
@@ -193,15 +193,15 @@ function checkDeviceSplit() {
   for (const [kind, limit] of Object.entries(DEVICE_SPLIT_LIMIT)) {
     const count = components.filter((file) => basename(file).includes(kind)).length;
     if (count > limit) {
-      errors.push(`web/src: компонентов с ${kind} в имени — ${count}, порог ${limit}: новый экран делай одним адаптивным компонентом (ADR-0008)`);
+      errors.push(`web/src: components with ${kind} in the name: ${count}, limit ${limit}: make a new screen one adaptive component (ADR-0008)`);
     } else if (count < limit) {
-      hints.push(`компонентов с ${kind} в имени стало ${count} — снизь порог в scripts/rules.mjs с ${limit} до ${count}`);
+      hints.push(`components with ${kind} in the name are down to ${count}: lower the limit in scripts/rules.mjs from ${limit} to ${count}`);
     }
   }
 }
 
-// Цвета, тени и шрифты — из переменных web/src/styles/ (ADR-0008). Объявлений с цветом значением
-// в CSS вне web/src/styles/ не становится больше: убрал — снизь порог. Шрифт — только переменной.
+// Colors, shadows and fonts come from variables in web/src/styles/ (ADR-0008). Declarations with a literal color
+// in CSS outside web/src/styles/ do not grow in number: removed one — lower the limit. A font is only a variable.
 const STYLE_LITERAL_LIMIT = 13;
 
 function checkStyleTokens() {
@@ -214,7 +214,7 @@ function checkStyleTokens() {
     for (const [declaration, property, value] of css.matchAll(/([a-z-]+)\s*:\s*([^;{}]+)(?=[;}])/g)) {
       const literal = value.replace(/var\([^)]*\)/g, "");
       if (property === "font-family" && !/^(var\(.*\)|inherit)$/.test(value.trim())) {
-        errors.push(`${path}: шрифт — переменной из web/src/styles/, а не значением (ADR-0008): ${declaration.trim()}`);
+        errors.push(`${path}: font must be a variable from web/src/styles/, not a literal value (ADR-0008): ${declaration.trim()}`);
       } else if (colorRe.test(literal)) {
         literals.push(`${path}: ${declaration.trim()}`);
       }
@@ -222,15 +222,15 @@ function checkStyleTokens() {
   }
   if (literals.length > STYLE_LITERAL_LIMIT) {
     errors.push(
-      `web/src: цветов и теней значениями в CSS — ${literals.length}, порог ${STYLE_LITERAL_LIMIT}: бери переменные ` +
-        `из web/src/styles/globals.css, новой нет — добавь её туда (ADR-0008). Все такие объявления:\n  ${literals.join("\n  ")}`,
+      `web/src: literal colors and shadows in CSS: ${literals.length}, limit ${STYLE_LITERAL_LIMIT}: use variables ` +
+        `from web/src/styles/globals.css; if there is none, add it there (ADR-0008). All such declarations:\n  ${literals.join("\n  ")}`,
     );
   } else if (literals.length < STYLE_LITERAL_LIMIT) {
-    hints.push(`цветов и теней значениями в CSS стало ${literals.length} — снизь порог в scripts/rules.mjs с ${STYLE_LITERAL_LIMIT} до ${literals.length}`);
+    hints.push(`literal colors and shadows in CSS are down to ${literals.length}: lower the limit in scripts/rules.mjs from ${STYLE_LITERAL_LIMIT} to ${literals.length}`);
   }
 }
 
-// Действия GitHub закреплены по SHA коммита с версией в комментарии (ADR-0009)
+// GitHub actions are pinned by commit SHA with the version in a comment (ADR-0009)
 function checkPinnedActions() {
   for (const path of FILES.filter((file) => /^\.github\/workflows\/[^/]+\.ya?ml$/.test(file))) {
     read(path)
@@ -239,25 +239,25 @@ function checkPinnedActions() {
         const uses = /^\s*(?:-\s+)?uses:\s*["']?([^\s"']+)["']?(.*)$/.exec(line);
         if (!uses || uses[1].startsWith("./")) return;
         if (!/@[0-9a-f]{40}$/.test(uses[1]) || !/^\s+#\s*v?\d/.test(uses[2])) {
-          errors.push(`${path}:${i + 1}: действие закрепляй по SHA с версией в комментарии — uses: <действие>@<SHA из 40 символов> # vX.Y.Z (ADR-0009)`);
+          errors.push(`${path}:${i + 1}: pin the action by SHA with the version in a comment: uses: <action>@<40-character SHA> # vX.Y.Z (ADR-0009)`);
         }
       });
   }
 }
 
-// Порты стенда слушают только 127.0.0.1 (ADR-0010): стенд не виден из сети
+// Local stack ports listen only on 127.0.0.1 (ADR-0010): the stack is not visible from the network
 function checkStandPorts() {
   const path = "stand/compose.yaml";
   if (!FILE_SET.has(path)) return;
-  const wrong = (i, port) => errors.push(`${path}:${i + 1}: порт ${port} — только на 127.0.0.1, в короткой записи "127.0.0.1:<порт>:<порт>" (ADR-0010)`);
-  let portsIndent = null; // отступ ключа ports:, пока идёт его список
+  const wrong = (i, port) => errors.push(`${path}:${i + 1}: port ${port} must be bound to 127.0.0.1 only, in the short form "127.0.0.1:<port>:<port>" (ADR-0010)`);
+  let portsIndent = null; // indent of the ports: key while its list goes on
   read(path)
     .split("\n")
     .forEach((line, i) => {
       const indent = line.search(/\S/);
       if (indent < 0 || line.trim().startsWith("#")) return;
       if (portsIndent !== null && indent <= portsIndent) portsIndent = null;
-      if (/^\s*network_mode:\s*["']?host/.test(line)) errors.push(`${path}:${i + 1}: network_mode: host открывает порты стенда в сеть (ADR-0010)`);
+      if (/^\s*network_mode:\s*["']?host/.test(line)) errors.push(`${path}:${i + 1}: network_mode: host exposes the stack's ports to the network (ADR-0010)`);
       const inline = /^\s*ports:\s*\[(.*)\]/.exec(line);
       if (inline) {
         for (const port of inline[1].split(",").map((item) => item.trim().replace(/^["']|["']$/g, ""))) {
@@ -272,9 +272,9 @@ function checkStandPorts() {
     });
 }
 
-// Текущее время сервер берёт из Clock (ADR-0022): time.Now, time.Since и time.Until — только
-// в реализации Clock, в тестах и для замера длительности в middleware/log.go. Остальных вызовов
-// не становится больше: перевёл на Clock — снизь порог.
+// The server takes the current time from Clock (ADR-0022): time.Now, time.Since and time.Until only
+// in the Clock implementation, in tests and for measuring duration in middleware/log.go. Other calls
+// do not grow in number: moved one to Clock — lower the limit.
 const TIME_CALL_LIMIT = 0;
 
 function checkClock() {
@@ -285,7 +285,7 @@ function checkClock() {
     path === "server/internal/presentation/http/middleware/log.go";
   const calls = [];
   for (const path of FILES.filter((file) => file.startsWith("server/") && file.endsWith(".go") && !allowed(file))) {
-    // Комментарии вырезаются с сохранением переводов строк, чтобы номера строк совпадали
+    // Comments are stripped keeping line breaks, so line numbers match
     const code = read(path).replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ""));
     code.split("\n").forEach((line, i) => {
       const callCount = line.replace(/\/\/.*$/, "").match(/\btime\.(?:Now|Since|Until)\(/g)?.length ?? 0;
@@ -294,44 +294,44 @@ function checkClock() {
   }
   if (calls.length > TIME_CALL_LIMIT) {
     errors.push(
-      `server: вызовов time.Now/Since/Until вне Clock — ${calls.length}, порог ${TIME_CALL_LIMIT}: бери время из Clock (ADR-0022). ` +
-        `Все вызовы:\n  ${calls.join("\n  ")}`,
+      `server: time.Now/Since/Until calls outside Clock: ${calls.length}, limit ${TIME_CALL_LIMIT}: take the time from Clock (ADR-0022). ` +
+        `All calls:\n  ${calls.join("\n  ")}`,
     );
   } else if (calls.length < TIME_CALL_LIMIT) {
-    hints.push(`вызовов time.Now/Since/Until вне Clock стало ${calls.length} — снизь порог в scripts/rules.mjs с ${TIME_CALL_LIMIT} до ${calls.length}`);
+    hints.push(`time.Now/Since/Until calls outside Clock are down to ${calls.length}: lower the limit in scripts/rules.mjs from ${TIME_CALL_LIMIT} to ${calls.length}`);
   }
 }
 
-// Контракт API (ADR-0019, ADR-0020): kin-openapi и server/test/ — только в тестах сервера,
-// тесты обработчиков v1 проверяют ответы по контракту, сгенерированные типы веба импортирует
-// только слой infrastructure и наружу их не переэкспортирует
+// API contract (ADR-0019, ADR-0020): kin-openapi and server/test/ only in server tests,
+// v1 handler tests check responses against the contract, generated web types are imported
+// only by the infrastructure layer and are not re-exported from it
 function checkContract() {
   const withoutComments = (code) => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
   for (const path of FILES.filter((file) => file.startsWith("server/") && file.endsWith(".go"))) {
     const code = withoutComments(read(path));
     if (!path.endsWith("_test.go") && !path.startsWith("server/test/")) {
       if (code.includes('"github.com/getkin/kin-openapi')) {
-        errors.push(`${path}: kin-openapi импортируется только в тестах и server/test/ (ADR-0019)`);
+        errors.push(`${path}: kin-openapi is imported only in tests and server/test/ (ADR-0019)`);
       }
       if (code.includes('"task-trail/test/')) {
-        errors.push(`${path}: server/test/ импортируется только из тестов — иначе kin-openapi попадёт в бинарник (ADR-0019)`);
+        errors.push(`${path}: server/test/ is imported only from tests, otherwise kin-openapi ends up in the binary (ADR-0019)`);
       }
     }
     if (dirname(path) === "server/internal/presentation/http/v1" && path.endsWith("_test.go") && !code.includes("contract.Load(")) {
-      errors.push(`${path}: тест обработчика проверяет ответы по контракту — contract.Load(t).Check(...) (ADR-0019)`);
+      errors.push(`${path}: a handler test checks responses against the contract: contract.Load(t).Check(...) (ADR-0019)`);
     }
   }
-  // Сгенерированный тип с именем глобального заслонил бы его: `Error`, `Date`, `File`…
+  // A generated type named like a global one would shadow it: `Error`, `Date`, `File`…
   const globals = new Set(["Array", "Blob", "Boolean", "Date", "Error", "File", "FormData", "Function", "Headers",
     "JSON", "Map", "Number", "Object", "Promise", "Record", "RegExp", "Request", "Response", "Set", "String",
     "Symbol", "URL"]);
   const schemas = /^ {2}schemas:\n([\s\S]*?)(?=^\S|^ {2}\S|(?![\s\S]))/m.exec(read("api/openapi.yaml"))?.[1] ?? "";
   for (const [, name] of schemas.matchAll(/^ {4}([A-Za-z0-9_]+):/gm)) {
-    if (globals.has(name)) errors.push(`api/openapi.yaml: схема ${name} заслонит глобальный тип TypeScript в вебе — переименуй (ADR-0020)`);
+    if (globals.has(name)) errors.push(`api/openapi.yaml: schema ${name} would shadow a global TypeScript type in the web; rename it (ADR-0020)`);
   }
 
-  // Путь импорта разрешается относительно файла: и `@/infrastructure/api/generated`,
-  // и `./generated` из соседнего index.ts ведут в одну папку
+  // The import path is resolved relative to the file: both `@/infrastructure/api/generated`
+  // and `./generated` from the neighboring index.ts lead to the same folder
   const generated = "web/src/infrastructure/api/generated";
   const resolveSpec = (file, spec) =>
     spec.startsWith("@/") ? `web/src/${spec.slice(2)}` : spec.startsWith(".") ? posix.join(posix.dirname(file), spec) : null;
@@ -341,23 +341,23 @@ function checkContract() {
       const target = resolveSpec(path, fromSpec ?? dynamicSpec);
       if (target !== generated && !target?.startsWith(`${generated}/`)) continue;
       if (!path.startsWith("web/src/infrastructure/")) {
-        errors.push(`${path}: типы из ${generated}/ импортирует только слой infrastructure (ADR-0020)`);
+        errors.push(`${path}: types from ${generated}/ are imported only by the infrastructure layer (ADR-0020)`);
       } else if (keyword === "export") {
-        errors.push(`${path}: типы из ${generated}/ не переэкспортируются — иначе они уйдут из infrastructure (ADR-0020): ${statement.trim()}`);
+        errors.push(`${path}: types from ${generated}/ are not re-exported, otherwise they leak out of infrastructure (ADR-0020): ${statement.trim()}`);
       }
     }
   }
 }
 
-// Контракт — один файл (ADR-0023): сервер встраивает api/openapi.yaml модулем api/, копии не нужны
+// The contract is one file (ADR-0023): the server embeds api/openapi.yaml via the api/ module, copies are not needed
 function checkContractCopies() {
   for (const path of FILES.filter((file) => basename(file) === "openapi.yaml" && file !== "api/openapi.yaml")) {
-    errors.push(`${path}: копия контракта — сервер берёт api/openapi.yaml из модуля api/ (ADR-0023)`);
+    errors.push(`${path}: copy of the contract: the server takes api/openapi.yaml from the api/ module (ADR-0023)`);
   }
 }
 
-// Слои сервера (ADR-0007): domain не импортирует application, infrastructure и presentation,
-// application — infrastructure и presentation. Тестам можно: они собирают сценарий целиком.
+// Server layers (ADR-0007): domain does not import application, infrastructure and presentation,
+// application does not import infrastructure and presentation. Tests may: they assemble the whole scenario.
 function checkServerLayers() {
   const forbidden = {
     "server/internal/domain/": ["application", "infrastructure", "presentation"],
@@ -369,14 +369,120 @@ function checkServerLayers() {
     const code = read(path).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
     for (const [, target] of code.matchAll(/"task-trail\/internal\/([a-z]+)[/"]/g)) {
       if (forbidden[layer].includes(target)) {
-        errors.push(`${path}: слой ${layer.split("/")[2]} не импортирует ${target} (ADR-0007)`);
+        errors.push(`${path}: layer ${layer.split("/")[2]} must not import ${target} (ADR-0007)`);
       }
     }
   }
 }
 
+// Code comments and the contract's summary/description lines are in English (ADR-0031).
+// String literals are skipped: UI texts and emails stay Russian.
+function checkCommentLanguage() {
+  const cyrillic = /[А-Яа-яЁё]/;
+  const report = (path, text, from, comment) => {
+    if (!cyrillic.test(comment)) return;
+    const line = text.slice(0, from).split("\n").length;
+    errors.push(`${path}:${line}: comment in Russian — write it in English (ADR-0031)`);
+  };
+
+  // `//` and `/* */` comments; quotes, Go raw strings, JS template and regex literals are skipped
+  const scanC = (path, js) => {
+    const text = read(path);
+    let lastCode = "\n"; // last non-space code character: tells a regex literal from a division
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      const next = text[i + 1];
+      if (c === "/" && next === "/") {
+        const end = text.indexOf("\n", i);
+        const stop = end < 0 ? text.length : end;
+        report(path, text, i, text.slice(i, stop));
+        i = stop - 1;
+      } else if (c === "/" && next === "*") {
+        const end = text.indexOf("*/", i + 2);
+        const stop = end < 0 ? text.length : end + 2;
+        const comment = text.slice(i, stop);
+        // Report the first Cyrillic line of the block
+        const offset = comment.search(cyrillic);
+        if (offset >= 0) report(path, text, i + offset, comment);
+        i = stop - 1;
+      } else if (c === '"' || c === "'" || c === "`") {
+        let j = i + 1;
+        while (j < text.length && text[j] !== c) {
+          if (text[j] === "\\" && !(c === "`" && !js)) j++;
+          if (c !== "`" && text[j] === "\n") break;
+          j++;
+        }
+        i = j;
+        lastCode = c;
+      } else if (js && c === "/" && /[(,=:[!&|?{};+\-*%<>~^\n]/.test(lastCode)) {
+        let j = i + 1;
+        let inClass = false;
+        while (j < text.length && text[j] !== "\n" && (inClass || text[j] !== "/")) {
+          if (text[j] === "\\") j++;
+          else if (text[j] === "[") inClass = true;
+          else if (text[j] === "]") inClass = false;
+          j++;
+        }
+        i = j;
+        lastCode = "/";
+      } else if (c === "\\") {
+        i++;
+      } else if (!/\s/.test(c)) {
+        lastCode = c;
+      } else if (c === "\n" && /[;{}]/.test(lastCode)) {
+        lastCode = "\n";
+      }
+    }
+  };
+
+  // `#` or `--` to the end of the line, outside quotes; `#` starts a comment only after a space
+  const scanLines = (path, marker) => {
+    read(path)
+      .split("\n")
+      .forEach((line, i) => {
+        let quote = null;
+        for (let j = 0; j < line.length; j++) {
+          const c = line[j];
+          if (quote) {
+            if (c === "\\" && quote === '"') j++;
+            else if (c === quote) quote = null;
+          } else if (c === '"' || (c === "'" && marker === "--") || (c === "'" && !/\w/.test(line[j - 1] ?? ""))) {
+            quote = c;
+          } else if (line.startsWith(marker, j) && (marker === "--" || j === 0 || /\s/.test(line[j - 1]))) {
+            if (cyrillic.test(line.slice(j))) errors.push(`${path}:${i + 1}: comment in Russian — write it in English (ADR-0031)`);
+            return;
+          }
+        }
+      });
+  };
+
+  for (const path of FILES) {
+    const name = basename(path);
+    if (/\.(go|css)$/.test(path)) scanC(path, false);
+    else if (/\.(ts|tsx|js|mjs)$/.test(path)) scanC(path, true);
+    else if (/\.(sh|ya?ml)$/.test(path) || name === "Makefile" || name.startsWith("Dockerfile") || /^stand\/.*\.template$/.test(path)) {
+      scanLines(path, "#");
+    } else if (path.endsWith(".sql")) scanLines(path, "--");
+  }
+
+  // Swagger is for developers: summary and description of the contract, block scalars included
+  const contract = "api/openapi.yaml";
+  let blockIndent = null;
+  read(contract)
+    .split("\n")
+    .forEach((line, i) => {
+      const indent = line.search(/\S/);
+      if (blockIndent !== null && indent >= 0 && indent <= blockIndent) blockIndent = null;
+      const key = /^(\s*)(summary|description):\s*(.*)$/.exec(line);
+      const inText = blockIndent !== null || key;
+      if (inText && cyrillic.test(line)) errors.push(`${contract}:${i + 1}: ${key?.[2] ?? "description"} in Russian — write it in English (ADR-0031)`);
+      if (key && /^[|>][-+]?$/.test(key[3])) blockIndent = key[1].length;
+    });
+}
+
 checkAdr();
 checkAdrNumbers();
+checkCommentLanguage();
 checkStyleTokens();
 checkPinnedActions();
 checkStandPorts();
@@ -388,10 +494,10 @@ checkContract();
 checkContractCopies();
 checkServerLayers();
 
-for (const hint of hints) console.log(`подсказка: ${hint}`);
+for (const hint of hints) console.log(`hint: ${hint}`);
 if (errors.length > 0) {
-  console.error(`Правила проекта нарушены (${errors.length}):`);
+  console.error(`Project rules violated (${errors.length}):`);
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log("== rules: правила проекта соблюдены");
+console.log("== rules: project rules are followed");

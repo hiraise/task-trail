@@ -1,5 +1,5 @@
-# Проверка каждого PR и main (ADR-0009). Логика — в scripts/dev.sh, здесь только окружение:
-# любой шаг воспроизводится локально той же командой.
+# Checks every PR and main (ADR-0009). The logic is in scripts/dev.sh, here is only the environment:
+# any step can be reproduced locally with the same command.
 name: CI
 
 on:
@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  # Новый коммит в PR отменяет устаревший прогон; уже запущенный прогон main не прерывается
+  # A new commit in a PR cancels the outdated run; a run on main that has started is not interrupted
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -37,11 +37,11 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
-      - name: Правила проекта (ADR, ссылки, зависимости, экраны)
+      - name: Project rules (ADRs, links, dependencies, screens)
         run: scripts/dev.sh rules
 
-      - name: 'Сервер: vet, тесты, golangci-lint'
+      - name: 'Server: vet, tests, golangci-lint'
         run: scripts/dev.sh server
 
-      - name: 'Веб: линтер, тесты, типы и сборка'
+      - name: 'Web: linter, tests, types and build'
         run: scripts/dev.sh web

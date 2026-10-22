@@ -21,8 +21,8 @@ a step change in one PR (ADR-0005).
 
 | # | Step | File | Status |
 | --- | --- | --- | --- |
-| 0 | Code comments and developer-facing strings in English | [00-english-comments.md](00-english-comments.md) | next |
-| 1 | Task keys `DS-1` | [01-task-keys.md](01-task-keys.md) | planned |
+| 0 | Code comments and developer-facing strings in English | [00-english-comments.md](00-english-comments.md) | done |
+| 1 | Task keys `DS-1` | [01-task-keys.md](01-task-keys.md) | next |
 | 2 | Archive and list sorting | [02-archive-and-sorting.md](02-archive-and-sorting.md) | planned |
 | 3 | Task activity: comments and history | [03-task-activity.md](03-task-activity.md) | planned |
 | 4 | Boards: list, creation, board info | [04-boards.md](04-boards.md) | planned |
