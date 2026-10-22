@@ -275,7 +275,7 @@ function checkStandPorts() {
 // Текущее время сервер берёт из Clock (ADR-0022): time.Now, time.Since и time.Until — только
 // в реализации Clock, в тестах и для замера длительности в middleware/log.go. Остальных вызовов
 // не становится больше: перевёл на Clock — снизь порог.
-const TIME_CALL_LIMIT = 14;
+const TIME_CALL_LIMIT = 0;
 
 function checkClock() {
   const allowed = (path) =>
@@ -349,6 +349,32 @@ function checkContract() {
   }
 }
 
+// Контракт — один файл (ADR-0023): сервер встраивает api/openapi.yaml модулем api/, копии не нужны
+function checkContractCopies() {
+  for (const path of FILES.filter((file) => basename(file) === "openapi.yaml" && file !== "api/openapi.yaml")) {
+    errors.push(`${path}: копия контракта — сервер берёт api/openapi.yaml из модуля api/ (ADR-0023)`);
+  }
+}
+
+// Слои сервера (ADR-0007): domain не импортирует application, infrastructure и presentation,
+// application — infrastructure и presentation. Тестам можно: они собирают сценарий целиком.
+function checkServerLayers() {
+  const forbidden = {
+    "server/internal/domain/": ["application", "infrastructure", "presentation"],
+    "server/internal/application/": ["infrastructure", "presentation"],
+  };
+  for (const path of FILES.filter((file) => file.endsWith(".go") && !file.endsWith("_test.go"))) {
+    const layer = Object.keys(forbidden).find((prefix) => path.startsWith(prefix));
+    if (!layer) continue;
+    const code = read(path).replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    for (const [, target] of code.matchAll(/"task-trail\/internal\/([a-z]+)[/"]/g)) {
+      if (forbidden[layer].includes(target)) {
+        errors.push(`${path}: слой ${layer.split("/")[2]} не импортирует ${target} (ADR-0007)`);
+      }
+    }
+  }
+}
+
 checkAdr();
 checkAdrNumbers();
 checkStyleTokens();
@@ -359,6 +385,8 @@ checkLinks();
 checkWebImports();
 checkDeviceSplit();
 checkContract();
+checkContractCopies();
+checkServerLayers();
 
 for (const hint of hints) console.log(`подсказка: ${hint}`);
 if (errors.length > 0) {

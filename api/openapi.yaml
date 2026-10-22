@@ -21,7 +21,17 @@ info:
     Роли в проекте (ADR-0003): `owner` — владелец, `admin` — администратор, `member` — участник.
     Администратор сервиса (`isAdmin`, ADR-0014) — отдельный признак пользователя, доступа
     к чужим проектам он не даёт.
+
+    Swagger с этим контрактом — `<адрес API>/docs/`, только администратору сервиса (ADR-0014).
+
+    Ссылки из писем и ответов API ведут на страницы веба от адреса сервиса (ADR-0015), токен —
+    в параметре `token`: сброс пароля — `<адрес сервиса>/auth/reset?token=…`, приглашение —
+    `<адрес сервиса>/auth/invite?token=…`. Веб передаёт токен в API только в теле (ADR-0018).
+    Письмо тому, кого добавили в проект сразу, ведёт на страницу проекта —
+    `<адрес сервиса>/projects/{projectId}`.
 servers:
+  - url: ..
+    description: сервер, с которого открыт Swagger, — адрес относительно `<адрес API>/docs/openapi.yaml`
   - url: http://localhost:3000/api
     description: локальный стенд, `scripts/dev.sh up`
   - url: http://localhost:8080
@@ -189,10 +199,10 @@ paths:
       operationId: forgotPassword
       summary: Прислать ссылку сброса пароля
       description: |
-        Отправляет письмо со ссылкой сброса сразу в запросе (ADR-0017). Если почта
-        не зарегистрирована, отвечает `204` и письма не шлёт. Время ответа и `MAIL_SEND_FAILED`
-        всё же могут выдать, что почта зарегистрирована: это цена того, что человек узнаёт
-        о неотправленном письме.
+        Отправляет письмо со ссылкой сброса сразу в запросе (ADR-0017). Ссылка действует 24 часа
+        и срабатывает один раз. Если почта не зарегистрирована, отвечает `204` и письма не шлёт.
+        Время ответа и `MAIL_SEND_FAILED` всё же могут выдать, что почта зарегистрирована: это
+        цена того, что человек узнаёт о неотправленном письме.
       security: []
       requestBody:
         required: true
@@ -216,6 +226,9 @@ paths:
       tags: [auth]
       operationId: resetPassword
       summary: Задать новый пароль по ссылке сброса
+      description: |
+        Ссылка срабатывает один раз: сброс удаляет все ссылки сброса пользователя и закрывает
+        все его сессии. Cookie текущего браузера не меняются — дальше нужен вход.
       security: []
       requestBody:
         required: true
@@ -237,7 +250,10 @@ paths:
       tags: [auth]
       operationId: lookupInvitation
       summary: Узнать, куда ведёт ссылка приглашения
-      description: Токен передаётся в теле, а не в адресе, чтобы не попасть в логи (ADR-0018).
+      description: |
+        Токен передаётся в теле, а не в адресе, чтобы не попасть в логи (ADR-0018).
+        Если аккаунт с почтой приглашения уже есть, ссылка ведёт на вход: `INVITATION_ACCEPTED`,
+        даже когда приглашение истекло.
       security: []
       requestBody:
         required: true
@@ -1180,13 +1196,19 @@ components:
       type: object
       required: [token, password]
       properties:
-        token: { type: string, minLength: 1 }
+        token:
+          type: string
+          minLength: 1
+          description: Параметр `token` ссылки `<адрес сервиса>/auth/reset?token=…`
         password: { $ref: "#/components/schemas/Password" }
     InvitationTokenRequest:
       type: object
       required: [token]
       properties:
-        token: { type: string, minLength: 1 }
+        token:
+          type: string
+          minLength: 1
+          description: Параметр `token` ссылки `<адрес сервиса>/auth/invite?token=…`
     InvitationInfo:
       type: object
       required: [email, projectName, invitedBy]
@@ -1200,7 +1222,10 @@ components:
       type: object
       required: [token, username, password]
       properties:
-        token: { type: string, minLength: 1 }
+        token:
+          type: string
+          minLength: 1
+          description: Параметр `token` ссылки `<адрес сервиса>/auth/invite?token=…`
         username: { $ref: "#/components/schemas/Username" }
         password: { $ref: "#/components/schemas/Password" }
 

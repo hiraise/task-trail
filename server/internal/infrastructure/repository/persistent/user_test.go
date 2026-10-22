@@ -1,0 +1,235 @@
+package persistent_test
+
+import (
+	"context"
+	"errors"
+	"testing"
+	"time"
+
+	"task-trail/internal/domain"
+	"task-trail/internal/domain/entity"
+	"task-trail/internal/domain/factory"
+	"task-trail/internal/domain/repository"
+	"task-trail/internal/infrastructure/repository/persistent"
+	"task-trail/internal/infrastructure/service/id"
+	"task-trail/test/clock"
+	"task-trail/test/testdb"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+var (
+	_ repository.UserRepository         = (*persistent.PGUserRepository)(nil)
+	_ repository.RefreshTokenRepository = (*persistent.PGRefreshTokenRepository)(nil)
+)
+
+var now = time.Date(2026, 10, 21, 12, 0, 0, 0, time.UTC)
+
+func userRepo(pool *pgxpool.Pool) (*persistent.PGUserRepository, *factory.UserFactory) {
+	f := factory.NewUserFactory(id.New(), clock.New(now))
+	return persistent.NewUserRepo(pool, f), f
+}
+
+func requireCode(t *testing.T, err error, code domain.ErrorCode) {
+	t.Helper()
+	var e *domain.DomainError
+	if !errors.As(err, &e) || e.Code != code {
+		t.Fatalf("ожидалась ошибка %s, получено %v", code, err)
+	}
+}
+
+func TestUserRepository(t *testing.T) {
+	repo, f := userRepo(testdb.New(t))
+	ctx := context.Background()
+
+	if exists, err := repo.Any(ctx); err != nil || exists {
+		t.Fatalf("пустая база: %v, %v", exists, err)
+	}
+	user := f.New("ivan@example.com", "$2a$12$hash", "Иван")
+	user.IsAdmin = true
+	if err := repo.Create(ctx, user); err != nil {
+		t.Fatal(err)
+	}
+	if exists, err := repo.Any(ctx); err != nil || !exists {
+		t.Fatalf("после создания: %v, %v", exists, err)
+	}
+
+	got, err := repo.GetByEmail(ctx, "ivan@example.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.ID != user.ID || got.PasswordHash != user.PasswordHash || *got.Username != "Иван" || !got.IsAdmin ||
+		got.AvatarID != nil || got.VerifiedAt == nil || !got.VerifiedAt.Equal(now) || !got.CreatedAt.Equal(now) {
+		t.Fatalf("прочитано %+v, записано %+v", got, user)
+	}
+
+	got.PasswordHash = "$2a$12$new"
+	got.UpdatedAt = now.Add(time.Hour)
+	if err := repo.Update(ctx, got); err != nil {
+		t.Fatal(err)
+	}
+	if byID, err := repo.GetByID(ctx, user.ID); err != nil || byID.PasswordHash != "$2a$12$new" || !byID.UpdatedAt.Equal(now.Add(time.Hour)) {
+		t.Fatalf("после изменения: %+v, %v", byID, err)
+	}
+
+	requireCode(t, repo.Create(ctx, f.New("ivan@example.com", "$2a$12$hash", "Двойник")), domain.EntityAlreadyExists)
+	_, err = repo.GetByEmail(ctx, "nobody@example.com")
+	requireCode(t, err, domain.EntityNotFound)
+}
+
+// Блокировка регистрации держится до конца транзакции: вторая регистрация ждёт первую
+// и видит созданный ею аккаунт (ADR-0016).
+func TestLockRegistration(t *testing.T) {
+	pool := testdb.New(t)
+	repo, _ := userRepo(pool)
+	tx := persistent.NewPgTxManager(pool)
+	ctx := context.Background()
+
+	requireCode(t, repo.LockRegistration(ctx), domain.RepoInternal)
+
+	locked := make(chan struct{})
+	release := make(chan struct{})
+	first := make(chan error, 1)
+	go func() {
+		first <- tx.DoWithTx(ctx, func(ctx context.Context) error {
+			if err := repo.LockRegistration(ctx); err != nil {
+				return err
+			}
+			close(locked)
+			<-release
+			return nil
+		})
+	}()
+	<-locked
+
+	second := make(chan error, 1)
+	go func() {
+		second <- tx.DoWithTx(ctx, func(ctx context.Context) error { return repo.LockRegistration(ctx) })
+	}()
+	select {
+	case err := <-second:
+		t.Fatalf("вторая транзакция не ждала блокировку: %v", err)
+	case <-time.After(200 * time.Millisecond):
+	}
+	close(release)
+	if err := <-first; err != nil {
+		t.Fatal(err)
+	}
+	if err := <-second; err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Аватарка читается и пишется вместе с пользователем; GetForUpdate держит строку до конца
+// транзакции, и параллельное изменение ждёт, а не затирает его.
+func TestUserAvatarAndLock(t *testing.T) {
+	pool := testdb.New(t)
+	repo, _ := userRepo(pool)
+	files := persistent.NewFileRepo(pool)
+	tx := persistent.NewPgTxManager(pool)
+	ctx := context.Background()
+	user := createUser(t, pool, "ivan@example.com", "Иван")
+	avatar := factory.NewFileFactory(id.New(), clock.New(now)).New("a.png", "image/png", user.ID)
+	if err := files.Create(ctx, avatar); err != nil {
+		t.Fatal(err)
+	}
+
+	locked := make(chan struct{})
+	release := make(chan struct{})
+	first := make(chan error, 1)
+	go func() {
+		first <- tx.DoWithTx(ctx, func(ctx context.Context) error {
+			u, err := repo.GetForUpdate(ctx, user.ID)
+			if err != nil {
+				return err
+			}
+			close(locked)
+			<-release
+			u.ReplaceAvatar(avatar.ID, now)
+			return repo.Update(ctx, u)
+		})
+	}()
+	<-locked
+	second := make(chan error, 1)
+	go func() {
+		second <- tx.DoWithTx(ctx, func(ctx context.Context) error {
+			u, err := repo.GetForUpdate(ctx, user.ID)
+			if err != nil {
+				return err
+			}
+			if u.AvatarID == nil || *u.AvatarID != avatar.ID {
+				return errors.New("вторая транзакция не увидела аватарку первой")
+			}
+			name := "Иван Петров"
+			u.Rename(&name, now)
+			return repo.Update(ctx, u)
+		})
+	}()
+	select {
+	case err := <-second:
+		t.Fatalf("вторая транзакция не ждала блокировку: %v", err)
+	case <-time.After(200 * time.Millisecond):
+	}
+	close(release)
+	if err := <-first; err != nil {
+		t.Fatal(err)
+	}
+	if err := <-second; err != nil {
+		t.Fatal(err)
+	}
+	got, err := repo.GetByID(ctx, user.ID)
+	if err != nil || got.AvatarID == nil || *got.AvatarID != avatar.ID || *got.Username != "Иван Петров" {
+		t.Fatalf("после обеих транзакций: %+v, %v", got, err)
+	}
+}
+
+// Пользователь виден себе, участникам общих проектов и участникам проекта, где он автор
+// задачи, — в неудалённых проектах и по неудалённым задачам.
+func TestUserVisible(t *testing.T) {
+	pool := testdb.New(t)
+	repo, _ := userRepo(pool)
+	ctx := context.Background()
+	exec := func(query string, args ...any) {
+		t.Helper()
+		if _, err := pool.Exec(ctx, query, args...); err != nil {
+			t.Fatal(err)
+		}
+	}
+	member := func(project entity.ProjectID, user *entity.UserAccount) {
+		t.Helper()
+		exec(`INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, 'member')`, project, user.ID)
+	}
+	anna := createUser(t, pool, "anna@example.com", "Анна")
+	ivan := createUser(t, pool, "ivan@example.com", "Иван")
+	petr := createUser(t, pool, "petr@example.com", "Пётр")
+	olga := createUser(t, pool, "olga@example.com", "Ольга")
+	design := createProject(t, pool, "Дизайн-система")
+	member(design, anna)
+	member(design, ivan)
+	backend := createProject(t, pool, "Бэкенд")
+	member(backend, anna)
+	// Пётр — автор задачи в бэкенде, но не участник: вышел из проекта
+	exec(`INSERT INTO tasks (id, project_id, author_id, name, status) VALUES ($1, $2, $3, 'Задача', 'open')`,
+		id.New().Generate(), backend, petr.ID)
+	member(createProject(t, pool, "Чужой"), olga)
+
+	visible := func(viewer *entity.UserAccount, want map[*entity.UserAccount]bool) {
+		t.Helper()
+		for u, ok := range want {
+			got, err := repo.GetVisible(ctx, u.ID, viewer.ID)
+			if ok && (err != nil || got.ID != u.ID) {
+				t.Errorf("%s не видит %s: %v", viewer.Email, u.Email, err)
+			}
+			if !ok && !domain.HasCode(err, domain.EntityNotFound) {
+				t.Errorf("%s видит %s: %v", viewer.Email, u.Email, err)
+			}
+		}
+	}
+	visible(anna, map[*entity.UserAccount]bool{anna: true, ivan: true, petr: true, olga: false})
+	visible(ivan, map[*entity.UserAccount]bool{ivan: true, anna: true, petr: false, olga: false})
+	visible(petr, map[*entity.UserAccount]bool{petr: true, anna: false})
+
+	exec(`UPDATE tasks SET deleted_at = $1`, now)
+	exec(`UPDATE projects SET deleted_at = $1 WHERE id = $2`, now, design)
+	visible(anna, map[*entity.UserAccount]bool{anna: true, ivan: false, petr: false})
+}

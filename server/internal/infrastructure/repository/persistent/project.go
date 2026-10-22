@@ -1,0 +1,125 @@
+package persistent
+
+import (
+	"context"
+	"task-trail/internal/domain"
+	"task-trail/internal/domain/entity"
+	"task-trail/internal/domain/repository"
+	"time"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type PGProjectRepository struct {
+	PgRepository
+}
+
+func NewProjectRepo(db *pgxpool.Pool) *PGProjectRepository {
+	return &PGProjectRepository{PgRepository: PgRepository{pg: db}}
+}
+
+func (r *PGProjectRepository) Create(ctx context.Context, p *entity.Project) error {
+	return r.insert(ctx, "projects", map[string]any{
+		"id":          p.ID,
+		"name":        p.Name,
+		"description": p.Description,
+		"created_at":  p.CreatedAt,
+		"updated_at":  p.UpdatedAt,
+	})
+}
+
+const projectColumns = `p.id, p.name, p.description, p.created_at, p.updated_at`
+
+func (r *PGProjectRepository) GetForUpdate(ctx context.Context, id entity.ProjectID) (*entity.Project, error) {
+	query := `SELECT ` + projectColumns + ` FROM projects p WHERE p.id = $1 AND p.deleted_at IS NULL FOR UPDATE`
+	project, err := scanProject(r.getDb(ctx).QueryRow(ctx, query, id))
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return project, nil
+}
+
+// projectViews выбирает проекты глазами участника $1: число неудалённых задач и его роль.
+const projectViews = `
+	SELECT ` + projectColumns + `,
+		(SELECT count(*) FROM tasks t WHERE t.project_id = p.id AND t.deleted_at IS NULL),
+		m.role
+	FROM projects p
+	JOIN project_members m ON m.project_id = p.id AND m.user_id = $1
+	WHERE p.deleted_at IS NULL`
+
+func (r *PGProjectRepository) GetView(ctx context.Context, id entity.ProjectID, userID entity.UserID) (*repository.ProjectView, error) {
+	view, err := scanProjectView(r.getDb(ctx).QueryRow(ctx, projectViews+` AND p.id = $2`, userID, id))
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return view, nil
+}
+
+func (r *PGProjectRepository) ListViews(ctx context.Context, userID entity.UserID) ([]*repository.ProjectView, error) {
+	rows, err := r.getDb(ctx).Query(ctx, projectViews+` ORDER BY p.created_at DESC, p.id`, userID)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	views, err := ScanRows(rows, func(row pgx.Rows) (*repository.ProjectView, error) { return scanProjectView(row) })
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return views, nil
+}
+
+func (r *PGProjectRepository) Update(ctx context.Context, p *entity.Project) error {
+	tag, err := r.getDb(ctx).Exec(ctx,
+		`UPDATE projects SET name = $2, description = $3, updated_at = $4 WHERE id = $1 AND deleted_at IS NULL`,
+		p.ID, p.Name, p.Description, p.UpdatedAt)
+	if err != nil {
+		return r.handleError(err)
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrEntityNotFound(2, nil, "projectID", p.ID)
+	}
+	return nil
+}
+
+// SoftDelete помечает проект и задачи одним запросом: удалённым становится всё или ничего.
+func (r *PGProjectRepository) SoftDelete(ctx context.Context, id entity.ProjectID, now time.Time) error {
+	query := `
+		WITH project AS (
+			UPDATE projects SET deleted_at = $2 WHERE id = $1 AND deleted_at IS NULL RETURNING id
+		), deleted_tasks AS (
+			UPDATE tasks SET deleted_at = $2 WHERE project_id IN (SELECT id FROM project) AND deleted_at IS NULL
+		)
+		SELECT count(*) FROM project`
+	var deleted int
+	if err := r.getDb(ctx).QueryRow(ctx, query, id, now).Scan(&deleted); err != nil {
+		return r.handleError(err)
+	}
+	if deleted == 0 {
+		return domain.ErrEntityNotFound(2, nil, "projectID", id)
+	}
+	return nil
+}
+
+// scanProject читает колонки projectColumns и затем extra.
+func scanProject(row pgx.Row, extra ...any) (*entity.Project, error) {
+	var id string
+	p := &entity.Project{}
+	if err := row.Scan(append([]any{&id, &p.Name, &p.Description, &p.CreatedAt, &p.UpdatedAt}, extra...)...); err != nil {
+		return nil, err
+	}
+	p.ID = entity.ProjectID(id)
+	return p, nil
+}
+
+func scanProjectView(row pgx.Row) (*repository.ProjectView, error) {
+	view := &repository.ProjectView{}
+	var role string
+	project, err := scanProject(row, &view.TasksCount, &role)
+	if err != nil {
+		return nil, err
+	}
+	view.Project = project
+	view.Role = entity.ProjectRole(role)
+	return view, nil
+}

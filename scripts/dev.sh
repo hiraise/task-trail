@@ -20,7 +20,7 @@ usage() {
 Проверки (их же запускает CI):
   check   всё сразу: rules, server, web
   rules   правила проекта: ADR, ссылки в документации, зависимости и экраны веба
-  server  сервер: go vet, тесты с -race (и ответы по контракту), golangci-lint
+  server  сервер: go vet, тесты с -race (с PostgreSQL в Docker и ответами по контракту), golangci-lint
   web     веб: типы API из контракта, линтер, тесты, проверка типов и сборка
 
 Локальный стенд в Docker:
@@ -100,8 +100,30 @@ rules() {
 	node "$ROOT/scripts/rules.mjs"
 }
 
+# Временный PostgreSQL для интеграционных тестов репозиториев (ADR-0007): тот же образ, что
+# у стенда, на случайном порту; контейнер удаляется, когда завершается вызвавшая функция.
+# Адрес — в TEST_PG_URL, его читает server/test/testdb.
+start_test_postgres() {
+	ensure_docker
+	local image name port attempt
+	image=$(sed -n 's/^ *image: *\(postgres:[^ ]*\).*/\1/p' "$ROOT/stand/compose.yaml" | head -1)
+	name="tasktrail-test-pg-$$"
+	echo "== server: временный $image для интеграционных тестов"
+	docker run -d --rm --name "$name" -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test \
+		-p 127.0.0.1::5432 "$image" >/dev/null
+	trap "docker rm -f '$name' >/dev/null 2>&1" EXIT
+	# Готов, только когда слушает TCP: на время инициализации сервер доступен лишь через сокет
+	for attempt in $(seq 1 60); do
+		docker exec "$name" pg_isready -q -h 127.0.0.1 -U test -d test && break
+		sleep 1
+	done
+	port=$(docker port "$name" 5432/tcp | head -1 | sed 's/.*://')
+	export TEST_PG_URL="postgresql://test:test@127.0.0.1:$port/test"
+}
+
 server() (
 	ensure_golangci_lint
+	start_test_postgres
 	cd "$ROOT/server"
 	echo "== server: go vet"
 	go vet ./...

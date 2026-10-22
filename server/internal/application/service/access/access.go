@@ -9,90 +9,129 @@ import (
 )
 
 type AccessModule struct {
-	Registration         *RegistrationService
-	Login                *LoginService
-	Verify               *VerifyAccountService
-	ResetPassword        *ResetPasswordService
-	ConfirmResetPassword *ConfirmResetPasswordService
-	Refresh              *RefreshService
-	ResendVerification   *ResendVerificationService
-	ChangePassword       *ChangePasswordService
-	Logout               *LogoutService
+	Registration      *RegistrationService
+	Login             *LoginService
+	Refresh           *RefreshService
+	Logout            *LogoutService
+	ChangePassword    *ChangePasswordService
+	ForgotPassword    *ForgotPasswordService
+	ResetPassword     *ResetPasswordService
+	PasswordResetLink *PasswordResetLinkService
+	InvitationLookup  *InvitationLookupService
+	AcceptInvitation  *AcceptInvitationService
+	AdminCheck        *AdminCheckService
+	PublicSettings    *PublicSettingsService
+	Cleanup           *CleanupService
 }
 
-func New(
-	txManager transaction.TxManager,
-	userRepo repository.UserRepository,
-	userFactory *factory.UserFactory,
-	pwdService password.PasswordService,
-	confirmTokenFactory *factory.ConfirmationTokenFactory,
-	confirmTokenRepo repository.ConfirmationTokenRepository,
-	notifier service.AccessNotifier,
-	refreshTokenFactory *factory.RefreshTokenFactory,
-	refreshTokenRepo repository.RefreshTokenRepository,
-	accessTokenService service.AccessTokenService,
+// Deps — зависимости модуля доступа.
+type Deps struct {
+	TxManager            transaction.TxManager
+	Clock                service.Clock
+	UserRepo             repository.UserRepository
+	UserFactory          *factory.UserFactory
+	PasswordService      password.PasswordService
+	RefreshTokenFactory  *factory.RefreshTokenFactory
+	RefreshTokenRepo     repository.RefreshTokenRepository
+	AccessTokenService   service.AccessTokenService
+	SettingsRepo         repository.SettingsRepository
+	PasswordResetFactory *factory.PasswordResetFactory
+	PasswordResetRepo    repository.PasswordResetRepository
+	InvitationRepo       repository.InvitationRepository
+	ProjectMemberRepo    repository.ProjectMemberRepository
+	Mailer               service.Mailer
+}
 
-) *AccessModule {
+func New(d Deps) *AccessModule {
+	sessions := &sessionOpener{
+		factory:      d.RefreshTokenFactory,
+		repository:   d.RefreshTokenRepo,
+		tokenService: d.AccessTokenService,
+	}
+	resetLinks := &resetLinkIssuer{
+		factory:            d.PasswordResetFactory,
+		repository:         d.PasswordResetRepo,
+		settingsRepository: d.SettingsRepo,
+	}
 	return &AccessModule{
 		Registration: &RegistrationService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			userFactory:     userFactory,
-			pwdHasher:       pwdService,
-			tokenFactory:    confirmTokenFactory,
-			tokenRepository: confirmTokenRepo,
-			notifier:        notifier,
+			txManager:          d.TxManager,
+			userRepository:     d.UserRepo,
+			userFactory:        d.UserFactory,
+			pwdHasher:          d.PasswordService,
+			settingsRepository: d.SettingsRepo,
+			sessions:           sessions,
 		},
 		Login: &LoginService{
-			txManager:              txManager,
-			userRepository:         userRepo,
-			refreshTokenRepository: refreshTokenRepo,
-			refreshTokenFactory:    refreshTokenFactory,
-			pwdComparator:          pwdService,
-			tokenService:           accessTokenService,
-		},
-		Verify: &VerifyAccountService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			tokenRepository: confirmTokenRepo,
-		},
-		ResetPassword: &ResetPasswordService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			tokenFactory:    confirmTokenFactory,
-			tokenRepository: confirmTokenRepo,
-			notifier:        notifier,
-		},
-		ConfirmResetPassword: &ConfirmResetPasswordService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			pwdService:      pwdService,
-			tokenRepository: confirmTokenRepo,
+			txManager:      d.TxManager,
+			userRepository: d.UserRepo,
+			pwdComparator:  d.PasswordService,
+			sessions:       sessions,
 		},
 		Refresh: &RefreshService{
-			txManager:              txManager,
-			userRepository:         userRepo,
-			refreshTokenRepository: refreshTokenRepo,
-			refreshTokenFactory:    refreshTokenFactory,
-			pwdComparator:          pwdService,
-			tokenService:           accessTokenService,
-		},
-		ResendVerification: &ResendVerificationService{
-			txManager:       txManager,
-			userRepository:  userRepo,
-			tokenFactory:    confirmTokenFactory,
-			tokenRepository: confirmTokenRepo,
-			notifier:        notifier,
-		},
-		ChangePassword: &ChangePasswordService{
-			txManager:      txManager,
-			userRepository: userRepo,
-			pwdService:     pwdService,
+			txManager:              d.TxManager,
+			clock:                  d.Clock,
+			refreshTokenRepository: d.RefreshTokenRepo,
+			tokenService:           d.AccessTokenService,
+			sessions:               sessions,
 		},
 		Logout: &LogoutService{
-			txManager:              txManager,
-			refreshTokenRepository: refreshTokenRepo,
-			tokenService:           accessTokenService,
+			txManager:              d.TxManager,
+			clock:                  d.Clock,
+			refreshTokenRepository: d.RefreshTokenRepo,
+			tokenService:           d.AccessTokenService,
+		},
+		ChangePassword: &ChangePasswordService{
+			txManager:      d.TxManager,
+			clock:          d.Clock,
+			userRepository: d.UserRepo,
+			pwdService:     d.PasswordService,
+		},
+		ForgotPassword: &ForgotPasswordService{
+			userRepository:     d.UserRepo,
+			settingsRepository: d.SettingsRepo,
+			links:              resetLinks,
+			mailer:             d.Mailer,
+		},
+		ResetPassword: &ResetPasswordService{
+			txManager:              d.TxManager,
+			clock:                  d.Clock,
+			userRepository:         d.UserRepo,
+			passwordResetRepo:      d.PasswordResetRepo,
+			refreshTokenRepository: d.RefreshTokenRepo,
+			pwdHasher:              d.PasswordService,
+		},
+		PasswordResetLink: &PasswordResetLinkService{
+			userRepository: d.UserRepo,
+			links:          resetLinks,
+		},
+		InvitationLookup: &InvitationLookupService{
+			clock:                d.Clock,
+			invitationRepository: d.InvitationRepo,
+			userRepository:       d.UserRepo,
+		},
+		AcceptInvitation: &AcceptInvitationService{
+			txManager:            d.TxManager,
+			clock:                d.Clock,
+			invitationRepository: d.InvitationRepo,
+			memberRepository:     d.ProjectMemberRepo,
+			userRepository:       d.UserRepo,
+			userFactory:          d.UserFactory,
+			pwdHasher:            d.PasswordService,
+			sessions:             sessions,
+		},
+		AdminCheck: &AdminCheckService{
+			userRepository: d.UserRepo,
+		},
+		PublicSettings: &PublicSettingsService{
+			userRepository:     d.UserRepo,
+			settingsRepository: d.SettingsRepo,
+		},
+		Cleanup: &CleanupService{
+			clock:                  d.Clock,
+			refreshTokenRepository: d.RefreshTokenRepo,
+			passwordResetRepo:      d.PasswordResetRepo,
+			invitationRepository:   d.InvitationRepo,
 		},
 	}
 }

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"fmt"
 	"runtime"
 	"strconv"
@@ -11,20 +12,37 @@ const sourceCodeOffset = 2
 type ErrorCode string
 
 const (
-	PasswordNotSet      ErrorCode = "PASSWORD_NOT_SET"
-	UserUnverified      ErrorCode = "USER_UNVERIFIED"
-	WrongPassword       ErrorCode = "WRONG_PASSWORD"
-	WrongEmail          ErrorCode = "WRONG_EMAIL"
-	UserAlreadyVerified ErrorCode = "USER_ALREADY_VERIFIED"
+	// INVALID_CREDENTIALS: неверная почта или пароль при входе
+	InvalidCredentials ErrorCode = "INVALID_CREDENTIALS"
+	// Неверный текущий пароль при смене пароля — 422, а не 401: сессия действует
+	WrongPassword      ErrorCode = "WRONG_PASSWORD"
+	PasswordSameAsOld  ErrorCode = "PASSWORD_SAME_AS_OLD"
+	RegistrationClosed ErrorCode = "REGISTRATION_CLOSED"
+	// Не хватает роли в проекте (ADR-0003) или прав администратора сервиса (ADR-0014)
+	Forbidden ErrorCode = "FORBIDDEN"
+	// Владелец не выходит из проекта, а удаляет его
+	OwnerCannotLeave ErrorCode = "OWNER_CANNOT_LEAVE"
 
-	ConfirmationTokenWrong       ErrorCode = "WRONG_CONFIRMATION_TOKEN"
-	ConfirmationTokenAlreadyUsed ErrorCode = "CONFIRMATION_TOKEN_ALREADY_USED"
-	ConfirmationTokenExpired     ErrorCode = "CONFIRMATION_TOKEN_EXPIRED"
+	// Ссылка приглашения или сброса пароля неверна, использована или истекла
+	LinkInvalid ErrorCode = "LINK_INVALID"
+	// Аккаунт с почтой приглашения уже есть: ссылка ведёт на вход (ADR-0016)
+	InvitationAccepted ErrorCode = "INVITATION_ACCEPTED"
 
-	RefreshTokenNotFound    ErrorCode = "REFRESH_TOKEN_NOT_FOUND"
-	RefreshTokenWrong       ErrorCode = "WRONG_REFRESH_TOKEN"
-	RefreshTokenAlreadyUsed ErrorCode = "REFRESH_TOKEN_ALREADY_USED"
-	RefreshTokenExpired     ErrorCode = "REFRESH_TOKEN_EXPIRED"
+	// Почта не подключена (ADR-0017)
+	MailDisabled ErrorCode = "MAIL_DISABLED"
+	// SMTP не принял письмо: не подключился, отказал во входе или в отправке
+	MailSendFailed ErrorCode = "MAIL_SEND_FAILED"
+
+	// Файл больше допустимого или не того типа (ADR-0013)
+	FileTooLarge       ErrorCode = "FILE_TOO_LARGE"
+	FileTypeNotAllowed ErrorCode = "FILE_TYPE_NOT_ALLOWED"
+
+	RefreshTokenNotFound ErrorCode = "REFRESH_TOKEN_NOT_FOUND"
+	RefreshTokenWrong    ErrorCode = "WRONG_REFRESH_TOKEN"
+	RefreshTokenRevoked  ErrorCode = "REFRESH_TOKEN_REVOKED"
+	// Обменянный токен пришёл снова после окна для параллельных запросов — признак кражи
+	RefreshTokenReused  ErrorCode = "REFRESH_TOKEN_REUSED"
+	RefreshTokenExpired ErrorCode = "REFRESH_TOKEN_EXPIRED"
 
 	AccessTokenNotFound ErrorCode = "ACCESS_TOKEN_NOT_FOUND"
 	AccessTokenWrong    ErrorCode = "WRONG_ACCESS_TOKEN"
@@ -36,18 +54,12 @@ const (
 
 	TokenGenerationFailed ErrorCode = "TOKEN_GENERATION_FAILED"
 
-	EmailAlreadyExists ErrorCode = "EMAIL_ALREADY_EXISTS"
-	PasswordSameAsOld  ErrorCode = "PASSWORD_SAME_AS_OLD"
-
 	// REPO
 	EntityNotFound      ErrorCode = "ENTITY_NOT_FOUND"
 	EntityAlreadyExists ErrorCode = "ENTITY_ALREADY_EXISTS"
 	RepoInternal        ErrorCode = "REPOSITORY_INTERNAL"
 	// VALIDATION
 	InputValidation ErrorCode = "INPUT_VALIDATION"
-
-	// NOTIFICATION
-	NotificationFailed ErrorCode = "NOTIFICATION_FAILED"
 )
 
 type DomainError struct {
@@ -58,11 +70,17 @@ type DomainError struct {
 }
 
 func (e *DomainError) Error() string {
-	return fmt.Sprintf("code: %s, data: %s", e.Code, e.Metadata)
+	return fmt.Sprintf("code: %s, data: %v", e.Code, e.Metadata)
 }
 
 func (e *DomainError) Unwrap() error {
 	return e.sourceErr
+}
+
+// HasCode сообщает, что err — DomainError с кодом code.
+func HasCode(err error, code ErrorCode) bool {
+	var e *DomainError
+	return errors.As(err, &e) && e.Code == code
 }
 
 func Wrap(err error, background error) error {
@@ -92,21 +110,54 @@ func NewErr(offset int, t ErrorCode, sourceErr error, metadata ...any) *DomainEr
 	return &DomainError{Code: t, sourceErr: sourceErr, Metadata: m, Source: source}
 }
 
-func ErrUserUnverified(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, UserUnverified, nil, data...)
-}
-
-func ErrPasswordNotSet(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, PasswordNotSet, nil, data...)
+func ErrInvalidCredentials(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, InvalidCredentials, nil, data...)
 }
 
 func ErrWrongPassword(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, WrongPassword, nil, data...)
 }
 
-func ErrWrongEmail(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, WrongEmail, nil, data...)
+func ErrPasswordSameAsOld(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, PasswordSameAsOld, nil, data...)
 }
+
+func ErrRegistrationClosed(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, RegistrationClosed, nil, data...)
+}
+
+func ErrForbidden(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, Forbidden, nil, data...)
+}
+
+func ErrOwnerCannotLeave(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, OwnerCannotLeave, nil, data...)
+}
+
+func ErrLinkInvalid(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, LinkInvalid, nil, data...)
+}
+
+func ErrInvitationAccepted(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, InvitationAccepted, nil, data...)
+}
+
+func ErrMailDisabled(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, MailDisabled, nil, data...)
+}
+
+func ErrMailSendFailed(sourceErr error, data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, MailSendFailed, sourceErr, data...)
+}
+
+func ErrFileTooLarge(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, FileTooLarge, nil, data...)
+}
+
+func ErrFileTypeNotAllowed(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, FileTypeNotAllowed, nil, data...)
+}
+
 func ErrPasswordCompareFailed(sourceErr error, data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, PasswordComapareFailed, sourceErr, data...)
 }
@@ -116,10 +167,6 @@ func ErrPasswordHashingFailed(sourceErr error, data ...any) *DomainError {
 
 func ErrTokenGenerateFailed(sourceErr error, data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, TokenGenerationFailed, sourceErr, data...)
-}
-
-func ErrEmailAlreadyExists(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, EmailAlreadyExists, nil, data...)
 }
 
 func ErrEntityNotFound(offset int, sourceErr error, data ...any) *DomainError {
@@ -137,32 +184,14 @@ func ErrInputValidation(offset int, sourceErr error, data ...any) *DomainError {
 	return NewErr(sourceCodeOffset+offset, InputValidation, sourceErr, data...)
 }
 
-// CONFIRMATION
-
-func ErrWrongConfirmationToken(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, ConfirmationTokenWrong, nil, data...)
-}
-
-func ErrConfirmationTokenExpired(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, ConfirmationTokenExpired, nil, data...)
-}
-
-func ErrConfirmationTokenAlreadyUsed(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, ConfirmationTokenAlreadyUsed, nil, data...)
-}
-
-func ErrUserAlreadyVerified(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, UserAlreadyVerified, nil, data...)
-}
-
-func ErrPasswordSameAsOld(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, PasswordSameAsOld, nil, data...)
-}
-
 // REFRESH TOKEN
 
-func ErrRefreshTokenAlreadyUsed(data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, RefreshTokenAlreadyUsed, nil, data...)
+func ErrRefreshTokenRevoked(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, RefreshTokenRevoked, nil, data...)
+}
+
+func ErrRefreshTokenReused(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, RefreshTokenReused, nil, data...)
 }
 
 func ErrRefreshTokenNotFound(data ...any) *DomainError {
@@ -193,10 +222,4 @@ func ErrAccessTokenExpired(data ...any) *DomainError {
 
 func FailedToParseToken(sourceErr error, data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, ParseTokenFailed, sourceErr, data...)
-}
-
-// NOTIFICATION
-
-func ErrNotificationFailed(sourceErr error, data ...any) *DomainError {
-	return NewErr(sourceCodeOffset, NotificationFailed, sourceErr, data...)
 }

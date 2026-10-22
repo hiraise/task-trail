@@ -8,36 +8,52 @@ import (
 
 type UserFactory struct {
 	idGenerator service.IDGenerator
+	clock       service.Clock
 }
 
-func NewUserFactory(idGenerator service.IDGenerator) *UserFactory {
-	return &UserFactory{idGenerator: idGenerator}
+func NewUserFactory(idGenerator service.IDGenerator, clock service.Clock) *UserFactory {
+	return &UserFactory{idGenerator: idGenerator, clock: clock}
 }
 
-func (f *UserFactory) New(email entity.Email, passwordHash string) *entity.UserAccount {
+// New создаёт аккаунт сразу подтверждённым: подтверждения почты нет (ADR-0016).
+func (f *UserFactory) New(email entity.Email, passwordHash string, username string) *entity.UserAccount {
+	now := f.clock.Now()
 	return &entity.UserAccount{
 		ID:           entity.UserID(f.idGenerator.Generate()),
 		Email:        email,
-		PasswordHash: &passwordHash,
-		VerifiedAt:   nil,
+		PasswordHash: passwordHash,
+		Username:     &username,
+		VerifiedAt:   &now,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}
 }
 
-func (f *UserFactory) NewRegistered(email entity.Email) *entity.UserAccount {
-	t := time.Now()
-	return &entity.UserAccount{
-		ID:           entity.UserID(f.idGenerator.Generate()),
-		Email:        email,
-		PasswordHash: nil,
-		VerifiedAt:   &t,
+func (f *UserFactory) Restore(
+	id string,
+	email string,
+	passwordHash string,
+	username *string,
+	avatarID *string,
+	isAdmin bool,
+	verifiedAt *time.Time,
+	createdAt time.Time,
+	updatedAt time.Time,
+) *entity.UserAccount {
+	var avatar *entity.FileID
+	if avatarID != nil {
+		fileID := entity.FileID(*avatarID)
+		avatar = &fileID
 	}
-}
-
-func (f *UserFactory) Restore(id string, email string, passwordHash *string, verifiedAt *time.Time) *entity.UserAccount {
 	return &entity.UserAccount{
 		ID:           entity.UserID(id),
 		Email:        entity.Email(email),
 		PasswordHash: passwordHash,
+		Username:     username,
+		AvatarID:     avatar,
+		IsAdmin:      isAdmin,
 		VerifiedAt:   verifiedAt,
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
 	}
 }

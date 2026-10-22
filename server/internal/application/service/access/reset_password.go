@@ -2,47 +2,58 @@ package access
 
 import (
 	"context"
-	"errors"
+
+	"task-trail/internal/application/dto"
 	"task-trail/internal/application/transaction"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
-	"task-trail/internal/domain/factory"
 	"task-trail/internal/domain/repository"
 	"task-trail/internal/domain/service"
+	"task-trail/internal/domain/service/password"
 )
 
+// ResetPasswordService задаёт пароль по ссылке сброса. Ссылка срабатывает один раз: сброс
+// удаляет все ссылки пользователя и закрывает все его сессии.
 type ResetPasswordService struct {
-	txManager       transaction.TxManager
-	userRepository  repository.UserRepository
-	tokenFactory    *factory.ConfirmationTokenFactory
-	tokenRepository repository.ConfirmationTokenRepository
-	notifier        service.AccessNotifier
+	txManager              transaction.TxManager
+	clock                  service.Clock
+	userRepository         repository.UserRepository
+	passwordResetRepo      repository.PasswordResetRepository
+	refreshTokenRepository repository.RefreshTokenRepository
+	pwdHasher              password.PasswordHasher
 }
 
-func (s *ResetPasswordService) Execute(ctx context.Context, email string) error {
-
+func (s *ResetPasswordService) Execute(ctx context.Context, data dto.ResetPassword) error {
+	hash := entity.HashLinkToken(data.Token)
+	now := s.clock.Now()
 	f := func(ctx context.Context) error {
-		u, err := s.userRepository.GetByEmail(ctx, entity.Email(email))
+		reset, err := s.passwordResetRepo.GetForUpdate(ctx, hash)
+		if isEntityNotFound(err) {
+			return domain.ErrLinkInvalid("reason", "no such password reset link")
+		}
 		if err != nil {
-			var e *domain.DomainError
-			if errors.As(err, &e) {
-				if e.Code == domain.EntityNotFound {
-					return domain.ErrWrongEmail("email", email)
-				}
-			}
 			return err
 		}
-		if err := u.CheckVerification(); err != nil {
+		if reset.IsExpired(now) {
+			return domain.ErrLinkInvalid("userID", reset.UserID, "reason", "password reset link expired")
+		}
+		user, err := s.userRepository.GetForUpdate(ctx, reset.UserID)
+		if isEntityNotFound(err) {
+			return domain.ErrLinkInvalid("userID", reset.UserID, "reason", "user not found")
+		}
+		if err != nil {
 			return err
 		}
-		token := s.tokenFactory.NewToken(u.ID, entity.ResetPasswordConfirmation)
-		if err := s.tokenRepository.Create(ctx, token); err != nil {
+		if err := user.ResetPassword(data.Password, s.pwdHasher, now); err != nil {
 			return err
 		}
-		if err := s.notifier.SendPasswordResetConfirmation(u.Email, token.ID); err != nil {
+		if err := s.userRepository.Update(ctx, user); err != nil {
 			return err
 		}
-		return nil
+		if err := s.passwordResetRepo.DeleteByUser(ctx, user.ID); err != nil {
+			return err
+		}
+		return s.refreshTokenRepository.RevokeAll(ctx, user.ID, now)
 	}
 	return s.txManager.DoWithTx(ctx, f)
 }

@@ -27,5 +27,4 @@
 
 ## Проверка
 
-Проверка импортов появится в `scripts/rules.mjs` после исправления единственного нарушения
-в коде (не в тестах): `internal/domain/service/access_token.go` импортирует `internal/application/dto`.
+`scripts/rules.mjs`: импорты между слоями, кроме тестов.

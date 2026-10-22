@@ -2,14 +2,18 @@ package persistent
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/factory"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+// registrationLockKey — ключ pg_advisory_xact_lock для регистрации первого аккаунта (ADR-0016).
+const registrationLockKey int64 = 0x7461736b_00000001
 
 type PGUserRepository struct {
 	PgRepository
@@ -25,17 +29,24 @@ func (r *PGUserRepository) Create(ctx context.Context, entity *entity.UserAccoun
 		"id":            entity.ID,
 		"email":         entity.Email,
 		"password_hash": entity.PasswordHash,
+		"username":      entity.Username,
+		"avatar_id":     entity.AvatarID,
+		"is_admin":      entity.IsAdmin,
 		"verified_at":   entity.VerifiedAt,
+		"created_at":    entity.CreatedAt,
+		"updated_at":    entity.UpdatedAt,
 	})
 }
 
 func (r *PGUserRepository) Update(ctx context.Context, entity *entity.UserAccount) error {
 	query := `
 		UPDATE users
-		SET email = $1, password_hash = $2, verified_at = $3, updated_at = $4
-		WHERE id = $5 AND deleted_at IS NULL`
+		SET email = $1, password_hash = $2, username = $3, avatar_id = $4, is_admin = $5,
+			verified_at = $6, updated_at = $7
+		WHERE id = $8 AND deleted_at IS NULL`
 
-	tag, err := r.getDb(ctx).Exec(ctx, query, entity.Email, entity.PasswordHash, entity.VerifiedAt, time.Now(), entity.ID)
+	tag, err := r.getDb(ctx).Exec(ctx, query, entity.Email, entity.PasswordHash, entity.Username, entity.AvatarID,
+		entity.IsAdmin, entity.VerifiedAt, entity.UpdatedAt, entity.ID)
 	if err != nil {
 		return r.handleError(err)
 	}
@@ -43,45 +54,120 @@ func (r *PGUserRepository) Update(ctx context.Context, entity *entity.UserAccoun
 		return domain.ErrEntityNotFound(2, nil)
 	}
 	return nil
-
 }
 
 func (r *PGUserRepository) GetByEmail(ctx context.Context, email entity.Email) (*entity.UserAccount, error) {
-	return r.getOne(ctx, "email", email)
+	return r.getOne(ctx, `SELECT `+userColumns+` FROM users WHERE email = $1 AND deleted_at IS NULL`, email)
 }
 
 func (r *PGUserRepository) GetByID(ctx context.Context, id entity.UserID) (*entity.UserAccount, error) {
-	return r.getOne(ctx, "id", id)
+	return r.getOne(ctx, `SELECT `+userColumns+` FROM users WHERE id = $1 AND deleted_at IS NULL`, id)
 }
 
-func (r *PGUserRepository) getOne(ctx context.Context, fieldName string, value any) (*entity.UserAccount, error) {
-	query := fmt.Sprintf(`
-		SELECT id, email, password_hash, verified_at
-		FROM users 
-		WHERE %s = $1 AND deleted_at IS NULL
-		`,
-		fieldName,
-	)
-	var id, email string
-	var passwordHash *string
-	var verifiedAt *time.Time
+func (r *PGUserRepository) GetForUpdate(ctx context.Context, id entity.UserID) (*entity.UserAccount, error) {
+	return r.getOne(ctx, `SELECT `+userColumns+` FROM users WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`, id)
+}
 
-	if err := r.getDb(ctx).
-		QueryRow(ctx, query, value).
-		Scan(&id, &email, &passwordHash, &verifiedAt); err != nil {
+// GetVisible: общий проект или задача автора в проекте viewer — только в неудалённых
+// проектах (ADR-0001); удалённые задачи автора не показывают.
+func (r *PGUserRepository) GetVisible(ctx context.Context, id entity.UserID, viewer entity.UserID) (*entity.UserAccount, error) {
+	query := `
+		SELECT ` + userColumns + `
+		FROM users
+		WHERE id = $1 AND deleted_at IS NULL AND (
+			id = $2
+			OR EXISTS (
+				SELECT 1
+				FROM project_members mine
+				JOIN project_members theirs ON theirs.project_id = mine.project_id
+				JOIN projects p ON p.id = mine.project_id AND p.deleted_at IS NULL
+				WHERE mine.user_id = $2 AND theirs.user_id = users.id
+			)
+			OR EXISTS (
+				SELECT 1
+				FROM tasks t
+				JOIN project_members mine ON mine.project_id = t.project_id AND mine.user_id = $2
+				JOIN projects p ON p.id = t.project_id AND p.deleted_at IS NULL
+				WHERE t.author_id = users.id AND t.deleted_at IS NULL
+			)
+		)`
+	return r.getOne(ctx, query, id, viewer)
+}
+
+// ListCandidates: люди из неудалённых проектов userID, кроме него самого и участников exclude.
+func (r *PGUserRepository) ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error) {
+	query := `
+		SELECT ` + userColumns + `
+		FROM users
+		WHERE deleted_at IS NULL AND id <> $1
+			AND EXISTS (
+				SELECT 1
+				FROM project_members mine
+				JOIN project_members theirs ON theirs.project_id = mine.project_id
+				JOIN projects p ON p.id = mine.project_id AND p.deleted_at IS NULL
+				WHERE mine.user_id = $1 AND theirs.user_id = users.id
+			)
+			AND NOT EXISTS (
+				SELECT 1 FROM project_members x WHERE x.project_id = $2::uuid AND x.user_id = users.id
+			)
+		ORDER BY COALESCE(NULLIF(username, ''), email), email`
+	rows, err := r.getDb(ctx).Query(ctx, query, userID, exclude)
+	if err != nil {
 		return nil, r.handleError(err)
 	}
-	return r.factory.Restore(id, email, passwordHash, verifiedAt), nil
+	users, err := ScanRows(rows, func(row pgx.Rows) (*entity.UserAccount, error) { return scanUser(row, r.factory) })
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return users, nil
 }
 
-func (r *PGUserRepository) ExistsByEmail(ctx context.Context, email entity.Email) (bool, error) {
+// userColumns — колонки пользователя для scanUser; userColumnsOf — они же с псевдонимом таблицы.
+const userColumns = `id, email, password_hash, username, avatar_id, is_admin, verified_at, created_at, updated_at`
+
+func userColumnsOf(alias string) string {
+	return alias + `.id, ` + alias + `.email, ` + alias + `.password_hash, ` + alias + `.username, ` + alias + `.avatar_id, ` +
+		alias + `.is_admin, ` + alias + `.verified_at, ` + alias + `.created_at, ` + alias + `.updated_at`
+}
+
+// getOne читает одного пользователя запросом, который выбирает колонки userColumns.
+func (r *PGUserRepository) getOne(ctx context.Context, query string, args ...any) (*entity.UserAccount, error) {
+	user, err := scanUser(r.getDb(ctx).QueryRow(ctx, query, args...), r.factory)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return user, nil
+}
+
+// scanUser читает колонки userColumns и затем extra.
+func scanUser(row pgx.Row, f *factory.UserFactory, extra ...any) (*entity.UserAccount, error) {
+	var id, email, passwordHash string
+	var username, avatarID *string
+	var isAdmin bool
+	var verifiedAt *time.Time
+	var createdAt, updatedAt time.Time
+	dest := append([]any{&id, &email, &passwordHash, &username, &avatarID, &isAdmin, &verifiedAt, &createdAt, &updatedAt}, extra...)
+	if err := row.Scan(dest...); err != nil {
+		return nil, err
+	}
+	return f.Restore(id, email, passwordHash, username, avatarID, isAdmin, verifiedAt, createdAt, updatedAt), nil
+}
+
+func (r *PGUserRepository) Any(ctx context.Context) (bool, error) {
 	var exists bool
-	query := `SELECT EXISTS (SELECT 1 FROM users WHERE email = $1)`
-	if err := r.getDb(ctx).QueryRow(ctx, query, email).Scan(&exists); err != nil {
+	if err := r.getDb(ctx).QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM users)`).Scan(&exists); err != nil {
 		return false, r.handleError(err)
 	}
-	if exists {
-		return true, nil
+	return exists, nil
+}
+
+func (r *PGUserRepository) LockRegistration(ctx context.Context) error {
+	if extractTx(ctx) == nil {
+		// Вне транзакции блокировка снимется сразу после запроса и ничего не защитит
+		return domain.ErrRepoInternal(0, errors.New("LockRegistration вызван вне транзакции"))
 	}
-	return false, nil
+	if _, err := r.getDb(ctx).Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, registrationLockKey); err != nil {
+		return r.handleError(err)
+	}
+	return nil
 }

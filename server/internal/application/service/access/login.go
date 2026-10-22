@@ -2,73 +2,48 @@ package access
 
 import (
 	"context"
-	"errors"
 	"task-trail/internal/application/dto"
 	"task-trail/internal/application/transaction"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
-	"task-trail/internal/domain/factory"
 	"task-trail/internal/domain/repository"
-	"task-trail/internal/domain/service"
 	"task-trail/internal/domain/service/password"
 )
 
 type LoginService struct {
-	txManager              transaction.TxManager
-	userRepository         repository.UserRepository
-	refreshTokenRepository repository.RefreshTokenRepository
-	refreshTokenFactory    *factory.RefreshTokenFactory
-	pwdComparator          password.PasswordComparator
-	tokenService           service.AccessTokenService
+	txManager      transaction.TxManager
+	userRepository repository.UserRepository
+	pwdComparator  password.PasswordComparator
+	sessions       *sessionOpener
 }
 
-func (s *LoginService) Execute(ctx context.Context, credentials dto.Credentials) (dto.SuccessLogin, error) {
-
-	email := entity.Email(credentials.Email)
-	var retVal *dto.SuccessLogin
+func (s *LoginService) Execute(ctx context.Context, credentials dto.Credentials) (dto.Session, error) {
+	email := entity.NewEmail(credentials.Email)
+	var session dto.Session
 	f := func(ctx context.Context) error {
 		user, err := s.userRepository.GetByEmail(ctx, email)
+		if isEntityNotFound(err) {
+			return domain.ErrInvalidCredentials("email", email, "reason", "no such user")
+		}
 		if err != nil {
-			var e *domain.DomainError
-			if errors.As(err, &e) {
-				if e.Code == domain.EntityNotFound {
-					return domain.ErrWrongEmail("email", email)
-				}
-			}
 			return err
 		}
-		if err := user.HasPassword(); err != nil {
-			return err
-		}
-		if err := user.CheckVerification(); err != nil {
-			return err
-		}
-		equal, err := s.pwdComparator.ComparePassword(credentials.Password, *user.PasswordHash)
+		equal, err := s.pwdComparator.ComparePassword(credentials.Password, user.PasswordHash)
 		if err != nil {
 			return err
 		}
 		if !equal {
-			return domain.ErrWrongPassword("email", email)
+			return domain.ErrInvalidCredentials("email", email, "reason", "wrong password")
 		}
-
-		refreshToken := s.refreshTokenFactory.NewToken(user.ID)
-		err = s.refreshTokenRepository.Create(ctx, refreshToken)
+		tokens, err := s.sessions.open(ctx, user.ID)
 		if err != nil {
 			return err
 		}
-		at, rt, err := s.tokenService.GenerateTokensPair(user.ID, refreshToken)
-		if err != nil {
-			return err
-		}
-		retVal = &dto.SuccessLogin{
-			AccessToken:  at,
-			RefreshToken: rt,
-			UserID:       string(user.ID),
-		}
+		session = dto.Session{User: user, Tokens: tokens}
 		return nil
 	}
 	if err := s.txManager.DoWithTx(ctx, f); err != nil {
-		return dto.SuccessLogin{}, err
+		return dto.Session{}, err
 	}
-	return *retVal, nil
+	return session, nil
 }

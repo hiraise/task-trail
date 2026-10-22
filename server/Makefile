@@ -1,17 +1,21 @@
 -include .env
-.PHONY: swag, mock, test, testcov, migrate-down, migrate-up, linter
-
-swag:
-	swag init -g ./internal/presentation/http/router.go
+.PHONY: mock, test, testcov, migrate-down, migrate-up, linter
 
 mock:
 
 	mockgen -source=internal/domain/service/password/password.go -destination=test/mocks/mock_password.go -package=mocks -package=mocks -mock_names=Service=MockPasswordService
 	mockgen -source=internal/domain/service/access_token.go -destination=test/mocks/mock_access_token.go -package=mocks -mock_names=Service=MockAccessTokenService
-	mockgen -source=internal/domain/repository/confirmation_token.go -destination=test/mocks/mock_confirmation_token.go -package=mocks -mock_names=Service=MockConfirmationTokenRepository
 	mockgen -source=internal/domain/repository/refresh_token.go -destination=test/mocks/mock_refresh_token.go -package=mocks -mock_names=Service=MockRefreshTokenRepository
 	mockgen -source=internal/domain/repository/user.go -destination=test/mocks/mock_user.go -package=mocks -mock_names=Service=MockUserRepository
-	mockgen -source=internal/domain/service/access_notifier.go -destination=test/mocks/mock_access_notifier.go -package=mocks -mock_names=Service=MockAccessNotifier
+	mockgen -source=internal/domain/repository/settings.go -destination=test/mocks/mock_settings.go -package=mocks -mock_names=Service=MockSettingsRepository
+	mockgen -source=internal/domain/repository/password_reset.go -destination=test/mocks/mock_password_reset.go -package=mocks
+	mockgen -source=internal/domain/repository/invitation.go -destination=test/mocks/mock_invitation.go -package=mocks
+	mockgen -source=internal/domain/repository/project_member.go -destination=test/mocks/mock_project_member.go -package=mocks
+	mockgen -source=internal/domain/repository/project.go -destination=test/mocks/mock_project.go -package=mocks
+	mockgen -source=internal/domain/repository/task.go -destination=test/mocks/mock_task.go -package=mocks
+	mockgen -source=internal/domain/service/mailer.go -destination=test/mocks/mock_mailer.go -package=mocks
+	mockgen -source=internal/domain/repository/file.go -destination=test/mocks/mock_file.go -package=mocks
+	mockgen -source=internal/domain/service/file_storage.go -destination=test/mocks/mock_file_storage.go -package=mocks
 	mockgen -source=internal/domain/service/id_generator.go -destination=test/mocks/mock_id_generator.go -package=mocks -mock_names=Service=MockIdGenerator
 	mockgen -source=internal/application/transaction/transaction.go -destination=test/mocks/mock_transaction.go -package=mocks -mock_names=Service=MockTxManager
 

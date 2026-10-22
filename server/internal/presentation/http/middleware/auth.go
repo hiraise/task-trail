@@ -24,7 +24,7 @@ func NewAuth(
 		userID, err := ts.VerifyAccessToken(at)
 		if err != nil {
 			_ = c.Error(err)
-			m.DeleteAccessToken(c, m.ATName)
+			m.DeleteAccessToken(c)
 			c.Abort()
 			return
 		}
