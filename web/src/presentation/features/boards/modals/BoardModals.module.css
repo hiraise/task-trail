@@ -1,10 +1,18 @@
-/* A picker fills a full-screen modal: the list scrolls, the button stays at the bottom */
+/* The dialog and the bottom sheet do not limit their height: the picker does, so that a long list
+   scrolls inside it and the button stays on the screen. 160 px — the modal title and paddings */
 .picker {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  flex: 1;
+  height: calc(100dvh - 160px);
   min-height: 0;
+}
+
+@media (min-width: 768px) {
+  .picker {
+    height: auto;
+    max-height: min(600px, calc(100dvh - 160px));
+  }
 }
 
 .form {
