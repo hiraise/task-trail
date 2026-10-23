@@ -1,0 +1,21 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.counter {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.over {
+  color: var(--text-critical);
+}

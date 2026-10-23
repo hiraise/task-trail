@@ -28,6 +28,8 @@ export function useSetProjectArchived() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.lists });
       // Task pages carry projectArchived; the prefix covers "My tasks" too
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
+      // Boards show the project and its tasks (ADR-0029)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.board.prefix });
       toast.success(archived ? projectsTexts.projectArchived : projectsTexts.projectRestored);
     },
     onError: (error, { archived }) =>

@@ -1,0 +1,15 @@
+/* A picker fills a full-screen modal: the list scrolls, the button stays at the bottom */
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 16px;
+}

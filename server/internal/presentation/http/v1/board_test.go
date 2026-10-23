@@ -68,7 +68,7 @@ func boardTasks(t *testing.T, s *apitest.Server, id string) []string {
 	return listTasks(t, s, "/v1/boards/"+id+"/tasks")
 }
 
-// boardTeam: the administrator owns «Дизайн» and «Бэкенд»; Ivan is in «Дизайн», Petr is in «Бэкенд».
+// boardTeam: the administrator owns the design and backend projects; Ivan is in design, Petr in backend.
 // The session stays with the administrator.
 func boardTeam(t *testing.T, s *apitest.Server) (admin, ivan, petr currentUser, design, backend string) {
 	t.Helper()

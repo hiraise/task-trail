@@ -24,7 +24,8 @@ interface CreateTaskFormProps {
 
 export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
   const store = useCreateTaskFormStore();
-  const { projectId, assigneeId, setName, setDescription, setProjectId, setAssigneeId } = store;
+  const { projectId, assigneeId, allowedProjectIds, setName, setDescription, setProjectId, setAssigneeId } =
+    store;
   const { showSelectAssignee, showSelectProject } = useGlobalModals();
   const { mutateAsync: createTask } = useCreateTask();
   const { data: project } = useProject(projectId);
@@ -64,7 +65,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
   };
 
   const handleSelectProject = async () => {
-    const selected = await showSelectProject(projectId);
+    const selected = await showSelectProject(projectId, allowedProjectIds);
 
     if (selected) setProjectId(selected.id);
   };

@@ -7,7 +7,10 @@ import { QUERY_KEYS } from "@/shared/constants/queryKeys";
 // The server answers a task change with the task itself (ADR-0018): it goes into the cache as is,
 // and the lists containing it are refetched — the server decides list order and contents.
 
-/** Project task lists and "My tasks"; `countChanged` — also the task count on project cards. */
+/**
+ * Project task lists, "My tasks" and boards; `countChanged` — also the task count on project cards.
+ * Boards are refetched whole: their task lists and counts depend on the task (ADR-0029).
+ */
 export function invalidateTaskLists(
   queryClient: QueryClient,
   projectId: ProjectId,
@@ -15,6 +18,7 @@ export function invalidateTaskLists(
 ): void {
   queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.taskLists(projectId) });
   queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.mineLists });
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.board.prefix });
 
   if (countChanged) {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.detail(projectId), exact: true });

@@ -10,11 +10,16 @@ import { TEXTS } from "@/shared/locales/texts";
 
 import { ProjectsList } from "../../components/ProjectsList";
 
-/** Task project — one of the user's projects; picking another one moves the task there. */
+/**
+ * Task project — one of the user's projects; picking another one moves the task there. A new task from
+ * a board — only the board projects (`allowedProjectIds`).
+ */
 export function SelectProjectModal(props: BaseModalProps<Project>) {
   const { onClose, ...rest } = props;
-  const { data: projects } = useProjects();
-  const { projectId: initialProjectId } = useGlobalModalProps<{ projectId?: ProjectId }>() || {};
+  const { data: allProjects } = useProjects();
+  const { projectId: initialProjectId, allowedProjectIds: allowed } =
+    useGlobalModalProps<{ projectId?: ProjectId; allowedProjectIds?: ProjectId[] }>() || {};
+  const projects = allowed ? allProjects?.filter((project) => allowed.includes(project.id)) : allProjects;
   const [selectedProjectId, setSelectedProjectId] = useState(initialProjectId);
 
   const handleApply = () => onClose(projects?.find((p) => p.id === selectedProjectId));

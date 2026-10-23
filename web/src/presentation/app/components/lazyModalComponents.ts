@@ -93,3 +93,23 @@ export const PasswordResetLinkModal = lazy(() =>
     default: m.PasswordResetLinkModal,
   })),
 );
+
+export const CreateBoardModal = lazy(() =>
+  import("@/presentation/features/boards/modals").then((m) => ({ default: m.CreateBoardModal })),
+);
+
+export const SelectBoardProjectsModal = lazy(() =>
+  import("@/presentation/features/boards/modals").then((m) => ({ default: m.SelectBoardProjectsModal })),
+);
+
+export const SelectBoardMembersModal = lazy(() =>
+  import("@/presentation/features/boards/modals").then((m) => ({ default: m.SelectBoardMembersModal })),
+);
+
+export const RenameBoardModal = lazy(() =>
+  import("@/presentation/features/boards/modals").then((m) => ({ default: m.RenameBoardModal })),
+);
+
+export const BoardSettingsModal = lazy(() =>
+  import("@/presentation/features/boards/modals").then((m) => ({ default: m.BoardSettingsModal })),
+);

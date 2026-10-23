@@ -1,4 +1,5 @@
 import { DESIGN_ELEMENTS } from "@/shared/config/icons";
+import { boardsTexts } from "@/shared/locales/boards";
 import { TEXTS } from "@/shared/locales/texts";
 import { interpolate } from "@/shared/utils/interpolate";
 
@@ -23,6 +24,10 @@ export function DeleteItem({ name, type }: ActionProps) {
     case "project":
       title = TEXTS.projects.delete;
       description = interpolate(TEXTS.projects.deleteDescription, { projectName: name });
+      break;
+    case "board":
+      title = boardsTexts.delete;
+      description = interpolate(boardsTexts.deleteDescription, { boardName: name });
       break;
   }
 

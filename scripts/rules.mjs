@@ -184,7 +184,7 @@ function checkWebImports() {
 
 // Components with Mobile/Desktop in the name do not grow in number: a new screen is one adaptive
 // component (ADR-0008). Merged a pair — lower the limit; exceeding it is an error, going below is a hint.
-const DEVICE_SPLIT_LIMIT = { Mobile: 10, Desktop: 6 };
+const DEVICE_SPLIT_LIMIT = { Mobile: 8, Desktop: 5 };
 
 function checkDeviceSplit() {
   const components = FILES.filter(
@@ -202,7 +202,7 @@ function checkDeviceSplit() {
 
 // Colors, shadows and fonts come from variables in web/src/styles/ (ADR-0008). Declarations with a literal color
 // in CSS outside web/src/styles/ do not grow in number: removed one — lower the limit. A font is only a variable.
-const STYLE_LITERAL_LIMIT = 12;
+const STYLE_LITERAL_LIMIT = 11;
 
 function checkStyleTokens() {
   const colorRe =

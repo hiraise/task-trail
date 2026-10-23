@@ -1,17 +1,20 @@
-/* Styles for BoardList */
+/* Two columns on a phone, more on wider screens (frames 805:87630, 1772:144664) */
 .boardList {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  padding-bottom: calc(var(--bottom-nav-height) + 20px);
+}
+
+@media (min-width: 768px) {
+  .boardList {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
 }
 
 /* Styles for BoardListItem */
 .cardWrapper {
   position: relative;
   min-height: 140px;
-  overflow: auto;
 }
 
 .menu {

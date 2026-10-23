@@ -1,4 +1,4 @@
-import type { ProjectId, TaskId, UserId } from "../../domain/types";
+import type { BoardId, ProjectId, TaskId, UserId } from "../../domain/types";
 
 /**
  * Cache key strategy:
@@ -58,6 +58,13 @@ export const QUERY_KEYS = {
       all: ["project", "candidates"] as const,
       byProject: (id: ProjectId) => ["project", id, "candidates"] as const,
     },
+  },
+  /** Boards (ADR-0029): they show tasks and projects, so task and project changes refetch the prefix */
+  board: {
+    prefix: ["board"] as const,
+    all: ["board", "all"] as const,
+    detail: (id: BoardId) => ["board", id] as const,
+    tasks: (id: BoardId) => ["board", id, "tasks"] as const,
   },
   invalidate: {
     project: (projectId: ProjectId) => ["project", projectId] as const,

@@ -1,4 +1,5 @@
 import type { AdminUser } from "@/domain/models/AdminUser";
+import type { Board } from "@/domain/models/Board";
 import type { InvitationResult } from "@/domain/models/Invitation";
 import type { PasswordResetLink } from "@/domain/models/PasswordResetLink";
 import type { Project, ProjectDetails } from "@/domain/models/Project";
@@ -12,6 +13,7 @@ import type { CurrentUser, User } from "@/domain/models/User";
 
 import type {
   AdminUser as AdminUserDto,
+  Board as BoardDto,
   CurrentUser as CurrentUserDto,
   InvitationResult as InvitationResultDto,
   MailSettings as MailSettingsDto,
@@ -84,6 +86,22 @@ export const toTask = (dto: TaskDto): Task => ({
   projectArchived: dto.projectArchived,
   createdAt: dto.createdAt,
   updatedAt: dto.updatedAt,
+});
+
+export const toBoard = (dto: BoardDto): Board => ({
+  id: dto.id,
+  name: dto.name,
+  ownerId: dto.ownerId,
+  createdAt: dto.createdAt,
+  updatedAt: dto.updatedAt,
+  projects: dto.projects.map((project) => ({
+    id: project.id,
+    name: project.name,
+    key: project.key,
+    archivedAt: project.archivedAt ?? undefined,
+  })),
+  members: dto.members.map(toUser),
+  tasksCount: dto.tasksCount,
 });
 
 export const toTaskComment = (dto: TaskCommentDto): TaskComment => ({

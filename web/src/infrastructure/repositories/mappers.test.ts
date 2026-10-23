@@ -1,5 +1,6 @@
 import {
   toAdminUser,
+  toBoard,
   toCurrentUser,
   toInvitationResult,
   toPasswordResetLink,
@@ -111,6 +112,31 @@ describe("toInvitationResult", () => {
     expect(
       toInvitationResult({ email: "new@example.com", result: "mail_failed", inviteUrl: null }),
     ).toEqual({ email: "new@example.com", outcome: "mail_failed", inviteUrl: undefined });
+  });
+});
+
+describe("toBoard", () => {
+  it("projects with the archive time or undefined, members with avatar URLs", () => {
+    const board = toBoard({
+      id,
+      name: "Релиз",
+      ownerId: avatarId,
+      createdAt: "2026-10-23T08:00:00Z",
+      updatedAt: "2026-10-23T09:00:00Z",
+      projects: [
+        { id: avatarId, name: "API", key: "API", archivedAt: "2026-10-23T10:00:00Z" },
+        { id, name: "Веб", key: "WEB", archivedAt: null },
+      ],
+      members: [{ id: avatarId, email: "anna@example.com", username: "Анна", avatarId }],
+      tasksCount: 3,
+    });
+
+    expect(board.projects).toEqual([
+      { id: avatarId, name: "API", key: "API", archivedAt: "2026-10-23T10:00:00Z" },
+      { id, name: "Веб", key: "WEB", archivedAt: undefined },
+    ]);
+    expect(board.members[0].avatarUrl).toMatch(new RegExp(`/v1/files/${avatarId}$`));
+    expect(board).toMatchObject({ id, name: "Релиз", ownerId: avatarId, tasksCount: 3 });
   });
 });
 

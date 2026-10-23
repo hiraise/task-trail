@@ -1,4 +1,4 @@
 export interface ActionProps {
   name: string;
-  type: "task" | "project" | "member";
+  type: "task" | "project" | "member" | "board";
 }

@@ -140,6 +140,17 @@ try {
   const restored = await call(member, "PATCH", `/v1/tasks/${task?.id}/archived`, 200, { json: { archived: false } });
   check(restored?.archivedAt === null, "the task is restored from the archive");
 
+  // Boards (ADR-0029): the member sees the task on the board, leaves it; the owner deletes it
+  const board = await call(admin, "POST", "/v1/boards", 201, {
+    json: { name: "Дымовая доска", projectIds: [projectId], memberIds: [joined?.id] },
+  });
+  check(board?.members?.length === 2 && board?.projects?.[0]?.id === projectId, "board created with the project and the member");
+  const boardTasks = await call(member, "GET", `/v1/boards/${board?.id}/tasks`, 200);
+  check(boardTasks?.some?.((item) => item.id === task?.id), "the member sees the task on the board");
+  await call(member, "DELETE", `/v1/boards/${board?.id}/leave`, 204);
+  await call(member, "GET", `/v1/boards/${board?.id}`, 404);
+  await call(admin, "DELETE", `/v1/boards/${board?.id}`, 204);
+
   const avatar = new Uint8Array(AVATAR_SIZE);
   avatar.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const form = new FormData();
