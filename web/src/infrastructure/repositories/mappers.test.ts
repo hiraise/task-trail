@@ -156,6 +156,7 @@ describe("toTask", () => {
     assigneeId: null,
     archivedAt: null,
     projectArchived: false,
+    labels: [],
     createdAt: "2026-10-22T08:00:00Z",
     updatedAt: "2026-10-22T09:30:00Z",
   };
@@ -229,6 +230,7 @@ describe("toSearchResult", () => {
           assigneeId: null,
           archivedAt: null,
           projectArchived: true,
+          labels: [],
           createdAt: "2026-10-22T08:00:00Z",
           updatedAt: "2026-10-22T09:00:00Z",
         },

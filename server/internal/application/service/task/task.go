@@ -27,6 +27,7 @@ type TaskModule struct {
 	ChangeDueDate  *ChangeDueDateService
 	ChangeAssignee *ChangeAssigneeService
 	Move           *MoveTaskService
+	SetLabels      *SetLabelsService
 	SetArchived    *SetTaskArchivedService
 	Delete         *DeleteTaskService
 	ListComments   *ListCommentsService
@@ -50,12 +51,14 @@ type Deps struct {
 	CommentFactory *factory.CommentFactory
 	EventRepo      repository.TaskEventRepository
 	EventFactory   *factory.TaskEventFactory
+	// LabelRepo — labels of tasks (ADR-0035).
+	LabelRepo repository.LabelRepository
 }
 
 func New(d Deps) *TaskModule {
 	e := &editor{
 		txManager: d.TxManager, clock: d.Clock, projects: d.ProjectRepo, members: d.MemberRepo, tasks: d.TaskRepo,
-		events: d.EventRepo, newEvent: d.EventFactory,
+		events: d.EventRepo, newEvent: d.EventFactory, labels: d.LabelRepo,
 	}
 	feed := &feed{members: d.MemberRepo, tasks: d.TaskRepo, users: d.UserRepo}
 	return &TaskModule{
@@ -69,6 +72,7 @@ func New(d Deps) *TaskModule {
 		ChangeDueDate:  &ChangeDueDateService{editor: e},
 		ChangeAssignee: &ChangeAssigneeService{editor: e},
 		Move:           &MoveTaskService{editor: e},
+		SetLabels:      &SetLabelsService{editor: e},
 		SetArchived:    &SetTaskArchivedService{editor: e},
 		Delete:         &DeleteTaskService{editor: e},
 		ListComments:   &ListCommentsService{feed: feed, comments: d.CommentRepo},
@@ -88,6 +92,7 @@ type editor struct {
 	tasks     repository.TaskRepository
 	events    repository.TaskEventRepository
 	newEvent  *factory.TaskEventFactory
+	labels    repository.LabelRepository
 }
 
 // record writes task history rows in the current transaction (ADR-0028).

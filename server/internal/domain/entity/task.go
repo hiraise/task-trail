@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"slices"
+	"strings"
 	"time"
 
 	"task-trail/internal/domain"
@@ -31,8 +33,10 @@ type Task struct {
 	// ProjectArchived — whether the task's project is archived; read-only, repositories fill it
 	// from projects.archived_at.
 	ProjectArchived bool
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
+	// Labels — read-only, repositories fill it from task_labels, ordered by name (ADR-0035).
+	Labels    []Label
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // TaskDraft — the fields a new task is created with. An empty Priority means PriorityNormal;
@@ -184,5 +188,21 @@ func (t *Task) MoveTo(projectID ProjectID, projectKey ProjectKey, number int, as
 	if !stays {
 		t.AssigneeID = nil
 	}
+	t.UpdatedAt = now
+}
+
+// SetLabels sets the task's labels, ordered by name ignoring case, then ID (ADR-0035).
+func (t *Task) SetLabels(labels []Label, now time.Time) {
+	sorted := slices.Clone(labels)
+	if sorted == nil {
+		sorted = []Label{}
+	}
+	slices.SortFunc(sorted, func(a, b Label) int {
+		if c := strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)); c != 0 {
+			return c
+		}
+		return strings.Compare(string(a.ID), string(b.ID))
+	})
+	t.Labels = sorted
 	t.UpdatedAt = now
 }

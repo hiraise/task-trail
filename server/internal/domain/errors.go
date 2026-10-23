@@ -34,6 +34,10 @@ const (
 	BoardProjectUnavailable ErrorCode = "BOARD_PROJECT_UNAVAILABLE"
 	// The user added to a board shares no project with the board owner (ADR-0029)
 	BoardMemberUnavailable ErrorCode = "BOARD_MEMBER_UNAVAILABLE"
+	// The label name is taken in the project ignoring case (ADR-0035)
+	LabelNameTaken ErrorCode = "LABEL_NAME_TAKEN"
+	// A label is not of the task's project or does not exist (ADR-0035)
+	LabelUnavailable ErrorCode = "LABEL_UNAVAILABLE"
 	// A comment is edited only during the first 24 hours (ADR-0028)
 	CommentEditExpired ErrorCode = "COMMENT_EDIT_EXPIRED"
 	// The last service administrator cannot be removed (ADR-0014)
@@ -176,6 +180,14 @@ func ErrBoardProjectUnavailable(data ...any) *DomainError {
 
 func ErrBoardMemberUnavailable(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, BoardMemberUnavailable, nil, data...)
+}
+
+func ErrLabelNameTaken(sourceErr error, data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, LabelNameTaken, sourceErr, data...)
+}
+
+func ErrLabelUnavailable(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, LabelUnavailable, nil, data...)
 }
 
 func ErrCommentEditExpired(data ...any) *DomainError {

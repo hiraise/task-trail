@@ -25,7 +25,7 @@ export type Password = string;
 
 export type Username = string;
 
-export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'COMMENT_EDIT_EXPIRED' | 'BOARD_PROJECT_UNAVAILABLE' | 'BOARD_MEMBER_UNAVAILABLE' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
+export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'COMMENT_EDIT_EXPIRED' | 'BOARD_PROJECT_UNAVAILABLE' | 'BOARD_MEMBER_UNAVAILABLE' | 'LABEL_NAME_TAKEN' | 'LABEL_UNAVAILABLE' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
 
 export type ApiError = {
     code: ErrorCode;
@@ -234,6 +234,40 @@ export type TaskStatus = {
  */
 export type TaskPriority = 'low' | 'normal' | 'high' | 'urgent';
 
+/**
+ * Fixed palette (ADR-0035); the web draws each color with its design tokens
+ */
+export type LabelColor = 'gray' | 'red' | 'orange' | 'yellow' | 'green' | 'teal' | 'blue' | 'purple';
+
+/**
+ * Trimmed by the server; unique in the project ignoring case
+ */
+export type LabelName = string;
+
+export type Label = {
+    id: Uuid;
+    projectId: Uuid;
+    name: LabelName;
+    color: LabelColor;
+};
+
+export type CreateLabelRequest = {
+    name: LabelName;
+    color: LabelColor;
+};
+
+export type UpdateLabelRequest = {
+    name?: LabelName;
+    color?: LabelColor;
+};
+
+export type SetTaskLabelsRequest = {
+    /**
+     * The new set of the task's labels, all of its project; empty — no labels
+     */
+    labelIds: Array<Uuid>;
+};
+
 export type Task = {
     id: Uuid;
     projectId: Uuid;
@@ -263,6 +297,10 @@ export type Task = {
      * The task's project is archived; the task is read-only then too
      */
     projectArchived: boolean;
+    /**
+     * Ordered by name (ADR-0035)
+     */
+    labels: Array<Label>;
     createdAt: DateTime;
     updatedAt: DateTime;
 };
@@ -517,6 +555,8 @@ export type ProjectId = Uuid;
 export type TaskId = Uuid;
 
 export type CommentId = Uuid;
+
+export type LabelId = Uuid;
 
 export type BoardId = Uuid;
 
@@ -1558,6 +1598,176 @@ export type LeaveProjectResponses = {
 
 export type LeaveProjectResponse = LeaveProjectResponses[keyof LeaveProjectResponses];
 
+export type ListProjectLabelsData = {
+    body?: never;
+    path: {
+        projectId: Uuid;
+    };
+    query?: never;
+    url: '/v1/projects/{projectId}/labels';
+};
+
+export type ListProjectLabelsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ListProjectLabelsError = ListProjectLabelsErrors[keyof ListProjectLabelsErrors];
+
+export type ListProjectLabelsResponses = {
+    /**
+     * Labels
+     */
+    200: Array<Label>;
+};
+
+export type ListProjectLabelsResponse = ListProjectLabelsResponses[keyof ListProjectLabelsResponses];
+
+export type CreateProjectLabelData = {
+    body: CreateLabelRequest;
+    path: {
+        projectId: Uuid;
+    };
+    query?: never;
+    url: '/v1/projects/{projectId}/labels';
+};
+
+export type CreateProjectLabelErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `LABEL_NAME_TAKEN` — the name is taken in the project ignoring case; `PROJECT_ARCHIVED` — the project is archived (ADR-0035)
+     */
+    409: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type CreateProjectLabelError = CreateProjectLabelErrors[keyof CreateProjectLabelErrors];
+
+export type CreateProjectLabelResponses = {
+    /**
+     * Label created
+     */
+    201: Label;
+};
+
+export type CreateProjectLabelResponse = CreateProjectLabelResponses[keyof CreateProjectLabelResponses];
+
+export type DeleteProjectLabelData = {
+    body?: never;
+    path: {
+        projectId: Uuid;
+        labelId: Uuid;
+    };
+    query?: never;
+    url: '/v1/projects/{projectId}/labels/{labelId}';
+};
+
+export type DeleteProjectLabelErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type DeleteProjectLabelError = DeleteProjectLabelErrors[keyof DeleteProjectLabelErrors];
+
+export type DeleteProjectLabelResponses = {
+    /**
+     * Label deleted
+     */
+    204: void;
+};
+
+export type DeleteProjectLabelResponse = DeleteProjectLabelResponses[keyof DeleteProjectLabelResponses];
+
+export type UpdateProjectLabelData = {
+    body: UpdateLabelRequest;
+    path: {
+        projectId: Uuid;
+        labelId: Uuid;
+    };
+    query?: never;
+    url: '/v1/projects/{projectId}/labels/{labelId}';
+};
+
+export type UpdateProjectLabelErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `LABEL_NAME_TAKEN` — the name is taken in the project ignoring case; `PROJECT_ARCHIVED` — the project is archived (ADR-0035)
+     */
+    409: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type UpdateProjectLabelError = UpdateProjectLabelErrors[keyof UpdateProjectLabelErrors];
+
+export type UpdateProjectLabelResponses = {
+    /**
+     * Label changed
+     */
+    200: Label;
+};
+
+export type UpdateProjectLabelResponse = UpdateProjectLabelResponses[keyof UpdateProjectLabelResponses];
+
 export type ListProjectTasksData = {
     body?: never;
     path: {
@@ -2003,6 +2213,49 @@ export type MoveTaskResponses = {
 };
 
 export type MoveTaskResponse = MoveTaskResponses[keyof MoveTaskResponses];
+
+export type SetTaskLabelsData = {
+    body: SetTaskLabelsRequest;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/labels';
+};
+
+export type SetTaskLabelsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `LABEL_UNAVAILABLE` — a label is unknown or of another project; `VALIDATION_FAILED`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type SetTaskLabelsError = SetTaskLabelsErrors[keyof SetTaskLabelsErrors];
+
+export type SetTaskLabelsResponses = {
+    /**
+     * Labels set
+     */
+    200: Task;
+};
+
+export type SetTaskLabelsResponse = SetTaskLabelsResponses[keyof SetTaskLabelsResponses];
 
 export type SetTaskArchivedData = {
     body: SetArchivedRequest;

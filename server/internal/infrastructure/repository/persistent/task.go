@@ -2,6 +2,7 @@ package persistent
 
 import (
 	"context"
+	"encoding/json"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/repository"
@@ -38,7 +39,12 @@ func (r *PGTaskRepository) Create(ctx context.Context, t *entity.Task) error {
 }
 
 // taskColumns are read FROM taskTables: the project key and archive flag come from the task's project.
-const taskColumns = `t.id, t.project_id, p.key, p.archived_at IS NOT NULL, t.number, t.name, t.description, t.status, t.priority, t.due_date, t.author_id, t.assignee_id, t.archived_at, t.created_at, t.updated_at`
+// Labels go last as a JSON array ordered by name (ADR-0035); scanTask reads them in the same position.
+const taskColumns = `t.id, t.project_id, p.key, p.archived_at IS NOT NULL, t.number, t.name, t.description, t.status, t.priority, t.due_date, t.author_id, t.assignee_id, t.archived_at, t.created_at, t.updated_at, ` + taskLabelsColumn
+
+const taskLabelsColumn = `COALESCE((SELECT json_agg(json_build_object('id', l.id, 'projectId', l.project_id, 'name', l.name, 'color', l.color)
+		ORDER BY lower(l.name), l.id)
+	FROM task_labels tl JOIN labels l ON l.id = tl.label_id WHERE tl.task_id = t.id), '[]')`
 
 const taskTables = ` FROM tasks t JOIN projects p ON p.id = t.project_id`
 
@@ -148,11 +154,17 @@ func (r *PGTaskRepository) UnassignInProject(ctx context.Context, projectID enti
 func scanTask(row pgx.Row) (*entity.Task, error) {
 	var id, projectID, projectKey, status, priority, authorID string
 	var assigneeID *string
+	var labelsJSON []byte
 	t := &entity.Task{}
 	if err := row.Scan(&id, &projectID, &projectKey, &t.ProjectArchived, &t.Number, &t.Name, &t.Description, &status, &priority, &t.DueDate, &authorID,
-		&assigneeID, &t.ArchivedAt, &t.CreatedAt, &t.UpdatedAt); err != nil {
+		&assigneeID, &t.ArchivedAt, &t.CreatedAt, &t.UpdatedAt, &labelsJSON); err != nil {
 		return nil, err
 	}
+	labels, err := decodeTaskLabels(labelsJSON)
+	if err != nil {
+		return nil, err
+	}
+	t.Labels = labels
 	t.ProjectKey = entity.ProjectKey(projectKey)
 	t.Priority = entity.TaskPriority(priority)
 	if t.DueDate != nil {
@@ -166,4 +178,24 @@ func scanTask(row pgx.Row) (*entity.Task, error) {
 		t.AssigneeID = &assignee
 	}
 	return t, nil
+}
+
+// decodeTaskLabels reads taskLabelsColumn; a task without labels gets an empty slice, not nil.
+// CreatedAt and UpdatedAt stay zero: task responses do not carry them.
+func decodeTaskLabels(raw []byte) ([]entity.Label, error) {
+	var rows []struct {
+		ID        string `json:"id"`
+		ProjectID string `json:"projectId"`
+		Name      string `json:"name"`
+		Color     string `json:"color"`
+	}
+	if err := json.Unmarshal(raw, &rows); err != nil {
+		return nil, err
+	}
+	labels := make([]entity.Label, len(rows))
+	for i, row := range rows {
+		labels[i] = entity.Label{ID: entity.LabelID(row.ID), ProjectID: entity.ProjectID(row.ProjectID),
+			Name: row.Name, Color: entity.LabelColor(row.Color)}
+	}
+	return labels, nil
 }

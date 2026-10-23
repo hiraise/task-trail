@@ -147,6 +147,25 @@ func (r *taskRoutes) changePriority(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewTask(t))
 }
 
+func (r *taskRoutes) setLabels(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	ids, err := request.BindSetTaskLabels(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.SetLabels.Execute(c, r.userID(c), taskID, ids)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
 func (r *taskRoutes) changeDueDate(c *gin.Context) {
 	taskID, err := pathID(c, "taskId")
 	if err != nil {
@@ -345,6 +364,7 @@ func NewTaskRouter(
 	g.PATCH("/tasks/:taskId/due-date", r.changeDueDate)
 	g.PATCH("/tasks/:taskId/assignee", r.changeAssignee)
 	g.PATCH("/tasks/:taskId/project", r.move)
+	g.PUT("/tasks/:taskId/labels", r.setLabels)
 	g.PATCH("/tasks/:taskId/archived", r.setArchived)
 	g.GET("/tasks/:taskId/comments", r.listComments)
 	g.POST("/tasks/:taskId/comments", r.createComment)

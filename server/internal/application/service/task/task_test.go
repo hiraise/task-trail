@@ -36,6 +36,7 @@ type deps struct {
 	members  *mocks.MockProjectMemberRepository
 	tasks    *mocks.MockTaskRepository
 	events   *mocks.MockTaskEventRepository
+	labels   *mocks.MockLabelRepository
 }
 
 func newModule(t *testing.T) (*task.TaskModule, *deps) {
@@ -46,6 +47,7 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 		members:  mocks.NewMockProjectMemberRepository(ctrl),
 		tasks:    mocks.NewMockTaskRepository(ctrl),
 		events:   mocks.NewMockTaskEventRepository(ctrl),
+		labels:   mocks.NewMockLabelRepository(ctrl),
 	}
 	clk := clock.New(now)
 	return task.New(task.Deps{
@@ -57,6 +59,7 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 		TaskFactory:  factory.NewTaskFactory(id.New(), clk),
 		EventRepo:    d.events,
 		EventFactory: factory.NewTaskEventFactory(id.New()),
+		LabelRepo:    d.labels,
 	}), d
 }
 
@@ -245,8 +248,10 @@ func TestMoveTask(t *testing.T) {
 		d.members.EXPECT().Get(txtest.InTx, backendID, userID).Return(member(backendID, userID), nil),
 		d.members.EXPECT().Get(txtest.InTx, backendID, ivanID).Return(nil, notFound()),
 		d.projects.EXPECT().NextTaskNumber(txtest.InTx, backendID).Return(4, nil),
+		d.labels.EXPECT().ClearTask(txtest.InTx, taskID).Return(nil),
 		d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, got *entity.Task) error {
-			if got.ProjectID != backendID || got.Key() != "BE-4" || got.AssigneeID != nil || got.Status != entity.StatusInReview {
+			if got.ProjectID != backendID || got.Key() != "BE-4" || got.AssigneeID != nil || got.Status != entity.StatusInReview ||
+				got.Labels == nil || len(got.Labels) != 0 {
 				t.Errorf("task written %+v", got)
 			}
 			return nil
@@ -264,6 +269,48 @@ func TestMoveTask(t *testing.T) {
 	if unassigned.Kind != entity.EventAssigneeChanged || *unassigned.FromUser != ivanID || unassigned.ToUser != nil {
 		t.Errorf("assignee: %+v", unassigned)
 	}
+}
+
+// Labels of the task's project replace the set, ordered by name, without a history event; a label
+// that is not of the task's project is LABEL_UNAVAILABLE and nothing is written (ADR-0035).
+func TestSetLabels(t *testing.T) {
+	ui := &entity.Label{ID: "b1", ProjectID: designID, Name: "ui"}
+	bug := &entity.Label{ID: "a1", ProjectID: designID, Name: "Баг"}
+	api := &entity.Label{ID: "c1", ProjectID: designID, Name: "API"}
+	expectLock := func(d *deps) {
+		d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(stored(designID, nil), nil).Times(2)
+		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(project(designID), nil)
+		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+	}
+
+	t.Run("labels of the project", func(t *testing.T) {
+		module, d := newModule(t)
+		txtest.Expect(d.tx)
+		expectLock(d)
+		ids := []entity.LabelID{"b1", "a1", "c1"}
+		d.labels.EXPECT().ListByIDs(txtest.InTx, designID, ids).Return([]*entity.Label{bug, ui, api}, nil)
+		d.labels.EXPECT().ReplaceForTask(txtest.InTx, taskID, ids).Return(nil)
+		d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).Return(nil)
+		got, err := module.SetLabels.Execute(context.Background(), string(userID), string(taskID), []string{"b1", "a1", "c1"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(got.Labels) != 3 || got.Labels[0].Name != "API" || got.Labels[1].Name != "ui" || got.Labels[2].Name != "Баг" ||
+			!got.UpdatedAt.Equal(now) {
+			t.Fatalf("task %+v", got)
+		}
+	})
+
+	t.Run("a label of another project", func(t *testing.T) {
+		module, d := newModule(t)
+		txtest.Expect(d.tx)
+		expectLock(d)
+		d.labels.EXPECT().ListByIDs(txtest.InTx, designID, []entity.LabelID{"a1", "f1"}).Return([]*entity.Label{bug}, nil)
+		_, err := module.SetLabels.Execute(context.Background(), string(userID), string(taskID), []string{"a1", "f1"})
+		if !domain.HasCode(err, domain.LabelUnavailable) {
+			t.Fatalf("err = %v", err)
+		}
+	})
 }
 
 // A move to the task's own project changes nothing: no new number, the task stays as it was (ADR-0026).
