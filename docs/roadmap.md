@@ -13,7 +13,7 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   ([ADR-0027](adr/0027-reversible-archive.md)) and list sorting; the task feed — comments and change
   history ([ADR-0028](adr/0028-task-activity-feed.md)); boards — list, creation, board info
   ([ADR-0029](adr/0029-boards-over-projects.md)); the kanban with drag and drop and the task modal.
-  Next step — 6, search.
+  Next step — 6, search on the server; then 7, search in the web.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;

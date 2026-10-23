@@ -1,7 +1,7 @@
-# Step 6 — search
+# Step 6 — search on the server
 
 Read first: [ADR-0030](../../adr/0030-search-by-substring.md), the stage [README](README.md).
-Steps 1–5 must be merged.
+Steps 1–5 must be merged. The web part is [step 7](07-search-web.md).
 
 ## Repositories
 
@@ -36,6 +36,7 @@ a separate search repository:
 - Operation `search` — `GET /v1/search`, query parameter `q` (string, 1–100 characters).
 - Response `SearchResult { projects: Project[], boards: Board[], tasks: Task[] }` — the same shapes as
   the lists.
+- Run `npm run api:types` in `web/`; the web does not use the new types yet.
 
 ## Tests
 
@@ -46,32 +47,9 @@ a separate search repository:
 - Archived items come with `archivedAt` / `projectArchived`.
 - Empty and too long `q` → `422`.
 
-## Web
-
-- Move search from `presentation/shared/components/Search/` to `presentation/features/search/` as
-  one adaptive `SearchPage`; `SearchDesktopPage` + `SearchMobilePage` go away. Lower
-  `DEVICE_SPLIT_LIMIT`.
-- The input has `maxLength={100}`.
-- `useDebouncedValue` *(new)*, 300 ms; `useSearch(q)` *(new)* queries when at least one character is
-  left after trimming.
-- Groups «Проекты», «Доски», «Задачи» collapse (frames `1897:183080`, `1220:96797`, `1220:100069`).
-  Cards: `ProjectCard`, `BoardListItem`, and a task row — key, name, avatar.
-- `HighlightedText` *(new)* highlights case-insensitive occurrences of `q` in names.
-- Empty input — the picture and «Чтобы что-то нашлось, нужно что-то ввести. Пока что тут пусто»
-  (`1895:131467`).
-- Nothing found — «Ничего не найдено, попробуйте переформулировать запрос» (`1897:185463`,
-  `1220:103914`).
-- On a phone the keyboard opens at once, «Отмена» goes back, no bottom bar (comment `1220:96792`).
-- Archived items carry the «Архив» tag.
-
 ## Stack
 
 Smoke searches for the smoke task by its key and by part of its name.
-
-## After this step
-
-Stage 2 is complete: update the root `README.md` (in Russian: features, the line about the current
-stage, «План») and «Where we are» in the roadmap.
 
 ## Done when
 
@@ -79,4 +57,5 @@ Common criteria from the stage README.
 
 ## Show the customer
 
-Search across the three groups, highlighting, search by key, archived items.
+`GET /v1/search` in the stack's Swagger (`/api/docs/`): the three groups, search by key, archived
+items, `422` for an empty `q`; the new tests and the `scripts/dev.sh check` output.
