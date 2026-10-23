@@ -1,6 +1,7 @@
 import type { AdminUser } from "@/domain/models/AdminUser";
 import type { Board } from "@/domain/models/Board";
 import type { InvitationResult } from "@/domain/models/Invitation";
+import type { Label } from "@/domain/models/Label";
 import type { PasswordResetLink } from "@/domain/models/PasswordResetLink";
 import type { Project, ProjectDetails } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
@@ -17,6 +18,7 @@ import type {
   Board as BoardDto,
   CurrentUser as CurrentUserDto,
   InvitationResult as InvitationResultDto,
+  Label as LabelDto,
   MailSettings as MailSettingsDto,
   Member as MemberDto,
   PasswordResetLink as PasswordResetLinkDto,
@@ -74,6 +76,13 @@ export const toInvitationResult = (dto: InvitationResultDto): InvitationResult =
   inviteUrl: dto.inviteUrl ?? undefined,
 });
 
+export const toLabel = (dto: LabelDto): Label => ({
+  id: dto.id,
+  projectId: dto.projectId,
+  name: dto.name,
+  color: dto.color,
+});
+
 export const toTask = (dto: TaskDto): Task => ({
   id: dto.id,
   projectId: dto.projectId,
@@ -88,6 +97,7 @@ export const toTask = (dto: TaskDto): Task => ({
   assigneeId: dto.assigneeId ?? undefined,
   archivedAt: dto.archivedAt ?? undefined,
   projectArchived: dto.projectArchived,
+  labels: dto.labels.map(toLabel),
   createdAt: dto.createdAt,
   updatedAt: dto.updatedAt,
 });

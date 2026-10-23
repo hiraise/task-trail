@@ -57,6 +57,14 @@
   text-overflow: ellipsis;
 }
 
+/* children: a wrapping row, like label chips; no line clamp */
+.children {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
 .empty {
   color: var(--text-secondary);
 }

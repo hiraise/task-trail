@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { useState } from "react";
 
 import { ICONS } from "@/shared/config/icons";
@@ -9,6 +10,9 @@ import styles from "./CheckBox.module.css";
 interface CheckBoxProps {
   onChange: (checked: boolean) => void;
   checked?: boolean;
+  /** Dimmed, ignores clicks and keys */
+  disabled?: boolean;
+  "aria-label"?: string;
 }
 
 /**
@@ -16,6 +20,7 @@ interface CheckBoxProps {
  *
  * @param onChange - Callback function called when the checked state changes.
  * @param checked - Optional controlled checked state. If provided, the component acts as a controlled component.
+ * @param disabled - Optional: the checkbox is dimmed and does not change.
  *
  * @example
  * // Uncontrolled usage
@@ -26,13 +31,15 @@ interface CheckBoxProps {
  * const [checked, setChecked] = useState(false);
  * <CheckBox checked={checked} onChange={setChecked} />
  */
-export function CheckBox({ onChange, checked }: CheckBoxProps) {
+export function CheckBox({ onChange, checked, disabled = false, "aria-label": ariaLabel }: CheckBoxProps) {
   const [isChecked, setIsChecked] = useState(false);
 
   const isControlled = checked !== undefined;
   const currentCheckedState = isControlled ? checked : isChecked;
 
   const handleCheckboxChange = () => {
+    if (disabled) return;
+
     const newCheckedState = !currentCheckedState;
 
     if (checked === undefined) setIsChecked(newCheckedState);
@@ -48,11 +55,13 @@ export function CheckBox({ onChange, checked }: CheckBoxProps) {
 
   return (
     <div
-      className={`${styles.checkBox} ${currentCheckedState ? styles.checked : ""}`}
+      className={clsx(styles.checkBox, currentCheckedState && styles.checked, disabled && styles.disabled)}
       onClick={handleCheckboxChange}
       role="checkbox"
       aria-checked={currentCheckedState}
-      tabIndex={0}
+      aria-disabled={disabled || undefined}
+      aria-label={ariaLabel}
+      tabIndex={disabled ? -1 : 0}
       onKeyDown={handleKeyDown}
     >
       {currentCheckedState && (

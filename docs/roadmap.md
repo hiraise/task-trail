@@ -25,7 +25,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   page, the new task form, the chip on the cards with «Сегодня»/«Завтра» and overdue in red, the «По сроку»
   sort; step 5 is done — labels on the server ([ADR-0035](adr/0035-project-labels.md)): labels of
   a project `/v1/projects/{projectId}/labels`, `PUT /v1/tasks/{taskId}/labels`, `Task.labels` in every
-  task response; the next step is step 6 — labels on a task in the web.
+  task response; step 6 is done — labels on a task in the web: the «Метки» row and the picker with
+  search, creating a label with a color and the limit of 10, chips on the cards (at most 3 and «+N»);
+  the next step is step 7 — project labels management in the web.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;

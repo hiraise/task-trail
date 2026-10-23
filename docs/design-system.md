@@ -30,6 +30,7 @@ Variables only, do not repeat values — `scripts/rules.mjs` checks this (ADR-00
 | Badges | `--bg-accent-yellow` — admin, `--bg-accent-blue` — member, `--bg-accent-green` — on, `--bg-secondary` — off and «Архив» (`ArchiveTag`) | |
 | Accent | `--icon-accent` | selected radio button, link |
 | Priority | `--priority-urgent`, `--priority-high`, `--priority-low`; `normal` — `--icon-secondary` | `PriorityIcon` (ADR-0033) |
+| Labels | `--label-<color>-bg` and `--label-<color>-text` for `gray`, `red`, `orange`, `yellow`, `green`, `teal`, `blue`, `purple` | `LabelChip`, `ColorSwatches` (ADR-0035); text contrast 5:1 and more |
 
 Text classes (`text.css`): `h2` — page and modal title, `h4` — card title,
 `body-med` — name, menu item, button on a phone, `body-reg-2` — field labels in a card and explanations,
@@ -103,8 +104,9 @@ on the right.
 
 - The three task cards — the project, board and search row (`ProjectTask`), the «Мои задачи» card
   (`TaskList`) and the kanban card (`KanbanCard`) — show `TaskMeta` under the name: a `caption-reg`
-  line of badges in `--text-secondary`, gap 8 px, wrapping. Now — the priority icon and the due date
-  chip; later steps add subtasks and labels to it. A card with nothing to show has no meta line.
+  line of badges in `--text-secondary`, gap 8 px, wrapping. Now — the priority icon, the due date
+  chip and at most 3 `LabelChip`s, then «+N»; a later step adds subtasks. A card with nothing to show
+  has no meta line.
 - The due date chip — `ICONS.calendar` 16 px and the date, gap 2 px: «Сегодня», «Завтра», «30 окт»,
   another year «30 окт 2027» (`formatDueDate` in `shared/utils/dueDate.ts`). Overdue — the date is before
   today and the status is not resolved — the chip is `--text-critical` (ADR-0034).
@@ -117,8 +119,29 @@ on the right.
 - The due date picker `ChangeDueDateModal` — the native `<input type="date">` styled like `Input`
   (`body-reg` size), «Убрать срок» (`SubmitButton variant="text"`, only when a date is set) and
   `DialogButtons` with «Применить» on every width (artboard C).
+- `TaskField` with `children` draws them in place of the value text — a wrapping row, gap 4 px, no
+  line clamp — and takes `ariaValue` for its `aria-label`: the «Метки» row with chips, «Добавить» when
+  empty.
 - A radio row with an icon — `RadioButton` with `icon` (before the label, gap 8 px), like the priority
   picker `TaskPriorityList`.
+
+## Labels
+
+Labels of a project (ADR-0035), artboards C and I of the stage 3 canvas.
+
+- `LabelChip` (`presentation/shared/components/LabelChip`) — a pill `caption-med`, height 20, padding
+  `2px 8px`, radius 8, colors `--label-<color>-bg`/`-text`; a name longer than 160 px ends with «…»
+  and shows in full in `title`.
+- `ColorSwatches` (`presentation/shared/components/ColorSwatches`) — 8 round 24 px swatches in the
+  palette order, gap 12; the selected one has `outline: 2px solid var(--border-accent)`,
+  `outline-offset: 2px`. A `radiogroup` of `radio` buttons named by the color.
+- The picker `SelectLabelsModal` (`features/labels`) — a search field «Найти или создать метку», rows
+  `CheckBox` + `LabelChip` (min height 36, padding `6px 4px`, gap 12), the whole row toggles; at 10
+  selected the other rows are disabled and «Не больше 10 меток» shows under the list. No exact name
+  match — the block «Создать метку «…»» on `--bg-secondary-2` (radius 8): it opens the caption «Цвет»,
+  `ColorSwatches` and the preview chip with «Создать». `DialogButtons` with «Применить» on every width,
+  full screen on a phone.
+- `CheckBox` takes `disabled` (opacity 0.4, no change, `aria-disabled`) and `aria-label`.
 
 ## People lists
 

@@ -17,12 +17,24 @@ interface TaskFieldProps {
   placeholder: string;
   /** `critical` draws the value in --text-critical, like an overdue due date (ADR-0034) */
   tone?: "critical";
+  /** A value drawn by the caller in place of the text, like label chips; pass its text as `ariaValue` */
+  children?: ReactNode;
+  /** The value for screen readers when `children` draw it */
+  ariaValue?: string;
   /** No handler — the field is read-only, like in an archived task (ADR-0027) */
   onClick?: () => void;
 }
 
+function FieldText({ text, empty, tone }: { text: string; empty: boolean; tone?: "critical" }) {
+  return (
+    <span className={clsx("body-reg-2", styles.text, empty && styles.empty, !empty && tone && styles[tone])}>
+      {text}
+    </span>
+  );
+}
+
 /**
- * A task field changed by picking a value: assignee, project, priority, due date. On a phone — a panel with an arrow;
+ * A task field changed by picking a value: assignee, project, priority, due date, labels. On a phone — a panel with an arrow;
  * from 768 px — a label on the left and the value, with an edit icon on hover.
  */
 export function TaskField({
@@ -32,13 +44,15 @@ export function TaskField({
   value,
   placeholder,
   tone,
+  children,
+  ariaValue,
   onClick,
 }: TaskFieldProps) {
-  const text = value ?? placeholder;
+  const text = children ? (ariaValue ?? "") : (value ?? placeholder);
   const content = (
     <span className={styles.value}>
       {iconNode ?? (icon && <Icon as={icon} size="24px" />)}
-      <span className={clsx("body-reg-2", styles.text, !value && styles.empty, value && tone && styles[tone])}>{text}</span>
+      {children ? <span className={styles.children}>{children}</span> : <FieldText text={text} empty={!value} tone={tone} />}
     </span>
   );
 

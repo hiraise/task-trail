@@ -9,6 +9,7 @@ import type {
   CreateTaskRequest,
   MoveTaskRequest,
   SetArchivedRequest,
+  SetTaskLabelsRequest,
   Task,
   TaskComment,
   TaskEvent,
@@ -77,6 +78,12 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
     const body: ChangeTaskAssigneeRequest = { assigneeId };
 
     return toTask(await http.patch<Task>(API_ROUTES.TASK_ASSIGNEE(id), body));
+  },
+
+  setLabels: async (id, labelIds) => {
+    const body: SetTaskLabelsRequest = { labelIds };
+
+    return toTask(await http.put<Task>(API_ROUTES.TASK_LABELS(id), body));
   },
 
   move: async (id, projectId) => {

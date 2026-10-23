@@ -16,6 +16,7 @@ import DeleteIcon from "@/assets/icons/DeleteIcon.svg?react";
 import EditIcon from "@/assets/icons/EditIcon.svg?react";
 import HideIcon from "@/assets/icons/HideIcon.svg?react";
 import TaskIcon from "@/assets/icons/hugeicons_task-01.svg?react";
+import LabelIcon from "@/assets/icons/LabelIcon.svg?react";
 import LeaveIcon from "@/assets/icons/LeaveIcon.svg?react";
 import LockIcon from "@/assets/icons/LockIcon.svg?react";
 import LogoDesktop from "@/assets/icons/LogoDesktop.svg?react";
@@ -74,6 +75,7 @@ export const ICONS = {
   priorityNormal: PriorityNormalIcon,
   priorityLow: PriorityLowIcon,
   calendar: CalendarIcon,
+  label: LabelIcon,
 };
 
 // Design elements

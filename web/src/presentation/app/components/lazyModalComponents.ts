@@ -30,6 +30,10 @@ export const SelectAssigneeModal = lazy(() =>
   import("@/presentation/features/tasks/modals").then((m) => ({ default: m.SelectAssigneeModal })),
 );
 
+export const SelectLabelsModal = lazy(() =>
+  import("@/presentation/features/labels/modals").then((m) => ({ default: m.SelectLabelsModal })),
+);
+
 export const SelectProjectModal = lazy(() =>
   import("@/presentation/features/tasks/modals").then((m) => ({ default: m.SelectProjectModal })),
 );

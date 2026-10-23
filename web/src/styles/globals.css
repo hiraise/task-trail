@@ -53,6 +53,24 @@
   --priority-high: rgba(200, 100, 0, 1);
   --priority-low: rgba(64, 111, 213, 1);
 
+  /* Label palette (ADR-0035): chip background and text, text contrast 5:1 and more */
+  --label-gray-bg: rgba(235, 235, 235, 1);
+  --label-gray-text: rgba(74, 74, 74, 1);
+  --label-red-bg: rgba(255, 224, 221, 1);
+  --label-red-text: rgba(179, 38, 30, 1);
+  --label-orange-bg: rgba(255, 230, 207, 1);
+  --label-orange-text: rgba(160, 74, 0, 1);
+  --label-yellow-bg: rgba(252, 240, 191, 1);
+  --label-yellow-text: rgba(115, 86, 0, 1);
+  --label-green-bg: rgba(217, 242, 223, 1);
+  --label-green-text: rgba(30, 112, 52, 1);
+  --label-teal-bg: rgba(211, 240, 238, 1);
+  --label-teal-text: rgba(15, 107, 100, 1);
+  --label-blue-bg: rgba(223, 235, 255, 1);
+  --label-blue-text: rgba(44, 89, 184, 1);
+  --label-purple-bg: rgba(236, 228, 255, 1);
+  --label-purple-text: rgba(106, 61, 192, 1);
+
   /* Borders */
   --border-critical: rgba(255, 50, 50, 1);
   --border-secondary: rgba(251, 251, 251, 1);
