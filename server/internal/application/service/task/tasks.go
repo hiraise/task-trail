@@ -11,27 +11,27 @@ import (
 	"task-trail/internal/domain/repository"
 )
 
-// ListProjectTasksService returns the project's tasks: any member can see them.
+// ListProjectTasksService returns the project's active or archived tasks: any member can see them.
 type ListProjectTasksService struct {
 	members repository.ProjectMemberRepository
 	tasks   repository.TaskRepository
 }
 
-func (s *ListProjectTasksService) Execute(ctx context.Context, userID, projectID string) ([]*entity.Task, error) {
+func (s *ListProjectTasksService) Execute(ctx context.Context, userID, projectID string, archived bool) ([]*entity.Task, error) {
 	member, err := s.members.Get(ctx, entity.ProjectID(projectID), entity.UserID(userID))
 	if err != nil {
 		return nil, err
 	}
-	return s.tasks.ListInProject(ctx, member.ProjectID)
+	return s.tasks.ListInProject(ctx, member.ProjectID, archived)
 }
 
-// ListAssignedTasksService returns the tasks assigned to the user in all their projects.
+// ListAssignedTasksService returns the active or archived tasks assigned to the user in all their projects.
 type ListAssignedTasksService struct {
 	tasks repository.TaskRepository
 }
 
-func (s *ListAssignedTasksService) Execute(ctx context.Context, userID string) ([]*entity.Task, error) {
-	return s.tasks.ListAssigned(ctx, entity.UserID(userID))
+func (s *ListAssignedTasksService) Execute(ctx context.Context, userID string, archived bool) ([]*entity.Task, error) {
+	return s.tasks.ListAssigned(ctx, entity.UserID(userID), archived)
 }
 
 // GetTaskService returns a task: any member of its project can see it.
@@ -51,7 +51,7 @@ func (s *GetTaskService) Execute(ctx context.Context, userID, taskID string) (*e
 	return task, nil
 }
 
-// CreateTaskService: any project member creates a task; the assignee is also a member.
+// CreateTaskService: any project member creates a task in an active project; the assignee is also a member.
 type CreateTaskService struct {
 	editor  *editor
 	factory *factory.TaskFactory
@@ -67,6 +67,9 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 		}
 		author, err := e.members.Get(ctx, project.ID, entity.UserID(userID))
 		if err != nil {
+			return err
+		}
+		if err := project.RequireActive(); err != nil {
 			return err
 		}
 		assignee, err := e.assignee(ctx, project.ID, data.AssigneeID)
@@ -131,7 +134,8 @@ func (s *ChangeAssigneeService) Execute(ctx context.Context, userID, taskID stri
 	})
 }
 
-// MoveTaskService moves a task to another project: a member of both projects moves it.
+// MoveTaskService moves a task to another project: a member of both projects moves it; both projects
+// are active (ADR-0027).
 // The task gets the next number of the new project and its key (ADR-0026); a move to the task's own
 // project changes nothing. The assignee stays if they are a member of the new project.
 type MoveTaskService struct {
@@ -146,6 +150,9 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 			return nil
 		}
 		if _, err := e.members.Get(ctx, target, entity.UserID(userID)); err != nil {
+			return err
+		}
+		if err := projects[target].RequireActive(); err != nil {
 			return err
 		}
 		var assignee *entity.ProjectMember
@@ -167,7 +174,43 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 	})
 }
 
-// DeleteTaskService soft-deletes a task (ADR-0001).
+// SetTaskArchivedService archives or restores a task: any member of its active project (ADR-0027).
+// The same value again changes nothing.
+type SetTaskArchivedService struct {
+	editor *editor
+}
+
+func (s *SetTaskArchivedService) Execute(ctx context.Context, userID, taskID string, archived bool) (*entity.Task, error) {
+	e := s.editor
+	var task *entity.Task
+	f := func(ctx context.Context) error {
+		t, _, projects, err := e.lock(ctx, taskID, userID)
+		if err != nil {
+			return err
+		}
+		if err := projects[t.ProjectID].RequireActive(); err != nil {
+			return err
+		}
+		now := e.clock.Now()
+		if archived {
+			t.Archive(now)
+		} else {
+			t.Restore(now)
+		}
+		if err := e.tasks.Update(ctx, t); err != nil {
+			return err
+		}
+		task = t
+		return nil
+	}
+	if err := e.txManager.DoWithTx(ctx, f); err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
+// DeleteTaskService soft-deletes a task (ADR-0001): an archived one too, but not in an archived
+// project (ADR-0027).
 type DeleteTaskService struct {
 	editor *editor
 }
@@ -175,8 +218,11 @@ type DeleteTaskService struct {
 func (s *DeleteTaskService) Execute(ctx context.Context, userID, taskID string) error {
 	e := s.editor
 	return e.txManager.DoWithTx(ctx, func(ctx context.Context) error {
-		task, _, _, err := e.lock(ctx, taskID, userID)
+		task, _, projects, err := e.lock(ctx, taskID, userID)
 		if err != nil {
+			return err
+		}
+		if err := projects[task.ProjectID].RequireActive(); err != nil {
 			return err
 		}
 		return e.tasks.SoftDelete(ctx, task.ID, e.clock.Now())

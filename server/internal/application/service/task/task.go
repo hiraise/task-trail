@@ -25,6 +25,7 @@ type TaskModule struct {
 	ChangeStatus   *ChangeStatusService
 	ChangeAssignee *ChangeAssigneeService
 	Move           *MoveTaskService
+	SetArchived    *SetTaskArchivedService
 	Delete         *DeleteTaskService
 }
 
@@ -49,6 +50,7 @@ func New(d Deps) *TaskModule {
 		ChangeStatus:   &ChangeStatusService{editor: e},
 		ChangeAssignee: &ChangeAssigneeService{editor: e},
 		Move:           &MoveTaskService{editor: e},
+		SetArchived:    &SetTaskArchivedService{editor: e},
 		Delete:         &DeleteTaskService{editor: e},
 	}
 }
@@ -106,6 +108,8 @@ func (e *editor) lockProjects(ctx context.Context, locked map[entity.ProjectID]*
 
 // edit is a change of a task by a member of its project: in a transaction under the project lock
 // (and the also projects) it applies apply and writes the task. apply gets the locked projects.
+// The task and its project must be active (ADR-0027); an also project is checked by apply, after
+// the membership in it: a non-member does not learn that it is archived.
 func (e *editor) edit(ctx context.Context, userID, taskID string, also []entity.ProjectID,
 	apply func(ctx context.Context, task *entity.Task, projects map[entity.ProjectID]*entity.Project, now time.Time) error,
 ) (*entity.Task, error) {
@@ -113,6 +117,12 @@ func (e *editor) edit(ctx context.Context, userID, taskID string, also []entity.
 	f := func(ctx context.Context) error {
 		t, _, projects, err := e.lock(ctx, taskID, userID, also...)
 		if err != nil {
+			return err
+		}
+		if err := projects[t.ProjectID].RequireActive(); err != nil {
+			return err
+		}
+		if err := t.RequireActive(); err != nil {
 			return err
 		}
 		if err := apply(ctx, t, projects, e.clock.Now()); err != nil {

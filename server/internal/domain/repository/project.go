@@ -9,7 +9,7 @@ import (
 // ProjectView — a project as a member sees it: with the task count and the member's role.
 type ProjectView struct {
 	Project *entity.Project
-	// TasksCount — the project's tasks, except deleted ones.
+	// TasksCount — the project's tasks, except deleted ones and those archived on their own (ADR-0027).
 	TasksCount int
 	Role       entity.ProjectRole
 }
@@ -23,9 +23,10 @@ type ProjectRepository interface {
 	GetForUpdate(ctx context.Context, id entity.ProjectID) (*entity.Project, error)
 	// GetView — the project as seen by member userID; a non-member gets ENTITY_NOT_FOUND.
 	GetView(ctx context.Context, id entity.ProjectID, userID entity.UserID) (*ProjectView, error)
-	// ListViews — projects where userID is a member, newest first.
-	ListViews(ctx context.Context, userID entity.UserID) ([]*ProjectView, error)
-	// Update writes the name, description, key and update time.
+	// ListViews — projects where userID is a member, newest first: archived ones if archived is true,
+	// otherwise active ones (ADR-0027).
+	ListViews(ctx context.Context, userID entity.UserID, archived bool) ([]*ProjectView, error)
+	// Update writes the name, description, key, archive time and update time.
 	// A key taken by another non-deleted project — PROJECT_KEY_TAKEN; Create answers the same.
 	Update(ctx context.Context, project *entity.Project) error
 	// NextTaskNumber hands out the project's next task number (ADR-0026). Called under the project

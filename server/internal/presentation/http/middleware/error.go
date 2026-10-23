@@ -42,6 +42,8 @@ var apiErrorFor = map[domain.ErrorCode]response.ApiError{
 	domain.AssigneeNotMember:  {Status: http.StatusUnprocessableEntity, Code: response.CodeAssigneeNotMember, Message: "the assignee is not a project member"},
 	domain.LastAdmin:          {Status: http.StatusConflict, Code: response.CodeLastAdmin, Message: "cannot remove the last service administrator"},
 	domain.ProjectKeyTaken:    {Status: http.StatusConflict, Code: response.CodeProjectKeyTaken, Message: "the project key is taken by another project"},
+	domain.TaskArchived:       {Status: http.StatusConflict, Code: response.CodeTaskArchived, Message: "the task is archived: restore it first"},
+	domain.ProjectArchived:    {Status: http.StatusConflict, Code: response.CodeProjectArchived, Message: "the project is archived: restore it first"},
 	domain.LinkInvalid:        {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "the link is invalid, used or expired"},
 	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "an account with this email already exists, sign in instead"},
 	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "mail is not configured"},

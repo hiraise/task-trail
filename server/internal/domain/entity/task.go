@@ -23,8 +23,13 @@ type Task struct {
 	AuthorID    UserID
 	// AssigneeID — the assignee, a member of the task's project, or nil.
 	AssigneeID *UserID
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	// ArchivedAt — when the task was archived; nil — the task is active (ADR-0027).
+	ArchivedAt *time.Time
+	// ProjectArchived — whether the task's project is archived; read-only, repositories fill it
+	// from projects.archived_at.
+	ProjectArchived bool
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 // NewTask — a new task in the default status with number number of project projectKey;
@@ -51,6 +56,34 @@ func NewTask(id TaskID, projectID ProjectID, projectKey ProjectKey, number int, 
 // Key — the task key, like DS-12.
 func (t *Task) Key() string {
 	return t.ProjectKey.TaskKey(t.Number)
+}
+
+// Archive puts the task into the archive: it becomes read-only until restored (ADR-0027).
+// An archived task stays as it is.
+func (t *Task) Archive(now time.Time) {
+	if t.ArchivedAt != nil {
+		return
+	}
+	t.ArchivedAt = &now
+	t.UpdatedAt = now
+}
+
+// Restore returns the task from the archive; an active task stays as it is.
+func (t *Task) Restore(now time.Time) {
+	if t.ArchivedAt == nil {
+		return
+	}
+	t.ArchivedAt = nil
+	t.UpdatedAt = now
+}
+
+// RequireActive: an archived task is changed only by restoring or deleting it — TASK_ARCHIVED.
+// The task's project is checked separately, with Project.RequireActive.
+func (t *Task) RequireActive() error {
+	if t.ArchivedAt != nil {
+		return domain.ErrTaskArchived("taskID", t.ID)
+	}
+	return nil
 }
 
 func (t *Task) Rename(name string, now time.Time) {

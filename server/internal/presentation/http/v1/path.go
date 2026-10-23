@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 
 	"task-trail/internal/domain"
+	"task-trail/internal/presentation/http/v1/request"
 )
 
 // pathID is the resource ID from the path. Not a UUID — 404 NOT_FOUND, as for a missing resource
@@ -28,6 +29,19 @@ func queryID(c *gin.Context, name string) (*string, error) {
 		return nil, domain.ErrEntityNotFound(0, nil, name, value, "reason", "not a UUID")
 	}
 	return &value, nil
+}
+
+// queryBool is a boolean query parameter: no parameter — false, true or false — the value,
+// anything else — VALIDATION_FAILED with details.<name>.
+func queryBool(c *gin.Context, name string) (bool, error) {
+	value, ok := c.GetQuery(name)
+	switch {
+	case !ok || value == "false":
+		return false, nil
+	case value == "true":
+		return true, nil
+	}
+	return false, domain.ErrInputValidation(0, request.FieldErrors{name: "нужно true или false"})
 }
 
 func isUUID(value string) bool {

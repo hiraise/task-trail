@@ -8,17 +8,20 @@ import (
 
 // Task is a task (Task in the contract).
 type Task struct {
-	ID          string    `json:"id"`
-	ProjectID   string    `json:"projectId"`
-	Number      int       `json:"number"`
-	Key         string    `json:"key"`
-	Name        string    `json:"name"`
-	Description *string   `json:"description"`
-	StatusID    string    `json:"statusId"`
-	AuthorID    string    `json:"authorId"`
-	AssigneeID  *string   `json:"assigneeId"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID          string  `json:"id"`
+	ProjectID   string  `json:"projectId"`
+	Number      int     `json:"number"`
+	Key         string  `json:"key"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	StatusID    string  `json:"statusId"`
+	AuthorID    string  `json:"authorId"`
+	AssigneeID  *string `json:"assigneeId"`
+	// ArchivedAt and ProjectArchived — the task's own archive and its project's (ADR-0027)
+	ArchivedAt      *time.Time `json:"archivedAt"`
+	ProjectArchived bool       `json:"projectArchived"`
+	CreatedAt       time.Time  `json:"createdAt"`
+	UpdatedAt       time.Time  `json:"updatedAt"`
 }
 
 func NewTask(t *entity.Task) Task {
@@ -29,17 +32,19 @@ func NewTask(t *entity.Task) Task {
 	}
 	// Time is in UTC (ADR-0018): the database returns it in the server's time zone
 	return Task{
-		ID:          string(t.ID),
-		ProjectID:   string(t.ProjectID),
-		Number:      t.Number,
-		Key:         t.Key(),
-		Name:        t.Name,
-		Description: t.Description,
-		StatusID:    string(t.Status),
-		AuthorID:    string(t.AuthorID),
-		AssigneeID:  assignee,
-		CreatedAt:   t.CreatedAt.UTC(),
-		UpdatedAt:   t.UpdatedAt.UTC(),
+		ID:              string(t.ID),
+		ProjectID:       string(t.ProjectID),
+		Number:          t.Number,
+		Key:             t.Key(),
+		Name:            t.Name,
+		Description:     t.Description,
+		StatusID:        string(t.Status),
+		AuthorID:        string(t.AuthorID),
+		AssigneeID:      assignee,
+		ArchivedAt:      utc(t.ArchivedAt),
+		ProjectArchived: t.ProjectArchived,
+		CreatedAt:       t.CreatedAt.UTC(),
+		UpdatedAt:       t.UpdatedAt.UTC(),
 	}
 }
 
@@ -65,4 +70,13 @@ func NewTaskStatuses(statuses []entity.TaskStatusInfo) []TaskStatus {
 		out[i] = TaskStatus{ID: string(s.ID), Name: s.Name, IsDefault: s.IsDefault, IsResolved: s.IsResolved}
 	}
 	return out
+}
+
+// utc is an optional time in UTC (ADR-0018).
+func utc(t *time.Time) *time.Time {
+	if t == nil {
+		return nil
+	}
+	u := t.UTC()
+	return &u
 }

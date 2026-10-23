@@ -26,6 +26,10 @@ const (
 	AssigneeNotMember ErrorCode = "ASSIGNEE_NOT_MEMBER"
 	// The project key is taken by another non-deleted project (ADR-0026)
 	ProjectKeyTaken ErrorCode = "PROJECT_KEY_TAKEN"
+	// The task is archived: only restoring and deleting are allowed (ADR-0027)
+	TaskArchived ErrorCode = "TASK_ARCHIVED"
+	// The project is archived: it, its members and tasks do not change (ADR-0027)
+	ProjectArchived ErrorCode = "PROJECT_ARCHIVED"
 	// The last service administrator cannot be removed (ADR-0014)
 	LastAdmin ErrorCode = "LAST_ADMIN"
 
@@ -150,6 +154,14 @@ func ErrAssigneeNotMember(data ...any) *DomainError {
 
 func ErrProjectKeyTaken(sourceErr error, data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, ProjectKeyTaken, sourceErr, data...)
+}
+
+func ErrTaskArchived(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, TaskArchived, nil, data...)
+}
+
+func ErrProjectArchived(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, ProjectArchived, nil, data...)
 }
 
 func ErrLastAdmin(data ...any) *DomainError {

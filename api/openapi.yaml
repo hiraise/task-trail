@@ -366,7 +366,11 @@ paths:
       tags: [users]
       operationId: listCurrentUserTasks
       summary: Tasks assigned to the current user
-      description: In all of the user's projects except deleted ones; newest first.
+      description: |
+        In all of the user's projects except deleted ones; newest first. Active — neither the task nor its
+        project is archived; with `archived=true` — the task or its project is archived (ADR-0027).
+      parameters:
+        - $ref: "#/components/parameters/Archived"
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "200":
@@ -377,6 +381,7 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/Task" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/users/{userId}:
     parameters:
@@ -439,7 +444,10 @@ paths:
       tags: [projects]
       operationId: listProjects
       summary: Projects the user is a member of
-      description: Any signed-in user. Newest first.
+      description: |
+        Any signed-in user. Newest first. Active projects; with `archived=true` — archived ones (ADR-0027).
+      parameters:
+        - $ref: "#/components/parameters/Archived"
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "200":
@@ -450,6 +458,7 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/Project" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
     post:
       tags: [projects]
       operationId: createProject
@@ -523,7 +532,7 @@ paths:
       summary: Change the name, description or key
       description: |
         Role: `owner` or `admin`; the key — only `owner`. A new key changes the keys of all project
-        tasks, numbers stay (ADR-0026).
+        tasks, numbers stay (ADR-0026). An archived project does not change (ADR-0027).
       requestBody:
         required: true
         content:
@@ -539,13 +548,17 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
-        "409": { $ref: "#/components/responses/ProjectKeyTaken" }
+        "409":
+          description: "`PROJECT_KEY_TAKEN` — the key is taken by another project; `PROJECT_ARCHIVED`"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
     delete:
       tags: [projects]
       operationId: deleteProject
       summary: Delete a project
-      description: "Role: `owner`. Soft delete (ADR-0001)."
+      description: "Role: `owner`. Soft delete (ADR-0001); an archived project too."
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "204":
@@ -553,6 +566,34 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/projects/{projectId}/archived:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    patch:
+      tags: [projects]
+      operationId: setProjectArchived
+      summary: Archive or restore a project
+      description: |
+        Role: `owner` (ADR-0027). An archived project, its members and tasks are read-only; it can be
+        restored, deleted and left. The tasks keep their own archive flags. The current value again
+        changes nothing.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetArchivedRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Project archived or restored
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProjectDetails" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/projects/{projectId}/members:
     parameters:
@@ -578,7 +619,7 @@ paths:
       operationId: addProjectMembers
       summary: Invite to a project by email
       description: |
-        Role: `owner` or `admin`. A registered email becomes a member right away
+        Role: `owner` or `admin`; the project is not archived. A registered email becomes a member right away
         with the `member` role, an unregistered one gets an invitation (ADR-0016). The result is
         per email in request order. Emails are sent in parallel, at most 10 seconds
         each, so the response may take up to 15 seconds: the client timeout is at least 20 seconds.
@@ -599,6 +640,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/ProjectArchived" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/projects/{projectId}/members/{userId}:
@@ -609,7 +651,7 @@ paths:
       tags: [projects]
       operationId: changeProjectMemberRole
       summary: Change a member's role
-      description: "Role: `owner`. Assigns `admin` or `member`; the owner role cannot be transferred."
+      description: "Role: `owner`. Assigns `admin` or `member`; the owner role cannot be transferred. Not in an archived project."
       requestBody:
         required: true
         content:
@@ -625,6 +667,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/ProjectArchived" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
     delete:
       tags: [projects]
@@ -632,7 +675,8 @@ paths:
       summary: Remove a member
       description: |
         Role: `owner` removes anyone except themselves; `admin` — only members with the `member` role.
-        The removed member's tasks in this project are left without an assignee.
+        The removed member's tasks in this project, archived ones included, are left without an assignee.
+        Not in an archived project.
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "204":
@@ -640,6 +684,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/ProjectArchived" }
 
   /v1/projects/{projectId}/leave:
     parameters:
@@ -648,7 +693,9 @@ paths:
       tags: [projects]
       operationId: leaveProject
       summary: Leave a project
-      description: "Role: `admin` or `member`. The leaving user's tasks in this project are left without an assignee."
+      description: |
+        Role: `admin` or `member`; an archived project too. The leaving user's tasks in this project,
+        archived ones included, are left without an assignee (ADR-0027).
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "204":
@@ -668,7 +715,11 @@ paths:
       tags: [tasks]
       operationId: listProjectTasks
       summary: Project tasks
-      description: "Role: any in the project. Newest first."
+      description: |
+        Role: any in the project. Newest first. By the task's own archive flag: active ones; with
+        `archived=true` — archived ones. An archived project has both lists, read-only (ADR-0027).
+      parameters:
+        - $ref: "#/components/parameters/Archived"
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "200":
@@ -679,6 +730,7 @@ paths:
                 type: array
                 items: { $ref: "#/components/schemas/Task" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
         "404": { $ref: "#/components/responses/NotFound" }
 
   /v1/task-statuses:
@@ -703,7 +755,7 @@ paths:
       tags: [tasks]
       operationId: createTask
       summary: Create a task
-      description: "Role: any in the project. Status — `open`, author — the current user."
+      description: "Role: any in the project; the project is not archived. Status — `open`, author — the current user."
       requestBody:
         required: true
         content:
@@ -718,6 +770,7 @@ paths:
               schema: { $ref: "#/components/schemas/Task" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/ProjectArchived" }
         "422": { $ref: "#/components/responses/AssigneeInvalid" }
 
   /v1/tasks/{taskId}:
@@ -741,7 +794,7 @@ paths:
       tags: [tasks]
       operationId: updateTask
       summary: Change the title or description
-      description: "Role: any in the task's project."
+      description: "Role: any in the task's project; neither the task nor its project is archived."
       requestBody:
         required: true
         content:
@@ -756,18 +809,20 @@ paths:
               schema: { $ref: "#/components/schemas/Task" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
     delete:
       tags: [tasks]
       operationId: deleteTask
       summary: Delete a task
-      description: "Role: any in the task's project. Soft delete."
+      description: "Role: any in the task's project. Soft delete; an archived task too, but not in an archived project."
       responses:
         "500": { $ref: "#/components/responses/Internal" }
         "204":
           description: Task deleted
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/ProjectArchived" }
 
   /v1/tasks/{taskId}/status:
     parameters:
@@ -776,7 +831,7 @@ paths:
       tags: [tasks]
       operationId: changeTaskStatus
       summary: Change the status
-      description: "Role: any in the task's project."
+      description: "Role: any in the task's project; neither the task nor its project is archived."
       requestBody:
         required: true
         content:
@@ -791,6 +846,7 @@ paths:
               schema: { $ref: "#/components/schemas/Task" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/tasks/{taskId}/assignee:
@@ -800,7 +856,9 @@ paths:
       tags: [tasks]
       operationId: changeTaskAssignee
       summary: Change the assignee
-      description: "Role: any in the task's project. The assignee is a project member; `assigneeId: null` removes the assignee."
+      description: |
+        Role: any in the task's project; neither the task nor its project is archived. The assignee is
+        a project member; `assigneeId: null` removes the assignee.
       requestBody:
         required: true
         content:
@@ -815,6 +873,7 @@ paths:
               schema: { $ref: "#/components/schemas/Task" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
         "422": { $ref: "#/components/responses/AssigneeInvalid" }
 
   /v1/tasks/{taskId}/project:
@@ -825,7 +884,8 @@ paths:
       operationId: moveTask
       summary: Move a task to another project
       description: |
-        Role: any in both projects. The task gets the next number of the new project and its key;
+        Role: any in both projects; neither project nor the task is archived. The task gets the next
+        number of the new project and its key;
         a move to the task's own project changes nothing (ADR-0026). If the assignee is not a member
         of the new project, the task is left without an assignee. The status is kept.
       requestBody:
@@ -842,6 +902,34 @@ paths:
               schema: { $ref: "#/components/schemas/Task" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/tasks/{taskId}/archived:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    patch:
+      tags: [tasks]
+      operationId: setTaskArchived
+      summary: Archive or restore a task
+      description: |
+        Role: any in the task's project; the project is not archived (ADR-0027). An archived task is
+        read-only: it can only be restored or deleted. The current value again changes nothing.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetArchivedRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Task archived or restored
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/ProjectArchived" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/admin/settings:
@@ -1054,6 +1142,12 @@ components:
       in: path
       required: true
       schema: { $ref: "#/components/schemas/Uuid" }
+    Archived:
+      name: archived
+      in: query
+      required: false
+      description: "`true` — archived items, `false` or absent — active ones (ADR-0027); another value — `422`"
+      schema: { type: boolean, default: false }
 
   responses:
     Unauthenticated:
@@ -1093,6 +1187,16 @@ components:
           schema: { $ref: "#/components/schemas/ApiError" }
     ProjectKeyTaken:
       description: "`PROJECT_KEY_TAKEN` — the key is taken by another project"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }
+    ProjectArchived:
+      description: "`PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }
+    TaskReadOnly:
+      description: "`TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)"
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ApiError" }
@@ -1149,6 +1253,8 @@ components:
         - OWNER_CANNOT_LEAVE
         - LAST_ADMIN
         - PROJECT_KEY_TAKEN
+        - TASK_ARCHIVED
+        - PROJECT_ARCHIVED
         - FILE_TOO_LARGE
         - FILE_TYPE_NOT_ALLOWED
         - MAIL_DISABLED
@@ -1289,14 +1395,22 @@ components:
         (ADR-0026). The server trims and upper-cases it before validation and returns it upper-case.
     Project:
       type: object
-      required: [id, name, description, key, createdAt, tasksCount]
+      required: [id, name, description, key, archivedAt, createdAt, updatedAt, tasksCount]
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         name: { type: string, minLength: 1, maxLength: 254 }
         description: { type: [string, "null"] }
         key: { $ref: "#/components/schemas/ProjectKey" }
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+          description: When the project was archived; `null` — active (ADR-0027)
         createdAt: { $ref: "#/components/schemas/DateTime" }
-        tasksCount: { type: integer, minimum: 0 }
+        updatedAt: { $ref: "#/components/schemas/DateTime" }
+        tasksCount:
+          type: integer
+          minimum: 0
+          description: Tasks not archived on their own (ADR-0027)
     ProjectDetails:
       allOf:
         - $ref: "#/components/schemas/Project"
@@ -1393,7 +1507,7 @@ components:
           description: The task is done — only for `done`
     Task:
       type: object
-      required: [id, projectId, number, key, name, description, statusId, authorId, assigneeId, createdAt, updatedAt]
+      required: [id, projectId, number, key, name, description, statusId, authorId, assigneeId, archivedAt, projectArchived, createdAt, updatedAt]
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         projectId: { $ref: "#/components/schemas/Uuid" }
@@ -1411,6 +1525,13 @@ components:
         assigneeId:
           type: [string, "null"]
           format: uuid
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+          description: When the task was archived on its own; `null` — not archived (ADR-0027)
+        projectArchived:
+          type: boolean
+          description: The task's project is archived; the task is read-only then too
         createdAt: { $ref: "#/components/schemas/DateTime" }
         updatedAt: { $ref: "#/components/schemas/DateTime" }
     CreateTaskRequest:
@@ -1439,6 +1560,13 @@ components:
       required: [projectId]
       properties:
         projectId: { $ref: "#/components/schemas/Uuid" }
+    SetArchivedRequest:
+      type: object
+      required: [archived]
+      properties:
+        archived:
+          type: boolean
+          description: "`true` — archive, `false` — restore (ADR-0027)"
     ChangeTaskAssigneeRequest:
       type: object
       required: [assigneeId]
