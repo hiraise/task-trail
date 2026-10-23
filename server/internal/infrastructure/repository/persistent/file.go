@@ -24,18 +24,19 @@ func (r *PGFileRepository) Create(ctx context.Context, f *entity.File) error {
 		"original_name": f.OriginalName,
 		"mime_type":     f.MimeType,
 		"owner_id":      f.OwnerID,
+		"size":          f.Size,
 		"created_at":    f.CreatedAt,
 	})
 }
 
 func (r *PGFileRepository) Get(ctx context.Context, id entity.FileID) (*entity.File, error) {
 	query := `
-		SELECT original_name, mime_type, owner_id, created_at
+		SELECT original_name, mime_type, owner_id, size, created_at
 		FROM files
 		WHERE id = $1 AND soft_deleted_at IS NULL AND deleted_at IS NULL`
 	f := &entity.File{ID: id}
 	var ownerID string
-	if err := r.getDb(ctx).QueryRow(ctx, query, id).Scan(&f.OriginalName, &f.MimeType, &ownerID, &f.CreatedAt); err != nil {
+	if err := r.getDb(ctx).QueryRow(ctx, query, id).Scan(&f.OriginalName, &f.MimeType, &ownerID, &f.Size, &f.CreatedAt); err != nil {
 		return nil, r.handleError(err)
 	}
 	f.OwnerID = entity.UserID(ownerID)

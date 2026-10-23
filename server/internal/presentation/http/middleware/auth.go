@@ -31,3 +31,21 @@ func NewAuth(
 		m.SetUserID(c, userID)
 	}
 }
+
+// NewOptionalAuth signs the request in if it has a valid access token and lets a guest through otherwise:
+// an avatar is served to everyone, an attachment only to members (ADR-0013, ADR-0037). An invalid cookie
+// is not deleted: the web refreshes the session when an attachment answers 401.
+func NewOptionalAuth(
+	ts service.AccessTokenService,
+	m *contextmanager.GinContextManager,
+) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		at, err := c.Cookie(m.ATName)
+		if err != nil {
+			return
+		}
+		if userID, err := ts.VerifyAccessToken(at); err == nil {
+			m.SetUserID(c, userID)
+		}
+	}
+}

@@ -69,3 +69,13 @@ func TestReplaceAvatar(t *testing.T) {
 		t.Fatalf("previous %v, user %+v", previous, u)
 	}
 }
+
+// An attachment is any file up to 25 MB inclusive (ADR-0037).
+func TestCheckAttachment(t *testing.T) {
+	if err := entity.CheckAttachment(entity.MaxAttachmentSize); err != nil {
+		t.Errorf("exactly 25 MB: %v", err)
+	}
+	if err := entity.CheckAttachment(entity.MaxAttachmentSize + 1); !domain.HasCode(err, domain.FileTooLarge) {
+		t.Errorf("25 MB + 1 byte: %v, want %s", err, domain.FileTooLarge)
+	}
+}

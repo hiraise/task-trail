@@ -402,6 +402,31 @@ export type TaskComment = {
     editedAt: string | null;
 };
 
+export type Attachment = {
+    /**
+     * File ID for `GET /v1/files/{fileId}`
+     */
+    id: Uuid;
+    taskId: Uuid;
+    /**
+     * The original file name without a path
+     */
+    name: string;
+    /**
+     * Detected from the content, may carry parameters like `charset`
+     */
+    mimeType: string;
+    /**
+     * Bytes
+     */
+    size: number;
+    /**
+     * The uploader; shown even if they have left the project
+     */
+    author: User;
+    createdAt: DateTime;
+};
+
 export type CreateCommentRequest = {
     text: CommentText;
 };
@@ -1113,6 +1138,10 @@ export type GetFileData = {
 };
 
 export type GetFileErrors = {
+    /**
+     * `UNAUTHENTICATED` — an attachment without a valid session
+     */
+    401: ApiError;
     /**
      * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
@@ -2607,6 +2636,130 @@ export type ListTaskEventsResponses = {
 };
 
 export type ListTaskEventsResponse = ListTaskEventsResponses[keyof ListTaskEventsResponses];
+
+export type ListTaskAttachmentsData = {
+    body?: never;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/attachments';
+};
+
+export type ListTaskAttachmentsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ListTaskAttachmentsError = ListTaskAttachmentsErrors[keyof ListTaskAttachmentsErrors];
+
+export type ListTaskAttachmentsResponses = {
+    /**
+     * Attachments
+     */
+    200: Array<Attachment>;
+};
+
+export type ListTaskAttachmentsResponse = ListTaskAttachmentsResponses[keyof ListTaskAttachmentsResponses];
+
+export type UploadTaskAttachmentData = {
+    body: {
+        file: Blob | File;
+    };
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/attachments';
+};
+
+export type UploadTaskAttachmentErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `FILE_TOO_LARGE` or `VALIDATION_FAILED`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type UploadTaskAttachmentError = UploadTaskAttachmentErrors[keyof UploadTaskAttachmentErrors];
+
+export type UploadTaskAttachmentResponses = {
+    /**
+     * File attached
+     */
+    201: Attachment;
+};
+
+export type UploadTaskAttachmentResponse = UploadTaskAttachmentResponses[keyof UploadTaskAttachmentResponses];
+
+export type DeleteTaskAttachmentData = {
+    body?: never;
+    path: {
+        taskId: Uuid;
+        fileId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/attachments/{fileId}';
+};
+
+export type DeleteTaskAttachmentErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type DeleteTaskAttachmentError = DeleteTaskAttachmentErrors[keyof DeleteTaskAttachmentErrors];
+
+export type DeleteTaskAttachmentResponses = {
+    /**
+     * Attachment deleted
+     */
+    204: void;
+};
+
+export type DeleteTaskAttachmentResponse = DeleteTaskAttachmentResponses[keyof DeleteTaskAttachmentResponses];
 
 export type ListBoardsData = {
     body?: never;

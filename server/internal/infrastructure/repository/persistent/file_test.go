@@ -25,8 +25,8 @@ func TestFileRepository(t *testing.T) {
 	ctx := context.Background()
 	owner := createUser(t, pool, "ivan@example.com", "Иван")
 
-	avatar := f.New(`C:\fakepath\Фото.png`, "image/png", owner.ID)
-	replaced := f.New("old.jpg", "image/jpeg", owner.ID)
+	avatar := f.New(`C:\fakepath\Фото.png`, "image/png", owner.ID, 5)
+	replaced := f.New("old.jpg", "image/jpeg", owner.ID, 3)
 	for _, file := range []*entity.File{avatar, replaced} {
 		if err := repo.Create(ctx, file); err != nil {
 			t.Fatal(err)
@@ -36,7 +36,7 @@ func TestFileRepository(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.ID != avatar.ID || got.OriginalName != "Фото.png" || got.MimeType != "image/png" || got.OwnerID != owner.ID || !got.CreatedAt.Equal(now) {
+	if got.ID != avatar.ID || got.OriginalName != "Фото.png" || got.MimeType != "image/png" || got.OwnerID != owner.ID || got.Size != 5 || !got.CreatedAt.Equal(now) {
 		t.Fatalf("read %+v", got)
 	}
 	_, err = repo.Get(ctx, "5f0c1b52-8d4e-4a8b-9c7e-2b1d3f4a5c6e")

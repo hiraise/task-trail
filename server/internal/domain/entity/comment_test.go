@@ -50,3 +50,19 @@ func TestCommentCheckDelete(t *testing.T) {
 		}
 	}
 }
+
+func TestAttachmentCheckDelete(t *testing.T) {
+	for _, role := range roles {
+		// member(role) has the user ID of the role's name
+		a := &entity.Attachment{TaskID: "task", File: &entity.File{ID: "f", OwnerID: entity.UserID(role)}}
+		if !allowed(t, a.CheckDelete(member(role))) {
+			t.Errorf("%s cannot delete their own attachment", role)
+		}
+	}
+	other := &entity.Attachment{TaskID: "task", File: &entity.File{ID: "f2", OwnerID: "someone"}}
+	for role, want := range map[entity.ProjectRole]bool{entity.RoleOwner: true, entity.RoleAdmin: true, entity.RoleMember: false} {
+		if got := allowed(t, other.CheckDelete(member(role))); got != want {
+			t.Errorf("%s deletes another's attachment: %v, want %v", role, got, want)
+		}
+	}
+}

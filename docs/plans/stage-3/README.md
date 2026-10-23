@@ -37,8 +37,8 @@ approved before step 2 — the first web step; server steps 1 and 3 may be done 
 | 7 | Project labels management — web | [07-project-labels-web.md](07-project-labels-web.md) | done |
 | 8 | Subtasks — server | [08-subtasks-server.md](08-subtasks-server.md) | done |
 | 9 | Subtasks — web | [09-subtasks-web.md](09-subtasks-web.md) | done |
-| 10 | Attachments — server | [10-attachments-server.md](10-attachments-server.md) | next |
-| 11 | Attachments — web | [11-attachments-web.md](11-attachments-web.md) | |
+| 10 | Attachments — server | [10-attachments-server.md](10-attachments-server.md) | done |
+| 11 | Attachments — web | [11-attachments-web.md](11-attachments-web.md) | next |
 | 12 | Notifications — server | [12-notifications-server.md](12-notifications-server.md) | |
 | 13 | Notification emails and due date reminders — server | [13-notification-emails-server.md](13-notification-emails-server.md) | |
 | 14 | Notifications — web | [14-notifications-web.md](14-notifications-web.md) | |

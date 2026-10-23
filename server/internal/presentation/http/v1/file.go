@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"task-trail/internal/application/service/file"
+	"task-trail/internal/pkg/contextmanager"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,16 +13,22 @@ import (
 // fileRoutes serve file contents: GET /v1/files/{fileId} in the contract.
 type fileRoutes struct {
 	services *file.FileModule
+	cm       *contextmanager.GinContextManager
 }
 
-// get serves a file without sign-in: for now all files are avatars (ADR-0013).
+// get serves an avatar to anyone (ADR-0013) and an attachment to members of its task's project (ADR-0037):
+// the session is optional here.
 func (r *fileRoutes) get(c *gin.Context) {
 	fileID, err := pathID(c, "fileId")
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	content, err := r.services.Download.Execute(c, fileID)
+	viewerID, err := r.cm.GetUserID(c)
+	if err != nil {
+		viewerID = ""
+	}
+	content, err := r.services.Download.Execute(c, viewerID, fileID)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -45,7 +52,7 @@ func (r *fileRoutes) get(c *gin.Context) {
 	})
 }
 
-func NewFileRouter(router *gin.RouterGroup, services *file.FileModule) {
-	r := &fileRoutes{services: services}
-	router.GET("/files/:fileId", r.get)
+func NewFileRouter(router *gin.RouterGroup, services *file.FileModule, optionalAuthMW gin.HandlerFunc, cm *contextmanager.GinContextManager) {
+	r := &fileRoutes{services: services, cm: cm}
+	router.GET("/files/:fileId", optionalAuthMW, r.get)
 }

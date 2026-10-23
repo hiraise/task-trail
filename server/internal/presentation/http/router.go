@@ -11,9 +11,10 @@ func NewRouter(
 	app *gin.Engine,
 	contextmanager *contextmanager.GinContextManager,
 	authMW gin.HandlerFunc,
+	optionalAuthMW gin.HandlerFunc,
 	adminMW gin.HandlerFunc,
 	modules v1.Modules,
 ) {
-	v1.NewRouter(app, contextmanager, authMW, adminMW, modules)
+	v1.NewRouter(app, contextmanager, authMW, optionalAuthMW, adminMW, modules)
 	newDocsRouter(app, authMW, adminMW)
 }

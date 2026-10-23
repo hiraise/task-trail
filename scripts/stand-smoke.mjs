@@ -5,7 +5,8 @@
 // edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027),
 // changes its priority (ADR-0033) and due date (ADR-0034), tags it with a label the invitee creates and the
 // owner deletes (ADR-0035), adds and deletes a subtask (ADR-0036), finds it by key and by part of its
-// name (ADR-0030), uploads an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
+// name (ADR-0030), attaches, downloads and deletes a file (ADR-0037), uploads an avatar of the maximum
+// size through the proxy. At the end the project is deleted; the invitee stays
 // a user of the stack. Run: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
 
@@ -195,6 +196,21 @@ try {
   await call(member, "DELETE", `/v1/boards/${board?.id}/leave`, 204);
   await call(member, "GET", `/v1/boards/${board?.id}`, 404);
   await call(admin, "DELETE", `/v1/boards/${board?.id}`, 204);
+
+  // Attachments (ADR-0037): the member attaches a text file, lists it, downloads it with the session
+  // (a guest gets 401) and deletes it
+  const notesText = "smoke attachment";
+  const notesForm = new FormData();
+  notesForm.append("file", new Blob([notesText], { type: "text/plain" }), "notes.txt");
+  const attached = await call(member, "POST", `/v1/tasks/${task?.id}/attachments`, 201, { body: notesForm });
+  check(attached?.name === "notes.txt" && attached?.size === notesText.length, `the task got an attachment → ${attached?.name}, ${attached?.size} bytes`);
+  const attachments = await call(member, "GET", `/v1/tasks/${task?.id}/attachments`, 200);
+  check(attachments?.length === 1 && attachments[0]?.id === attached?.id, "the attachment is in the task's attachments");
+  const downloaded = await member.request("GET", `/v1/files/${attached?.id}`);
+  check(downloaded.ok && downloaded.text === notesText, `the member downloads the attachment → ${downloaded.status}`);
+  const asGuest = await fetch(`${WEB}/api/v1/files/${attached?.id}`);
+  check(asGuest.status === 401, `a guest cannot download the attachment → ${asGuest.status}`);
+  await call(member, "DELETE", `/v1/tasks/${task?.id}/attachments/${attached?.id}`, 204);
 
   const avatar = new Uint8Array(AVATAR_SIZE);
   avatar.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);

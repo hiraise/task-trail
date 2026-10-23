@@ -32,13 +32,15 @@ func NewRouter(
 	router *gin.Engine,
 	cm *contextmanager.GinContextManager,
 	authMW gin.HandlerFunc,
+	// optionalAuthMW signs in a request with a valid session and lets a guest through
+	optionalAuthMW gin.HandlerFunc,
 	adminMW gin.HandlerFunc,
 	modules Modules,
 ) {
 	g := router.Group("/v1")
 	NewAuthRouter(g, modules.Access, authMW, cm)
 	NewUserRouter(g, modules.User, authMW, cm)
-	NewFileRouter(g, modules.File)
+	NewFileRouter(g, modules.File, optionalAuthMW, cm)
 	NewProjectRouter(g, modules.Project, authMW, cm)
 	NewTaskRouter(g, modules.Task, authMW, cm)
 	NewBoardRouter(g, modules.Board, authMW, cm)

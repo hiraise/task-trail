@@ -37,6 +37,10 @@ type TaskModule struct {
 	EditComment    *EditCommentService
 	DeleteComment  *DeleteCommentService
 	ListEvents     *ListEventsService
+	// ListAttachments, UploadAttachment and DeleteAttachment — files of tasks (ADR-0037).
+	ListAttachments  *ListAttachmentsService
+	UploadAttachment *UploadAttachmentService
+	DeleteAttachment *DeleteAttachmentService
 }
 
 // Deps are the dependencies of the task module.
@@ -55,6 +59,11 @@ type Deps struct {
 	EventFactory   *factory.TaskEventFactory
 	// LabelRepo — labels of tasks (ADR-0035).
 	LabelRepo repository.LabelRepository
+	// AttachmentRepo, FileRepo, FileFactory and FileStorage — attachments of tasks (ADR-0037).
+	AttachmentRepo repository.AttachmentRepository
+	FileRepo       repository.FileRepository
+	FileFactory    *factory.FileFactory
+	FileStorage    service.FileStorage
 }
 
 func New(d Deps) *TaskModule {
@@ -64,26 +73,31 @@ func New(d Deps) *TaskModule {
 	}
 	feed := &feed{members: d.MemberRepo, tasks: d.TaskRepo, users: d.UserRepo}
 	return &TaskModule{
-		ListInProject:  &ListProjectTasksService{members: d.MemberRepo, tasks: d.TaskRepo},
-		ListAssigned:   &ListAssignedTasksService{tasks: d.TaskRepo},
-		Get:            &GetTaskService{members: d.MemberRepo, tasks: d.TaskRepo},
-		Create:         &CreateTaskService{editor: e, factory: d.TaskFactory},
-		Update:         &UpdateTaskService{editor: e},
-		ChangeStatus:   &ChangeStatusService{editor: e},
-		ChangePriority: &ChangePriorityService{editor: e},
-		ChangeDueDate:  &ChangeDueDateService{editor: e},
-		ChangeAssignee: &ChangeAssigneeService{editor: e},
-		ChangeParent:   &ChangeParentService{editor: e},
-		ListSubtasks:   &ListSubtasksService{feed: feed},
-		Move:           &MoveTaskService{editor: e},
-		SetLabels:      &SetLabelsService{editor: e},
-		SetArchived:    &SetTaskArchivedService{editor: e},
-		Delete:         &DeleteTaskService{editor: e},
-		ListComments:   &ListCommentsService{feed: feed, comments: d.CommentRepo},
-		CreateComment:  &CreateCommentService{editor: e, feed: feed, comments: d.CommentRepo, factory: d.CommentFactory},
-		EditComment:    &EditCommentService{editor: e, feed: feed, comments: d.CommentRepo},
-		DeleteComment:  &DeleteCommentService{editor: e, comments: d.CommentRepo},
-		ListEvents:     &ListEventsService{feed: feed, events: d.EventRepo},
+		ListInProject:   &ListProjectTasksService{members: d.MemberRepo, tasks: d.TaskRepo},
+		ListAssigned:    &ListAssignedTasksService{tasks: d.TaskRepo},
+		Get:             &GetTaskService{members: d.MemberRepo, tasks: d.TaskRepo},
+		Create:          &CreateTaskService{editor: e, factory: d.TaskFactory},
+		Update:          &UpdateTaskService{editor: e},
+		ChangeStatus:    &ChangeStatusService{editor: e},
+		ChangePriority:  &ChangePriorityService{editor: e},
+		ChangeDueDate:   &ChangeDueDateService{editor: e},
+		ChangeAssignee:  &ChangeAssigneeService{editor: e},
+		ChangeParent:    &ChangeParentService{editor: e},
+		ListSubtasks:    &ListSubtasksService{feed: feed},
+		Move:            &MoveTaskService{editor: e},
+		SetLabels:       &SetLabelsService{editor: e},
+		SetArchived:     &SetTaskArchivedService{editor: e},
+		Delete:          &DeleteTaskService{editor: e},
+		ListComments:    &ListCommentsService{feed: feed, comments: d.CommentRepo},
+		CreateComment:   &CreateCommentService{editor: e, feed: feed, comments: d.CommentRepo, factory: d.CommentFactory},
+		EditComment:     &EditCommentService{editor: e, feed: feed, comments: d.CommentRepo},
+		DeleteComment:   &DeleteCommentService{editor: e, comments: d.CommentRepo},
+		ListEvents:      &ListEventsService{feed: feed, events: d.EventRepo},
+		ListAttachments: &ListAttachmentsService{feed: feed, attachments: d.AttachmentRepo},
+		UploadAttachment: &UploadAttachmentService{
+			editor: e, feed: feed, attachments: d.AttachmentRepo, files: d.FileRepo, factory: d.FileFactory, storage: d.FileStorage,
+		},
+		DeleteAttachment: &DeleteAttachmentService{editor: e, attachments: d.AttachmentRepo, files: d.FileRepo},
 	}
 }
 

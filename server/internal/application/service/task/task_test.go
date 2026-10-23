@@ -37,6 +37,11 @@ type deps struct {
 	tasks    *mocks.MockTaskRepository
 	events   *mocks.MockTaskEventRepository
 	labels   *mocks.MockLabelRepository
+	// attachments, files, storage and users — attachments of tasks (ADR-0037)
+	attachments *mocks.MockAttachmentRepository
+	files       *mocks.MockFileRepository
+	storage     *mocks.MockFileStorage
+	users       *mocks.MockUserRepository
 }
 
 func newModule(t *testing.T) (*task.TaskModule, *deps) {
@@ -48,6 +53,11 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 		tasks:    mocks.NewMockTaskRepository(ctrl),
 		events:   mocks.NewMockTaskEventRepository(ctrl),
 		labels:   mocks.NewMockLabelRepository(ctrl),
+
+		attachments: mocks.NewMockAttachmentRepository(ctrl),
+		files:       mocks.NewMockFileRepository(ctrl),
+		storage:     mocks.NewMockFileStorage(ctrl),
+		users:       mocks.NewMockUserRepository(ctrl),
 	}
 	clk := clock.New(now)
 	return task.New(task.Deps{
@@ -60,6 +70,12 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 		EventRepo:    d.events,
 		EventFactory: factory.NewTaskEventFactory(id.New()),
 		LabelRepo:    d.labels,
+		UserRepo:     d.users,
+
+		AttachmentRepo: d.attachments,
+		FileRepo:       d.files,
+		FileFactory:    factory.NewFileFactory(id.New(), clk),
+		FileStorage:    d.storage,
 	}), d
 }
 

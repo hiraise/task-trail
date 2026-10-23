@@ -188,7 +188,7 @@ func TestUserAvatarAndLock(t *testing.T) {
 	tx := persistent.NewPgTxManager(pool)
 	ctx := context.Background()
 	user := createUser(t, pool, "ivan@example.com", "Иван")
-	avatar := factory.NewFileFactory(id.New(), clock.New(now)).New("a.png", "image/png", user.ID)
+	avatar := factory.NewFileFactory(id.New(), clock.New(now)).New("a.png", "image/png", user.ID, 1)
 	if err := files.Create(ctx, avatar); err != nil {
 		t.Fatal(err)
 	}
