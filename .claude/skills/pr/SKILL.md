@@ -58,6 +58,8 @@ the order.
 
 1. `gh pr checks <N> --watch` — in the background. Failed — `gh run view <id> --log-failed`, repeat
    the step locally with the same `scripts/dev.sh` command, fix, push.
-2. Give the customer, in Russian, the PR link and the CI result. The customer merges the PR.
+2. Give the customer, in Russian, the PR link and the CI result, and say the context can be cleared
+   (`/clear`): the next step starts from the repository
+   ([ADR-0032](../../../docs/adr/0032-one-session-plan-steps.md)). The customer merges the PR.
 3. The customer asks to merge the PR — the `/merge` skill. The customer merged it themselves —
    `scripts/dev.sh cleanup` of the main folder removes the worktree and the branch.

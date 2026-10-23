@@ -17,7 +17,8 @@ on the real API. The customer approved the decisions on 2026-10-22:
 
 Steps go strictly in order, one PR each. A later step relies on earlier ones: keys are needed by board
 cards and search; archive — by the feed, boards and search. The contract, the server and the web of
-a step change in one PR (ADR-0005).
+a step change in one PR (ADR-0005). From step 6 a step fits one agent session: the server with the
+contract and the web are separate steps ([ADR-0032](../../adr/0032-one-session-plan-steps.md)).
 
 | # | Step | File | Status |
 | --- | --- | --- | --- |
@@ -27,7 +28,8 @@ a step change in one PR (ADR-0005).
 | 3 | Task activity: comments and history | [03-task-activity.md](03-task-activity.md) | done |
 | 4 | Boards: list, creation, board info | [04-boards.md](04-boards.md) | done |
 | 5 | Kanban and the task modal | [05-kanban.md](05-kanban.md) | next |
-| 6 | Search | [06-search.md](06-search.md) | planned |
+| 6 | Search on the server | [06-search-server.md](06-search-server.md) | planned |
+| 7 | Search in the web | [07-search-web.md](07-search-web.md) | planned |
 
 Finished a step — set its status to `done` here and point "next" at the following step, in the same PR;
 update "Where we are" in [the roadmap](../../roadmap.md).
@@ -38,7 +40,8 @@ update "Where we are" in [the roadmap](../../roadmap.md).
 - Branch from a fresh `origin/main` (CLAUDE.md, "Branches and PRs").
 - Work order: migration → domain → repositories with integration tests (`test/testdb`) → application
   services → contract → handlers with tests through `test/apitest` and `contract.Load(t).Check` →
-  `npm run api:types` in `web/` → web → stack smoke → docs.
+  `npm run api:types` in `web/` → web → stack smoke → docs. A server step stops after
+  `npm run api:types`; a web step starts with the web.
 - Migration: the next free number in `server/migrations/` (`NNNNNN_name.up.sql` and `.down.sql`).
   Numbers in the step files are expected ones; if a number is taken, use the next one. `down` fully
   reverts `up`.

@@ -108,6 +108,9 @@ in an ADR, and the README links to it.
 - Each task gets its own branch from a fresh `origin/main`: the local `main` lags behind until it is
   updated. A parallel session works in a separate worktree: `git fetch`, then
   `git worktree add ../task-trail-<task> -b <branch> origin/main`.
+- A plan step fits one agent session and gets its own branch and PR; a session starts from
+  the repository, not from an earlier chat; a step stopped halfway leaves a `## Progress` section
+  in its step file ([ADR-0032](docs/adr/0032-one-session-plan-steps.md)).
 - When a PR is merged, remove its worktree: `scripts/dev.sh cleanup` deletes the folders and branches
   of all merged PRs — the sources stay in git history. The command leaves folders with uncommitted
   changes alone. Remove a temporary worktree (an experiment, a merge check) right after use:
