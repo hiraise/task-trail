@@ -25,6 +25,12 @@ export interface ChangeTaskDueDatePayload {
   dueDate: string | null;
 }
 
+export interface ChangeTaskParentPayload {
+  taskId: TaskId;
+  /** null detaches the task from its parent (ADR-0036) */
+  parentId: TaskId | null;
+}
+
 export interface ChangeTaskAssigneePayload {
   taskId: TaskId;
   /** null unassigns the task */

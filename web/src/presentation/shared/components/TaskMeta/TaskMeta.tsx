@@ -16,7 +16,7 @@ const MAX_CARD_LABELS = 3;
 
 /**
  * The badges under a task name in every card (artboard A of stage 3): priority, due date, at most
- * MAX_CARD_LABELS labels and "+N"; subtasks are added by a later step. Nothing to show — renders nothing.
+ * subtasks "done/total", MAX_CARD_LABELS labels and "+N". Nothing to show — renders nothing.
  */
 export function TaskMeta({ task, className }: { task: Task; className?: string }) {
   const { data: statuses } = useTaskStatuses();
@@ -32,6 +32,14 @@ export function TaskMeta({ task, className }: { task: Task; className?: string }
       <span key="dueDate" className={clsx(styles.item, isOverdue(task.dueDate, resolved) && styles.overdue)}>
         <Icon as={ICONS.calendar} size="16px" inheritColor aria-hidden />
         {formatDueDate(task.dueDate)}
+      </span>,
+    );
+  }
+  if (task.subtasksTotal > 0) {
+    items.push(
+      <span key="subtasks" className={styles.item}>
+        <Icon as={ICONS.subtasks} size="16px" inheritColor aria-hidden />
+        {`${task.subtasksDone}/${task.subtasksTotal}`}
       </span>,
     );
   }

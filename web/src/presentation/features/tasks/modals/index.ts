@@ -4,6 +4,7 @@ export * from "./ChangeTaskStatusModal";
 export * from "./CreateTaskModal";
 export * from "./EditTaskModal";
 export * from "./SelectAssigneeModal";
+export * from "./SelectParentModal";
 export * from "./SelectProjectModal";
 export * from "./TaskSettingsModal";
 export * from "./TaskModal";

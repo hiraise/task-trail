@@ -1,0 +1,110 @@
+/* Artboard B of stage 3: the subtasks block — rows on --bg-secondary-2; a phone puts the name under
+   the status and key, from 768 px a row is one line */
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.secondary {
+  color: var(--text-secondary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary-2);
+  text-decoration: none;
+  transition: filter 0.2s ease;
+}
+
+.row:hover {
+  filter: brightness(0.97);
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.key {
+  flex: none;
+}
+
+.name {
+  overflow-wrap: anywhere;
+}
+
+.add {
+  align-self: flex-start;
+  gap: 4px;
+  padding: 4px 8px 4px 0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.create {
+  flex: none;
+  width: auto;
+  padding: 12px 16px;
+}
+
+.error {
+  color: var(--text-critical);
+}
+
+@media (min-width: 768px) {
+  .text {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .head {
+    gap: 12px;
+  }
+
+  .name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}

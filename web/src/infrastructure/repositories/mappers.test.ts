@@ -180,8 +180,19 @@ describe("toTask", () => {
       archivedAt: undefined,
       projectArchived: false,
       labels: [],
+      parentId: undefined,
+      subtasksTotal: 0,
+      subtasksDone: 0,
       createdAt: "2026-10-22T08:00:00Z",
       updatedAt: "2026-10-22T09:30:00Z",
+    });
+  });
+
+  it("a subtask: the parent and the counters as in the response", () => {
+    expect(toTask({ ...dto, parentId: avatarId, subtasksTotal: 5, subtasksDone: 2 })).toMatchObject({
+      parentId: avatarId,
+      subtasksTotal: 5,
+      subtasksDone: 2,
     });
   });
 

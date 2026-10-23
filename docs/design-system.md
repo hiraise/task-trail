@@ -104,9 +104,9 @@ on the right.
 
 - The three task cards — the project, board and search row (`ProjectTask`), the «Мои задачи» card
   (`TaskList`) and the kanban card (`KanbanCard`) — show `TaskMeta` under the name: a `caption-reg`
-  line of badges in `--text-secondary`, gap 8 px, wrapping. Now — the priority icon, the due date
-  chip and at most 3 `LabelChip`s, then «+N»; a later step adds subtasks. A card with nothing to show
-  has no meta line.
+  line of badges in `--text-secondary`, gap 8 px, wrapping: the priority icon, the due date chip,
+  subtasks «2/5» (`ICONS.subtasks` 16 px, gap 2 px, only when the task has subtasks) and at most
+  3 `LabelChip`s, then «+N». A card with nothing to show has no meta line.
 - The due date chip — `ICONS.calendar` 16 px and the date, gap 2 px: «Сегодня», «Завтра», «30 окт»,
   another year «30 окт 2027» (`formatDueDate` in `shared/utils/dueDate.ts`). Overdue — the date is before
   today and the status is not resolved — the chip is `--text-critical` (ADR-0034).
@@ -123,6 +123,26 @@ on the right.
   line clamp; from 768 px the row takes the full width and grows in height — and takes `ariaValue`
   for its `aria-label`: the «Метки» row with chips, «Добавить» when
   empty.
+- `TaskStatusBadge` without `onClick` is a caption, not a button: `caption-med`, height 20, padding
+  `2px 8px`, radius 6, the status color — the subtask rows.
+
+## Subtasks
+
+Subtasks (ADR-0036), artboards B and C of the stage 3 canvas.
+
+- `TaskSubtasks` — the «Подзадачи» block between the task info and the feed on the task page (its own
+  section card) and in `TaskModal`: `h4` and the progress «2 из 5» (`body-reg-2`, `--text-secondary`),
+  rows, «Добавить подзадачу» (`SubmitButton variant="text"` with `ICONS.plus`). A row is a link on
+  `--bg-secondary-2`, radius 12, padding `10px 12px`: the status caption (`ArchiveTag` for an archived
+  subtask), the key, the name, the assignee avatar; on a phone the name is under the status and key,
+  from 768 px — one line with «…». Quick adding — `Input` and «Создать» in a row; the field clears after
+  each subtask, Escape closes it. Hidden for a subtask; an archived task has no add button.
+- A subtask shows «Подзадача DS-12 · Название» (`caption-reg`, `--text-secondary`) as a link above
+  its key.
+- `SelectParentModal` — «Выберите родительскую задачу»: a search field «Ключ или название» and a list on
+  `--bg-secondary` (radius 8), rows of a `caption-reg` key over a `body-reg-2` name; a tap chooses, on
+  768+ only «Отменить» below.
+
 - A radio row with an icon — `RadioButton` with `icon` (before the label, gap 8 px), like the priority
   picker `TaskPriorityList`.
 

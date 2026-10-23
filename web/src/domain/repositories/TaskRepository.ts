@@ -16,6 +16,8 @@ export interface NewTask {
   priority?: TaskPriorityId;
   /** YYYY-MM-DD; undefined — no due date (ADR-0034) */
   dueDate?: string;
+  /** Creates a subtask of this task: same project, not itself a subtask (ADR-0036) */
+  parentId?: TaskId;
 }
 
 export interface TaskChanges {
@@ -51,6 +53,10 @@ export interface TaskRepository {
   /** Archives (true) or restores (false) a task; any member of its active project */
   setArchived(id: TaskId, archived: boolean): Promise<Task>;
   delete(id: TaskId): Promise<void>;
+  /** The task's subtasks in number order, archived ones included (ADR-0036) */
+  findSubtasks(id: TaskId): Promise<Task[]>;
+  /** Attaches the task to a parent of the same project; null detaches it; any member (ADR-0036) */
+  changeParent(id: TaskId, parentId: TaskId | null): Promise<Task>;
   /** The task feed (ADR-0028): comments, newest first */
   findComments(taskId: TaskId): Promise<TaskComment[]>;
   /** The server trims the text; neither the task nor its project is archived */

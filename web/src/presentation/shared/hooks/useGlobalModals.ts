@@ -42,6 +42,13 @@ export interface SelectLabelsProps {
   labelIds: LabelId[];
 }
 
+export interface SelectParentProps {
+  /** Candidates are this project's active tasks (ADR-0036) */
+  projectId: ProjectId;
+  /** The task being attached */
+  taskId: TaskId;
+}
+
 export interface ProjectLabelsProps {
   /** Labels of this project (ADR-0035) */
   projectId: ProjectId;
@@ -232,5 +239,8 @@ export const useGlobalModals = () => {
     /** The chosen label IDs; closing — `undefined` */
     showSelectLabels: (props: SelectLabelsProps) =>
       safeOpen<LabelId[]>(MODAL_TYPE.SELECT_LABELS, { ...props }),
+    /** The chosen parent task; closing — `undefined` */
+    showSelectParent: (props: SelectParentProps) =>
+      safeOpen<Task>(MODAL_TYPE.SELECT_PARENT, { ...props }),
   };
 };

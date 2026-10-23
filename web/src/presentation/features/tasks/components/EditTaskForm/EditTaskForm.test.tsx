@@ -18,6 +18,8 @@ const task: Task = {
   authorId: "7d1e9a52-6f0b-4c1f-8f43-2a9e5b7c1d08",
   projectArchived: false,
   labels: [],
+  subtasksTotal: 0,
+  subtasksDone: 0,
   createdAt: "2026-10-22T08:00:00Z",
   updatedAt: "2026-10-22T08:00:00Z",
 };

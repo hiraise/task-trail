@@ -23,6 +23,19 @@
   filter: none;
 }
 
+/* The status as a caption, not a button: a subtask row */
+.caption {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  height: 20px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  white-space: nowrap;
+}
+
 .in_progress {
   background-color: var(--bg-accent-blue);
 }

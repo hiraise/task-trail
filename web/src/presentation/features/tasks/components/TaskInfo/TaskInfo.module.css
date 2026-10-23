@@ -25,6 +25,16 @@
   gap: 4px;
 }
 
+.parent {
+  color: var(--text-secondary);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.parent:hover {
+  color: var(--text-primary);
+}
+
 .key {
   color: var(--text-secondary);
 }

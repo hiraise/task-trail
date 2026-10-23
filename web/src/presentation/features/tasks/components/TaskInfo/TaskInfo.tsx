@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import clsx from "clsx";
 
 import type { Label } from "@/domain/models/Label";
@@ -7,12 +8,13 @@ import { isTaskArchived, type Task } from "@/domain/models/Task";
 import type { TaskStatus } from "@/domain/models/TaskStatus";
 import { getUserDisplayName } from "@/domain/models/User";
 import { ArchiveTag, DropdownMenu, IconButton, LabelChip, PriorityIcon } from "@/presentation/shared";
+import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
 import { formatDueDate, isOverdue } from "@/shared/utils/dueDate";
 
-import { useTaskActions } from "../../hooks";
+import { useTask, useTaskActions } from "../../hooks";
 import { TaskStatusBadge } from "../TaskStatusBadge";
 
 import { TaskField } from "./TaskField";
@@ -63,6 +65,29 @@ function LabelsField({ labels, onClick }: { labels: Label[]; onClick?: () => voi
 }
 
 /**
+ * "Subtask DS-12 · Name" above the key of a subtask (ADR-0036); while the parent loads — only
+ * "Subtask". The hook runs for every task: hooks cannot be conditional, an empty ID disables it.
+ */
+function ParentLink({ parentId }: { parentId?: Task["parentId"] }) {
+  const { data: parent } = useTask(parentId ?? "");
+  const { closeAllModals } = useGlobalModals();
+
+  if (!parentId) return null;
+
+  return (
+    // Inside the kanban TaskModal: close it, or it stays open over the parent page
+    <Link
+      to="/tasks/$taskId"
+      params={{ taskId: parentId }}
+      className={clsx("caption-reg", styles.parent)}
+      onClick={() => closeAllModals()}
+    >
+      {parent ? `${tasksTexts.subtaskOf} ${parent.key} · ${parent.name}` : tasksTexts.subtaskOf}
+    </Link>
+  );
+}
+
+/**
  * Task: status, key above the name, name, description and the fields (assignee, project, priority,
  * due date, labels) — each is changed in its own modal. An archived task is read-only: the archive tag
  * instead of the status, fields are not clickable (ADR-0027).
@@ -80,6 +105,7 @@ export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInf
         <div className={styles.heading}>
           {archived ? <ArchiveTag /> : <TaskStatusBadge status={status} onClick={changeStatus} />}
           <div className={styles.title}>
+            <ParentLink parentId={task.parentId} />
             <span className={clsx("caption-reg", styles.key)}>{task.key}</span>
             <h2 className={styles.name}>{task.name}</h2>
           </div>

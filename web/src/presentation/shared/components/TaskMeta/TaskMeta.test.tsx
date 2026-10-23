@@ -35,6 +35,8 @@ const task = (fields: Partial<Task> = {}): Task => ({
   authorId: "anna",
   projectArchived: false,
   labels: [],
+  subtasksTotal: 0,
+  subtasksDone: 0,
   createdAt: "2026-10-23T12:00:00Z",
   updatedAt: "2026-10-23T12:00:00Z",
   ...fields,
@@ -69,6 +71,12 @@ describe("TaskMeta", () => {
     render(<TaskMeta task={task({ dueDate: day(-1), statusId: "done" })} />);
 
     expect(screen.getByText(/\d/).className).not.toMatch(/overdue/);
+  });
+
+  it("subtasks as done/total", () => {
+    render(<TaskMeta task={task({ subtasksTotal: 5, subtasksDone: 2 })} />);
+
+    expect(screen.getByText("2/5")).toBeInTheDocument();
   });
 
   it("five labels — three chips and +2", () => {

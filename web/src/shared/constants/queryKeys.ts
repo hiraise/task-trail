@@ -40,6 +40,8 @@ export const QUERY_KEYS = {
     /** The task feed (ADR-0028): comments and history, under the task's prefix */
     comments: (id: TaskId) => ["task", id, "comments"] as const,
     events: (id: TaskId) => ["task", id, "events"] as const,
+    /** The task's subtasks (ADR-0036), under the task's prefix */
+    subtasks: (id: TaskId) => ["task", id, "subtasks"] as const,
     /** Task statuses: one set shared by all projects */
     statuses: ["task-statuses"] as const,
   },
