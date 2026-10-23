@@ -1,0 +1,30 @@
+.close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  z-index: 1;
+}
+
+/* Positioned for the close button; the task scrolls inside the dialog */
+.body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+}
+
+/* Room for the close button next to the "…" menu */
+.info {
+  padding-right: 40px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-secondary-2);
+}
+
+.activity {
+  padding-top: 16px;
+}
+
+.loading {
+  min-height: 240px;
+}

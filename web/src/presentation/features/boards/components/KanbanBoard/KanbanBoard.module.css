@@ -1,22 +1,96 @@
-.kanbanContainer {
-  overflow-x: auto;
-  white-space: nowrap;
-  margin: -4px -20px;
+/* The board scrolls both ways inside itself (frames 980:37541…980:37951): column headers stick to
+   the top, lane names to the left. Columns are 220 px and stretch on wide screens (1808:86188). */
+.board {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
-.swimlineContainer {
+.content {
+  --column-gap: 8px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: calc(var(--columns) * 220px + (var(--columns) - 1) * var(--column-gap) + 16px);
+  padding: 0 8px 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(220px, 1fr));
+  gap: var(--column-gap);
+  /* Cells of a lane are as tall as its tallest one (comment 980:35342) */
+  align-items: stretch;
+}
+
+.headers {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px 0;
+  background-color: var(--bg-primary);
+}
+
+.lane {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 8px;
 }
 
-.dragOverlay {
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
-  transform: rotate(5deg) scale(1.05);
-  opacity: 0.95;
-  cursor: grabbing;
+.laneTitle {
+  position: sticky;
+  left: 8px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  padding: 2px 4px 2px 0;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.chevron {
+  display: flex;
+  transition: transform 0.2s ease-in-out;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.laneBody {
+  overflow: hidden;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px;
   border-radius: 8px;
-  background: white;
-  z-index: 1000;
+  background-color: var(--bg-card);
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.08);
+}
+
+.create {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.create:hover {
+  opacity: 1;
 }

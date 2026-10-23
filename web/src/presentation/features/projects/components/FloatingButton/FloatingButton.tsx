@@ -22,7 +22,7 @@ export function FloatingButton({ projectId, allowedProjectIds }: FloatingButtonP
     <button
       type="button"
       className={styles.container}
-      onClick={() => openCreateTask(projectId, allowedProjectIds)}
+      onClick={() => openCreateTask({ projectId, allowedProjectIds })}
     >
       <span className="btn-font-m">{TEXTS.tasks.createButton}</span>
       <div className={styles.icon}>

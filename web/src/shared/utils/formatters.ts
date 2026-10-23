@@ -40,32 +40,6 @@ export function normalize(str: string): string {
   return str.replace(/\/+$/, "");
 }
 
-/**
- * Returns a project ID based on the project name.
- * If the name contains multiple words (split by space, dash, underscore, or dot),
- * returns the first letter of the first two words.
- * If the name is a single word, returns the first two letters.
- *
- * @param str - The project name.
- * @returns The generated project ID.
- */
-export function getProjectId(str: string): string {
-  // Split by space, dash, underscore, or dot
-  let res: string;
-  const words = str
-    .trim()
-    .split(/[\s\-_.]+/)
-    .filter(Boolean);
-
-  if (words.length === 1) {
-    res = words[0].slice(0, 2).toUpperCase();
-  } else {
-    res = (words[0][0] + words[1][0]).toUpperCase();
-  }
-
-  return `${res}-`;
-}
-
 /** Date and time in Russian, like "October 23, 14:30" — link expiry and similar. */
 export function formatDateTime(date: Date | string): string {
   return format(new Date(date), "d MMMM, HH:mm", { locale: ru });

@@ -9,4 +9,5 @@ export {
   useSetBoardProjects,
 } from "./useBoardMutations";
 export { useBoard, useBoards, useBoardTasks } from "./useBoards";
+export { useCollapsedLanes } from "./useCollapsedLanes";
 export { useKanbanDragDrop } from "./useKanbanDragDrop";

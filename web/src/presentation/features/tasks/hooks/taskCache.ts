@@ -36,11 +36,12 @@ export function storeTask(queryClient: QueryClient, task: Task): void {
   invalidateTaskLists(queryClient, task.projectId);
 }
 
-/** The task from already loaded lists: project tasks or "My tasks". */
+/** The task from already loaded lists: project tasks, "My tasks" or board tasks. */
 export function findTaskInLists(queryClient: QueryClient, taskId: TaskId): Task | undefined {
   const lists = queryClient.getQueriesData<Task[]>({
     predicate: ({ queryKey: [entity, id, sub] }) =>
-      (entity === "project" && sub === "tasks") || (entity === "task" && id === "mine"),
+      ((entity === "project" || entity === "board") && sub === "tasks") ||
+      (entity === "task" && id === "mine"),
   });
 
   for (const [, tasks] of lists) {

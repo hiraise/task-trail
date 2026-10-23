@@ -33,12 +33,13 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
   findStatuses: async () =>
     (await http.get<TaskStatus[]>(API_ROUTES.TASK_STATUSES)).map(toTaskStatus),
 
-  create: async ({ projectId, name, description, assigneeId }) => {
+  create: async ({ projectId, name, description, assigneeId, statusId }) => {
     const body: CreateTaskRequest = {
       projectId,
       name,
       description: description ?? null,
       assigneeId: assigneeId ?? null,
+      ...(statusId && { statusId }),
     };
 
     return toTask(await http.post<Task>(API_ROUTES.TASKS, body));

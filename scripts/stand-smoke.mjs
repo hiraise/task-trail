@@ -147,6 +147,12 @@ try {
   check(board?.members?.length === 2 && board?.projects?.[0]?.id === projectId, "board created with the project and the member");
   const boardTasks = await call(member, "GET", `/v1/boards/${board?.id}/tasks`, 200);
   check(boardTasks?.some?.((item) => item.id === task?.id), "the member sees the task on the board");
+  // A task from a kanban column starts in that column's status
+  const fromColumn = await call(member, "POST", "/v1/tasks", 201, {
+    json: { projectId, name: "Дымовая задача из колонки", statusId: "in_progress" },
+  });
+  check(fromColumn?.statusId === "in_progress", "a task is created right in the in_progress status");
+  await call(member, "DELETE", `/v1/tasks/${fromColumn?.id}`, 204);
   await call(member, "DELETE", `/v1/boards/${board?.id}/leave`, 204);
   await call(member, "GET", `/v1/boards/${board?.id}`, 404);
   await call(admin, "DELETE", `/v1/boards/${board?.id}`, 204);

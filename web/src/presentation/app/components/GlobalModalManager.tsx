@@ -27,6 +27,7 @@ import {
   SelectBoardMembersModal,
   RenameBoardModal,
   BoardSettingsModal,
+  TaskModal,
 } from "./lazyModalComponents";
 import { ModalAppearContext } from "./modalAppear";
 
@@ -56,6 +57,7 @@ const MODAL_COMPONENTS = {
   [MODAL_TYPE.SELECT_BOARD_MEMBERS]: SelectBoardMembersModal,
   [MODAL_TYPE.RENAME_BOARD]: RenameBoardModal,
   [MODAL_TYPE.BOARD_SETTINGS]: BoardSettingsModal,
+  [MODAL_TYPE.TASK]: TaskModal,
 } as const;
 
 export function GlobalModalManager() {

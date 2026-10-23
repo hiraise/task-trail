@@ -26,6 +26,16 @@
   flex: 1;
 }
 
+/* A task over the kanban (frame 1892:103887): the content scrolls inside */
+.wide {
+  position: relative;
+  max-width: 880px;
+  max-height: calc(100dvh - 64px);
+  margin: 0 32px;
+  padding: 0;
+  overflow: hidden;
+}
+
 .title {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;

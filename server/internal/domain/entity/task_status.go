@@ -37,8 +37,8 @@ func TaskStatuses() []TaskStatusInfo {
 	return out
 }
 
-// defaultTaskStatus — the status of a new task.
-func defaultTaskStatus() TaskStatus {
+// DefaultTaskStatus — the status of a new task when the request names none.
+func DefaultTaskStatus() TaskStatus {
 	for _, s := range taskStatuses {
 		if s.IsDefault {
 			return s.ID

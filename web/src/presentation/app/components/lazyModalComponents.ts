@@ -74,6 +74,10 @@ export const SortItemsModal = lazy(() =>
   import("@/presentation/shared/modals").then((m) => ({ default: m.SortItemsModal })),
 );
 
+export const TaskModal = lazy(() =>
+  import("@/presentation/features/tasks/modals").then((m) => ({ default: m.TaskModal })),
+);
+
 export const TaskSettingsModal = lazy(() =>
   import("@/presentation/features/tasks/modals").then((m) => ({ default: m.TaskSettingsModal })),
 );

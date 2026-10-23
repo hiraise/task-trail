@@ -24,10 +24,18 @@ interface CreateTaskFormProps {
 
 export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
   const store = useCreateTaskFormStore();
-  const { projectId, assigneeId, allowedProjectIds, setName, setDescription, setProjectId, setAssigneeId } =
-    store;
+  const {
+    projectId,
+    assigneeId,
+    allowedProjectIds,
+    statusId,
+    setName,
+    setDescription,
+    setProjectId,
+    setAssigneeId,
+  } = store;
   const { showSelectAssignee, showSelectProject } = useGlobalModals();
-  const { mutateAsync: createTask } = useCreateTask();
+  const { mutateAsync: createTask } = useCreateTask({ openTask: !statusId });
   const { data: project } = useProject(projectId);
   const { data: members } = useProjectMembers(projectId ?? "");
   const assignee = members?.find((member) => member.id === assigneeId);
@@ -37,6 +45,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     handleSubmit,
     control,
     setError,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateTaskFormData>({
     resolver: zodResolver(CreateTaskSchema),
@@ -50,6 +59,11 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
 
   useEffect(() => setName(name ?? ""), [name, setName]);
   useEffect(() => setDescription(description ?? ""), [description, setDescription]);
+
+  // The picker returns the project after the form is back on screen: the field follows the draft
+  useEffect(() => {
+    if (projectId) setValue("projectId", projectId, { shouldValidate: true });
+  }, [projectId, setValue]);
 
   // Project changed — an assignee who is not its member is cleared: the server would reject them
   useEffect(() => {
@@ -84,6 +98,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
         name: values.name,
         description: values.description || undefined,
         assigneeId: assignee?.id,
+        statusId,
       });
       store.reset();
       onSubmit();
