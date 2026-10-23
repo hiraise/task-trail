@@ -3,7 +3,8 @@
 // a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
 // mail, from the API response), gets a task with the key <project key>-1, changes its status, writes,
 // edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027),
-// changes its priority (ADR-0033) and due date (ADR-0034), finds it by key and by part of its name (ADR-0030), uploads
+// changes its priority (ADR-0033) and due date (ADR-0034), tags it with a label the invitee creates and the
+// owner deletes (ADR-0035), finds it by key and by part of its name (ADR-0030), uploads
 // an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
 // a user of the stack. Run: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
@@ -153,6 +154,14 @@ try {
   check(dated?.dueDate === tomorrow, `the assignee set the due date to ${tomorrow}`);
   const afterDueDate = await call(member, "GET", `/v1/tasks/${task?.id}/events`, 200);
   check(afterDueDate?.[0]?.kind === "due_date_changed", `the newest history event → ${afterDueDate?.[0]?.kind}`);
+
+  // Labels (ADR-0035): a member creates a label and sets it on the task; the owner deletes the label
+  const smokeLabel = await call(member, "POST", `/v1/projects/${projectId}/labels`, 201, { json: { name: "smoke", color: "blue" } });
+  const labeled = await call(member, "PUT", `/v1/tasks/${task?.id}/labels`, 200, { json: { labelIds: [smokeLabel?.id] } });
+  check(labeled?.labels?.[0]?.name === "smoke", `the task got the label → ${labeled?.labels?.map?.((l) => l.name)}`);
+  await call(admin, "DELETE", `/v1/projects/${projectId}/labels/${smokeLabel?.id}`, 204);
+  const unlabeled = await call(member, "GET", `/v1/tasks/${task?.id}`, 200);
+  check(unlabeled?.labels?.length === 0, "the deleted label left the task");
 
   // Search (ADR-0030): the task by its key in lower case comes first; by part of its name
   const byKey = await call(member, "GET", `/v1/search?q=${encodeURIComponent(task?.key?.toLowerCase())}`, 200);

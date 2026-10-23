@@ -23,8 +23,10 @@ type Task struct {
 	// ArchivedAt and ProjectArchived — the task's own archive and its project's (ADR-0027)
 	ArchivedAt      *time.Time `json:"archivedAt"`
 	ProjectArchived bool       `json:"projectArchived"`
-	CreatedAt       time.Time  `json:"createdAt"`
-	UpdatedAt       time.Time  `json:"updatedAt"`
+	// Labels — ordered by name, never null (ADR-0035)
+	Labels    []Label   `json:"labels"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func NewTask(t *entity.Task) Task {
@@ -37,6 +39,10 @@ func NewTask(t *entity.Task) Task {
 	if t.DueDate != nil {
 		d := entity.FormatDueDate(*t.DueDate)
 		dueDate = &d
+	}
+	labels := make([]Label, 0, len(t.Labels))
+	for i := range t.Labels {
+		labels = append(labels, NewLabel(&t.Labels[i]))
 	}
 	// Time is in UTC (ADR-0018): the database returns it in the server's time zone
 	return Task{
@@ -53,6 +59,7 @@ func NewTask(t *entity.Task) Task {
 		AssigneeID:      assignee,
 		ArchivedAt:      utc(t.ArchivedAt),
 		ProjectArchived: t.ProjectArchived,
+		Labels:          labels,
 		CreatedAt:       t.CreatedAt.UTC(),
 		UpdatedAt:       t.UpdatedAt.UTC(),
 	}

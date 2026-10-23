@@ -9,6 +9,7 @@ import (
 	"task-trail/internal/application/service/admin"
 	"task-trail/internal/application/service/board"
 	"task-trail/internal/application/service/file"
+	"task-trail/internal/application/service/label"
 	"task-trail/internal/application/service/project"
 	"task-trail/internal/application/service/search"
 	"task-trail/internal/application/service/task"
@@ -67,6 +68,7 @@ type Server struct {
 	Project *project.ProjectModule
 	Task    *task.TaskModule
 	Board   *board.BoardModule
+	Label   *label.LabelModule
 	Search  *search.SearchModule
 	Admin   *admin.AdminModule
 }
@@ -174,6 +176,15 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		SettingsRepo:      settingsRepo,
 		Mailer:            mailer,
 	})
+	labelRepo := persistent.NewLabelRepo(pool)
+	labelModule := label.New(label.Deps{
+		TxManager:    txManager,
+		Clock:        clk,
+		ProjectRepo:  projectRepo,
+		MemberRepo:   memberRepo,
+		LabelRepo:    labelRepo,
+		LabelFactory: factory.NewLabelFactory(idGen, clk),
+	})
 	taskModule := task.New(task.Deps{
 		TxManager:      txManager,
 		Clock:          clk,
@@ -186,6 +197,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		CommentFactory: factory.NewCommentFactory(idGen, clk),
 		EventRepo:      eventRepo,
 		EventFactory:   eventFactory,
+		LabelRepo:      labelRepo,
 	})
 	boardRepo := persistent.NewBoardRepo(pool, userFactory)
 	boardModule := board.New(board.Deps{
@@ -210,7 +222,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	http.NewRouter(engine, contextManager,
 		middleware.NewAuth(accessTokenService, contextManager),
 		middleware.NewAdmin(accessModule.AdminCheck, contextManager),
-		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule, Board: boardModule, Search: searchModule, Admin: adminModule})
+		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule, Board: boardModule, Label: labelModule, Search: searchModule, Admin: adminModule})
 	return &Server{
 		Engine:  engine,
 		Access:  accessModule,
@@ -219,6 +231,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		Project: projectModule,
 		Task:    taskModule,
 		Board:   boardModule,
+		Label:   labelModule,
 		Search:  searchModule,
 		Admin:   adminModule,
 	}, nil

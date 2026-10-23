@@ -24,6 +24,8 @@ const (
 	CodeCommentEditExpired      ErrorCode = "COMMENT_EDIT_EXPIRED"
 	CodeBoardProjectUnavailable ErrorCode = "BOARD_PROJECT_UNAVAILABLE"
 	CodeBoardMemberUnavailable  ErrorCode = "BOARD_MEMBER_UNAVAILABLE"
+	CodeLabelNameTaken          ErrorCode = "LABEL_NAME_TAKEN"
+	CodeLabelUnavailable        ErrorCode = "LABEL_UNAVAILABLE"
 	CodeMailDisabled            ErrorCode = "MAIL_DISABLED"
 	CodeMailSendFailed          ErrorCode = "MAIL_SEND_FAILED"
 	CodeMailConnectionFailed    ErrorCode = "MAIL_CONNECTION_FAILED"

@@ -20,6 +20,8 @@ export const apiErrorTexts: Partial<Record<ApiErrorCode, string>> = {
   BOARD_PROJECT_UNAVAILABLE: "Проект недоступен: на доску можно добавить только свой проект",
   BOARD_MEMBER_UNAVAILABLE:
     "Пользователь недоступен: добавить можно только того, с кем у вас есть общий проект",
+  LABEL_NAME_TAKEN: "Метка с таким названием уже есть в проекте",
+  LABEL_UNAVAILABLE: "Метка не найдена в проекте задачи — обновите страницу",
   COMMENT_EDIT_EXPIRED: "Комментарий можно изменить только в первые 24 часа",
   FILE_TOO_LARGE: "Файл больше 5 МБ",
   FILE_TYPE_NOT_ALLOWED: "Подходят только изображения JPEG, PNG и WebP",

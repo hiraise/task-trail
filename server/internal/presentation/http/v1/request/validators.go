@@ -12,6 +12,7 @@ import (
 //   - httpurl — a full http(s) address without query or fragment: links are built from it (ADR-0015);
 //   - taskstatus — a task status from the fixed set (ADR-0003);
 //   - taskpriority — a task priority from the fixed set (ADR-0033);
+//   - labelcolor — a label color from the fixed palette (ADR-0035);
 //   - projectkey — a project key (ADR-0026), checked after normalizeProjectKey;
 //   - mailbox — the mail sender: an email address, optionally with a name (ADR-0017);
 //   - values of Optional fields and required fields that may be null (assigneeId, dueDate).
@@ -28,6 +29,9 @@ func RegisterValidators(v *validator.Validate) error {
 	if err := v.RegisterValidation("taskpriority", taskPriority); err != nil {
 		return err
 	}
+	if err := v.RegisterValidation("labelcolor", labelColor); err != nil {
+		return err
+	}
 	if err := v.RegisterValidation("projectkey", projectKey); err != nil {
 		return err
 	}
@@ -40,6 +44,7 @@ func RegisterValidators(v *validator.Validate) error {
 	v.RegisterStructValidation(checkUpdateProject, updateProjectReq{})
 	v.RegisterStructValidation(requireAssignee, changeTaskAssigneeReq{})
 	v.RegisterStructValidation(requireDueDate, changeTaskDueDateReq{})
+	v.RegisterStructValidation(checkUpdateLabel, updateLabelReq{})
 	return nil
 }
 

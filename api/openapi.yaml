@@ -712,6 +712,89 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ApiError" }
 
+  /v1/projects/{projectId}/labels:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+    get:
+      tags: [projects]
+      operationId: listProjectLabels
+      summary: Project labels
+      description: "Role: any in the project; an archived project too. Ordered by name ignoring case (ADR-0035)."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Labels
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Label" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      tags: [projects]
+      operationId: createProjectLabel
+      summary: Create a label
+      description: "Role: any in the project; not in an archived project (ADR-0035)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateLabelRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "201":
+          description: Label created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Label" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/LabelConflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/projects/{projectId}/labels/{labelId}:
+    parameters:
+      - $ref: "#/components/parameters/ProjectId"
+      - $ref: "#/components/parameters/LabelId"
+    patch:
+      tags: [projects]
+      operationId: updateProjectLabel
+      summary: Rename or recolor a label
+      description: "Role: `owner` or `admin`; not in an archived project (ADR-0035)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateLabelRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Label changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Label" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/LabelConflict" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+    delete:
+      tags: [projects]
+      operationId: deleteProjectLabel
+      summary: Delete a label
+      description: |
+        Role: `owner` or `admin`; not in an archived project. The label is deleted at once and removed
+        from all tasks; no history event (ADR-0035).
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Label deleted
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/ProjectArchived" }
+
   /v1/projects/{projectId}/tasks:
     parameters:
       - $ref: "#/components/parameters/ProjectId"
@@ -963,6 +1046,37 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "409": { $ref: "#/components/responses/TaskReadOnly" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/tasks/{taskId}/labels:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    put:
+      tags: [tasks]
+      operationId: setTaskLabels
+      summary: Replace the task's labels
+      description: |
+        Role: any in the task's project; neither the task nor its project is archived. The labels are
+        of the task's project; an empty list removes all. No history event (ADR-0035).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetTaskLabelsRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Labels set
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
+        "422":
+          description: "`LABEL_UNAVAILABLE` — a label is unknown or of another project; `VALIDATION_FAILED`"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
 
   /v1/tasks/{taskId}/archived:
     parameters:
@@ -1543,6 +1657,11 @@ components:
       in: path
       required: true
       schema: { $ref: "#/components/schemas/Uuid" }
+    LabelId:
+      name: labelId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
     BoardId:
       name: boardId
       in: path
@@ -1603,6 +1722,11 @@ components:
           schema: { $ref: "#/components/schemas/ApiError" }
     ProjectArchived:
       description: "`PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }
+    LabelConflict:
+      description: "`LABEL_NAME_TAKEN` — the name is taken in the project ignoring case; `PROJECT_ARCHIVED` — the project is archived (ADR-0035)"
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ApiError" }
@@ -1682,6 +1806,8 @@ components:
         - COMMENT_EDIT_EXPIRED
         - BOARD_PROJECT_UNAVAILABLE
         - BOARD_MEMBER_UNAVAILABLE
+        - LABEL_NAME_TAKEN
+        - LABEL_UNAVAILABLE
         - FILE_TOO_LARGE
         - FILE_TYPE_NOT_ALLOWED
         - MAIL_DISABLED
@@ -1936,9 +2062,48 @@ components:
       type: string
       enum: [low, normal, high, urgent]
       description: Fixed set from the lowest (ADR-0033); display names live in the web
+    LabelColor:
+      type: string
+      enum: [gray, red, orange, yellow, green, teal, blue, purple]
+      description: Fixed palette (ADR-0035); the web draws each color with its design tokens
+    LabelName:
+      type: string
+      minLength: 1
+      maxLength: 30
+      description: Trimmed by the server; unique in the project ignoring case
+    Label:
+      type: object
+      required: [id, projectId, name, color]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        projectId: { $ref: "#/components/schemas/Uuid" }
+        name: { $ref: "#/components/schemas/LabelName" }
+        color: { $ref: "#/components/schemas/LabelColor" }
+    CreateLabelRequest:
+      type: object
+      required: [name, color]
+      properties:
+        name: { $ref: "#/components/schemas/LabelName" }
+        color: { $ref: "#/components/schemas/LabelColor" }
+    UpdateLabelRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name: { $ref: "#/components/schemas/LabelName" }
+        color: { $ref: "#/components/schemas/LabelColor" }
+    SetTaskLabelsRequest:
+      type: object
+      required: [labelIds]
+      properties:
+        labelIds:
+          type: array
+          maxItems: 10
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/Uuid" }
+          description: The new set of the task's labels, all of its project; empty — no labels
     Task:
       type: object
-      required: [id, projectId, number, key, name, description, statusId, priority, dueDate, authorId, assigneeId, archivedAt, projectArchived, createdAt, updatedAt]
+      required: [id, projectId, number, key, name, description, statusId, priority, dueDate, authorId, assigneeId, archivedAt, projectArchived, labels, createdAt, updatedAt]
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         projectId: { $ref: "#/components/schemas/Uuid" }
@@ -1968,6 +2133,11 @@ components:
         projectArchived:
           type: boolean
           description: The task's project is archived; the task is read-only then too
+        labels:
+          type: array
+          maxItems: 10
+          items: { $ref: "#/components/schemas/Label" }
+          description: Ordered by name (ADR-0035)
         createdAt: { $ref: "#/components/schemas/DateTime" }
         updatedAt: { $ref: "#/components/schemas/DateTime" }
     CreateTaskRequest:

@@ -227,6 +227,11 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 		}
 		fromKey, fromAssignee := task.Key(), task.AssigneeID
 		task.MoveTo(target, projects[target].Key, number, assignee, now)
+		// Labels do not cross projects (ADR-0035)
+		if err := e.labels.ClearTask(ctx, task.ID); err != nil {
+			return nil, err
+		}
+		task.Labels = []entity.Label{}
 		actor := entity.UserID(userID)
 		// "moved" goes first: the assignee is removed because of the move
 		events := []*entity.TaskEvent{e.newEvent.Moved(task.ID, actor, fromKey, task.Key(), now)}
@@ -234,6 +239,38 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 			events = append(events, e.newEvent.AssigneeChanged(task.ID, actor, fromAssignee, task.AssigneeID, now))
 		}
 		return events, nil
+	})
+}
+
+// SetLabelsService replaces the task's labels with labels of its project (ADR-0035); no history event.
+type SetLabelsService struct {
+	editor *editor
+}
+
+func (s *SetLabelsService) Execute(ctx context.Context, userID, taskID string, ids []string) (*entity.Task, error) {
+	e := s.editor
+	return e.edit(ctx, userID, taskID, nil, func(ctx context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error) {
+		labelIDs := make([]entity.LabelID, len(ids))
+		for i, id := range ids {
+			labelIDs[i] = entity.LabelID(id)
+		}
+		labels, err := e.labels.ListByIDs(ctx, task.ProjectID, labelIDs)
+		if err != nil {
+			return nil, err
+		}
+		// The request rejects repeated IDs, so a missing label makes the lengths differ
+		if len(labels) != len(labelIDs) {
+			return nil, domain.ErrLabelUnavailable("taskID", task.ID, "labelIDs", ids)
+		}
+		if err := e.labels.ReplaceForTask(ctx, task.ID, labelIDs); err != nil {
+			return nil, err
+		}
+		set := make([]entity.Label, len(labels))
+		for i, l := range labels {
+			set[i] = *l
+		}
+		task.SetLabels(set, now)
+		return nil, nil
 	})
 }
 

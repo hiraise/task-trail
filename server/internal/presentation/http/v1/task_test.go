@@ -29,6 +29,7 @@ type task struct {
 	AssigneeID      *string `json:"assigneeId"`
 	ArchivedAt      *string `json:"archivedAt"`
 	ProjectArchived bool    `json:"projectArchived"`
+	Labels          []label `json:"labels"`
 	CreatedAt       string  `json:"createdAt"`
 	UpdatedAt       string  `json:"updatedAt"`
 }
@@ -116,7 +117,7 @@ func TestTaskLifecycle(t *testing.T) {
 	button := apitest.Decode[task](t, rec)
 	want := task{
 		ID: button.ID, ProjectID: design, Number: 1, Key: designProject.Key + "-1", Name: "Кнопка", Description: ptr("Основная"), StatusID: "open", Priority: "normal",
-		AuthorID: ivan.ID, AssigneeID: &admin.ID, CreatedAt: "2026-10-21T12:00:00Z", UpdatedAt: "2026-10-21T12:00:00Z",
+		AuthorID: ivan.ID, AssigneeID: &admin.ID, Labels: []label{}, CreatedAt: "2026-10-21T12:00:00Z", UpdatedAt: "2026-10-21T12:00:00Z",
 	}
 	if !reflect.DeepEqual(button, want) {
 		t.Fatalf("task: %+v", button)

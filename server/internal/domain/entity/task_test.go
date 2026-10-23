@@ -1,6 +1,7 @@
 package entity_test
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -144,5 +145,23 @@ func TestTaskMoveTo(t *testing.T) {
 	task.MoveTo("backend", "BE", 1, &entity.ProjectMember{ProjectID: "backend", UserID: ivan}, taskTime)
 	if task.AssigneeID != nil {
 		t.Errorf("a task without an assignee got an assignee: %+v", task)
+	}
+}
+
+// Labels are ordered by name ignoring case, then by ID; the caller's slice is not reordered (ADR-0035).
+func TestSetLabels(t *testing.T) {
+	now := time.Date(2026, 10, 23, 12, 0, 0, 0, time.UTC)
+	task := &entity.Task{}
+	given := []entity.Label{{ID: "c", Name: "баг"}, {ID: "b", Name: "API"}, {ID: "a", Name: "Баг"}}
+	task.SetLabels(given, now)
+	var got []string
+	for _, l := range task.Labels {
+		got = append(got, string(l.ID))
+	}
+	if strings.Join(got, "") != "bac" || !task.UpdatedAt.Equal(now) || given[0].ID != "c" {
+		t.Fatalf("labels %v, updated %v, given %v", got, task.UpdatedAt, given)
+	}
+	if task.SetLabels(nil, now); task.Labels == nil {
+		t.Fatal("no labels must be an empty slice")
 	}
 }
