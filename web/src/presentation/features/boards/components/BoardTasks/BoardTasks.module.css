@@ -43,3 +43,12 @@
   padding: 0;
   margin: 0;
 }
+
+/* The title and the sort button in one row (frame 1772:145700) */
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

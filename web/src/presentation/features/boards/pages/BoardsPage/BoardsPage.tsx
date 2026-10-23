@@ -37,10 +37,10 @@ export function BoardsPage() {
       </div>
       <div className={styles.content}>
         <div className={styles.phoneOnly}>
-          <ContentTopBarMobile onClick={openSort} />
+          <ContentTopBarMobile onClick={openSort} tabs={false} />
         </div>
         <div className={styles.wideOnly}>
-          <ContentTopBarDesktop onClick={openSort} />
+          <ContentTopBarDesktop onClick={openSort} tabs={false} />
         </div>
         {sorted &&
           (sorted.length > 0 ? (

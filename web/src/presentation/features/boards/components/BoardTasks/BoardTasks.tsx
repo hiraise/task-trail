@@ -29,12 +29,14 @@ export function BoardTasks({ board, className }: BoardTasksProps) {
 
   return (
     <section className={clsx(styles.container, className)} aria-label={boardsTexts.tasks}>
-      <h4>{boardsTexts.tasks}</h4>
-      <div className={styles.phoneOnly}>
-        <ContentTopBarMobile onClick={openSort} />
-      </div>
-      <div className={styles.wideOnly}>
-        <ContentTopBarDesktop onClick={openSort} />
+      <div className={styles.title}>
+        <h4>{boardsTexts.tasks}</h4>
+        <div className={styles.phoneOnly}>
+          <ContentTopBarMobile onClick={openSort} tabs={false} />
+        </div>
+        <div className={styles.wideOnly}>
+          <ContentTopBarDesktop onClick={openSort} tabs={false} />
+        </div>
       </div>
       {sorted &&
         (sorted.length > 0 ? (
