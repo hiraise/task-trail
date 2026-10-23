@@ -32,8 +32,8 @@ approved before step 2 — the first web step; server steps 1 and 3 may be done 
 | 2 | Priority — web, the shared card line `TaskMeta` | [02-priority-web.md](02-priority-web.md) | done |
 | 3 | Due date — server | [03-due-date-server.md](03-due-date-server.md) | done |
 | 4 | Due date — web | [04-due-date-web.md](04-due-date-web.md) | done |
-| 5 | Labels — server | [05-labels-server.md](05-labels-server.md) | next |
-| 6 | Labels on a task — web | [06-task-labels-web.md](06-task-labels-web.md) | |
+| 5 | Labels — server | [05-labels-server.md](05-labels-server.md) | done |
+| 6 | Labels on a task — web | [06-task-labels-web.md](06-task-labels-web.md) | next |
 | 7 | Project labels management — web | [07-project-labels-web.md](07-project-labels-web.md) | |
 | 8 | Subtasks — server | [08-subtasks-server.md](08-subtasks-server.md) | |
 | 9 | Subtasks — web | [09-subtasks-web.md](09-subtasks-web.md) | |
