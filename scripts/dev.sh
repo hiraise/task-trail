@@ -6,6 +6,8 @@ set -euo pipefail
 ROOT=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 CACHE="$ROOT/.cache"
 GOLANGCI_LINT_VERSION=2.15.0
+# Playwright for screenshots of the local stack (ADR-0040): a tool for agents, not a web dependency
+PLAYWRIGHT_VERSION=1.56.1
 
 # Local stack (ADR-0010): server from server/, web from web/, PostgreSQL and a mail catcher
 COMPOSE=(docker compose -f "$ROOT/stand/compose.yaml")
@@ -28,8 +30,12 @@ Local stack in Docker:
   down            stop, data is kept
   reset           stop and wipe the database and files
   logs [service]  logs: server, web, postgres, mailpit
+  screens <dir> <path>... [--widths 393,768,1200] [--click <selector>]...
+                  full-page screenshots of the running stack, signed in as the administrator
 
-Branches:
+Branches and CI:
+  ci [<pr>|main]  wait for CI of a PR (default: the PR of the current branch) or of the last commit
+                  on main; print one line per check and, on failure, the tail of the failed log
   cleanup         remove worktrees and branches whose PRs are merged
 EOF
 }
@@ -192,15 +198,106 @@ stand_up() {
 	node "$ROOT/scripts/stand-setup.mjs"
 }
 
+# Sets PLAYWRIGHT_DIR to Playwright $PLAYWRIGHT_VERSION installed into .cache/, with its headless Chromium.
+# Call it directly, not via $(…), like ensure_golangci_lint.
+ensure_playwright() {
+	PLAYWRIGHT_DIR="$CACHE/playwright-$PLAYWRIGHT_VERSION"
+	if [ ! -d "$PLAYWRIGHT_DIR/node_modules/playwright" ]; then
+		echo "== playwright $PLAYWRIGHT_VERSION: installing into $PLAYWRIGHT_DIR"
+		mkdir -p "$PLAYWRIGHT_DIR"
+		echo '{ "private": true }' >"$PLAYWRIGHT_DIR/package.json"
+		npm install --prefix "$PLAYWRIGHT_DIR" --no-audit --no-fund --silent "playwright@$PLAYWRIGHT_VERSION"
+	fi
+	# Downloads the browser only if this Playwright version has none in its cache yet
+	"$PLAYWRIGHT_DIR/node_modules/.bin/playwright" install --only-shell chromium >/dev/null
+}
+
+screens() {
+	ensure_playwright
+	PLAYWRIGHT_DIR="$PLAYWRIGHT_DIR" node "$ROOT/scripts/screens.mjs" "$@"
+}
+
+require_gh() {
+	if ! command -v gh >/dev/null 2>&1; then
+		echo "GitHub CLI (gh) is required" >&2
+		exit 1
+	fi
+}
+
+# For each failed job of a workflow run: 40 log lines before the first error, without timestamps —
+# enough to see which step failed and why. The job log comes from the API: gh run view --log-failed
+# prints nothing in some gh versions.
+ci_failed_log() {
+	local job
+	for job in $(gh run view "$1" --json jobs --jq '.jobs[] | select(.conclusion == "failure") | .databaseId'); do
+		echo "== failed job $job of run $1 (full log: gh api repos/{owner}/{repo}/actions/jobs/$job/logs)"
+		gh api "repos/{owner}/{repo}/actions/jobs/$job/logs" 2>&1 |
+			sed -E 's/^[0-9T:.-]+Z //' |
+			awk '/^##\[error\]/ { for (i = n - 40; i < n; i++) if (i >= 0) print buf[i % 40]; print; exit }
+				{ buf[n++ % 40] = $0 }' || true
+	done
+}
+
+# Waits for CI and prints a short result instead of the refreshing gh tables (ADR-0040): an agent runs
+# it in the background and gets one notification. Exit status 0 — all checks passed.
+ci() (
+	require_gh
+	cd "$ROOT"
+	local target=${1:-} attempt names run sha conclusion failed
+	if [ -z "$target" ]; then
+		target=$(gh pr view --json number --jq .number 2>/dev/null) ||
+			{ echo "No PR for the current branch: pass a PR number or main" >&2; exit 1; }
+	fi
+	if [ "$target" = main ]; then
+		git fetch -q origin main
+		sha=$(git rev-parse origin/main)
+		# The run of a fresh merge commit appears a few seconds after the merge
+		for attempt in $(seq 1 24); do
+			run=$(gh run list --workflow ci.yml --branch main --limit 5 --json databaseId,headSha \
+				--jq ".[] | select(.headSha == \"$sha\") | .databaseId" | head -1)
+			[ -n "$run" ] && break
+			sleep 5
+		done
+		if [ -z "$run" ]; then
+			echo "main ${sha:0:7}: no CI run after 2 minutes" >&2
+			exit 1
+		fi
+		gh run watch "$run" --exit-status --interval 20 >/dev/null 2>&1 || true
+		conclusion=$(gh run view "$run" --json conclusion --jq .conclusion)
+		echo "main ${sha:0:7}: $conclusion (run $run)"
+		[ "$conclusion" = success ] && exit 0
+		ci_failed_log "$run"
+		exit 1
+	fi
+	# GitHub registers checks a few seconds after a push; none after two minutes means CI did not start
+	for attempt in $(seq 1 24); do
+		names=$(gh pr checks "$target" --json name --jq '.[].name' 2>/dev/null || true)
+		[ -n "$names" ] && break
+		sleep 5
+	done
+	if [ -z "$names" ]; then
+		echo "PR #${target}: no checks after 2 minutes, GitHub did not start CI: gh pr close $target && gh pr reopen $target" >&2
+		exit 1
+	fi
+	gh pr checks "$target" --watch --interval 20 >/dev/null 2>&1 || true
+	gh pr checks "$target" --json bucket,name --jq '.[] | .bucket + "\t" + .name' 2>/dev/null |
+		while IFS=$'\t' read -r bucket name; do echo "PR #${target}: $name — $bucket"; done || true
+	failed=$(gh pr checks "$target" --json bucket,link \
+		--jq '.[] | select(.bucket != "pass" and .bucket != "skipping") | .link' 2>/dev/null |
+		sed -n 's#.*/actions/runs/\([0-9]*\).*#\1#p' | sort -u || true)
+	[ -z "$failed" ] && exit 0
+	for run in $failed; do
+		ci_failed_log "$run"
+	done
+	exit 1
+)
+
 # Removes worktrees of branches whose PR is merged (CLAUDE.md, "Branches and PRs"): the sources stay in git history.
 # A branch is merged if its last commit is the last commit of a merged PR; this also detects a merge
 # without a merge commit. Leaves alone the main folder, the current worktree and folders with uncommitted
 # changes. Use ${var} before non-ASCII text: otherwise bash 3.2 in the C locale takes its bytes into the variable name.
 cleanup() (
-	if ! command -v gh >/dev/null 2>&1; then
-		echo "GitHub CLI (gh) is required: it tells whether a branch's PR is merged" >&2
-		exit 1
-	fi
+	require_gh
 	cd "$ROOT"
 	git fetch -q --prune origin
 	local main_tree here tree branch head pr removed=0
@@ -253,6 +350,14 @@ logs)
 	else
 		"${COMPOSE[@]}" logs --tail=200 "$@"
 	fi
+	;;
+screens)
+	shift
+	screens "$@"
+	;;
+ci)
+	shift
+	ci "$@"
 	;;
 cleanup) cleanup ;;
 "" | -h | --help | help) usage ;;

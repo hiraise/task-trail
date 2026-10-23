@@ -53,20 +53,16 @@ The customer accepted the ADRs above on 2026-10-23, together with this plan.
 
 ## How to run a step
 
-1. `git fetch`, a branch from `origin/main` (CLAUDE.md, "Branches and PRs"). Read `CLAUDE.md`, this file,
-   the step file and the ADRs it names — before writing code.
-2. If the step file has a `## Progress` section, continue from it (ADR-0032).
-3. Work order of a server step: migration → domain (entity, errors, factory) → repository interface,
+The session order — from a fresh branch to the hand-off — is the `/step` skill. The work order inside
+a step:
+
+1. A server step: migration → domain (entity, errors, factory) → repository interface,
    PostgreSQL repository, mocks, repository tests → application services and their tests → contract
    `api/openapi.yaml` → request/response/handler and handler tests → `npm run api:types` in `web/` →
    `scripts/stand-smoke.mjs` → docs. A server step ends after `npm run api:types`: the web does not use
    the new types yet, but `scripts/dev.sh web` compares them with the contract.
-4. Work order of a web step: model and mapper with tests → repository → cache keys and hooks → shared
-   components → feature components → texts → `docs/design-system.md` → stack check.
-5. Run `scripts/dev.sh check` until it is green. Then `scripts/dev.sh up` and `scripts/dev.sh smoke`
-   (start Docker Desktop if needed).
-6. Show the result to the customer in Russian (the step's «Show the customer»), open the PR only after
-   their "yes" — the `/pr` skill. After the PR is open, say that the context can be cleared.
+2. A web step: model and mapper with tests → repository → cache keys and hooks → shared
+   components → feature components → texts → `docs/design-system.md` → stack check with `/ui-check`.
 
 ## Rules for every step
 
