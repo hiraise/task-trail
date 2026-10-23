@@ -51,7 +51,7 @@ func (s *CreateProjectService) Execute(ctx context.Context, userID string, data 
 			return dto.ProjectCreated{}, err
 		}
 	}
-	project, owner := s.factory.New(data.Name, data.Description, creator.ID)
+	project, owner := s.factory.New(data.Name, data.Description, entity.ProjectKey(data.Key), creator.ID)
 	var invitations []*invitation
 	f := func(ctx context.Context) error {
 		if err := s.projects.Create(ctx, project); err != nil {
@@ -74,7 +74,8 @@ func (s *CreateProjectService) Execute(ctx context.Context, userID string, data 
 	}, nil
 }
 
-// UpdateProjectService changes the name and description: the owner or an administrator.
+// UpdateProjectService changes the name and description: the owner or an administrator;
+// the key — only the owner (ADR-0026).
 type UpdateProjectService struct {
 	txManager transaction.TxManager
 	clock     service.Clock
@@ -92,12 +93,20 @@ func (s *UpdateProjectService) Execute(ctx context.Context, userID, projectID st
 		if err := member.RequireManager(); err != nil {
 			return err
 		}
+		if changes.Key != nil {
+			if err := member.RequireOwner(); err != nil {
+				return err
+			}
+		}
 		now := s.clock.Now()
 		if changes.Name != nil {
 			project.Rename(*changes.Name, now)
 		}
 		if changes.DescriptionSet {
 			project.Describe(changes.Description, now)
+		}
+		if changes.Key != nil {
+			project.ChangeKey(entity.ProjectKey(*changes.Key), now)
 		}
 		if err := s.projects.Update(ctx, project); err != nil {
 			return err

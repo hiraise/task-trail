@@ -4,6 +4,7 @@ export * from "./FloatingButton";
 export * from "./LeaveProject";
 export * from "./ProjectCard";
 export * from "./ProjectInfo";
+export * from "./ProjectKeyField";
 export * from "./ProjectMembers";
 export * from "./ProjectMenuButton";
 export * from "./ProjectsList";

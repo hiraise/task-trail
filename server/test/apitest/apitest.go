@@ -27,6 +27,7 @@ import (
 	"task-trail/internal/infrastructure/service/secretbox"
 	"task-trail/test/clock"
 	"task-trail/test/contract"
+	"task-trail/test/projectkey"
 	"task-trail/test/testdb"
 
 	"github.com/gin-gonic/gin"
@@ -194,7 +195,7 @@ const InvitationLifetime = 7 * 24 * time.Hour
 func (s *Server) CreateProject(name string) string {
 	s.t.Helper()
 	projectID := id.New().Generate()
-	if _, err := s.Pool.Exec(context.Background(), `INSERT INTO projects (id, name) VALUES ($1, $2)`, projectID, name); err != nil {
+	if _, err := s.Pool.Exec(context.Background(), `INSERT INTO projects (id, name, key) VALUES ($1, $2, $3)`, projectID, name, projectkey.New()); err != nil {
 		s.t.Fatal(err)
 	}
 	return projectID

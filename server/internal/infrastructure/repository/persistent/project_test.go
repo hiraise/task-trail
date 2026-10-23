@@ -30,7 +30,8 @@ func insertTask(t *testing.T, pool *pgxpool.Pool, project entity.ProjectID, auth
 		assigneeID = &assignee.ID
 	}
 	_, err := pool.Exec(context.Background(),
-		`INSERT INTO tasks (id, project_id, author_id, assignee_id, name, status, updated_at) VALUES ($1, $2, $3, $4, 'Задача', 'open', $5)`,
+		`INSERT INTO tasks (id, project_id, number, author_id, assignee_id, name, status, updated_at)
+		VALUES ($1, $2, (SELECT COALESCE(MAX(number), 0) + 1 FROM tasks WHERE project_id = $2), $3, $4, 'Задача', 'open', $5)`,
 		taskID, project, author.ID, assigneeID, now)
 	if err != nil {
 		t.Fatal(err)
@@ -51,9 +52,9 @@ func TestProjectRepository(t *testing.T) {
 	ivan := createUser(t, pool, "ivan@example.com", "Иван")
 
 	description := "Компоненты"
-	design, owner := f.New("Дизайн-система", &description, anna.ID)
+	design, owner := f.New("Дизайн-система", &description, "DS", anna.ID)
 	clk.Advance(time.Minute)
-	backend, backendOwner := f.New("Бэкенд", nil, anna.ID)
+	backend, backendOwner := f.New("Бэкенд", nil, "BE", anna.ID)
 	for _, p := range []struct {
 		project *entity.Project
 		owner   *entity.ProjectMember
@@ -79,7 +80,7 @@ func TestProjectRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if p := view.Project; p.ID != design.ID || p.Name != "Дизайн-система" || *p.Description != "Компоненты" ||
-		!p.CreatedAt.Equal(now) || view.TasksCount != 1 || view.Role != entity.RoleMember {
+		p.Key != "DS" || !p.CreatedAt.Equal(now) || view.TasksCount != 1 || view.Role != entity.RoleMember {
 		t.Fatalf("project as Ivan sees it: %+v %+v", view, view.Project)
 	}
 	_, err = repo.GetView(ctx, backend.ID, ivan.ID)
@@ -92,10 +93,11 @@ func TestProjectRepository(t *testing.T) {
 
 	design.Rename("Дизайн-система 2", now.Add(time.Hour))
 	design.Describe(nil, now.Add(time.Hour))
+	design.ChangeKey("ДС", now.Add(time.Hour))
 	if err := repo.Update(ctx, design); err != nil {
 		t.Fatal(err)
 	}
-	if got, err := repo.GetForUpdate(ctx, design.ID); err != nil || got.Name != "Дизайн-система 2" || got.Description != nil ||
+	if got, err := repo.GetForUpdate(ctx, design.ID); err != nil || got.Name != "Дизайн-система 2" || got.Description != nil || got.Key != "ДС" ||
 		!got.UpdatedAt.Equal(now.Add(time.Hour)) {
 		t.Fatalf("after update: %+v, %v", got, err)
 	}
@@ -104,6 +106,8 @@ func TestProjectRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	requireCode(t, repo.SoftDelete(ctx, design.ID, now), domain.EntityNotFound)
+	_, err = repo.NextTaskNumber(ctx, design.ID)
+	requireCode(t, err, domain.EntityNotFound)
 	_, err = repo.GetForUpdate(ctx, design.ID)
 	requireCode(t, err, domain.EntityNotFound)
 	_, err = repo.GetView(ctx, design.ID, anna.ID)
@@ -231,5 +235,43 @@ func TestListCandidates(t *testing.T) {
 	}
 	if got := emails(&design); len(got) != 1 || got[0] != petr.Email {
 		t.Errorf("into the design system: %v", got)
+	}
+}
+
+// A key is unique among non-deleted projects: a taken one gives PROJECT_KEY_TAKEN on create and update,
+// the key of a deleted project is free again (ADR-0026). Task numbers grow by one and are not reused.
+func TestProjectKeys(t *testing.T) {
+	pool := testdb.New(t)
+	ctx := context.Background()
+	repo := persistent.NewProjectRepo(pool)
+	f := factory.NewProjectFactory(id.New(), clock.New(now))
+	anna := createUser(t, pool, "anna@example.com", "Анна")
+
+	design, _ := f.New("Дизайн-система", nil, "DS", anna.ID)
+	backend, _ := f.New("Бэкенд", nil, "BE", anna.ID)
+	for _, p := range []*entity.Project{design, backend} {
+		if err := repo.Create(ctx, p); err != nil {
+			t.Fatal(err)
+		}
+	}
+	twin, _ := f.New("Двойник", nil, "DS", anna.ID)
+	requireCode(t, repo.Create(ctx, twin), domain.ProjectKeyTaken)
+	backend.ChangeKey("DS", now)
+	requireCode(t, repo.Update(ctx, backend), domain.ProjectKeyTaken)
+
+	for want := 1; want <= 3; want++ {
+		if got, err := repo.NextTaskNumber(ctx, design.ID); err != nil || got != want {
+			t.Fatalf("task number %d: %d, %v", want, got, err)
+		}
+	}
+	if got, err := repo.NextTaskNumber(ctx, backend.ID); err != nil || got != 1 {
+		t.Fatalf("each project counts on its own: %d, %v", got, err)
+	}
+
+	if err := repo.SoftDelete(ctx, design.ID, now); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.Create(ctx, twin); err != nil {
+		t.Fatalf("the key of a deleted project is free: %v", err)
 	}
 }

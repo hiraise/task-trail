@@ -73,7 +73,11 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 		if err != nil {
 			return err
 		}
-		if task, err = s.factory.New(author, data.Name, data.Description, assignee); err != nil {
+		number, err := e.projects.NextTaskNumber(ctx, project.ID)
+		if err != nil {
+			return err
+		}
+		if task, err = s.factory.New(author, project.Key, number, data.Name, data.Description, assignee); err != nil {
 			return err
 		}
 		return e.tasks.Create(ctx, task)
@@ -90,7 +94,7 @@ type UpdateTaskService struct {
 }
 
 func (s *UpdateTaskService) Execute(ctx context.Context, userID, taskID string, changes dto.TaskChanges) (*entity.Task, error) {
-	return s.editor.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, now time.Time) error {
+	return s.editor.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) error {
 		if changes.Name != nil {
 			task.Rename(*changes.Name, now)
 		}
@@ -106,7 +110,7 @@ type ChangeStatusService struct {
 }
 
 func (s *ChangeStatusService) Execute(ctx context.Context, userID, taskID string, status entity.TaskStatus) (*entity.Task, error) {
-	return s.editor.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, now time.Time) error {
+	return s.editor.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) error {
 		task.ChangeStatus(status, now)
 		return nil
 	})
@@ -118,7 +122,7 @@ type ChangeAssigneeService struct {
 }
 
 func (s *ChangeAssigneeService) Execute(ctx context.Context, userID, taskID string, assigneeID *string) (*entity.Task, error) {
-	return s.editor.edit(ctx, userID, taskID, nil, func(ctx context.Context, task *entity.Task, now time.Time) error {
+	return s.editor.edit(ctx, userID, taskID, nil, func(ctx context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) error {
 		assignee, err := s.editor.assignee(ctx, task.ProjectID, assigneeID)
 		if err != nil {
 			return err
@@ -128,7 +132,8 @@ func (s *ChangeAssigneeService) Execute(ctx context.Context, userID, taskID stri
 }
 
 // MoveTaskService moves a task to another project: a member of both projects moves it.
-// The assignee stays if they are a member of the new project.
+// The task gets the next number of the new project and its key (ADR-0026); a move to the task's own
+// project changes nothing. The assignee stays if they are a member of the new project.
 type MoveTaskService struct {
 	editor *editor
 }
@@ -136,7 +141,10 @@ type MoveTaskService struct {
 func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID string) (*entity.Task, error) {
 	e := s.editor
 	target := entity.ProjectID(projectID)
-	return e.edit(ctx, userID, taskID, []entity.ProjectID{target}, func(ctx context.Context, task *entity.Task, now time.Time) error {
+	return e.edit(ctx, userID, taskID, []entity.ProjectID{target}, func(ctx context.Context, task *entity.Task, projects map[entity.ProjectID]*entity.Project, now time.Time) error {
+		if task.ProjectID == target {
+			return nil
+		}
 		if _, err := e.members.Get(ctx, target, entity.UserID(userID)); err != nil {
 			return err
 		}
@@ -150,7 +158,11 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 				return err
 			}
 		}
-		task.MoveTo(target, assignee, now)
+		number, err := e.projects.NextTaskNumber(ctx, target)
+		if err != nil {
+			return err
+		}
+		task.MoveTo(target, projects[target].Key, number, assignee, now)
 		return nil
 	})
 }
@@ -163,7 +175,7 @@ type DeleteTaskService struct {
 func (s *DeleteTaskService) Execute(ctx context.Context, userID, taskID string) error {
 	e := s.editor
 	return e.txManager.DoWithTx(ctx, func(ctx context.Context) error {
-		task, _, err := e.lock(ctx, taskID, userID)
+		task, _, _, err := e.lock(ctx, taskID, userID)
 		if err != nil {
 			return err
 		}

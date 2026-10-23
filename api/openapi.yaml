@@ -457,6 +457,7 @@ paths:
       description: |
         Any signed-in user; the creator becomes the owner. Emails from `emails`
         are invited as in `addProjectMembers`, with the same response time.
+        The key is unique among non-deleted projects (ADR-0026).
       requestBody:
         required: true
         content:
@@ -470,6 +471,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ProjectCreated" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
+        "409": { $ref: "#/components/responses/ProjectKeyTaken" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/projects/candidates:
@@ -518,8 +520,10 @@ paths:
     patch:
       tags: [projects]
       operationId: updateProject
-      summary: Change the name or description
-      description: "Role: `owner` or `admin`."
+      summary: Change the name, description or key
+      description: |
+        Role: `owner` or `admin`; the key — only `owner`. A new key changes the keys of all project
+        tasks, numbers stay (ADR-0026).
       requestBody:
         required: true
         content:
@@ -535,6 +539,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/ProjectKeyTaken" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
     delete:
       tags: [projects]
@@ -820,8 +825,9 @@ paths:
       operationId: moveTask
       summary: Move a task to another project
       description: |
-        Role: any in both projects. If the assignee is not a member of the new project, the task
-        is left without an assignee. The status is kept.
+        Role: any in both projects. The task gets the next number of the new project and its key;
+        a move to the task's own project changes nothing (ADR-0026). If the assignee is not a member
+        of the new project, the task is left without an assignee. The status is kept.
       requestBody:
         required: true
         content:
@@ -1085,6 +1091,11 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ApiError" }
+    ProjectKeyTaken:
+      description: "`PROJECT_KEY_TAKEN` — the key is taken by another project"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }
     Internal:
       description: "`INTERNAL` — server error"
       content:
@@ -1137,6 +1148,7 @@ components:
         - ASSIGNEE_NOT_MEMBER
         - OWNER_CANNOT_LEAVE
         - LAST_ADMIN
+        - PROJECT_KEY_TAKEN
         - FILE_TOO_LARGE
         - FILE_TYPE_NOT_ALLOWED
         - MAIL_DISABLED
@@ -1267,13 +1279,22 @@ components:
     ProjectRole:
       type: string
       enum: [owner, admin, member]
+    ProjectKey:
+      type: string
+      minLength: 2
+      maxLength: 10
+      pattern: '^\p{L}[\p{L}0-9]{1,9}$'
+      description: |
+        Project key, like `DS` or a Cyrillic one: letters of any alphabet and digits, starting with a letter
+        (ADR-0026). The server trims and upper-cases it before validation and returns it upper-case.
     Project:
       type: object
-      required: [id, name, description, createdAt, tasksCount]
+      required: [id, name, description, key, createdAt, tasksCount]
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         name: { type: string, minLength: 1, maxLength: 254 }
         description: { type: [string, "null"] }
+        key: { $ref: "#/components/schemas/ProjectKey" }
         createdAt: { $ref: "#/components/schemas/DateTime" }
         tasksCount: { type: integer, minimum: 0 }
     ProjectDetails:
@@ -1287,10 +1308,11 @@ components:
               description: The current user's role in the project
     CreateProjectRequest:
       type: object
-      required: [name]
+      required: [name, key]
       properties:
         name: { type: string, minLength: 1, maxLength: 254 }
         description: { type: [string, "null"] }
+        key: { $ref: "#/components/schemas/ProjectKey" }
         emails:
           type: array
           maxItems: 50
@@ -1309,6 +1331,9 @@ components:
       properties:
         name: { type: string, minLength: 1, maxLength: 254 }
         description: { type: [string, "null"] }
+        key:
+          $ref: "#/components/schemas/ProjectKey"
+          description: Only the project owner changes the key
     Member:
       allOf:
         - $ref: "#/components/schemas/User"
@@ -1368,10 +1393,17 @@ components:
           description: The task is done — only for `done`
     Task:
       type: object
-      required: [id, projectId, name, description, statusId, authorId, assigneeId, createdAt, updatedAt]
+      required: [id, projectId, number, key, name, description, statusId, authorId, assigneeId, createdAt, updatedAt]
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         projectId: { $ref: "#/components/schemas/Uuid" }
+        number:
+          type: integer
+          minimum: 1
+          description: Sequential within the project, never reused (ADR-0026)
+        key:
+          type: string
+          description: "`<project key>-<number>`, like `DS-12`; changes with the project key and on a move"
         name: { type: string, minLength: 1, maxLength: 254 }
         description: { type: [string, "null"] }
         statusId: { $ref: "#/components/schemas/TaskStatusId" }

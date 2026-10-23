@@ -10,6 +10,8 @@ import (
 type Task struct {
 	ID          string    `json:"id"`
 	ProjectID   string    `json:"projectId"`
+	Number      int       `json:"number"`
+	Key         string    `json:"key"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 	StatusID    string    `json:"statusId"`
@@ -29,6 +31,8 @@ func NewTask(t *entity.Task) Task {
 	return Task{
 		ID:          string(t.ID),
 		ProjectID:   string(t.ProjectID),
+		Number:      t.Number,
+		Key:         t.Key(),
 		Name:        t.Name,
 		Description: t.Description,
 		StatusID:    string(t.Status),

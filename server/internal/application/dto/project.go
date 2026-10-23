@@ -8,14 +8,17 @@ import (
 type CreateProject struct {
 	Name        string
 	Description *string
+	// Key is already trimmed and upper-cased (ADR-0026).
+	Key string
 	// Emails are whom to invite right away, as in AddMembers.
 	Emails []string
 }
 
-// ProjectChanges is what to change in a project: Name if not nil; the description if DescriptionSet,
-// nil in Description removes the description.
+// ProjectChanges is what to change in a project: Name and Key if not nil; the description
+// if DescriptionSet, nil in Description removes the description.
 type ProjectChanges struct {
 	Name           *string
+	Key            *string
 	DescriptionSet bool
 	Description    *string
 }

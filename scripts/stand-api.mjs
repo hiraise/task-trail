@@ -7,6 +7,13 @@ export const MAIL = "http://localhost:3025";
 // the customer signs in with it, and smoke invites to a project on its behalf.
 export const ADMIN = { email: "admin@tasktrail.local", password: "tasktrail", username: "Администратор" };
 
+// A random project key: S and six upper-case base36 characters (ADR-0026). The key is unique among
+// non-deleted projects, and the stack keeps projects between runs.
+export function randomProjectKey() {
+  const digits = Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) => (byte % 36).toString(36));
+  return `S${digits.join("").toUpperCase()}`;
+}
+
 // A single browser session. Cookies are stored by name and path, as in a browser: the server sets `rt`
 // on /api/v1/auth/ and in the same response deletes the old API's cookie of the same name on another path.
 export function createSession() {

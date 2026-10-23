@@ -3,6 +3,10 @@ import type { ProjectId, TaskId, TaskStatusId, UserId } from "../types";
 export interface Task {
   id: TaskId;
   projectId: ProjectId;
+  /** Sequential within the project */
+  number: number;
+  /** Like DS-12; changes with the project key and on a move */
+  key: string;
   name: string;
   /** undefined when there is no description */
   description?: string;

@@ -7,11 +7,13 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 
 ## Where we are
 
-- **Now:** stage 2, plan — [docs/plans/stage-2/](plans/stage-2/README.md). Step 0 is done: code
-  comments and developer-facing strings are in English. Next step — 1, task keys.
+- **Now:** stage 2, plan — [docs/plans/stage-2/](plans/stage-2/README.md). Steps 0–1 are done:
+  English code comments; project keys and task keys `DS-12`
+  ([ADR-0026](adr/0026-project-and-task-keys.md)). Next step — 2, archive and list sorting.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
-  reset; users and files; projects and members; fixed statuses and tasks; service administration.
+  reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
+  service administration.
   Tests check responses against the contract ([ADR-0019](adr/0019-server-contract-tests.md)).
 - **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping
   and errors — [ADR-0024](adr/0024-web-api-mapping-and-errors.md)): sign-in and profile, projects and

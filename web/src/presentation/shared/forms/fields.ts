@@ -34,6 +34,15 @@ export const projectNameField = z
 // The contract sets no limit on the description; empty means no description
 export const projectDescriptionField = z.string().trim();
 
+// Project key — ProjectKey in the contract (ADR-0026): the server also trims and upper-cases it
+export const PROJECT_KEY_PATTERN = /^\p{L}[\p{L}0-9]{1,9}$/u;
+
+export const projectKeyField = z
+  .string()
+  .trim()
+  .toUpperCase()
+  .regex(PROJECT_KEY_PATTERN, "2–10 букв и цифр, первая — буква");
+
 // Task name: 1–254 characters, like a project; "Fill in the field" is the mockup text
 export const taskNameField = z
   .string()

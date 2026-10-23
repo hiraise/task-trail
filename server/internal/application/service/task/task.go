@@ -62,59 +62,60 @@ type editor struct {
 	tasks     repository.TaskRepository
 }
 
-// lock locks the task's project and the also projects until the end of the transaction and finds the task
-// and userID's membership in its project.
-func (e *editor) lock(ctx context.Context, taskID, userID string, also ...entity.ProjectID) (*entity.Task, *entity.ProjectMember, error) {
+// lock locks the task's project and the also projects until the end of the transaction and finds the task,
+// userID's membership in its project and the locked projects.
+func (e *editor) lock(ctx context.Context, taskID, userID string, also ...entity.ProjectID) (*entity.Task, *entity.ProjectMember, map[entity.ProjectID]*entity.Project, error) {
 	task, err := e.tasks.Get(ctx, entity.TaskID(taskID))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	locked := map[entity.ProjectID]bool{}
-	for !locked[task.ProjectID] {
+	locked := map[entity.ProjectID]*entity.Project{}
+	for locked[task.ProjectID] == nil {
 		if err := e.lockProjects(ctx, locked, append([]entity.ProjectID{task.ProjectID}, also...)); err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		// While waiting for the lock, the task may have been moved or deleted. Now, if its project
 		// is locked, the task does not change until the end of the transaction
 		if task, err = e.tasks.Get(ctx, task.ID); err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 	}
 	member, err := e.members.Get(ctx, task.ProjectID, entity.UserID(userID))
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return task, member, nil
+	return task, member, locked, nil
 }
 
-// lockProjects locks the ids projects, except those already locked, in ascending ID order: this way
-// two opposite task moves do not wait for each other.
-func (e *editor) lockProjects(ctx context.Context, locked map[entity.ProjectID]bool, ids []entity.ProjectID) error {
+// lockProjects locks the ids projects, except those already in locked, in ascending ID order: this way
+// two opposite task moves do not wait for each other. Each locked project is added to locked.
+func (e *editor) lockProjects(ctx context.Context, locked map[entity.ProjectID]*entity.Project, ids []entity.ProjectID) error {
 	slices.Sort(ids)
 	for _, id := range slices.Compact(ids) {
-		if locked[id] {
+		if locked[id] != nil {
 			continue
 		}
-		if _, err := e.projects.GetForUpdate(ctx, id); err != nil {
+		project, err := e.projects.GetForUpdate(ctx, id)
+		if err != nil {
 			return err
 		}
-		locked[id] = true
+		locked[id] = project
 	}
 	return nil
 }
 
 // edit is a change of a task by a member of its project: in a transaction under the project lock
-// (and the also projects) it applies apply and writes the task.
+// (and the also projects) it applies apply and writes the task. apply gets the locked projects.
 func (e *editor) edit(ctx context.Context, userID, taskID string, also []entity.ProjectID,
-	apply func(ctx context.Context, task *entity.Task, now time.Time) error,
+	apply func(ctx context.Context, task *entity.Task, projects map[entity.ProjectID]*entity.Project, now time.Time) error,
 ) (*entity.Task, error) {
 	var task *entity.Task
 	f := func(ctx context.Context) error {
-		t, _, err := e.lock(ctx, taskID, userID, also...)
+		t, _, projects, err := e.lock(ctx, taskID, userID, also...)
 		if err != nil {
 			return err
 		}
-		if err := apply(ctx, t, e.clock.Now()); err != nil {
+		if err := apply(ctx, t, projects, e.clock.Now()); err != nil {
 			return err
 		}
 		if err := e.tasks.Update(ctx, t); err != nil {

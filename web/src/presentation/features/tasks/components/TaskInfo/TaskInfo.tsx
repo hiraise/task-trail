@@ -25,7 +25,10 @@ interface TaskInfoProps {
   menuItems: MenuItem[];
 }
 
-/** Task: status, name, description, assignee and project — each is changed in its own modal. */
+/**
+ * Task: status, key above the name, name, description, assignee and project — each is changed in its
+ * own modal.
+ */
 export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInfoProps) {
   const { changeStatus, selectAssignee, selectProject } = useTaskActions(task);
 
@@ -34,7 +37,10 @@ export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInf
       <div className={styles.header}>
         <div className={styles.heading}>
           <TaskStatusBadge status={status} onClick={changeStatus} />
-          <h2 className={styles.name}>{task.name}</h2>
+          <div className={styles.title}>
+            <span className={clsx("caption-reg", styles.key)}>{task.key}</span>
+            <h2 className={styles.name}>{task.name}</h2>
+          </div>
           {task.description && (
             <p className={clsx("body-reg-2", styles.description)}>{task.description}</p>
           )}

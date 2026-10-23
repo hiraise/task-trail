@@ -11,6 +11,7 @@ import (
 //   - maxbytes=N — a string of at most N bytes in UTF-8 (password and the bcrypt limit);
 //   - httpurl — a full http(s) address without query or fragment: links are built from it (ADR-0015);
 //   - taskstatus — a task status from the fixed set (ADR-0003);
+//   - projectkey — a project key (ADR-0026), checked after normalizeProjectKey;
 //   - mailbox — the mail sender: an email address, optionally with a name (ADR-0017);
 //   - values of Optional fields and required fields that may be null.
 func RegisterValidators(v *validator.Validate) error {
@@ -23,12 +24,16 @@ func RegisterValidators(v *validator.Validate) error {
 	if err := v.RegisterValidation("taskstatus", taskStatus); err != nil {
 		return err
 	}
+	if err := v.RegisterValidation("projectkey", projectKey); err != nil {
+		return err
+	}
 	if err := v.RegisterValidation("mailbox", mailbox); err != nil {
 		return err
 	}
 	v.RegisterCustomTypeFunc(optionalValue[string], Optional[string]{})
 	v.RegisterStructValidation(requireUsername, updateCurrentUserReq{})
 	v.RegisterStructValidation(checkRename, renameReq{})
+	v.RegisterStructValidation(checkUpdateProject, updateProjectReq{})
 	v.RegisterStructValidation(requireAssignee, changeTaskAssigneeReq{})
 	return nil
 }

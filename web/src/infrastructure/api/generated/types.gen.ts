@@ -25,7 +25,7 @@ export type Password = string;
 
 export type Username = string;
 
-export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
+export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
 
 export type ApiError = {
     code: ErrorCode;
@@ -132,10 +132,18 @@ export type UpdateCurrentUserRequest = {
 
 export type ProjectRole = 'owner' | 'admin' | 'member';
 
+/**
+ * Project key, like `DS` or a Cyrillic one: letters of any alphabet and digits, starting with a letter
+ * (ADR-0026). The server trims and upper-cases it before validation and returns it upper-case.
+ *
+ */
+export type ProjectKey = string;
+
 export type Project = {
     id: Uuid;
     name: string;
     description: string | null;
+    key: ProjectKey;
     createdAt: DateTime;
     tasksCount: number;
 };
@@ -150,6 +158,7 @@ export type ProjectDetails = Project & {
 export type CreateProjectRequest = {
     name: string;
     description?: string | null;
+    key: ProjectKey;
     emails?: Array<Email>;
 };
 
@@ -161,6 +170,10 @@ export type ProjectCreated = {
 export type UpdateProjectRequest = {
     name?: string;
     description?: string | null;
+    /**
+     * Only the project owner changes the key
+     */
+    key?: ProjectKey;
 };
 
 export type Member = User & {
@@ -211,6 +224,14 @@ export type TaskStatus = {
 export type Task = {
     id: Uuid;
     projectId: Uuid;
+    /**
+     * Sequential within the project, never reused (ADR-0026)
+     */
+    number: number;
+    /**
+     * `<project key>-<number>`, like `DS-12`; changes with the project key and on a move
+     */
+    key: string;
     name: string;
     description: string | null;
     statusId: TaskStatusId;
@@ -887,6 +908,10 @@ export type CreateProjectErrors = {
      */
     401: ApiError;
     /**
+     * `PROJECT_KEY_TAKEN` — the key is taken by another project
+     */
+    409: ApiError;
+    /**
      * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
@@ -1042,6 +1067,10 @@ export type UpdateProjectErrors = {
      * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
+    /**
+     * `PROJECT_KEY_TAKEN` — the key is taken by another project
+     */
+    409: ApiError;
     /**
      * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */

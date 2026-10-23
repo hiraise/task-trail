@@ -5,6 +5,8 @@ export interface Project {
   name: string;
   /** undefined when there is no description */
   description?: string;
+  /** Upper-case, like DS, Cyrillic letters included; task keys are built from it (ADR-0026) */
+  key: string;
   /** ISO 8601 in UTC */
   createdAt: string;
   tasksCount: number;

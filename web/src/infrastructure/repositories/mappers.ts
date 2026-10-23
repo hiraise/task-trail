@@ -43,6 +43,7 @@ export const toProject = (dto: ProjectDto): Project => ({
   id: dto.id,
   name: dto.name,
   description: dto.description ?? undefined,
+  key: dto.key,
   createdAt: dto.createdAt,
   tasksCount: dto.tasksCount,
 });
@@ -66,6 +67,8 @@ export const toInvitationResult = (dto: InvitationResultDto): InvitationResult =
 export const toTask = (dto: TaskDto): Task => ({
   id: dto.id,
   projectId: dto.projectId,
+  number: dto.number,
+  key: dto.key,
   name: dto.name,
   description: dto.description ?? undefined,
   statusId: dto.statusId,

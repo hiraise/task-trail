@@ -16,6 +16,17 @@
   background-color: var(--bg-secondary);
 }
 
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.key {
+  color: var(--text-secondary);
+}
+
 .title {
   min-width: 0;
   overflow-wrap: anywhere;

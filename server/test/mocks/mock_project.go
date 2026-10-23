@@ -102,6 +102,21 @@ func (mr *MockProjectRepositoryMockRecorder) ListViews(ctx, userID any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListViews", reflect.TypeOf((*MockProjectRepository)(nil).ListViews), ctx, userID)
 }
 
+// NextTaskNumber mocks base method.
+func (m *MockProjectRepository) NextTaskNumber(ctx context.Context, id entity.ProjectID) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "NextTaskNumber", ctx, id)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NextTaskNumber indicates an expected call of NextTaskNumber.
+func (mr *MockProjectRepositoryMockRecorder) NextTaskNumber(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NextTaskNumber", reflect.TypeOf((*MockProjectRepository)(nil).NextTaskNumber), ctx, id)
+}
+
 // SoftDelete mocks base method.
 func (m *MockProjectRepository) SoftDelete(ctx context.Context, id entity.ProjectID, now time.Time) error {
 	m.ctrl.T.Helper()

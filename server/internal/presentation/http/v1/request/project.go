@@ -1,6 +1,9 @@
 package request
 
 import (
+	"regexp"
+	"strings"
+
 	"task-trail/internal/application/dto"
 	"task-trail/internal/domain/entity"
 
@@ -11,13 +14,55 @@ import (
 type createProjectReq struct {
 	Name        string   `json:"name" binding:"required,max=254"`
 	Description *string  `json:"description"`
+	Key         string   `json:"key" binding:"required,projectkey"`
 	Emails      []string `json:"emails" binding:"max=50,dive,required,email,max=254"`
 }
 
-func (r *createProjectReq) normalize() { normalizeEmails(r.Emails) }
+func (r *createProjectReq) normalize() {
+	normalizeEmails(r.Emails)
+	r.Key = normalizeProjectKey(r.Key)
+}
 
-// renameReq is a new name or description of a project or task (UpdateProjectRequest
-// and UpdateTaskRequest in the contract).
+// updateProjectReq is a new name, description or key of a project (UpdateProjectRequest in the contract).
+type updateProjectReq struct {
+	Name        Optional[string] `json:"name" binding:"omitnil,min=1,max=254"`
+	Description Optional[string] `json:"description"`
+	Key         Optional[string] `json:"key" binding:"omitnil,projectkey"`
+}
+
+func (r *updateProjectReq) normalize() {
+	if r.Key.Value != nil {
+		key := normalizeProjectKey(*r.Key.Value)
+		r.Key.Value = &key
+	}
+}
+
+// checkUpdateProject: the name and the key cannot be null, and at least one field is required (minProperties 1).
+func checkUpdateProject(sl validator.StructLevel) {
+	r := sl.Current().Interface().(updateProjectReq)
+	switch {
+	case r.Name.Set && r.Name.Value == nil:
+		sl.ReportError(r.Name, "name", "Name", "required", "")
+	case r.Key.Set && r.Key.Value == nil:
+		sl.ReportError(r.Key, "key", "Key", "required", "")
+	case !r.Name.Set && !r.Description.Set && !r.Key.Set:
+		sl.ReportError(r.Name, "name", "Name", "required_without", "description")
+	}
+}
+
+// projectKeyPattern — ProjectKey in the contract (ADR-0026): Go counts {1,9} in characters, not bytes.
+var projectKeyPattern = regexp.MustCompile(`^\p{L}[\p{L}0-9]{1,9}$`)
+
+func projectKey(fl validator.FieldLevel) bool {
+	return projectKeyPattern.MatchString(fl.Field().String())
+}
+
+// normalizeProjectKey trims and upper-cases the key before validation (ADR-0026).
+func normalizeProjectKey(key string) string {
+	return strings.ToUpper(strings.TrimSpace(key))
+}
+
+// renameReq is a new name or description of a task (UpdateTaskRequest in the contract).
 type renameReq struct {
 	Name        Optional[string] `json:"name" binding:"omitnil,min=1,max=254"`
 	Description Optional[string] `json:"description"`
@@ -56,16 +101,17 @@ func BindCreateProject(c *gin.Context) (dto.CreateProject, error) {
 	if err != nil {
 		return dto.CreateProject{}, err
 	}
-	return dto.CreateProject{Name: body.Name, Description: body.Description, Emails: body.Emails}, nil
+	return dto.CreateProject{Name: body.Name, Description: body.Description, Key: body.Key, Emails: body.Emails}, nil
 }
 
 func BindUpdateProject(c *gin.Context) (dto.ProjectChanges, error) {
-	body, err := validate[renameReq](c)
+	body, err := validate[updateProjectReq](c)
 	if err != nil {
 		return dto.ProjectChanges{}, err
 	}
 	return dto.ProjectChanges{
 		Name:           body.Name.Value,
+		Key:            body.Key.Value,
 		DescriptionSet: body.Description.Set,
 		Description:    body.Description.Value,
 	}, nil

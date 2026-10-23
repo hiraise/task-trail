@@ -18,6 +18,8 @@ import (
 type task struct {
 	ID          string  `json:"id"`
 	ProjectID   string  `json:"projectId"`
+	Number      int     `json:"number"`
+	Key         string  `json:"key"`
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 	StatusID    string  `json:"statusId"`
@@ -99,7 +101,8 @@ func TestTaskStatuses(t *testing.T) {
 func TestTaskLifecycle(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	admin := registerAdmin(t, s)
-	design := createProject(t, s, "Дизайн-система").Project.ID
+	designProject := createProject(t, s, "Дизайн-система").Project
+	design := designProject.ID
 	ivan := signUp(t, s, design, "ivan@example.com", "Иван")
 
 	rec := s.Do(http.MethodPost, "/v1/tasks", map[string]any{
@@ -108,7 +111,7 @@ func TestTaskLifecycle(t *testing.T) {
 	apitest.RequireStatus(t, rec, http.StatusCreated)
 	button := apitest.Decode[task](t, rec)
 	want := task{
-		ID: button.ID, ProjectID: design, Name: "Кнопка", Description: ptr("Основная"), StatusID: "open",
+		ID: button.ID, ProjectID: design, Number: 1, Key: designProject.Key + "-1", Name: "Кнопка", Description: ptr("Основная"), StatusID: "open",
 		AuthorID: ivan.ID, AssigneeID: &admin.ID, CreatedAt: "2026-10-21T12:00:00Z", UpdatedAt: "2026-10-21T12:00:00Z",
 	}
 	if !reflect.DeepEqual(button, want) {
@@ -116,7 +119,7 @@ func TestTaskLifecycle(t *testing.T) {
 	}
 	s.Clock.Advance(time.Minute)
 	form := createTask(t, s, design, "Форма", "")
-	if form.Description != nil || form.AssigneeID != nil {
+	if form.Description != nil || form.AssigneeID != nil || form.Number != 2 || form.Key != designProject.Key+"-2" {
 		t.Fatalf("task without description and assignee: %+v", form)
 	}
 	rec = s.Do(http.MethodGet, "/v1/tasks/"+button.ID, nil)
@@ -178,6 +181,10 @@ func TestTaskLifecycle(t *testing.T) {
 	}
 	if n := tasksCount(t, s, design); n != 1 {
 		t.Fatalf("tasks in project after deletion: %d", n)
+	}
+	// A deleted task keeps its number: the next task gets a new one (ADR-0026)
+	if next := createTask(t, s, design, "Таблица", ""); next.Number != 3 {
+		t.Fatalf("number after delete: %+v", next)
 	}
 }
 
@@ -275,7 +282,8 @@ func TestMoveTask(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
 	registerAdmin(t, s)
 	design := createProject(t, s, "Дизайн-система").Project.ID
-	backend := createProject(t, s, "Бэкенд").Project.ID
+	backendProject := createProject(t, s, "Бэкенд").Project
+	backend := backendProject.ID
 	ivan := signUp(t, s, design, "ivan@example.com", "Иван")
 	login(t, s, "admin@example.com", password)
 	anna := signUp(t, s, design, "anna@example.com", "Анна")
@@ -287,23 +295,26 @@ func TestMoveTask(t *testing.T) {
 	changeTask(t, s, "/v1/tasks/"+button.ID+"/status", map[string]any{"statusId": "in_review"})
 	s.Clock.Advance(time.Minute)
 	form := createTask(t, s, design, "Форма", anna.ID)
+	createTask(t, s, backend, "API", "")
 
 	s.Clock.Advance(time.Minute)
 	moved := changeTask(t, s, "/v1/tasks/"+button.ID+"/project", map[string]any{"projectId": backend})
-	if moved.ProjectID != backend || moved.AssigneeID != nil || moved.StatusID != "in_review" || moved.UpdatedAt != "2026-10-21T12:02:00Z" {
+	if moved.ProjectID != backend || moved.Number != 2 || moved.Key != backendProject.Key+"-2" || moved.AssigneeID != nil || moved.StatusID != "in_review" || moved.UpdatedAt != "2026-10-21T12:02:00Z" {
 		t.Fatalf("move, assignee not a backend member: %+v", moved)
 	}
-	if moved = changeTask(t, s, "/v1/tasks/"+form.ID+"/project", map[string]any{"projectId": backend}); moved.AssigneeID == nil || *moved.AssigneeID != anna.ID {
+	if moved = changeTask(t, s, "/v1/tasks/"+form.ID+"/project", map[string]any{"projectId": backend}); moved.AssigneeID == nil || *moved.AssigneeID != anna.ID ||
+		moved.Key != backendProject.Key+"-3" {
 		t.Fatalf("move, assignee is a backend member: %+v", moved)
 	}
-	if got := listTasks(t, s, "/v1/projects/"+backend+"/tasks"); !slices.Equal(got, []string{form.ID, button.ID}) {
+	if got := listTasks(t, s, "/v1/projects/"+backend+"/tasks"); len(got) != 3 || !slices.Contains(got, form.ID) || !slices.Contains(got, button.ID) {
 		t.Fatalf("backend tasks: %v", got)
 	}
 	if got := listTasks(t, s, "/v1/projects/"+design+"/tasks"); len(got) != 0 {
 		t.Fatalf("design system tasks: %v", got)
 	}
-	if moved = changeTask(t, s, "/v1/tasks/"+form.ID+"/project", map[string]any{"projectId": backend}); moved.ProjectID != backend || *moved.AssigneeID != anna.ID {
-		t.Fatalf("move to the same project: %+v", moved)
+	before := moved
+	if moved = changeTask(t, s, "/v1/tasks/"+form.ID+"/project", map[string]any{"projectId": backend}); !reflect.DeepEqual(moved, before) {
+		t.Fatalf("move to the same project changed the task: %+v, before %+v", moved, before)
 	}
 
 	// To a project you are not a member of, or a deleted one — 404; the task stays put

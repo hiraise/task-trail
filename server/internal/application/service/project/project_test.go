@@ -13,6 +13,7 @@ import (
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/factory"
+	"task-trail/internal/domain/repository"
 	"task-trail/internal/domain/service"
 	"task-trail/internal/infrastructure/service/id"
 	"task-trail/internal/infrastructure/service/linktoken"
@@ -236,12 +237,39 @@ func TestCreateProject(t *testing.T) {
 		}
 		return nil
 	})
-	got, err := module.Create.Execute(context.Background(), string(ownerID), dto.CreateProject{Name: "Дизайн-система"})
+	got, err := module.Create.Execute(context.Background(), string(ownerID), dto.CreateProject{Name: "Дизайн-система", Key: "DS"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got.Project.Project != created || got.Project.Role != entity.RoleOwner || got.Invitations == nil || len(got.Invitations) != 0 ||
-		!created.CreatedAt.Equal(now) {
+		created.Key != "DS" || !created.CreatedAt.Equal(now) {
 		t.Fatalf("created: %+v", got)
 	}
+}
+
+// Name and description are changed by the owner or an administrator, the key — only by the owner (ADR-0026).
+func TestUpdateProjectKey(t *testing.T) {
+	key, name := "ДС", "Дизайн"
+	t.Run("administrator", func(t *testing.T) {
+		module, d := newModule(t)
+		d.expectLocked(entity.RoleAdmin)
+		_, err := module.Update.Execute(context.Background(), string(ownerID), string(projectID), dto.ProjectChanges{Name: &name, Key: &key})
+		if !domain.HasCode(err, domain.Forbidden) {
+			t.Fatalf("administrator changes the key: %v", err)
+		}
+	})
+	t.Run("owner", func(t *testing.T) {
+		module, d := newModule(t)
+		d.expectLocked(entity.RoleOwner)
+		d.projects.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, p *entity.Project) error {
+			if p.Key != "ДС" || p.Name != "Дизайн-система" || !p.UpdatedAt.Equal(now) {
+				t.Errorf("project written: %+v", p)
+			}
+			return nil
+		})
+		d.projects.EXPECT().GetView(txtest.InTx, projectID, ownerID).Return(&repository.ProjectView{}, nil)
+		if _, err := module.Update.Execute(context.Background(), string(ownerID), string(projectID), dto.ProjectChanges{Key: &key}); err != nil {
+			t.Fatal(err)
+		}
+	})
 }

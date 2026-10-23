@@ -14,6 +14,7 @@ import (
 	"task-trail/internal/infrastructure/service/id"
 	"task-trail/internal/infrastructure/service/linktoken"
 	"task-trail/test/clock"
+	"task-trail/test/projectkey"
 	"task-trail/test/testdb"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -40,7 +41,7 @@ func createUser(t *testing.T, pool *pgxpool.Pool, email entity.Email, username s
 func createProject(t *testing.T, pool *pgxpool.Pool, name string) entity.ProjectID {
 	t.Helper()
 	projectID := id.New().Generate()
-	if _, err := pool.Exec(context.Background(), `INSERT INTO projects (id, name) VALUES ($1, $2)`, projectID, name); err != nil {
+	if _, err := pool.Exec(context.Background(), `INSERT INTO projects (id, name, key) VALUES ($1, $2, $3)`, projectID, name, projectkey.New()); err != nil {
 		t.Fatal(err)
 	}
 	return entity.ProjectID(projectID)

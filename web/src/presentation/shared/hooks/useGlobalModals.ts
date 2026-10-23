@@ -30,6 +30,8 @@ export interface EditProjectProps {
   projectId: ProjectId;
   name: string;
   description?: string;
+  /** Only for the owner: the others do not see the key field (canChangeProjectKey) */
+  key?: string;
 }
 
 export interface LeaveProjectProps {

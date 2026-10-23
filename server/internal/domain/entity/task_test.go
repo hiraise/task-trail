@@ -46,12 +46,12 @@ func TestTaskStatuses(t *testing.T) {
 // The assignee must be a member of the task's project; nil removes the assignee.
 func TestTaskAssignTo(t *testing.T) {
 	ivan := &entity.ProjectMember{ProjectID: "design", UserID: "ivan", Role: entity.RoleMember}
-	task, err := entity.NewTask("task", "design", "anna", "Кнопка", nil, ivan, taskTime)
+	task, err := entity.NewTask("task", "design", "DS", 7, "anna", "Кнопка", nil, ivan, taskTime)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if task.Status != entity.StatusOpen || task.AuthorID != "anna" || task.AssigneeID == nil || *task.AssigneeID != "ivan" ||
-		!task.CreatedAt.Equal(taskTime) || !task.UpdatedAt.Equal(taskTime) {
+		task.Number != 7 || task.Key() != "DS-7" || !task.CreatedAt.Equal(taskTime) || !task.UpdatedAt.Equal(taskTime) {
 		t.Fatalf("new task: %+v", task)
 	}
 
@@ -66,7 +66,7 @@ func TestTaskAssignTo(t *testing.T) {
 	if err := task.AssignTo(nil, later); err != nil || task.AssigneeID != nil || !task.UpdatedAt.Equal(later) {
 		t.Fatalf("remove the assignee: %+v, %v", task, err)
 	}
-	if _, err := entity.NewTask("task", "design", "anna", "Кнопка", nil, elsewhere, taskTime); !domain.HasCode(err, domain.AssigneeNotMember) {
+	if _, err := entity.NewTask("task", "design", "DS", 7, "anna", "Кнопка", nil, elsewhere, taskTime); !domain.HasCode(err, domain.AssigneeNotMember) {
 		t.Fatalf("new task with an outside assignee: %v", err)
 	}
 }
@@ -83,15 +83,15 @@ func TestTaskMoveTo(t *testing.T) {
 		"membership in another project":   {&entity.ProjectMember{ProjectID: "design", UserID: ivan}, false},
 		"another person's membership":     {&entity.ProjectMember{ProjectID: "backend", UserID: "petr"}, false},
 	} {
-		task := &entity.Task{ID: "task", ProjectID: "design", Status: entity.StatusInReview, AssigneeID: &ivan, UpdatedAt: taskTime}
-		task.MoveTo("backend", c.assignee, taskTime.Add(time.Hour))
-		if task.ProjectID != "backend" || task.Status != entity.StatusInReview || !task.UpdatedAt.Equal(taskTime.Add(time.Hour)) ||
+		task := &entity.Task{ID: "task", ProjectID: "design", ProjectKey: "DS", Number: 12, Status: entity.StatusInReview, AssigneeID: &ivan, UpdatedAt: taskTime}
+		task.MoveTo("backend", "BE", 3, c.assignee, taskTime.Add(time.Hour))
+		if task.ProjectID != "backend" || task.Key() != "BE-3" || task.Status != entity.StatusInReview || !task.UpdatedAt.Equal(taskTime.Add(time.Hour)) ||
 			(task.AssigneeID != nil) != c.stays {
 			t.Errorf("%s: %+v", name, task)
 		}
 	}
 	task := &entity.Task{ID: "task", ProjectID: "design"}
-	task.MoveTo("backend", &entity.ProjectMember{ProjectID: "backend", UserID: ivan}, taskTime)
+	task.MoveTo("backend", "BE", 1, &entity.ProjectMember{ProjectID: "backend", UserID: ivan}, taskTime)
 	if task.AssigneeID != nil {
 		t.Errorf("a task without an assignee got an assignee: %+v", task)
 	}

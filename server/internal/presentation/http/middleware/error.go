@@ -41,6 +41,7 @@ var apiErrorFor = map[domain.ErrorCode]response.ApiError{
 	domain.OwnerCannotLeave:   {Status: http.StatusConflict, Code: response.CodeOwnerCannotLeave, Message: "the owner cannot leave the project, only delete it"},
 	domain.AssigneeNotMember:  {Status: http.StatusUnprocessableEntity, Code: response.CodeAssigneeNotMember, Message: "the assignee is not a project member"},
 	domain.LastAdmin:          {Status: http.StatusConflict, Code: response.CodeLastAdmin, Message: "cannot remove the last service administrator"},
+	domain.ProjectKeyTaken:    {Status: http.StatusConflict, Code: response.CodeProjectKeyTaken, Message: "the project key is taken by another project"},
 	domain.LinkInvalid:        {Status: http.StatusUnprocessableEntity, Code: response.CodeLinkInvalid, Message: "the link is invalid, used or expired"},
 	domain.InvitationAccepted: {Status: http.StatusConflict, Code: response.CodeInvitationAccepted, Message: "an account with this email already exists, sign in instead"},
 	domain.MailDisabled:       {Status: http.StatusConflict, Code: response.CodeMailDisabled, Message: "mail is not configured"},
@@ -150,6 +151,8 @@ func messageForTag(fe validator.FieldError) string {
 		return "нужен адрес http(s) без параметров"
 	case "mailbox":
 		return "нужен адрес почты, например TaskTrail <noreply@example.com>"
+	case "projectkey":
+		return "2–10 букв и цифр, первая — буква"
 	case "required_without":
 		return fmt.Sprintf("обязательно, если нет %s", fe.Param())
 	default:

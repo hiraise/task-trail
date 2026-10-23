@@ -14,6 +14,7 @@ export const apiErrorTexts: Partial<Record<ApiErrorCode, string>> = {
   ASSIGNEE_NOT_MEMBER: "Ответственный должен быть участником проекта",
   OWNER_CANNOT_LEAVE: "Владелец не может покинуть проект — его можно только удалить",
   LAST_ADMIN: "Нельзя снять последнего администратора сервиса",
+  PROJECT_KEY_TAKEN: "Этот ключ уже занят другим проектом",
   FILE_TOO_LARGE: "Файл больше 5 МБ",
   FILE_TYPE_NOT_ALLOWED: "Подходят только изображения JPEG, PNG и WebP",
   // MAIL_DISABLED and MAIL_SEND_FAILED address whoever requests a password reset email; the admin's
