@@ -27,7 +27,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   a project `/v1/projects/{projectId}/labels`, `PUT /v1/tasks/{taskId}/labels`, `Task.labels` in every
   task response; step 6 is done — labels on a task in the web: the «Метки» row and the picker with
   search, creating a label with a color and the limit of 10, chips on the cards (at most 3 and «+N»);
-  the next step is step 7 — project labels management in the web.
+  step 7 is done — project labels management in the web: «Метки» in the project menu opens «Метки
+  проекта», where the owner and admins create, rename, recolor and delete labels, others see the list;
+  the next step is step 8 — subtasks on the server.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;

@@ -42,6 +42,11 @@ export interface SelectLabelsProps {
   labelIds: LabelId[];
 }
 
+export interface ProjectLabelsProps {
+  /** Labels of this project (ADR-0035) */
+  projectId: ProjectId;
+}
+
 export interface TaskProps {
   task: Task;
 }
@@ -204,6 +209,9 @@ export const useGlobalModals = () => {
       safeOpen<ProjectId | BoardId | null>(MODAL_TYPE.LEAVE_PROJECT, { ...props }),
     showProjectSettings: (projectId: ProjectId) =>
       safeOpen<void>(MODAL_TYPE.PROJECT_SETTINGS, { projectId }),
+    /** View and, for the owner and admins, manage the project labels (ADR-0035) */
+    showProjectLabels: (projectId: ProjectId) =>
+      safeOpen<void>(MODAL_TYPE.PROJECT_LABELS, { projectId } satisfies ProjectLabelsProps),
     showMemberActions: (props: MemberActionsProps) =>
       safeOpen<void>(MODAL_TYPE.MEMBER_ACTIONS, { ...props }),
 

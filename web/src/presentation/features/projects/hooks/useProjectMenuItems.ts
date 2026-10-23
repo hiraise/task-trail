@@ -4,6 +4,7 @@ import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { projectsTexts } from "@/shared/locales/projects";
+import { tasksTexts } from "@/shared/locales/tasks";
 import { TEXTS } from "@/shared/locales/texts";
 import {
   canArchiveProject,
@@ -30,8 +31,14 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
   const { mutate: deleteById } = useDeleteProject();
   const { mutate: addMembers } = useAddMembers();
   const { mutate: setArchived } = useSetProjectArchived();
-  const { showEditProject, showMoveToArchive, showDeleteItem, showLeaveProject, showInviteUser } =
-    useGlobalModals();
+  const {
+    showEditProject,
+    showMoveToArchive,
+    showDeleteItem,
+    showLeaveProject,
+    showInviteUser,
+    showProjectLabels,
+  } = useGlobalModals();
 
   if (!project) return { menuItems: [] };
 
@@ -63,6 +70,14 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
       isVisible: !archived && canInviteMembers(project.role),
     },
     {
+      // Every member sees the labels; an archived project shows them read-only (ADR-0035)
+      label: tasksTexts.labels,
+      icon: ICONS.label,
+      color: "var(--icon-tertiary)",
+      onClick: () => showProjectLabels(projectId),
+      isVisible: true,
+    },
+    {
       label: TEXTS.projects.moveToArchive,
       icon: ICONS.archive,
       color: "var(--icon-tertiary)",
@@ -90,7 +105,10 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
       icon: ICONS.leave,
       color: "var(--icon-tertiary)",
       onClick: async () => {
-        const result = await showLeaveProject({ id: project.id, title: project.name });
+        const result = await showLeaveProject({
+          id: project.id,
+          title: project.name,
+        });
 
         if (result) leave({ projectId: result });
       },

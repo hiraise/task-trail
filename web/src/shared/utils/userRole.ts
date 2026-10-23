@@ -29,6 +29,9 @@ export const canLeaveProject = (role: ProjectRole): boolean => role !== "owner";
 export const canRemoveMember = (role: ProjectRole, memberRole: ProjectRole): boolean =>
   (role === "owner" && memberRole !== "owner") || (role === "admin" && memberRole === "member");
 
+/** Any member sees and creates labels; the owner and admins rename, recolor and delete them (ADR-0035). */
+export const canManageLabels = isManager;
+
 /** The owner and admins go into the "Project administrators" group. */
 export const isProjectAdmin = isManager;
 

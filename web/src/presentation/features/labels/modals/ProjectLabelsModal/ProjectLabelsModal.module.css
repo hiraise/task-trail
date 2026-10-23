@@ -1,0 +1,43 @@
+/* The list scrolls inside the modal: 160 px — the modal title and paddings (as SelectLabelsModal) */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100dvh - 160px);
+  overflow-y: auto;
+}
+
+@media (min-width: 768px) {
+  .content {
+    max-height: min(600px, calc(100dvh - 160px));
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 40px;
+  padding: 4px 0 4px 4px;
+  border-radius: 8px;
+}
+
+.hint {
+  color: var(--text-secondary);
+}
+
+.newLabel {
+  align-self: flex-start;
+  gap: 8px;
+  padding: 8px 8px 8px 0;
+}
