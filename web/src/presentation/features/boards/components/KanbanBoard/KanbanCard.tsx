@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { forwardRef } from "react";
 
 import type { Task } from "@/domain/models/Task";
+import { TaskMeta } from "@/presentation/shared";
 
 import styles from "./KanbanCard.module.css";
 
@@ -39,6 +40,7 @@ export const KanbanCard = forwardRef<HTMLDivElement, KanbanCardProps>(
         {task.key}
       </Link>
       <span className={clsx("body-reg-2", "multiline-3", styles.name)}>{task.name}</span>
+      <TaskMeta task={task} className={styles.meta} />
     </div>
   ),
 );

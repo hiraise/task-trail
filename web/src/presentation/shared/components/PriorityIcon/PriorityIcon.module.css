@@ -1,0 +1,20 @@
+.priority {
+  display: inline-flex;
+  flex: none;
+}
+
+.urgent {
+  color: var(--priority-urgent);
+}
+
+.high {
+  color: var(--priority-high);
+}
+
+.normal {
+  color: var(--icon-secondary);
+}
+
+.low {
+  color: var(--priority-low);
+}

@@ -17,8 +17,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   Next — stage 3, plan — [docs/plans/stage-3/](plans/stage-3/README.md) with ADRs 0033–0039, accepted
   on 2026-10-23; step 0 is done — the mockups of all stage 3 screens are approved; step 1 is done —
   priority on the server ([ADR-0033](adr/0033-task-priority.md)): `Task.priority`,
-  `PATCH /v1/tasks/{taskId}/priority`, the `priority_changed` event; the next step is step 2 —
-  priority in the web.
+  `PATCH /v1/tasks/{taskId}/priority`, the `priority_changed` event; step 2 is done — priority in
+  the web: the field and picker on the task page, the new task form, icons on the cards (`TaskMeta`),
+  the «По приоритету» sort; the next step is step 3 — due date on the server.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;

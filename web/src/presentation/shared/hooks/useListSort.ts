@@ -29,19 +29,20 @@ function writeSort(listId: string, value: SortOptionValue) {
 /**
  * Sorting of a list: the choice is kept in localStorage under `tasktrail.sort.<listId>`, default — by
  * last update. `openSort` opens the sort modal with the current option; the list is sorted with
- * `sortItems(items, sort)` (shared/utils/sortItems.ts).
+ * `sortItems(items, sort)` (shared/utils/sortItems.ts). `tasks` — a task list: the modal also offers
+ * TASK_SORT_OPTIONS.
  */
-export function useListSort(listId: string) {
+export function useListSort(listId: string, { tasks }: { tasks?: boolean } = {}) {
   const [sort, setSort] = useState<SortOptionValue>(() => readSort(listId));
   const { showSortOptions } = useGlobalModals();
 
   const openSort = useCallback(async () => {
-    const chosen = await showSortOptions(sort);
+    const chosen = await showSortOptions(sort, tasks);
 
     if (!chosen) return;
     setSort(chosen);
     writeSort(listId, chosen);
-  }, [listId, sort, showSortOptions]);
+  }, [listId, sort, tasks, showSortOptions]);
 
   return { sort, openSort };
 }

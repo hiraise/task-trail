@@ -44,6 +44,7 @@ export const API_ROUTES = {
   TASKS: TASKS,
   TASK_BY_ID: (id: TaskId) => `${TASKS}/${id}`,
   TASK_STATUS: (id: TaskId) => `${TASKS}/${id}/status`,
+  TASK_PRIORITY: (id: TaskId) => `${TASKS}/${id}/priority`,
   TASK_ASSIGNEE: (id: TaskId) => `${TASKS}/${id}/assignee`,
   TASK_PROJECT: (id: TaskId) => `${TASKS}/${id}/project`,
   TASK_ARCHIVED: (id: TaskId) => `${TASKS}/${id}/archived`,

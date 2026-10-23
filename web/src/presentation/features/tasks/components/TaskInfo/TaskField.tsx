@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { ComponentType, SVGProps } from "react";
+import type { ComponentType, ReactNode, SVGProps } from "react";
 
 import { Icon } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
@@ -7,7 +7,10 @@ import { ICONS } from "@/shared/config/icons";
 import styles from "./TaskField.module.css";
 
 interface TaskFieldProps {
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  /** The field icon; pass `icon` or `iconNode` */
+  icon?: ComponentType<SVGProps<SVGSVGElement>>;
+  /** A ready icon in place of `icon`, like the priority icon of the current value */
+  iconNode?: ReactNode;
   label: string;
   /** No value — `placeholder` is shown instead */
   value?: string;
@@ -17,14 +20,14 @@ interface TaskFieldProps {
 }
 
 /**
- * A task field changed by picking a value: assignee, project. On a phone — a panel with an arrow;
+ * A task field changed by picking a value: assignee, project, priority. On a phone — a panel with an arrow;
  * from 768 px — a label on the left and the value, with an edit icon on hover.
  */
-export function TaskField({ icon, label, value, placeholder, onClick }: TaskFieldProps) {
+export function TaskField({ icon, iconNode, label, value, placeholder, onClick }: TaskFieldProps) {
   const text = value ?? placeholder;
   const content = (
     <span className={styles.value}>
-      <Icon as={icon} size="24px" />
+      {iconNode ?? (icon && <Icon as={icon} size="24px" />)}
       <span className={clsx("body-reg-2", styles.text, !value && styles.empty)}>{text}</span>
     </span>
   );

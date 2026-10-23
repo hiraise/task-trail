@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { ComponentType, SVGProps } from "react";
+import type { ComponentType, ReactNode, SVGProps } from "react";
 
 import { Icon } from "@/presentation/shared";
 import { ICONS } from "@/shared/config/icons";
@@ -7,7 +7,10 @@ import { ICONS } from "@/shared/config/icons";
 import styles from "./FormSelectionOptions.module.css";
 
 interface SelectionFieldProps {
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  /** The field icon; pass `icon` or `iconNode` */
+  icon?: ComponentType<SVGProps<SVGSVGElement>>;
+  /** A ready icon in place of `icon`, like the priority icon of the current value */
+  iconNode?: ReactNode;
   placeholder: string;
   /** Selected value; nothing selected — the hint */
   value?: string;
@@ -15,8 +18,14 @@ interface SelectionFieldProps {
   onClick: () => void;
 }
 
-/** A form field whose value is picked in a separate modal: assignee, project. */
-export function SelectionField({ icon, placeholder, value, invalid, onClick }: SelectionFieldProps) {
+/** A form field whose value is picked in a separate modal: assignee, project, priority. */
+export function SelectionField({
+  icon,
+  iconNode,
+  placeholder, value,
+  invalid,
+  onClick,
+}: SelectionFieldProps) {
   return (
     <button
       type="button"
@@ -25,7 +34,7 @@ export function SelectionField({ icon, placeholder, value, invalid, onClick }: S
       aria-invalid={invalid}
     >
       <span className={styles.content}>
-        <Icon as={icon} size="18px" />
+        {iconNode ?? (icon && <Icon as={icon} size="18px" />)}
         <span className={clsx(styles.text, !value && styles.placeholder)}>{value || placeholder}</span>
       </span>
       <Icon as={ICONS.downArrow} size="15px" />

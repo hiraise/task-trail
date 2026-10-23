@@ -10,6 +10,12 @@ export const ChangeTaskStatusModal = lazy(() =>
   })),
 );
 
+export const ChangeTaskPriorityModal = lazy(() =>
+  import("@/presentation/features/tasks/modals").then((m) => ({
+    default: m.ChangeTaskPriorityModal,
+  })),
+);
+
 export const EditTaskModal = lazy(() =>
   import("@/presentation/features/tasks/modals").then((m) => ({ default: m.EditTaskModal })),
 );

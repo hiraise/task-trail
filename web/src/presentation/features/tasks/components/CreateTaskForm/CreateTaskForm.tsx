@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import { getUserDisplayName } from "@/domain/models/User";
-import { FormFieldError, Input, SubmitButton, Textarea } from "@/presentation/shared";
+import { FormFieldError, Input, PriorityIcon, SubmitButton, Textarea } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
@@ -29,12 +29,14 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     assigneeId,
     allowedProjectIds,
     statusId,
+    priority,
     setName,
     setDescription,
     setProjectId,
     setAssigneeId,
+    setPriority,
   } = store;
-  const { showSelectAssignee, showSelectProject } = useGlobalModals();
+  const { showSelectAssignee, showSelectProject, showChangePriority } = useGlobalModals();
   const { mutateAsync: createTask } = useCreateTask({ openTask: !statusId });
   const { data: project } = useProject(projectId);
   const { data: members } = useProjectMembers(projectId ?? "");
@@ -84,6 +86,12 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     if (selected) setProjectId(selected.id);
   };
 
+  const handleChangePriority = async () => {
+    const selected = await showChangePriority({ priority });
+
+    if (selected) setPriority(selected);
+  };
+
   const submitHandler = async (values: CreateTaskFormData) => {
     // The project from an old draft may be unavailable now: the user left it or it was deleted
     if (!project) {
@@ -99,6 +107,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
         description: values.description || undefined,
         assigneeId: assignee?.id,
         statusId,
+        priority,
       });
       store.reset();
       onSubmit();
@@ -141,6 +150,12 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
           onClick={handleSelectProject}
         />
         {errors.projectId && <FormFieldError>{errors.projectId.message}</FormFieldError>}
+        <SelectionField
+          iconNode={<PriorityIcon priority={priority} size="18px" />}
+          placeholder={tasksTexts.priority}
+          value={tasksTexts.priorities[priority]}
+          onClick={handleChangePriority}
+        />
       </div>
       <SubmitButton type="submit" disabled={isSubmitting}>
         {isSubmitting ? tasksTexts.submittingText : tasksTexts.buttonText}

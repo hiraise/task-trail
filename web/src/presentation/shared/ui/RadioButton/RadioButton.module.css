@@ -6,6 +6,12 @@
   height: 40px;
 }
 
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .radio {
   appearance: none;
   width: 18px;

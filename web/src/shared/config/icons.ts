@@ -23,6 +23,10 @@ import MailIcon from "@/assets/icons/MailIcon.svg?react";
 import MenuIcon from "@/assets/icons/menu_icon.svg?react";
 import MenuHorizontalIcon from "@/assets/icons/MenuHorizontalIcon.svg?react";
 import PlusIcon from "@/assets/icons/PlusIcon.svg?react";
+import PriorityHighIcon from "@/assets/icons/PriorityHighIcon.svg?react";
+import PriorityLowIcon from "@/assets/icons/PriorityLowIcon.svg?react";
+import PriorityNormalIcon from "@/assets/icons/PriorityNormalIcon.svg?react";
+import PriorityUrgentIcon from "@/assets/icons/PriorityUrgentIcon.svg?react";
 import ProfileLargeIcon from "@/assets/icons/profile-large.svg?react";
 import ProfileIcon from "@/assets/icons/ProfileIcon.svg?react";
 import ProjectIcon from "@/assets/icons/ProjectIcon.svg?react";
@@ -63,6 +67,11 @@ export const ICONS = {
   edit: EditIcon,
   leave: LeaveIcon,
   settings: SettingsIcon,
+  // Priority levels (ADR-0033): there is no generic priority icon
+  priorityUrgent: PriorityUrgentIcon,
+  priorityHigh: PriorityHighIcon,
+  priorityNormal: PriorityNormalIcon,
+  priorityLow: PriorityLowIcon,
 };
 
 // Design elements

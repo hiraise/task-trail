@@ -21,6 +21,7 @@ export function TaskList({ tasks, members }: TaskListProps) {
             <ProjectTask
               taskKey={task.key}
               title={task.name}
+              task={task}
               assignee={members.find((member) => member.id === task.assigneeId)}
             />
           </Link>

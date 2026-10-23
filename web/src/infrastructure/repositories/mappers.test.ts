@@ -168,6 +168,7 @@ describe("toTask", () => {
       name: "Собрать отчёт",
       description: undefined,
       statusId: "in_review",
+      priority: "normal",
       authorId: avatarId,
       assigneeId: undefined,
       archivedAt: undefined,

@@ -37,7 +37,7 @@ export function TasksPage() {
 function TasksScreen() {
   const { activeTab } = useTabPanel();
   const archived = activeTab === TabType.ARCHIVED;
-  const { sort, openSort } = useListSort("my-tasks");
+  const { sort, openSort } = useListSort("my-tasks", { tasks: true });
   const openCreateTask = useOpenCreateTask();
   const { data: tasks } = useMyTasks(archived);
   const { data: projects } = useProjects();

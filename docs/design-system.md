@@ -29,6 +29,7 @@ Variables only, do not repeat values — `scripts/rules.mjs` checks this (ADR-00
 | Text and font | `web/src/styles/text.css` | font — `var(--font-family)` (Manrope); text `--text-primary`, label and explanation — `--text-secondary`, description in a modal — `--text-tertiary`, error — `--text-critical` |
 | Badges | `--bg-accent-yellow` — admin, `--bg-accent-blue` — member, `--bg-accent-green` — on, `--bg-secondary` — off and «Архив» (`ArchiveTag`) | |
 | Accent | `--icon-accent` | selected radio button, link |
+| Priority | `--priority-urgent`, `--priority-high`, `--priority-low`; `normal` — `--icon-secondary` | `PriorityIcon` (ADR-0033) |
 
 Text classes (`text.css`): `h2` — page and modal title, `h4` — card title,
 `body-med` — name, menu item, button on a phone, `body-reg-2` — field labels in a card and explanations,
@@ -88,7 +89,8 @@ on the right.
 - «Активные / Архивные» — `TabPanel` inside `TabPanelProvider` (one provider per list): a segmented
   control on a phone, underlined tabs from 768 px. Next to it — the sort button; the choice is kept per
   list by `useListSort(listId)`, the list is sorted with `sortItems` (`shared/utils/sortItems.ts`).
-  The sort modal applies an option on tap and closes.
+  The sort modal applies an option on tap and closes. Task lists pass `useListSort(listId, { tasks: true })`:
+  the modal then also shows `TASK_SORT_OPTIONS` («По приоритету»).
 - An archived task or project shows `ArchiveTag` («Архив», `caption-med` on `--bg-secondary`) in place
   of the status or next to the name; its fields are not clickable (ADR-0027).
 - An empty list — `EmptyListState`: a picture, a text and, when there is something to create, a button.
@@ -96,6 +98,20 @@ on the right.
 - A search query in names — `HighlightedText`: case-insensitive occurrences in `--text-accent`.
   Cards take it as a `highlight` prop (`ProjectCard`, `BoardListItem`, `ProjectTask`). Another
   feature shows these cards through `presentation/shared/components/domainComponents.ts`.
+
+## Task cards
+
+- The three task cards — the project, board and search row (`ProjectTask`), the «Мои задачи» card
+  (`TaskList`) and the kanban card (`KanbanCard`) — show `TaskMeta` under the name: a `caption-reg`
+  line of badges in `--text-secondary`, gap 8 px, wrapping. Now — the priority icon; later steps add
+  the due date, subtasks and labels to it. A card with nothing to show has no meta line.
+- `PriorityIcon` — the icon of a priority level colored by its token, with the name as `aria-label`
+  and `title`. Cards show it for `low`, `high` and `urgent` only (16 px); the «Приоритет» field on the
+  task page (24 px), the new task form (18 px) and the picker show it for every level.
+- A field with the icon of its current value — `TaskField` and `SelectionField` take `iconNode` in place
+  of `icon`.
+- A radio row with an icon — `RadioButton` with `icon` (before the label, gap 8 px), like the priority
+  picker `TaskPriorityList`.
 
 ## People lists
 
