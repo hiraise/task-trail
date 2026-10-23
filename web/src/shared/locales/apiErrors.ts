@@ -17,6 +17,7 @@ export const apiErrorTexts: Partial<Record<ApiErrorCode, string>> = {
   PROJECT_KEY_TAKEN: "Этот ключ уже занят другим проектом",
   TASK_ARCHIVED: "Задача в архиве — её нельзя менять",
   PROJECT_ARCHIVED: "Проект в архиве — его нельзя менять",
+  COMMENT_EDIT_EXPIRED: "Комментарий можно изменить только в первые 24 часа",
   FILE_TOO_LARGE: "Файл больше 5 МБ",
   FILE_TYPE_NOT_ALLOWED: "Подходят только изображения JPEG, PNG и WebP",
   // MAIL_DISABLED and MAIL_SEND_FAILED address whoever requests a password reset email; the admin's

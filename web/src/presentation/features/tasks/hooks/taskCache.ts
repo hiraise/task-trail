@@ -22,9 +22,13 @@ export function invalidateTaskLists(
   }
 }
 
-/** The task changed: the task page shows the server response, lists containing it are refetched. */
+/**
+ * The task changed: the task page shows the server response, lists containing it are refetched,
+ * and so is its history — the change wrote an event (ADR-0028).
+ */
 export function storeTask(queryClient: QueryClient, task: Task): void {
   queryClient.setQueryData(QUERY_KEYS.task.detail(task.id), task);
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.events(task.id) });
   invalidateTaskLists(queryClient, task.projectId);
 }
 

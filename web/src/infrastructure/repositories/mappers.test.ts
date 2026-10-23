@@ -8,6 +8,8 @@ import {
   toProjectMember,
   toServiceSettings,
   toTask,
+  toTaskComment,
+  toTaskEvent,
   toTaskStatus,
   toUser,
 } from "./mappers";
@@ -230,5 +232,85 @@ describe("toPasswordResetLink", () => {
     const link = { url: "http://localhost:3000/auth/reset?token=abc", expiresAt: "2026-10-23T08:00:00Z" };
 
     expect(toPasswordResetLink(link)).toEqual(link);
+  });
+});
+
+describe("toTaskComment", () => {
+  const author = { id, email: "anna@example.com", username: "Анна", avatarId };
+  const dto = {
+    id,
+    taskId: id,
+    author,
+    text: "Привет",
+    createdAt: "2026-10-22T08:00:00Z",
+    editedAt: null,
+  };
+
+  it("never edited — no editedAt; the author is a user with an avatar URL", () => {
+    const comment = toTaskComment(dto);
+
+    expect(comment.editedAt).toBeUndefined();
+    expect(comment.author.avatarUrl).toMatch(new RegExp(`/v1/files/${avatarId}$`));
+    expect(comment).toMatchObject({ id, taskId: id, text: "Привет", createdAt: dto.createdAt });
+  });
+
+  it("edited — keeps the edit time", () => {
+    expect(toTaskComment({ ...dto, editedAt: "2026-10-22T09:00:00Z" }).editedAt).toBe(
+      "2026-10-22T09:00:00Z",
+    );
+  });
+});
+
+describe("toTaskEvent", () => {
+  const actor = { id, email: "anna@example.com", username: "Анна", avatarId: null };
+  const dto = {
+    id,
+    taskId: id,
+    kind: "created" as const,
+    actor,
+    createdAt: "2026-10-22T08:00:00Z",
+    fromStatusId: null,
+    toStatusId: null,
+    fromUser: null,
+    toUser: null,
+    fromKey: null,
+    toKey: null,
+  };
+
+  it("fields the kind does not use are undefined", () => {
+    const event = toTaskEvent(dto);
+
+    expect(event).toEqual({
+      id,
+      taskId: id,
+      kind: "created",
+      actor: { id, email: "anna@example.com", username: "Анна", avatarUrl: undefined },
+      createdAt: dto.createdAt,
+      fromStatusId: undefined,
+      toStatusId: undefined,
+      fromUser: undefined,
+      toUser: undefined,
+      fromKey: undefined,
+      toKey: undefined,
+    });
+  });
+
+  it("keeps the change: statuses, keys and users", () => {
+    const event = toTaskEvent({
+      ...dto,
+      kind: "assignee_changed",
+      fromUser: actor,
+      toUser: null,
+    });
+
+    expect(event.fromUser?.email).toBe("anna@example.com");
+    expect(event.toUser).toBeUndefined();
+    expect(
+      toTaskEvent({ ...dto, kind: "status_changed", fromStatusId: "open", toStatusId: "done" }),
+    ).toMatchObject({ fromStatusId: "open", toStatusId: "done" });
+    expect(toTaskEvent({ ...dto, kind: "moved", fromKey: "DS-1", toKey: "BE-4" })).toMatchObject({
+      fromKey: "DS-1",
+      toKey: "BE-4",
+    });
   });
 });

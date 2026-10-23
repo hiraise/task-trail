@@ -25,7 +25,7 @@ export type Password = string;
 
 export type Username = string;
 
-export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
+export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'COMMENT_EDIT_EXPIRED' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
 
 export type ApiError = {
     code: ErrorCode;
@@ -288,6 +288,65 @@ export type ChangeTaskAssigneeRequest = {
     assigneeId: string | null;
 };
 
+/**
+ * Plain text; the server trims spaces at the ends before validation (ADR-0028)
+ */
+export type CommentText = string;
+
+export type TaskComment = {
+    id: Uuid;
+    taskId: Uuid;
+    /**
+     * Shown even if the author has left the project
+     */
+    author: User;
+    text: CommentText;
+    createdAt: DateTime;
+    /**
+     * When the text was last edited; `null` — never
+     */
+    editedAt: string | null;
+};
+
+export type CreateCommentRequest = {
+    text: CommentText;
+};
+
+export type UpdateCommentRequest = {
+    text: CommentText;
+};
+
+/**
+ * What changed (ADR-0028): `created`; `edited` — the name or description, without the old text;
+ * `status_changed`; `assignee_changed` — also when the assignee left or was removed from the
+ * project; `moved` — to another project, the task key changed; `archived`; `restored`.
+ *
+ */
+export type TaskEventKind = 'created' | 'edited' | 'status_changed' | 'assignee_changed' | 'moved' | 'archived' | 'restored';
+
+/**
+ * A row of task history. Change fields are always present and `null` unless the kind uses them:
+ * `status_changed` — `fromStatusId`, `toStatusId`; `assignee_changed` — `fromUser`, `toUser`
+ * (`null` — no assignee); `moved` — `fromKey`, `toKey`.
+ *
+ */
+export type TaskEvent = {
+    id: Uuid;
+    taskId: Uuid;
+    kind: TaskEventKind;
+    /**
+     * Who made the change
+     */
+    actor: User;
+    createdAt: DateTime;
+    fromStatusId: TaskStatusId | null;
+    toStatusId: TaskStatusId | null;
+    fromUser: User | null;
+    toUser: User | null;
+    fromKey: string | null;
+    toKey: string | null;
+};
+
 export type ServiceSettings = {
     /**
      * Web address with a path; links in emails and invitations are built from it
@@ -355,6 +414,8 @@ export type PasswordResetLink = {
 export type ProjectId = Uuid;
 
 export type TaskId = Uuid;
+
+export type CommentId = Uuid;
 
 export type UserId = Uuid;
 
@@ -1796,6 +1857,211 @@ export type SetTaskArchivedResponses = {
 };
 
 export type SetTaskArchivedResponse = SetTaskArchivedResponses[keyof SetTaskArchivedResponses];
+
+export type ListTaskCommentsData = {
+    body?: never;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/comments';
+};
+
+export type ListTaskCommentsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ListTaskCommentsError = ListTaskCommentsErrors[keyof ListTaskCommentsErrors];
+
+export type ListTaskCommentsResponses = {
+    /**
+     * Comments
+     */
+    200: Array<TaskComment>;
+};
+
+export type ListTaskCommentsResponse = ListTaskCommentsResponses[keyof ListTaskCommentsResponses];
+
+export type CreateTaskCommentData = {
+    body: CreateCommentRequest;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/comments';
+};
+
+export type CreateTaskCommentErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type CreateTaskCommentError = CreateTaskCommentErrors[keyof CreateTaskCommentErrors];
+
+export type CreateTaskCommentResponses = {
+    /**
+     * Comment written
+     */
+    201: TaskComment;
+};
+
+export type CreateTaskCommentResponse = CreateTaskCommentResponses[keyof CreateTaskCommentResponses];
+
+export type DeleteTaskCommentData = {
+    body?: never;
+    path: {
+        taskId: Uuid;
+        commentId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/comments/{commentId}';
+};
+
+export type DeleteTaskCommentErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role or service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type DeleteTaskCommentError = DeleteTaskCommentErrors[keyof DeleteTaskCommentErrors];
+
+export type DeleteTaskCommentResponses = {
+    /**
+     * Comment deleted
+     */
+    204: void;
+};
+
+export type DeleteTaskCommentResponse = DeleteTaskCommentResponses[keyof DeleteTaskCommentResponses];
+
+export type UpdateTaskCommentData = {
+    body: UpdateCommentRequest;
+    path: {
+        taskId: Uuid;
+        commentId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/comments/{commentId}';
+};
+
+export type UpdateTaskCommentErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role or service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `COMMENT_EDIT_EXPIRED` — 24 hours have passed since the comment was written; `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project is archived
+     */
+    409: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type UpdateTaskCommentError = UpdateTaskCommentErrors[keyof UpdateTaskCommentErrors];
+
+export type UpdateTaskCommentResponses = {
+    /**
+     * Comment edited
+     */
+    200: TaskComment;
+};
+
+export type UpdateTaskCommentResponse = UpdateTaskCommentResponses[keyof UpdateTaskCommentResponses];
+
+export type ListTaskEventsData = {
+    body?: never;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/events';
+};
+
+export type ListTaskEventsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ListTaskEventsError = ListTaskEventsErrors[keyof ListTaskEventsErrors];
+
+export type ListTaskEventsResponses = {
+    /**
+     * Events
+     */
+    200: Array<TaskEvent>;
+};
+
+export type ListTaskEventsResponse = ListTaskEventsResponses[keyof ListTaskEventsResponses];
 
 export type GetServiceSettingsData = {
     body?: never;

@@ -202,7 +202,7 @@ function checkDeviceSplit() {
 
 // Colors, shadows and fonts come from variables in web/src/styles/ (ADR-0008). Declarations with a literal color
 // in CSS outside web/src/styles/ do not grow in number: removed one — lower the limit. A font is only a variable.
-const STYLE_LITERAL_LIMIT = 13;
+const STYLE_LITERAL_LIMIT = 12;
 
 function checkStyleTokens() {
   const colorRe =

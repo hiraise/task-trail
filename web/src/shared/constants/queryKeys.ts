@@ -37,6 +37,9 @@ export const QUERY_KEYS = {
     /** Tasks assigned to the current user: active or archived (ADR-0027) */
     mine: (archived: boolean) => ["task", "mine", archived] as const,
     detail: (id: TaskId) => ["task", id] as const,
+    /** The task feed (ADR-0028): comments and history, under the task's prefix */
+    comments: (id: TaskId) => ["task", id, "comments"] as const,
+    events: (id: TaskId) => ["task", id, "events"] as const,
     /** Task statuses: one set shared by all projects */
     statuses: ["task-statuses"] as const,
   },

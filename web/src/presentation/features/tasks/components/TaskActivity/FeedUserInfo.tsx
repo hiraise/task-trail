@@ -1,29 +1,30 @@
-import type { User } from "@/domain/models/User";
+import { getUserDisplayName, type User } from "@/domain/models/User";
 import { UserAvatar } from "@/presentation/shared";
+import { tasksTexts } from "@/shared/locales/tasks";
+import { formatDate } from "@/shared/utils/formatters";
 
-import styles from "./CommentUserInfo.module.css";
+import styles from "./FeedUserInfo.module.css";
 
-interface CommentUserInfoProps {
+interface FeedUserInfoProps {
   user: User;
+  /** ISO 8601 */
   createdAt: string;
-  updatedAt?: string;
+  edited?: boolean;
 }
 
-export default function CommentUserInfo({ user, createdAt, updatedAt }: CommentUserInfoProps) {
-  const getDate = () => {
-    let retVal = createdAt;
-
-    if (updatedAt) retVal += ` (edited: ${updatedAt})`;
-
-    return retVal;
-  };
+/** Avatar, name and date of a feed item; an "edited" mark for an edited comment. */
+export function FeedUserInfo({ user, createdAt, edited }: FeedUserInfoProps) {
+  const name = getUserDisplayName(user);
 
   return (
     <div className={styles.container}>
-      <UserAvatar />
+      <UserAvatar src={user.avatarUrl} name={name} />
       <div className={styles.infoWrapper}>
-        <span className={styles.name}>{user.username}</span>
-        <span className={styles.date}>{getDate()}</span>
+        <span className={styles.name}>{name}</span>
+        <span className={styles.date}>
+          <time dateTime={createdAt}>{formatDate(createdAt)}</time>
+          {edited && <span className={styles.edited}>{tasksTexts.comments.edited}</span>}
+        </span>
       </div>
     </div>
   );

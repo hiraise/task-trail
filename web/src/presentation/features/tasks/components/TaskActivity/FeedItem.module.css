@@ -1,30 +1,46 @@
-.comments {
+.list {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow-y: auto;
 }
 
-/* Styles for CommentsListItem */
-.container {
+.item {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 10px 10px 12px;
   border-radius: 8px;
-  background-color: rgba(240, 240, 240, 1);
+  background-color: var(--bg-secondary);
 }
 
-.user {
+.header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 8px;
 }
 
-.container > span {
+.text {
   font-size: 14px;
-  line-height: 16px;
-  font-weight: 400;
-  word-break: break-word;
+  line-height: 18px;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.text a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.text a:hover {
+  text-decoration: underline;
+}
+
+/* An event: a grey line, no menu */
+.event {
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--text-secondary);
 }

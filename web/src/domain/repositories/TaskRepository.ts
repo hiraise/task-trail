@@ -1,6 +1,8 @@
 import type { Task } from "../models/Task";
+import type { TaskComment } from "../models/TaskComment";
+import type { TaskEvent } from "../models/TaskEvent";
 import type { TaskStatus } from "../models/TaskStatus";
-import type { ProjectId, TaskId, TaskStatusId, UserId } from "../types";
+import type { CommentId, ProjectId, TaskId, TaskStatusId, UserId } from "../types";
 
 export interface NewTask {
   projectId: ProjectId;
@@ -38,4 +40,14 @@ export interface TaskRepository {
   /** Archives (true) or restores (false) a task; any member of its active project */
   setArchived(id: TaskId, archived: boolean): Promise<Task>;
   delete(id: TaskId): Promise<void>;
+  /** The task feed (ADR-0028): comments, newest first */
+  findComments(taskId: TaskId): Promise<TaskComment[]>;
+  /** The server trims the text; neither the task nor its project is archived */
+  createComment(taskId: TaskId, text: string): Promise<TaskComment>;
+  /** Only the author, during the first 24 hours */
+  updateComment(taskId: TaskId, commentId: CommentId, text: string): Promise<TaskComment>;
+  /** The author, the project owner or a project admin */
+  deleteComment(taskId: TaskId, commentId: CommentId): Promise<void>;
+  /** The task change history, newest first */
+  findEvents(taskId: TaskId): Promise<TaskEvent[]>;
 }
