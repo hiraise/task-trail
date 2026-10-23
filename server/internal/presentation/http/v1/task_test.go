@@ -190,6 +190,24 @@ func TestTaskLifecycle(t *testing.T) {
 	}
 }
 
+// statusId creates the task right in that status (a board column, ADR-0029); without it — the
+// default status.
+func TestCreateTaskInStatus(t *testing.T) {
+	s := apitest.New(t, contract.Load(t))
+	registerAdmin(t, s)
+	design := createProject(t, s, "Дизайн-система").Project.ID
+	for _, status := range []string{"in_progress", "done"} {
+		rec := s.Do(http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "statusId": status})
+		apitest.RequireStatus(t, rec, http.StatusCreated)
+		if got := apitest.Decode[task](t, rec); got.StatusID != status {
+			t.Fatalf("task in %s: %+v", status, got)
+		}
+	}
+	if got := createTask(t, s, design, "Форма", ""); got.StatusID != "open" {
+		t.Fatalf("task without statusId: %+v", got)
+	}
+}
+
 // A non-member neither sees nor changes the task: 404, as if it did not exist (ADR-0018).
 func TestTaskAccess(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
@@ -253,7 +271,7 @@ func TestTaskValidation(t *testing.T) {
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": ""}, "name"},
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": strings.Repeat("я", 255)}, "name"},
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "assigneeId": "42"}, "assigneeId"},
-		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "statusId": "done"}, "statusId"},
+		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "statusId": "closed"}, "statusId"},
 		{http.MethodPatch, path, map[string]any{}, "name"},
 		{http.MethodPatch, path, `{"name": null}`, "name"},
 		{http.MethodPatch, path, map[string]any{"name": ""}, "name"},

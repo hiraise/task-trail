@@ -8,14 +8,14 @@ import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { boardsTexts } from "@/shared/locales/boards";
 
 import { FloatingButton } from "../../../projects/components";
-import { BoardHeader, BoardMembers, BoardProjects, BoardTasks } from "../../components";
+import { BoardHeader, BoardMembers, BoardProjects, BoardTasks, KanbanBoard } from "../../components";
 import { useBoard, useBoardMenuItems, useIsBoardOwner } from "../../hooks";
 
 import styles from "./BoardPage.module.css";
 
 /**
- * The board page: the header and "Tasks on the board". The kanban takes the list's place in step 5
- * (docs/plans/stage-2/05-kanban.md).
+ * The board page: the header and the kanban (stage 2 plan, step 5). Tasks are created from
+ * the kanban cells, so there is no floating "Create task" here.
  */
 export function BoardPage() {
   const { id } = useParams({ from: "/_main/boards/$id/" });
@@ -27,8 +27,8 @@ export function BoardPage() {
           <section className={styles.section}>
             <BoardHeader board={board} menuItems={menuItems} showInfoLink />
           </section>
-          <section className={styles.section}>
-            <BoardTasks board={board} className={styles.tasks} />
+          <section className={`${styles.section} ${styles.kanban}`}>
+            <KanbanBoard board={board} />
           </section>
         </>
       )}
@@ -44,7 +44,7 @@ export function BoardInfoPage() {
   const { id } = useParams({ from: "/_main/boards/$id/info" });
 
   return (
-    <BoardScreen boardId={id}>
+    <BoardScreen boardId={id} withCreateTask>
       {(board, menuItems, isOwner) => (
         <>
           <section className={styles.section}>
@@ -69,6 +69,8 @@ interface BoardScreenProps {
   boardId: BoardId;
   /** Where "back" leads on a phone; without it, one level up the URL */
   backTo?: string;
+  /** The floating "Create task": the new task gets the default status */
+  withCreateTask?: boolean;
   children: (board: Board, menuItems: ReturnType<typeof useBoardMenuItems>["menuItems"], isOwner: boolean) => React.ReactNode;
 }
 
@@ -76,7 +78,7 @@ interface BoardScreenProps {
  * The frame of board pages. On a phone — a top bar with the board menu in a bottom sheet; from 768 px —
  * cards with the "…" menu next to the name. CSS switches the layout (ADR-0008).
  */
-function BoardScreen({ boardId, backTo, children }: BoardScreenProps) {
+function BoardScreen({ boardId, backTo, withCreateTask = false, children }: BoardScreenProps) {
   const { data: board, isError } = useBoard(boardId);
   const { menuItems } = useBoardMenuItems(board);
   const isOwner = useIsBoardOwner(board);
@@ -111,7 +113,7 @@ function BoardScreen({ boardId, backTo, children }: BoardScreenProps) {
           </section>
         </div>
       )}
-      {board && board.projects.length > 0 && (
+      {withCreateTask && board && board.projects.length > 0 && (
         <FloatingButton allowedProjectIds={board.projects.filter((p) => !p.archivedAt).map((p) => p.id)} />
       )}
     </div>

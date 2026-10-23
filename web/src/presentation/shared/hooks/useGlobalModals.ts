@@ -29,6 +29,10 @@ export interface TaskProps {
   task: Task;
 }
 
+export interface TaskModalProps {
+  taskId: TaskId;
+}
+
 export interface EditProjectProps {
   projectId: ProjectId;
   name: string;
@@ -185,6 +189,8 @@ export const useGlobalModals = () => {
       safeOpen<void>(MODAL_TYPE.MEMBER_ACTIONS, { ...props }),
 
     // Task actions
+    /** The task over the kanban, from 1024 px (stage 2 plan, step 5) */
+    showTask: (taskId: TaskId) => safeOpen<void>(MODAL_TYPE.TASK, { taskId }),
     showEditTask: (task: Task) => safeOpen<void>(MODAL_TYPE.EDIT_TASK, { task }),
     showTaskSettings: (task: Task) => safeOpen<void>(MODAL_TYPE.TASK_SETTINGS, { task }),
     showChangeStatus: (props?: ChangeStatusProps) =>

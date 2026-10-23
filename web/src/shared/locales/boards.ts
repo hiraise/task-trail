@@ -38,6 +38,7 @@ export const boardsTexts = {
   removeMember: "Удалить участника",
   tasks: "Задачи на доске",
   noTasks: "На доске пока нет задач",
+  noAssignee: "Без ответственного",
   about: "О доске",
   rename: "Переименовать доску",
   renamed: "Доска переименована",

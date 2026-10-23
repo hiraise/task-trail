@@ -26,6 +26,7 @@ export const MODAL_TYPE = {
   SELECT_BOARD_MEMBERS: "SELECT_BOARD_MEMBERS",
   RENAME_BOARD: "RENAME_BOARD",
   BOARD_SETTINGS: "BOARD_SETTINGS",
+  TASK: "TASK",
 } as const;
 
 export type ModalType = (typeof MODAL_TYPE)[keyof typeof MODAL_TYPE];

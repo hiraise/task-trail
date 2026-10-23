@@ -46,11 +46,11 @@ func TestTaskStatuses(t *testing.T) {
 // The assignee must be a member of the task's project; nil removes the assignee.
 func TestTaskAssignTo(t *testing.T) {
 	ivan := &entity.ProjectMember{ProjectID: "design", UserID: "ivan", Role: entity.RoleMember}
-	task, err := entity.NewTask("task", "design", "DS", 7, "anna", "Кнопка", nil, ivan, taskTime)
+	task, err := entity.NewTask("task", "design", "DS", 7, "anna", "Кнопка", nil, entity.StatusInProgress, ivan, taskTime)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if task.Status != entity.StatusOpen || task.AuthorID != "anna" || task.AssigneeID == nil || *task.AssigneeID != "ivan" ||
+	if task.Status != entity.StatusInProgress || task.AuthorID != "anna" || task.AssigneeID == nil || *task.AssigneeID != "ivan" ||
 		task.Number != 7 || task.Key() != "DS-7" || !task.CreatedAt.Equal(taskTime) || !task.UpdatedAt.Equal(taskTime) {
 		t.Fatalf("new task: %+v", task)
 	}
@@ -66,7 +66,7 @@ func TestTaskAssignTo(t *testing.T) {
 	if err := task.AssignTo(nil, later); err != nil || task.AssigneeID != nil || !task.UpdatedAt.Equal(later) {
 		t.Fatalf("remove the assignee: %+v, %v", task, err)
 	}
-	if _, err := entity.NewTask("task", "design", "DS", 7, "anna", "Кнопка", nil, elsewhere, taskTime); !domain.HasCode(err, domain.AssigneeNotMember) {
+	if _, err := entity.NewTask("task", "design", "DS", 7, "anna", "Кнопка", nil, entity.StatusOpen, elsewhere, taskTime); !domain.HasCode(err, domain.AssigneeNotMember) {
 		t.Fatalf("new task with an outside assignee: %v", err)
 	}
 }

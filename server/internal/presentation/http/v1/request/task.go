@@ -15,6 +15,7 @@ type createTaskReq struct {
 	Name        string  `json:"name" binding:"required,max=254"`
 	Description *string `json:"description"`
 	AssigneeID  *string `json:"assigneeId" binding:"omitnil,uuid"`
+	StatusID    *string `json:"statusId" binding:"omitnil,taskstatus"`
 }
 
 func (r *createTaskReq) normalize() {
@@ -68,7 +69,11 @@ func BindCreateTask(c *gin.Context) (dto.CreateTask, error) {
 	if err != nil {
 		return dto.CreateTask{}, err
 	}
-	return dto.CreateTask{ProjectID: body.ProjectID, Name: body.Name, Description: body.Description, AssigneeID: body.AssigneeID}, nil
+	status := entity.DefaultTaskStatus()
+	if body.StatusID != nil {
+		status = entity.TaskStatus(*body.StatusID)
+	}
+	return dto.CreateTask{ProjectID: body.ProjectID, Name: body.Name, Description: body.Description, AssigneeID: body.AssigneeID, Status: status}, nil
 }
 
 func BindUpdateTask(c *gin.Context) (dto.TaskChanges, error) {

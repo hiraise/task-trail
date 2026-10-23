@@ -1,5 +1,6 @@
 export const TEXTS = {
   back: "Назад",
+  close: "Закрыть",
   sort: "Сортировка",
   cancel: "Отменить",
   apply: "Применить",

@@ -32,9 +32,9 @@ type Task struct {
 	UpdatedAt       time.Time
 }
 
-// NewTask — a new task in the default status with number number of project projectKey;
+// NewTask — a new task in status status with number number of project projectKey;
 // assignee — the assignee's membership in the project or nil.
-func NewTask(id TaskID, projectID ProjectID, projectKey ProjectKey, number int, authorID UserID, name string, description *string, assignee *ProjectMember, now time.Time) (*Task, error) {
+func NewTask(id TaskID, projectID ProjectID, projectKey ProjectKey, number int, authorID UserID, name string, description *string, status TaskStatus, assignee *ProjectMember, now time.Time) (*Task, error) {
 	t := &Task{
 		ID:          id,
 		ProjectID:   projectID,
@@ -42,7 +42,7 @@ func NewTask(id TaskID, projectID ProjectID, projectKey ProjectKey, number int, 
 		Number:      number,
 		Name:        name,
 		Description: description,
-		Status:      defaultTaskStatus(),
+		Status:      status,
 		AuthorID:    authorID,
 		CreatedAt:   now,
 		UpdatedAt:   now,

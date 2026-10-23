@@ -10,6 +10,8 @@ export interface NewTask {
   description?: string;
   /** The assignee is a project member */
   assigneeId?: UserId;
+  /** undefined — the default status; a task from a board column starts in that column (ADR-0029) */
+  statusId?: TaskStatusId;
 }
 
 export interface TaskChanges {

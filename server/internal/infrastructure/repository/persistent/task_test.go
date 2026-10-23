@@ -76,7 +76,7 @@ func TestTaskRepository(t *testing.T) {
 	}
 	newTask := func(author *entity.ProjectMember, name string, description *string, assignee *entity.ProjectMember) *entity.Task {
 		t.Helper()
-		task, err := f.New(author, keyOf(author.ProjectID), nextNumber(author.ProjectID), name, description, assignee)
+		task, err := f.New(author, keyOf(author.ProjectID), nextNumber(author.ProjectID), name, description, entity.DefaultTaskStatus(), assignee)
 		if err == nil {
 			err = repo.Create(ctx, task)
 		}

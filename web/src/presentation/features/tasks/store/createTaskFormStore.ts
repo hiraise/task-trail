@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import type { ProjectId, UserId } from "@/domain/types";
+import type { ProjectId, TaskStatusId, UserId } from "@/domain/types";
 
 // Draft of a new task. Modals open as a stack and only the top one is shown: while the project
 // or assignee picker is open, the task form is unmounted, so its fields live here rather than
@@ -14,10 +14,16 @@ interface CreateTaskFormState {
   assigneeId?: UserId;
   /** From a board — only its projects can be chosen (ADR-0029); undefined — any project */
   allowedProjectIds?: ProjectId[];
+  /**
+   * From a kanban column — the column's status; the new task stays on the board instead of opening.
+   * undefined — the default status, and the task opens after creation
+   */
+  statusId?: TaskStatusId;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
   setProjectId: (projectId: ProjectId) => void;
   setAssigneeId: (assigneeId?: UserId) => void;
+  setStatusId: (statusId?: TaskStatusId) => void;
   /** Limits the project choice; a draft project outside the limit is cleared */
   limitProjects: (projectIds?: ProjectId[]) => void;
   reset: () => void;
@@ -29,6 +35,7 @@ const empty = {
   projectId: undefined,
   assigneeId: undefined,
   allowedProjectIds: undefined,
+  statusId: undefined,
 };
 
 export const useCreateTaskFormStore = create<CreateTaskFormState>((set) => ({
@@ -37,6 +44,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set) => ({
   setDescription: (description) => set({ description }),
   setProjectId: (projectId) => set({ projectId }),
   setAssigneeId: (assigneeId) => set({ assigneeId }),
+  setStatusId: (statusId) => set({ statusId }),
   limitProjects: (allowedProjectIds) =>
     set((state) => {
       if (!allowedProjectIds) return { allowedProjectIds };
