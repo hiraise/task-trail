@@ -14,7 +14,8 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   history ([ADR-0028](adr/0028-task-activity-feed.md)); boards — list, creation, board info
   ([ADR-0029](adr/0029-boards-over-projects.md)); the kanban with drag and drop and the task modal;
   search — `GET /v1/search` and the search screen ([ADR-0030](adr/0030-search-by-substring.md)).
-  Next — stage 3: there is no plan yet; ask the customer which item comes first.
+  Next — stage 3, plan — [docs/plans/stage-3/](plans/stage-3/README.md) with ADRs 0033–0039, accepted
+  on 2026-10-23; the next step is step 0 — mockups of all stage 3 screens.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
@@ -38,9 +39,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
    onto it; the old API reference removed. Details — ADRs 0011–0025 and git history.
 3. **Stage 2 — done (2026-10-23).** The core of [ADR-0004](adr/0004-lightweight-tracker-scope.md): task
    keys, archive, comments with history, boards, search. Plan — [docs/plans/stage-2/](plans/stage-2/README.md).
-4. **Stage 3.** The "after the core" items of ADR-0004, each with its own ADR: priority, due date,
-   labels, notifications, attachments, subtasks. No design yet — a mockup per
-   `docs/design-system.md` first (ADR-0025).
+4. **Stage 3.** The "after the core" items of ADR-0004, each with its own ADR (0033–0039): priority,
+   due date, labels, subtasks, attachments, notifications with emails and reminders, mentions. Mockups
+   of all screens first (step 0, ADR-0025). Plan — [docs/plans/stage-3/](plans/stage-3/README.md).
 5. **Stage 4.** An Android client on the same API. First an ADR about the stack; an example of the
    process — the Babylog project (`hiraise/Babylog`).
 
