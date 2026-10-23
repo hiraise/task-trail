@@ -2,6 +2,7 @@ import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 
 import type {
   ChangeTaskAssigneeRequest,
+  ChangeTaskPriorityRequest,
   ChangeTaskStatusRequest,
   CreateCommentRequest,
   CreateTaskRequest,
@@ -33,13 +34,14 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
   findStatuses: async () =>
     (await http.get<TaskStatus[]>(API_ROUTES.TASK_STATUSES)).map(toTaskStatus),
 
-  create: async ({ projectId, name, description, assigneeId, statusId }) => {
+  create: async ({ projectId, name, description, assigneeId, statusId, priority }) => {
     const body: CreateTaskRequest = {
       projectId,
       name,
       description: description ?? null,
       assigneeId: assigneeId ?? null,
       ...(statusId && { statusId }),
+      ...(priority && { priority }),
     };
 
     return toTask(await http.post<Task>(API_ROUTES.TASKS, body));
@@ -55,6 +57,12 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
     const body: ChangeTaskStatusRequest = { statusId };
 
     return toTask(await http.patch<Task>(API_ROUTES.TASK_STATUS(id), body));
+  },
+
+  changePriority: async (id, priority) => {
+    const body: ChangeTaskPriorityRequest = { priority };
+
+    return toTask(await http.patch<Task>(API_ROUTES.TASK_PRIORITY(id), body));
   },
 
   changeAssignee: async (id, assigneeId) => {

@@ -10,9 +10,12 @@ export const options: SortOption[] = [
   { value: "createdAt", label: "По дате создания" },
   { value: "nameAsc", label: "По алфавиту А – Я" },
   { value: "nameDesc", label: "По алфавиту Я – А" },
+  { value: "priority", label: "По приоритету" },
 ];
 
 export interface SortItemsProps {
   selected: SortOptionValue;
   onSelect: (option: SortOption) => void;
+  /** A task list: options from TASK_SORT_OPTIONS are shown */
+  tasks?: boolean;
 }

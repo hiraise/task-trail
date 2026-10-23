@@ -39,7 +39,7 @@ export function ProjectTaskTabs(props: ProjectTaskTabsProps) {
 function ProjectTaskList({ projectId, members, projectArchived }: ProjectTaskTabsProps) {
   const { activeTab } = useTabPanel();
   const archived = activeTab === TabType.ARCHIVED;
-  const { sort, openSort } = useListSort("project-tasks");
+  const { sort, openSort } = useListSort("project-tasks", { tasks: true });
   const { data: tasks } = useProjectTasks(projectId, archived);
 
   const sorted = useMemo(() => tasks && sortItems(tasks, sort), [tasks, sort]);

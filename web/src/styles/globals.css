@@ -48,6 +48,11 @@
   --icon-critical: rgba(255, 50, 50, 1);
   --icon-accent: rgba(64, 111, 213, 1);
 
+  /* Priority icons (ADR-0033); normal uses --icon-secondary */
+  --priority-urgent: rgba(255, 50, 50, 1);
+  --priority-high: rgba(200, 100, 0, 1);
+  --priority-low: rgba(64, 111, 213, 1);
+
   /* Borders */
   --border-critical: rgba(255, 50, 50, 1);
   --border-secondary: rgba(251, 251, 251, 1);

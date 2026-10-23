@@ -1,7 +1,8 @@
 import clsx from "clsx";
 
+import type { Task } from "@/domain/models/Task";
 import { getUserDisplayName, type User } from "@/domain/models/User";
-import { ArchiveTag, HighlightedText, UserAvatar } from "@/presentation/shared";
+import { ArchiveTag, HighlightedText, TaskMeta, UserAvatar } from "@/presentation/shared";
 
 import styles from "./ProjectTask.module.css";
 
@@ -15,9 +16,11 @@ interface ProjectTaskProps {
   highlight?: string;
   /** The archive tag above the key (ADR-0027) */
   archived?: boolean;
+  /** The task whose badges go under the name (TaskMeta) */
+  task?: Task;
 }
 
-export function ProjectTask({ taskKey, title, assignee, highlight, archived }: ProjectTaskProps) {
+export function ProjectTask({ taskKey, title, assignee, highlight, archived, task }: ProjectTaskProps) {
   return (
     <div className={styles.container}>
       <span className={styles.text}>
@@ -26,6 +29,7 @@ export function ProjectTask({ taskKey, title, assignee, highlight, archived }: P
         <span className={clsx("body-reg", styles.title)}>
           <HighlightedText text={title} highlight={highlight} />
         </span>
+        {task && <TaskMeta task={task} />}
       </span>
       <UserAvatar
         variant="small"

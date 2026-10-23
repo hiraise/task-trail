@@ -1,4 +1,4 @@
-import type { ProjectId, TaskId, TaskStatusId, UserId } from "../types";
+import type { ProjectId, TaskId, TaskPriorityId, TaskStatusId, UserId } from "../types";
 
 export interface Task {
   id: TaskId;
@@ -11,6 +11,7 @@ export interface Task {
   /** undefined when there is no description */
   description?: string;
   statusId: TaskStatusId;
+  priority: TaskPriorityId;
   authorId: UserId;
   /** undefined when unassigned; the assignee is always a member of the task's project */
   assigneeId?: UserId;

@@ -77,6 +77,7 @@ export const tasksTexts = {
   taskDeleted: "Задача удалена",
   deleteTaskFailed: "Не удалось удалить задачу",
   changeStatusFailed: "Не удалось сменить статус",
+  changePriorityFailed: "Не удалось изменить приоритет",
   changeAssigneeFailed: "Не удалось сменить ответственного",
   taskMoved: "Задача перенесена в проект «{project}»",
   taskMovedUnassigned:

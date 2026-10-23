@@ -4,7 +4,7 @@ import clsx from "clsx";
 import type { Task } from "@/domain/models/Task";
 import { getUserDisplayName, type User } from "@/domain/models/User";
 import type { ProjectId } from "@/domain/types";
-import { UserAvatar } from "@/presentation/shared";
+import { TaskMeta, UserAvatar } from "@/presentation/shared";
 
 import styles from "./TaskList.module.css";
 
@@ -28,6 +28,7 @@ export function TaskList({ tasks, projectNames, assignee }: TaskListProps) {
                 {[task.key, projectNames.get(task.projectId)].filter(Boolean).join(" · ")}
               </span>
               <span className={clsx("body-med", styles.name)}>{task.name}</span>
+              <TaskMeta task={task} />
             </span>
             {assignee && (
               <UserAvatar

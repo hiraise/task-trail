@@ -35,6 +35,7 @@ function SearchTaskRow({ task, highlight }: { task: Task; highlight: string }) {
         taskKey={task.key}
         title={task.name}
         highlight={highlight}
+        task={task}
         archived={isTaskArchived(task)}
         assignee={members.find((member) => member.id === task.assigneeId)}
       />

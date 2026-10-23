@@ -31,6 +31,10 @@
   overflow-wrap: anywhere;
 }
 
+.meta {
+  margin-top: 4px;
+}
+
 /* The place where the dragged card lands: the same height, an outline instead of the content */
 .placeholder {
   border: 1px dashed var(--border-accent);

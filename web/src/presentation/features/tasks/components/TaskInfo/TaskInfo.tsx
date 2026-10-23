@@ -5,7 +5,7 @@ import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { isTaskArchived, type Task } from "@/domain/models/Task";
 import type { TaskStatus } from "@/domain/models/TaskStatus";
 import { getUserDisplayName } from "@/domain/models/User";
-import { ArchiveTag, DropdownMenu, IconButton } from "@/presentation/shared";
+import { ArchiveTag, DropdownMenu, IconButton, PriorityIcon } from "@/presentation/shared";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
@@ -31,7 +31,7 @@ interface TaskInfoProps {
  * clickable (ADR-0027).
  */
 export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInfoProps) {
-  const { changeStatus, selectAssignee, selectProject } = useTaskActions(task);
+  const { changeStatus, changePriority, selectAssignee, selectProject } = useTaskActions(task);
   const archived = isTaskArchived(task);
 
   return (
@@ -70,6 +70,13 @@ export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInf
           value={project.name}
           placeholder={tasksTexts.project}
           onClick={archived ? undefined : selectProject}
+        />
+        <TaskField
+          iconNode={<PriorityIcon priority={task.priority} size="24px" />}
+          label={tasksTexts.priority}
+          value={tasksTexts.priorities[task.priority]}
+          placeholder={tasksTexts.priority}
+          onClick={archived ? undefined : changePriority}
         />
       </div>
     </div>

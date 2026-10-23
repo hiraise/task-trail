@@ -23,7 +23,7 @@ interface BoardTasksProps {
  * The server picks the tasks (ADR-0029). Board info shows this list; the board page — the kanban.
  */
 export function BoardTasks({ board, className }: BoardTasksProps) {
-  const { sort, openSort } = useListSort("board-tasks");
+  const { sort, openSort } = useListSort("board-tasks", { tasks: true });
   const { data: tasks } = useBoardTasks(board.id);
   const sorted = useMemo(() => tasks && sortItems(tasks, sort), [tasks, sort]);
 
@@ -47,6 +47,7 @@ export function BoardTasks({ board, className }: BoardTasksProps) {
                   <ProjectTask
                     taskKey={task.key}
                     title={task.name}
+                    task={task}
                     // An assignee of a board task is a board member (ADR-0029)
                     assignee={board.members.find((member) => member.id === task.assigneeId)}
                   />

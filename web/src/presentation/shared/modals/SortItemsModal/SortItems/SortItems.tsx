@@ -1,14 +1,20 @@
 import { RadioButton } from "@/presentation/shared/ui";
+import { TASK_SORT_OPTIONS, type SortOptionValue } from "@/shared/utils/sortItems";
 
 import type { SortItemsProps, SortOption } from "./SortItems.types";
 import { options } from "./SortItems.types";
 import styles from "./SortItems.module.css";
 
 /** Sort options as radio buttons; the same on every width (ADR-0008). */
-export function SortItems({ selected, onSelect }: SortItemsProps) {
+const isTaskOption = (value: SortOptionValue) =>
+  (TASK_SORT_OPTIONS as readonly SortOptionValue[]).includes(value);
+
+export function SortItems({ selected, onSelect, tasks }: SortItemsProps) {
+  const shown = tasks ? options : options.filter((option) => !isTaskOption(option.value));
+
   return (
     <div className={styles.content}>
-      {options.map((option) => (
+      {shown.map((option) => (
         <RadioButton<SortOption>
           key={option.value}
           option={option}

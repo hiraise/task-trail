@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
-import type { ProjectId, TaskStatusId, UserId } from "@/domain/types";
+import { DEFAULT_TASK_PRIORITY } from "@/domain/models/TaskPriority";
+import type { ProjectId, TaskPriorityId, TaskStatusId, UserId } from "@/domain/types";
 
 // Draft of a new task. Modals open as a stack and only the top one is shown: while the project
 // or assignee picker is open, the task form is unmounted, so its fields live here rather than
@@ -19,11 +20,13 @@ interface CreateTaskFormState {
    * undefined — the default status, and the task opens after creation
    */
   statusId?: TaskStatusId;
+  priority: TaskPriorityId;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
   setProjectId: (projectId: ProjectId) => void;
   setAssigneeId: (assigneeId?: UserId) => void;
   setStatusId: (statusId?: TaskStatusId) => void;
+  setPriority: (priority: TaskPriorityId) => void;
   /** Limits the project choice; a draft project outside the limit is cleared */
   limitProjects: (projectIds?: ProjectId[]) => void;
   reset: () => void;
@@ -36,6 +39,7 @@ const empty = {
   assigneeId: undefined,
   allowedProjectIds: undefined,
   statusId: undefined,
+  priority: DEFAULT_TASK_PRIORITY,
 };
 
 export const useCreateTaskFormStore = create<CreateTaskFormState>((set) => ({
@@ -45,6 +49,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set) => ({
   setProjectId: (projectId) => set({ projectId }),
   setAssigneeId: (assigneeId) => set({ assigneeId }),
   setStatusId: (statusId) => set({ statusId }),
+  setPriority: (priority) => set({ priority }),
   limitProjects: (allowedProjectIds) =>
     set((state) => {
       if (!allowedProjectIds) return { allowedProjectIds };

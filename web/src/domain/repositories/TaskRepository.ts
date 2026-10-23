@@ -2,7 +2,7 @@ import type { Task } from "../models/Task";
 import type { TaskComment } from "../models/TaskComment";
 import type { TaskEvent } from "../models/TaskEvent";
 import type { TaskStatus } from "../models/TaskStatus";
-import type { CommentId, ProjectId, TaskId, TaskStatusId, UserId } from "../types";
+import type { CommentId, ProjectId, TaskId, TaskPriorityId, TaskStatusId, UserId } from "../types";
 
 export interface NewTask {
   projectId: ProjectId;
@@ -12,6 +12,8 @@ export interface NewTask {
   assigneeId?: UserId;
   /** undefined — the default status; a task from a board column starts in that column (ADR-0029) */
   statusId?: TaskStatusId;
+  /** undefined — `normal` (ADR-0033) */
+  priority?: TaskPriorityId;
 }
 
 export interface TaskChanges {
@@ -35,6 +37,7 @@ export interface TaskRepository {
   create(task: NewTask): Promise<Task>;
   update(id: TaskId, changes: TaskChanges): Promise<Task>;
   changeStatus(id: TaskId, statusId: TaskStatusId): Promise<Task>;
+  changePriority(id: TaskId, priority: TaskPriorityId): Promise<Task>;
   /** null unassigns the task */
   changeAssignee(id: TaskId, assigneeId: UserId | null): Promise<Task>;
   /** Moves to another project; if the assignee is not a member of the new project, the task is unassigned */

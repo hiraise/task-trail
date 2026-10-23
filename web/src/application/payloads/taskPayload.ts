@@ -1,7 +1,7 @@
 import type { Project } from "@/domain/models/Project";
 import type { Task } from "@/domain/models/Task";
 import type { NewTask, TaskChanges } from "@/domain/repositories/TaskRepository";
-import type { TaskId, TaskStatusId, UserId } from "@/domain/types";
+import type { TaskId, TaskPriorityId, TaskStatusId, UserId } from "@/domain/types";
 
 export type CreateTaskPayload = NewTask;
 
@@ -12,6 +12,11 @@ export interface EditTaskPayload extends TaskChanges {
 export interface ChangeTaskStatusPayload {
   taskId: TaskId;
   statusId: TaskStatusId;
+}
+
+export interface ChangeTaskPriorityPayload {
+  taskId: TaskId;
+  priority: TaskPriorityId;
 }
 
 export interface ChangeTaskAssigneePayload {

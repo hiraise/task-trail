@@ -14,12 +14,12 @@ import styles from "./SortItemsModal.module.css";
  * (Figma comment 1636:45413), "Cancel" closes it without a change.
  */
 export function SortItemsModal(props: BaseModalProps<SortOptionValue>) {
-  const { current = "updatedAt" } = useGlobalModalProps<SortOptionsProps>() ?? {};
+  const { current = "updatedAt", tasks } = useGlobalModalProps<SortOptionsProps>() ?? {};
 
   return (
     <BaseModal {...props} title={TEXTS.sort}>
       <div className={styles.content}>
-        <SortItems selected={current} onSelect={(option) => props.onClose(option.value)} />
+        <SortItems selected={current} tasks={tasks} onSelect={(option) => props.onClose(option.value)} />
         <SubmitButton variant="secondary" onClick={() => props.onClose()}>
           {TEXTS.cancel}
         </SubmitButton>
