@@ -5,6 +5,8 @@ import type { Project, ProjectDetails } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { MailSettings, ServiceSettings } from "@/domain/models/ServiceSettings";
 import type { Task } from "@/domain/models/Task";
+import type { TaskComment } from "@/domain/models/TaskComment";
+import type { TaskEvent } from "@/domain/models/TaskEvent";
 import type { TaskStatus } from "@/domain/models/TaskStatus";
 import type { CurrentUser, User } from "@/domain/models/User";
 
@@ -18,6 +20,8 @@ import type {
   ProjectDetails as ProjectDetailsDto,
   Project as ProjectDto,
   ServiceSettings as ServiceSettingsDto,
+  TaskComment as TaskCommentDto,
+  TaskEvent as TaskEventDto,
   TaskStatus as TaskStatusDto,
   Task as TaskDto,
   User as UserDto,
@@ -80,6 +84,29 @@ export const toTask = (dto: TaskDto): Task => ({
   projectArchived: dto.projectArchived,
   createdAt: dto.createdAt,
   updatedAt: dto.updatedAt,
+});
+
+export const toTaskComment = (dto: TaskCommentDto): TaskComment => ({
+  id: dto.id,
+  taskId: dto.taskId,
+  author: toUser(dto.author),
+  text: dto.text,
+  createdAt: dto.createdAt,
+  editedAt: dto.editedAt ?? undefined,
+});
+
+export const toTaskEvent = (dto: TaskEventDto): TaskEvent => ({
+  id: dto.id,
+  taskId: dto.taskId,
+  kind: dto.kind,
+  actor: toUser(dto.actor),
+  createdAt: dto.createdAt,
+  fromStatusId: dto.fromStatusId ?? undefined,
+  toStatusId: dto.toStatusId ?? undefined,
+  fromUser: dto.fromUser ? toUser(dto.fromUser) : undefined,
+  toUser: dto.toUser ? toUser(dto.toUser) : undefined,
+  fromKey: dto.fromKey ?? undefined,
+  toKey: dto.toKey ?? undefined,
 });
 
 export const toTaskStatus = (dto: TaskStatusDto): TaskStatus => ({

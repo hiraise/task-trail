@@ -34,6 +34,7 @@ type deps struct {
 	projects *mocks.MockProjectRepository
 	members  *mocks.MockProjectMemberRepository
 	tasks    *mocks.MockTaskRepository
+	events   *mocks.MockTaskEventRepository
 }
 
 func newModule(t *testing.T) (*task.TaskModule, *deps) {
@@ -43,6 +44,7 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 		projects: mocks.NewMockProjectRepository(ctrl),
 		members:  mocks.NewMockProjectMemberRepository(ctrl),
 		tasks:    mocks.NewMockTaskRepository(ctrl),
+		events:   mocks.NewMockTaskEventRepository(ctrl),
 	}
 	clk := clock.New(now)
 	return task.New(task.Deps{
@@ -51,8 +53,23 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 		ProjectRepo: d.projects,
 		MemberRepo:  d.members,
 		TaskRepo:    d.tasks,
-		TaskFactory: factory.NewTaskFactory(id.New(), clk),
+		TaskFactory:  factory.NewTaskFactory(id.New(), clk),
+		EventRepo:    d.events,
+		EventFactory: factory.NewTaskEventFactory(id.New()),
 	}), d
+}
+
+// expectEvents expects the history rows written in a transaction, in order, and returns them.
+func (d *deps) expectEvents(n int) *[]*entity.TaskEvent {
+	var got []*entity.TaskEvent
+	if n == 0 {
+		return &got
+	}
+	d.events.EXPECT().Create(txtest.InTx, gomock.Any()).Times(n).DoAndReturn(func(_ context.Context, e *entity.TaskEvent) error {
+		got = append(got, e)
+		return nil
+	})
+	return &got
 }
 
 func notFound() error { return domain.ErrEntityNotFound(0, nil) }
@@ -90,9 +107,14 @@ func TestEditLocksTaskProject(t *testing.T) {
 			return nil
 		}),
 	)
+	events := d.expectEvents(1)
 	got, err := module.ChangeStatus.Execute(context.Background(), string(userID), string(taskID), entity.StatusDone)
 	if err != nil || got.Status != entity.StatusDone {
 		t.Fatalf("%+v, %v", got, err)
+	}
+	if e := (*events)[0]; e.Kind != entity.EventStatusChanged || *e.FromStatus != entity.StatusInReview || *e.ToStatus != entity.StatusDone ||
+		e.ActorID != userID || e.TaskID != taskID || !e.CreatedAt.Equal(now) {
+		t.Errorf("event %+v", e)
 	}
 }
 
@@ -138,8 +160,17 @@ func TestMoveTask(t *testing.T) {
 			return nil
 		}),
 	)
+	events := d.expectEvents(2)
 	if _, err := module.Move.Execute(context.Background(), string(userID), string(taskID), string(backendID)); err != nil {
 		t.Fatal(err)
+	}
+	// "moved" first, then the assignee removed by the move
+	moved, unassigned := (*events)[0], (*events)[1]
+	if moved.Kind != entity.EventMoved || *moved.FromKey != "DS-12" || *moved.ToKey != "BE-4" {
+		t.Errorf("moved: %+v", moved)
+	}
+	if unassigned.Kind != entity.EventAssigneeChanged || *unassigned.FromUser != ivanID || unassigned.ToUser != nil {
+		t.Errorf("assignee: %+v", unassigned)
 	}
 }
 
@@ -185,6 +216,7 @@ func TestCreateTask(t *testing.T) {
 		d.projects.EXPECT().NextTaskNumber(txtest.InTx, designID).Return(3, nil),
 		d.tasks.EXPECT().Create(txtest.InTx, gomock.Any()).Return(nil),
 	)
+	events := d.expectEvents(1)
 	description := "Основная кнопка"
 	got, err := module.Create.Execute(context.Background(), string(userID),
 		dto.CreateTask{ProjectID: string(designID), Name: "Кнопка", Description: &description, AssigneeID: &ivan})
@@ -195,6 +227,9 @@ func TestCreateTask(t *testing.T) {
 		got.Status != entity.StatusOpen || got.AuthorID != userID || *got.AssigneeID != ivanID ||
 		!got.CreatedAt.Equal(now) || !got.UpdatedAt.Equal(now) {
 		t.Fatalf("task: %+v", got)
+	}
+	if e := (*events)[0]; e.Kind != entity.EventCreated || e.TaskID != got.ID || e.ActorID != userID || !e.CreatedAt.Equal(now) {
+		t.Errorf("event %+v", e)
 	}
 }
 
@@ -303,7 +338,8 @@ func TestArchivedProjectTakesNoTasks(t *testing.T) {
 	})
 }
 
-// Any member archives and restores a task; the same value again keeps the update time.
+// Any member archives and restores a task; the same value again keeps the update time and writes
+// no event.
 // In an archived project — PROJECT_ARCHIVED.
 func TestSetTaskArchived(t *testing.T) {
 	run := func(t *testing.T, task *entity.Task, p *entity.Project, archived bool) (*entity.Task, error) {
@@ -312,8 +348,15 @@ func TestSetTaskArchived(t *testing.T) {
 		d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(task, nil).Times(2)
 		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(p, nil)
 		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
-		if p.ArchivedAt == nil {
+		if p.ArchivedAt == nil && (task.ArchivedAt != nil) != archived {
 			d.tasks.EXPECT().Update(txtest.InTx, task).Return(nil)
+			kind := map[bool]entity.TaskEventKind{true: entity.EventArchived, false: entity.EventRestored}[archived]
+			d.events.EXPECT().Create(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, e *entity.TaskEvent) error {
+				if e.Kind != kind || !e.CreatedAt.Equal(now) {
+					t.Errorf("event %+v, want %s", e, kind)
+				}
+				return nil
+			})
 		}
 		return module.SetArchived.Execute(context.Background(), string(userID), string(taskID), archived)
 	}

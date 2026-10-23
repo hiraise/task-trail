@@ -31,3 +31,7 @@ export const canRemoveMember = (role: ProjectRole, memberRole: ProjectRole): boo
 
 /** The owner and admins go into the "Project administrators" group. */
 export const isProjectAdmin = isManager;
+
+/** A comment is deleted by its author, the project owner and admins (ADR-0028). */
+export const canDeleteComment = (role: ProjectRole, isAuthor: boolean): boolean =>
+  isAuthor || isManager(role);

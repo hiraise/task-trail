@@ -38,6 +38,8 @@ type Deps struct {
 	MemberRepo        repository.ProjectMemberRepository
 	UserRepo          repository.UserRepository
 	TaskRepo          repository.TaskRepository
+	EventRepo         repository.TaskEventRepository
+	EventFactory      *factory.TaskEventFactory
 	InvitationRepo    repository.InvitationRepository
 	InvitationFactory *factory.InvitationFactory
 	SettingsRepo      repository.SettingsRepository
@@ -55,6 +57,7 @@ func New(d Deps) *ProjectModule {
 		settings:    d.SettingsRepo,
 		mailer:      d.Mailer,
 	}
+	leaver := &leaver{members: d.MemberRepo, tasks: d.TaskRepo, events: d.EventRepo, newEvent: d.EventFactory}
 	return &ProjectModule{
 		List: &ListProjectsService{projects: d.ProjectRepo},
 		Get:  &GetProjectService{projects: d.ProjectRepo},
@@ -84,14 +87,14 @@ func New(d Deps) *ProjectModule {
 			clock:     d.Clock,
 			access:    access,
 			members:   d.MemberRepo,
-			tasks:     d.TaskRepo,
+			leaver:    leaver,
 		},
 		Leave: &LeaveService{
 			txManager: d.TxManager,
 			clock:     d.Clock,
 			access:    access,
 			members:   d.MemberRepo,
-			tasks:     d.TaskRepo,
+			leaver:    leaver,
 		},
 	}
 }

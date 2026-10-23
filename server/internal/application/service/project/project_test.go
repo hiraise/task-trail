@@ -1,6 +1,7 @@
 package project_test
 
 import (
+	"slices"
 	"context"
 	"errors"
 	"strings"
@@ -39,6 +40,7 @@ type deps struct {
 	members     *mocks.MockProjectMemberRepository
 	users       *mocks.MockUserRepository
 	tasks       *mocks.MockTaskRepository
+	events      *mocks.MockTaskEventRepository
 	invitations *mocks.MockInvitationRepository
 	settings    *mocks.MockSettingsRepository
 	mailer      *mocks.MockMailer
@@ -52,6 +54,7 @@ func newModule(t *testing.T) (*project.ProjectModule, *deps) {
 		members:     mocks.NewMockProjectMemberRepository(ctrl),
 		users:       mocks.NewMockUserRepository(ctrl),
 		tasks:       mocks.NewMockTaskRepository(ctrl),
+		events:      mocks.NewMockTaskEventRepository(ctrl),
 		invitations: mocks.NewMockInvitationRepository(ctrl),
 		settings:    mocks.NewMockSettingsRepository(ctrl),
 		mailer:      mocks.NewMockMailer(ctrl),
@@ -65,6 +68,8 @@ func newModule(t *testing.T) (*project.ProjectModule, *deps) {
 		MemberRepo:        d.members,
 		UserRepo:          d.users,
 		TaskRepo:          d.tasks,
+		EventRepo:         d.events,
+		EventFactory:      factory.NewTaskEventFactory(id.New()),
 		InvitationRepo:    d.invitations,
 		InvitationFactory: factory.NewInvitationFactory(id.New(), linktoken.New(), clk, 7*24*time.Hour),
 		SettingsRepo:      d.settings,
@@ -204,14 +209,28 @@ func TestMemberCannotManage(t *testing.T) {
 	}
 }
 
-// Leaving and removal unassign the person from the project's tasks in the same transaction.
+// Leaving and removal unassign the person from the project's tasks in the same transaction; each
+// unassigned task gets an assignee_changed event by whoever left (ADR-0028).
 func TestLeave(t *testing.T) {
 	module, d := newModule(t)
 	d.expectLocked(entity.RoleMember)
 	d.members.EXPECT().Remove(txtest.InTx, projectID, ownerID).Return(nil)
-	d.tasks.EXPECT().UnassignInProject(txtest.InTx, projectID, ownerID, now).Return(nil)
+	unassigned := []entity.TaskID{"t1", "t2"}
+	d.tasks.EXPECT().UnassignInProject(txtest.InTx, projectID, ownerID, now).Return(unassigned, nil)
+	var written []entity.TaskID
+	d.events.EXPECT().Create(txtest.InTx, gomock.Any()).Times(2).DoAndReturn(func(_ context.Context, e *entity.TaskEvent) error {
+		if e.Kind != entity.EventAssigneeChanged || e.ActorID != ownerID || e.FromUser == nil || *e.FromUser != ownerID ||
+			e.ToUser != nil || !e.CreatedAt.Equal(now) {
+			t.Errorf("event %+v", e)
+		}
+		written = append(written, e.TaskID)
+		return nil
+	})
 	if err := module.Leave.Execute(context.Background(), string(ownerID), string(projectID)); err != nil {
 		t.Fatal(err)
+	}
+	if !slices.Equal(written, unassigned) {
+		t.Errorf("events for tasks %v, want %v", written, unassigned)
 	}
 
 	d.expectLocked(entity.RoleOwner)
@@ -350,7 +369,7 @@ func TestArchivedProjectIsReadOnly(t *testing.T) {
 
 	d.expectLockedArchived(entity.RoleMember)
 	d.members.EXPECT().Remove(txtest.InTx, projectID, ownerID).Return(nil)
-	d.tasks.EXPECT().UnassignInProject(txtest.InTx, projectID, ownerID, now).Return(nil)
+	d.tasks.EXPECT().UnassignInProject(txtest.InTx, projectID, ownerID, now).Return(nil, nil)
 	if err := module.Leave.Execute(context.Background(), string(ownerID), string(projectID)); err != nil {
 		t.Fatalf("leaving: %v", err)
 	}

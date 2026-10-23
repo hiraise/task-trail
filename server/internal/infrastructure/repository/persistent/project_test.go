@@ -195,8 +195,12 @@ func TestProjectMembers(t *testing.T) {
 		t.Fatal(err)
 	}
 	requireCode(t, repo.Remove(ctx, project, ivan.ID), domain.EntityNotFound)
-	if err := tasks.UnassignInProject(ctx, project, ivan.ID, now.Add(time.Hour)); err != nil {
+	unassigned, err := tasks.UnassignInProject(ctx, project, ivan.ID, now.Add(time.Hour))
+	if err != nil {
 		t.Fatal(err)
+	}
+	if len(unassigned) != 1 || string(unassigned[0]) != assigned {
+		t.Errorf("unassigned tasks: %v, want [%s]", unassigned, assigned)
 	}
 	for task, want := range map[string]bool{assigned: false, elsewhere: true} {
 		var hasAssignee bool

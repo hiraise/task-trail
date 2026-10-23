@@ -1,4 +1,4 @@
-import type { ProjectId, TaskId, UserId } from "@/domain/types";
+import type { CommentId, ProjectId, TaskId, UserId } from "@/domain/types";
 
 /** API address (`VITE_API_URL`, web/README.md); on the local stack — the relative `/api`. */
 export const API_URL: string = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -46,6 +46,9 @@ export const API_ROUTES = {
   TASK_ASSIGNEE: (id: TaskId) => `${TASKS}/${id}/assignee`,
   TASK_PROJECT: (id: TaskId) => `${TASKS}/${id}/project`,
   TASK_ARCHIVED: (id: TaskId) => `${TASKS}/${id}/archived`,
+  TASK_COMMENTS: (id: TaskId) => `${TASKS}/${id}/comments`,
+  TASK_COMMENT: (id: TaskId, commentId: CommentId) => `${TASKS}/${id}/comments/${commentId}`,
+  TASK_EVENTS: (id: TaskId) => `${TASKS}/${id}/events`,
   TASK_STATUSES: `${API_VERSION}/task-statuses`,
   // USERS API
   CURRENT_USER: USERS_ME,

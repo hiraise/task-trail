@@ -99,6 +99,26 @@ func (r *PGUserRepository) GetVisible(ctx context.Context, id entity.UserID, vie
 	return r.getOne(ctx, query, id, viewer)
 }
 
+// ListByIDs reads deleted users too: they stay authors and actors in task feeds (ADR-0028).
+func (r *PGUserRepository) ListByIDs(ctx context.Context, ids []entity.UserID) ([]*entity.UserAccount, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	strs := make([]string, len(ids))
+	for i, id := range ids {
+		strs[i] = string(id)
+	}
+	rows, err := r.getDb(ctx).Query(ctx, `SELECT `+userColumns+` FROM users WHERE id = ANY($1::uuid[])`, strs)
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	users, err := ScanRows(rows, func(row pgx.Rows) (*entity.UserAccount, error) { return scanUser(row, r.factory) })
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return users, nil
+}
+
 // ListCandidates: people from userID's non-deleted projects, except userID and the members in exclude.
 func (r *PGUserRepository) ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error) {
 	query := `

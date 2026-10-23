@@ -16,6 +16,8 @@ export function useRemoveMember() {
       projectMemberRepository.removeMember(projectId, memberId),
     onSuccess: (_, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(projectId) });
+      // The member's tasks are unassigned: assignees and histories of many tasks changed (ADR-0028)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
       toast.success(projectsTexts.memberRemoved);
     },
     onError: (error) => toastError(error, projectsTexts.removeMemberFailed),

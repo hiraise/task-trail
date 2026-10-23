@@ -105,14 +105,24 @@ func (r *PGTaskRepository) SoftDelete(ctx context.Context, id entity.TaskID, now
 }
 
 // UnassignInProject clears archived tasks too: an assignee is always a member (ADR-0027).
-func (r *PGTaskRepository) UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) error {
-	_, err := r.getDb(ctx).Exec(ctx,
-		`UPDATE tasks SET assignee_id = NULL, updated_at = $3 WHERE project_id = $1 AND assignee_id = $2 AND deleted_at IS NULL`,
+func (r *PGTaskRepository) UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) ([]entity.TaskID, error) {
+	rows, err := r.getDb(ctx).Query(ctx, `
+		UPDATE tasks SET assignee_id = NULL, updated_at = $3
+		WHERE project_id = $1 AND assignee_id = $2 AND deleted_at IS NULL
+		RETURNING id`,
 		projectID, userID, now)
 	if err != nil {
-		return r.handleError(err)
+		return nil, r.handleError(err)
 	}
-	return nil
+	ids, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (entity.TaskID, error) {
+		var id string
+		err := row.Scan(&id)
+		return entity.TaskID(id), err
+	})
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return ids, nil
 }
 
 func scanTask(row pgx.Row) (*entity.Task, error) {

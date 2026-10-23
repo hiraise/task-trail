@@ -117,3 +117,20 @@ func BindSetArchived(c *gin.Context) (bool, error) {
 	}
 	return *body.Archived, nil
 }
+
+// commentReq — CreateCommentRequest and UpdateCommentRequest: spaces at the ends are trimmed
+// before validation (ADR-0028).
+type commentReq struct {
+	Text string `json:"text" binding:"required,max=10000"`
+}
+
+func (r *commentReq) normalize() { r.Text = strings.TrimSpace(r.Text) }
+
+// BindComment returns the trimmed comment text.
+func BindComment(c *gin.Context) (string, error) {
+	body, err := validate[commentReq](c)
+	if err != nil {
+		return "", err
+	}
+	return body.Text, nil
+}

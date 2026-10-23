@@ -21,8 +21,9 @@ export function useLeaveProject() {
       navigate({ to: ROUTES.projects, replace: true });
       queryClient.removeQueries({ queryKey: QUERY_KEYS.invalidate.project(projectId) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.lists });
-      // Leaving clears the user as the assignee of the project's tasks
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.mineLists });
+      // Leaving clears the user as the assignee of the project's tasks: assignees and histories
+      // of many tasks changed (ADR-0028)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
     },
     onError: (error) => toastError(error, projectsTexts.leaveProjectFailed),
   });

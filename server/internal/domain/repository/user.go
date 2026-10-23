@@ -18,6 +18,9 @@ type UserRepository interface {
 	// project, or the author of a task in a project of the viewer. This way a task author stays visible
 	// after leaving the project (contract, GET /v1/users/{userId}). Others are not found.
 	GetVisible(ctx context.Context, id entity.UserID, viewer entity.UserID) (*entity.UserAccount, error)
+	// ListByIDs — the users with the given IDs, in any order, deleted ones included: a comment
+	// author or an event actor is shown even if they are gone (ADR-0028). Missing IDs are skipped.
+	ListByIDs(ctx context.Context, ids []entity.UserID) ([]*entity.UserAccount, error)
 	// ListCandidates — whom userID can invite to a project: people from their non-deleted projects,
 	// except themselves, and if exclude is set — except members of that project too.
 	ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error)

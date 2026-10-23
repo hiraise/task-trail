@@ -3,6 +3,7 @@ import type { ProjectRole } from "@/domain/types";
 import {
   canChangeProjectKey,
   canChangeRoles,
+  canDeleteComment,
   canDeleteProject,
   canEditProject,
   canInviteMembers,
@@ -30,5 +31,10 @@ describe("permissions by project role", () => {
     expect(allowed((target) => canRemoveMember("owner", target))).toEqual(["admin", "member"]);
     expect(allowed((target) => canRemoveMember("admin", target))).toEqual(["member"]);
     expect(allowed((target) => canRemoveMember("member", target))).toEqual([]);
+  });
+
+  it("the author, the owner and admins delete a comment (ADR-0028)", () => {
+    expect(allowed((role) => canDeleteComment(role, false))).toEqual(["owner", "admin"]);
+    expect(allowed((role) => canDeleteComment(role, true))).toEqual(roles);
   });
 });

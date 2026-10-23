@@ -13,3 +13,5 @@ export { useTaskActions } from "./useTaskActions";
 export { useTaskDetail } from "./useTaskDetail";
 export { useTaskMenuItems } from "./useTaskMenuItems";
 export { useTaskStatuses } from "./useTaskStatuses";
+export { useCreateComment, useDeleteComment, useEditComment } from "./useCommentMutations";
+export { useTaskComments, useTaskEvents } from "./useTaskFeed";

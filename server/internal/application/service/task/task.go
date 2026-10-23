@@ -27,6 +27,11 @@ type TaskModule struct {
 	Move           *MoveTaskService
 	SetArchived    *SetTaskArchivedService
 	Delete         *DeleteTaskService
+	ListComments   *ListCommentsService
+	CreateComment  *CreateCommentService
+	EditComment    *EditCommentService
+	DeleteComment  *DeleteCommentService
+	ListEvents     *ListEventsService
 }
 
 // Deps are the dependencies of the task module.
@@ -37,10 +42,20 @@ type Deps struct {
 	MemberRepo  repository.ProjectMemberRepository
 	TaskRepo    repository.TaskRepository
 	TaskFactory *factory.TaskFactory
+	UserRepo    repository.UserRepository
+	// CommentRepo, CommentFactory, EventRepo and EventFactory — the task feed (ADR-0028).
+	CommentRepo    repository.CommentRepository
+	CommentFactory *factory.CommentFactory
+	EventRepo      repository.TaskEventRepository
+	EventFactory   *factory.TaskEventFactory
 }
 
 func New(d Deps) *TaskModule {
-	e := &editor{txManager: d.TxManager, clock: d.Clock, projects: d.ProjectRepo, members: d.MemberRepo, tasks: d.TaskRepo}
+	e := &editor{
+		txManager: d.TxManager, clock: d.Clock, projects: d.ProjectRepo, members: d.MemberRepo, tasks: d.TaskRepo,
+		events: d.EventRepo, newEvent: d.EventFactory,
+	}
+	feed := &feed{members: d.MemberRepo, tasks: d.TaskRepo, users: d.UserRepo}
 	return &TaskModule{
 		ListInProject:  &ListProjectTasksService{members: d.MemberRepo, tasks: d.TaskRepo},
 		ListAssigned:   &ListAssignedTasksService{tasks: d.TaskRepo},
@@ -52,6 +67,11 @@ func New(d Deps) *TaskModule {
 		Move:           &MoveTaskService{editor: e},
 		SetArchived:    &SetTaskArchivedService{editor: e},
 		Delete:         &DeleteTaskService{editor: e},
+		ListComments:   &ListCommentsService{feed: feed, comments: d.CommentRepo},
+		CreateComment:  &CreateCommentService{editor: e, feed: feed, comments: d.CommentRepo, factory: d.CommentFactory},
+		EditComment:    &EditCommentService{editor: e, feed: feed, comments: d.CommentRepo},
+		DeleteComment:  &DeleteCommentService{editor: e, comments: d.CommentRepo},
+		ListEvents:     &ListEventsService{feed: feed, events: d.EventRepo},
 	}
 }
 
@@ -62,6 +82,18 @@ type editor struct {
 	projects  repository.ProjectRepository
 	members   repository.ProjectMemberRepository
 	tasks     repository.TaskRepository
+	events    repository.TaskEventRepository
+	newEvent  *factory.TaskEventFactory
+}
+
+// record writes task history rows in the current transaction (ADR-0028).
+func (e *editor) record(ctx context.Context, events ...*entity.TaskEvent) error {
+	for _, ev := range events {
+		if err := e.events.Create(ctx, ev); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // lock locks the task's project and the also projects until the end of the transaction and finds the task,
@@ -107,11 +139,12 @@ func (e *editor) lockProjects(ctx context.Context, locked map[entity.ProjectID]*
 }
 
 // edit is a change of a task by a member of its project: in a transaction under the project lock
-// (and the also projects) it applies apply and writes the task. apply gets the locked projects.
+// (and the also projects) it applies apply and writes the task and the history rows apply returns,
+// none if nothing changed (ADR-0028). apply gets the locked projects.
 // The task and its project must be active (ADR-0027); an also project is checked by apply, after
 // the membership in it: a non-member does not learn that it is archived.
 func (e *editor) edit(ctx context.Context, userID, taskID string, also []entity.ProjectID,
-	apply func(ctx context.Context, task *entity.Task, projects map[entity.ProjectID]*entity.Project, now time.Time) error,
+	apply func(ctx context.Context, task *entity.Task, projects map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error),
 ) (*entity.Task, error) {
 	var task *entity.Task
 	f := func(ctx context.Context) error {
@@ -125,10 +158,14 @@ func (e *editor) edit(ctx context.Context, userID, taskID string, also []entity.
 		if err := t.RequireActive(); err != nil {
 			return err
 		}
-		if err := apply(ctx, t, projects, e.clock.Now()); err != nil {
+		events, err := apply(ctx, t, projects, e.clock.Now())
+		if err != nil {
 			return err
 		}
 		if err := e.tasks.Update(ctx, t); err != nil {
+			return err
+		}
+		if err := e.record(ctx, events...); err != nil {
 			return err
 		}
 		task = t

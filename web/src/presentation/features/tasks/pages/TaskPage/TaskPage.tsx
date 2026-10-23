@@ -10,7 +10,7 @@ import { hasErrorCode } from "@/shared/errors/types";
 import { tasksTexts } from "@/shared/locales/tasks";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { Comments, TaskInfo } from "../../components";
+import { TaskActivity, TaskInfo } from "../../components";
 import { useTaskDetail, useTaskMenuItems } from "../../hooks";
 
 import styles from "./TaskPage.module.css";
@@ -42,7 +42,7 @@ export function TaskPage({ taskId }: { taskId: TaskId }) {
             />
           </section>
           <section className={styles.section}>
-            <Comments readOnly={archived} />
+            <TaskActivity task={data.task} role={data.project.role} />
           </section>
         </>
       );

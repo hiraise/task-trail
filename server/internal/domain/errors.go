@@ -30,6 +30,8 @@ const (
 	TaskArchived ErrorCode = "TASK_ARCHIVED"
 	// The project is archived: it, its members and tasks do not change (ADR-0027)
 	ProjectArchived ErrorCode = "PROJECT_ARCHIVED"
+	// A comment is edited only during the first 24 hours (ADR-0028)
+	CommentEditExpired ErrorCode = "COMMENT_EDIT_EXPIRED"
 	// The last service administrator cannot be removed (ADR-0014)
 	LastAdmin ErrorCode = "LAST_ADMIN"
 
@@ -162,6 +164,10 @@ func ErrTaskArchived(data ...any) *DomainError {
 
 func ErrProjectArchived(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, ProjectArchived, nil, data...)
+}
+
+func ErrCommentEditExpired(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, CommentEditExpired, nil, data...)
 }
 
 func ErrLastAdmin(data ...any) *DomainError {

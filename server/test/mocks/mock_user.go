@@ -160,6 +160,21 @@ func (mr *MockUserRepositoryMockRecorder) List(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "List", reflect.TypeOf((*MockUserRepository)(nil).List), ctx)
 }
 
+// ListByIDs mocks base method.
+func (m *MockUserRepository) ListByIDs(ctx context.Context, ids []entity.UserID) ([]*entity.UserAccount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListByIDs", ctx, ids)
+	ret0, _ := ret[0].([]*entity.UserAccount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListByIDs indicates an expected call of ListByIDs.
+func (mr *MockUserRepositoryMockRecorder) ListByIDs(ctx, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListByIDs", reflect.TypeOf((*MockUserRepository)(nil).ListByIDs), ctx, ids)
+}
+
 // ListCandidates mocks base method.
 func (m *MockUserRepository) ListCandidates(ctx context.Context, userID entity.UserID, exclude *entity.ProjectID) ([]*entity.UserAccount, error) {
 	m.ctrl.T.Helper()

@@ -4,7 +4,11 @@
   gap: 16px;
 }
 
-/* CommentInput styles */
+.status {
+  color: var(--text-secondary);
+}
+
+/* CommentInput */
 
 .inputWrapper {
   display: flex;
@@ -23,17 +27,13 @@
   position: relative;
   flex: 1;
   max-height: 250px;
-  z-index: 100;
 }
 
 .buttons {
-  position: "absolute";
-  top: "100%";
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
   gap: 12px;
-  z-index: 99;
 }
 
 .buttons > button {
