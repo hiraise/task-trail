@@ -117,6 +117,21 @@ func (mr *MockProjectRepositoryMockRecorder) NextTaskNumber(ctx, id any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NextTaskNumber", reflect.TypeOf((*MockProjectRepository)(nil).NextTaskNumber), ctx, id)
 }
 
+// Search mocks base method.
+func (m *MockProjectRepository) Search(ctx context.Context, userID entity.UserID, pattern string, limit int) ([]*repository.ProjectView, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Search", ctx, userID, pattern, limit)
+	ret0, _ := ret[0].([]*repository.ProjectView)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Search indicates an expected call of Search.
+func (mr *MockProjectRepositoryMockRecorder) Search(ctx, userID, pattern, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockProjectRepository)(nil).Search), ctx, userID, pattern, limit)
+}
+
 // SoftDelete mocks base method.
 func (m *MockProjectRepository) SoftDelete(ctx context.Context, id entity.ProjectID, now time.Time) error {
 	m.ctrl.T.Helper()

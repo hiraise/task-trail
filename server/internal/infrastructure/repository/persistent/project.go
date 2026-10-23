@@ -77,7 +77,16 @@ func (r *PGProjectRepository) GetView(ctx context.Context, id entity.ProjectID, 
 
 func (r *PGProjectRepository) ListViews(ctx context.Context, userID entity.UserID, archived bool) ([]*repository.ProjectView, error) {
 	query := projectViews + ` AND (p.archived_at IS NOT NULL) = $2 ORDER BY p.created_at DESC, p.id`
-	rows, err := r.getDb(ctx).Query(ctx, query, userID, archived)
+	return r.listViews(ctx, query, userID, archived)
+}
+
+func (r *PGProjectRepository) Search(ctx context.Context, userID entity.UserID, pattern string, limit int) ([]*repository.ProjectView, error) {
+	query := projectViews + ` AND (p.name ILIKE $2 ESCAPE '\' OR p.key ILIKE $2 ESCAPE '\') ORDER BY p.name, p.id LIMIT $3`
+	return r.listViews(ctx, query, userID, pattern, limit)
+}
+
+func (r *PGProjectRepository) listViews(ctx context.Context, query string, args ...any) ([]*repository.ProjectView, error) {
+	rows, err := r.getDb(ctx).Query(ctx, query, args...)
 	if err != nil {
 		return nil, r.handleError(err)
 	}

@@ -92,6 +92,11 @@ func (r *PGBoardRepository) ListViews(ctx context.Context, viewerID entity.UserI
 	return r.views(ctx, boardViews+` ORDER BY b.created_at DESC, b.id`, pgx.NamedArgs{"viewer": viewerID})
 }
 
+func (r *PGBoardRepository) Search(ctx context.Context, viewerID entity.UserID, pattern string, limit int) ([]*repository.BoardView, error) {
+	query := boardViews + ` WHERE b.name ILIKE @pattern ESCAPE '\' ORDER BY b.name, b.id LIMIT @limit`
+	return r.views(ctx, query, pgx.NamedArgs{"viewer": viewerID, "pattern": pattern, "limit": limit})
+}
+
 // views reads boards with a boardViews query and fills their projects and members.
 func (r *PGBoardRepository) views(ctx context.Context, query string, args pgx.NamedArgs) ([]*repository.BoardView, error) {
 	rows, err := r.getDb(ctx).Query(ctx, query, args)

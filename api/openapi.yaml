@@ -49,6 +49,8 @@ tags:
     description: tasks and their statuses (ADR-0002)
   - name: boards
     description: boards — a view over tasks of several projects (ADR-0029)
+  - name: search
+    description: search across projects, boards and tasks (ADR-0030)
   - name: files
     description: files (ADR-0013)
   - name: admin
@@ -1248,6 +1250,34 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
 
+  /v1/search:
+    get:
+      tags: [search]
+      operationId: search
+      summary: Search projects, boards and tasks
+      description: |
+        Any signed-in user. A case-insensitive substring match among what the user can see anyway
+        (ADR-0030): projects where they are a member — by name and key; boards where they are a member —
+        by name; tasks of their projects — by name, description and key (`DS-12`). `%` and `_` are
+        matched as characters. Archived items are included and marked with `archivedAt` and
+        `projectArchived`. At most 20 results per group. Projects and boards by name; tasks — the one
+        whose key equals `q` (case does not matter) first, the rest recently updated first.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: What to look for; 1–100 characters after trimming, otherwise `422` with `details.q`
+          schema: { type: string, minLength: 1, maxLength: 100 }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: What was found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SearchResult" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
   /v1/admin/settings:
     get:
       tags: [admin]
@@ -2028,6 +2058,23 @@ components:
           type: integer
           minimum: 0
           description: The tasks `listBoardTasks` returns to the current user
+    SearchResult:
+      type: object
+      required: [projects, boards, tasks]
+      description: Search results by group, in the shapes of the lists (ADR-0030)
+      properties:
+        projects:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/Project" }
+        boards:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/Board" }
+        tasks:
+          type: array
+          maxItems: 20
+          items: { $ref: "#/components/schemas/Task" }
     CreateBoardRequest:
       type: object
       required: [name, projectIds]

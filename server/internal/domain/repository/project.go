@@ -26,6 +26,9 @@ type ProjectRepository interface {
 	// ListViews — projects where userID is a member, newest first: archived ones if archived is true,
 	// otherwise active ones (ADR-0027).
 	ListViews(ctx context.Context, userID entity.UserID, archived bool) ([]*ProjectView, error)
+	// Search — projects where userID is a member whose name or key matches the ILIKE pattern
+	// (ADR-0030): active and archived, by name, at most limit.
+	Search(ctx context.Context, userID entity.UserID, pattern string, limit int) ([]*ProjectView, error)
 	// Update writes the name, description, key, archive time and update time.
 	// A key taken by another non-deleted project — PROJECT_KEY_TAKEN; Create answers the same.
 	Update(ctx context.Context, project *entity.Project) error

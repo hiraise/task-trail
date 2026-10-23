@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 	entity "task-trail/internal/domain/entity"
+	repository "task-trail/internal/domain/repository"
 	time "time"
 
 	gomock "go.uber.org/mock/gomock"
@@ -99,6 +100,21 @@ func (m *MockTaskRepository) ListInProject(ctx context.Context, projectID entity
 func (mr *MockTaskRepositoryMockRecorder) ListInProject(ctx, projectID, archived any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInProject", reflect.TypeOf((*MockTaskRepository)(nil).ListInProject), ctx, projectID, archived)
+}
+
+// Search mocks base method.
+func (m *MockTaskRepository) Search(ctx context.Context, viewerID entity.UserID, pattern string, key *repository.TaskKeyQuery, limit int) ([]*entity.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Search", ctx, viewerID, pattern, key, limit)
+	ret0, _ := ret[0].([]*entity.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Search indicates an expected call of Search.
+func (mr *MockTaskRepositoryMockRecorder) Search(ctx, viewerID, pattern, key, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockTaskRepository)(nil).Search), ctx, viewerID, pattern, key, limit)
 }
 
 // SoftDelete mocks base method.

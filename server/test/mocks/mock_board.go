@@ -188,6 +188,21 @@ func (mr *MockBoardRepositoryMockRecorder) ReplaceProjects(ctx, id, ownerID, pro
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReplaceProjects", reflect.TypeOf((*MockBoardRepository)(nil).ReplaceProjects), ctx, id, ownerID, projectIDs)
 }
 
+// Search mocks base method.
+func (m *MockBoardRepository) Search(ctx context.Context, viewerID entity.UserID, pattern string, limit int) ([]*repository.BoardView, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Search", ctx, viewerID, pattern, limit)
+	ret0, _ := ret[0].([]*repository.BoardView)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Search indicates an expected call of Search.
+func (mr *MockBoardRepositoryMockRecorder) Search(ctx, viewerID, pattern, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Search", reflect.TypeOf((*MockBoardRepository)(nil).Search), ctx, viewerID, pattern, limit)
+}
+
 // Update mocks base method.
 func (m *MockBoardRepository) Update(ctx context.Context, board *entity.Board) error {
 	m.ctrl.T.Helper()

@@ -37,6 +37,9 @@ type BoardRepository interface {
 	GetView(ctx context.Context, id entity.BoardID, viewerID entity.UserID) (*BoardView, error)
 	// ListViews — boards where viewerID is a member, newest first.
 	ListViews(ctx context.Context, viewerID entity.UserID) ([]*BoardView, error)
+	// Search — boards where viewerID is a member whose name matches the ILIKE pattern (ADR-0030),
+	// by name, at most limit.
+	Search(ctx context.Context, viewerID entity.UserID, pattern string, limit int) ([]*BoardView, error)
 	// Update writes the name and update time.
 	Update(ctx context.Context, board *entity.Board) error
 	// ReplaceProjects replaces the board projects that ownerID sees with projectIDs; projects the owner
