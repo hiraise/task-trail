@@ -19,11 +19,13 @@ type createTaskReq struct {
 	StatusID    *string `json:"statusId" binding:"omitnil,taskstatus"`
 	Priority    *string `json:"priority" binding:"omitnil,taskpriority"`
 	DueDate     *string `json:"dueDate" binding:"omitnil,datetime=2006-01-02"`
+	ParentID    *string `json:"parentId" binding:"omitnil,uuid"`
 }
 
 func (r *createTaskReq) normalize() {
 	normalizeID(&r.ProjectID)
 	normalizeID(r.AssigneeID)
+	normalizeID(r.ParentID)
 }
 
 type changeTaskStatusReq struct {
@@ -44,6 +46,13 @@ type changeTaskAssigneeReq struct {
 }
 
 func (r *changeTaskAssigneeReq) normalize() { normalizeID(r.AssigneeID.Value) }
+
+type changeTaskParentReq struct {
+	ParentID Optional[string] `json:"parentId" binding:"omitnil,uuid"`
+}
+
+// normalize: an upper-case UUID must compare equal to the stored parent.
+func (r *changeTaskParentReq) normalize() { normalizeID(r.ParentID.Value) }
 
 type moveTaskReq struct {
 	ProjectID string `json:"projectId" binding:"required,uuid"`
@@ -69,6 +78,14 @@ func normalizeID(id *string) {
 func requireAssignee(sl validator.StructLevel) {
 	if r := sl.Current().Interface().(changeTaskAssigneeReq); !r.AssigneeID.Set {
 		sl.ReportError(r.AssigneeID, "assigneeId", "AssigneeID", "required", "")
+	}
+}
+
+// requireParent: the parent is required in the request, null detaches the task
+// (ChangeTaskParentRequest in the contract).
+func requireParent(sl validator.StructLevel) {
+	if r := sl.Current().Interface().(changeTaskParentReq); !r.ParentID.Set {
+		sl.ReportError(r.ParentID, "parentId", "ParentID", "required", "")
 	}
 }
 
@@ -107,7 +124,7 @@ func BindCreateTask(c *gin.Context) (dto.CreateTask, error) {
 	}
 	return dto.CreateTask{
 		ProjectID: body.ProjectID, Name: body.Name, Description: body.Description, AssigneeID: body.AssigneeID,
-		Status: status, Priority: priority, DueDate: dueDate,
+		Status: status, Priority: priority, DueDate: dueDate, ParentID: body.ParentID,
 	}, nil
 }
 
@@ -167,6 +184,15 @@ func BindChangeTaskAssignee(c *gin.Context) (*string, error) {
 		return nil, err
 	}
 	return body.AssigneeID.Value, nil
+}
+
+// BindChangeTaskParent returns the parent; nil detaches the task (ADR-0036).
+func BindChangeTaskParent(c *gin.Context) (*string, error) {
+	body, err := validate[changeTaskParentReq](c)
+	if err != nil {
+		return nil, err
+	}
+	return body.ParentID.Value, nil
 }
 
 // BindMoveTask returns the ID of the project to move the task to.

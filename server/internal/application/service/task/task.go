@@ -26,6 +26,8 @@ type TaskModule struct {
 	ChangePriority *ChangePriorityService
 	ChangeDueDate  *ChangeDueDateService
 	ChangeAssignee *ChangeAssigneeService
+	ChangeParent   *ChangeParentService
+	ListSubtasks   *ListSubtasksService
 	Move           *MoveTaskService
 	SetLabels      *SetLabelsService
 	SetArchived    *SetTaskArchivedService
@@ -71,6 +73,8 @@ func New(d Deps) *TaskModule {
 		ChangePriority: &ChangePriorityService{editor: e},
 		ChangeDueDate:  &ChangeDueDateService{editor: e},
 		ChangeAssignee: &ChangeAssigneeService{editor: e},
+		ChangeParent:   &ChangeParentService{editor: e},
+		ListSubtasks:   &ListSubtasksService{feed: feed},
 		Move:           &MoveTaskService{editor: e},
 		SetLabels:      &SetLabelsService{editor: e},
 		SetArchived:    &SetTaskArchivedService{editor: e},

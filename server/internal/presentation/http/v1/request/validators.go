@@ -43,6 +43,7 @@ func RegisterValidators(v *validator.Validate) error {
 	v.RegisterStructValidation(checkRename, renameReq{})
 	v.RegisterStructValidation(checkUpdateProject, updateProjectReq{})
 	v.RegisterStructValidation(requireAssignee, changeTaskAssigneeReq{})
+	v.RegisterStructValidation(requireParent, changeTaskParentReq{})
 	v.RegisterStructValidation(requireDueDate, changeTaskDueDateReq{})
 	v.RegisterStructValidation(checkUpdateLabel, updateLabelReq{})
 	return nil

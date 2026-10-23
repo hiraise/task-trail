@@ -62,3 +62,10 @@ func (f *TaskEventFactory) Moved(taskID entity.TaskID, actorID entity.UserID, fr
 	e.FromKey, e.ToKey = &from, &to
 	return e
 }
+
+// ParentChanged — from and to are the keys of the old and the new parent, nil — no parent (ADR-0036).
+func (f *TaskEventFactory) ParentChanged(taskID entity.TaskID, actorID entity.UserID, from, to *string, now time.Time) *entity.TaskEvent {
+	e := f.New(taskID, actorID, entity.EventParentChanged, now)
+	e.FromKey, e.ToKey = from, to
+	return e
+}

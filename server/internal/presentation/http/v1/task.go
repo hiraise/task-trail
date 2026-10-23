@@ -344,6 +344,39 @@ func (r *taskRoutes) listEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewTaskEvents(events))
 }
 
+func (r *taskRoutes) changeParent(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	parentID, err := request.BindChangeTaskParent(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.ChangeParent.Execute(c, r.userID(c), taskID, parentID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
+func (r *taskRoutes) listSubtasks(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	tasks, err := r.services.ListSubtasks.Execute(c, r.userID(c), taskID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTasks(tasks))
+}
+
 func NewTaskRouter(
 	router *gin.RouterGroup,
 	services *task.TaskModule,
@@ -363,6 +396,8 @@ func NewTaskRouter(
 	g.PATCH("/tasks/:taskId/priority", r.changePriority)
 	g.PATCH("/tasks/:taskId/due-date", r.changeDueDate)
 	g.PATCH("/tasks/:taskId/assignee", r.changeAssignee)
+	g.PATCH("/tasks/:taskId/parent", r.changeParent)
+	g.GET("/tasks/:taskId/subtasks", r.listSubtasks)
 	g.PATCH("/tasks/:taskId/project", r.move)
 	g.PUT("/tasks/:taskId/labels", r.setLabels)
 	g.PATCH("/tasks/:taskId/archived", r.setArchived)

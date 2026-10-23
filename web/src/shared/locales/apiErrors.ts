@@ -17,6 +17,7 @@ export const apiErrorTexts: Partial<Record<ApiErrorCode, string>> = {
   PROJECT_KEY_TAKEN: "Этот ключ уже занят другим проектом",
   TASK_ARCHIVED: "Задача в архиве — её нельзя менять",
   PROJECT_ARCHIVED: "Проект в архиве — его нельзя менять",
+  TASK_PARENT_INVALID: "Подзадачей может быть задача того же проекта без своих подзадач, а родитель — не подзадача",
   BOARD_PROJECT_UNAVAILABLE: "Проект недоступен: на доску можно добавить только свой проект",
   BOARD_MEMBER_UNAVAILABLE:
     "Пользователь недоступен: добавить можно только того, с кем у вас есть общий проект",

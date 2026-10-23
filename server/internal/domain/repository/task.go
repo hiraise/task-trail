@@ -31,7 +31,7 @@ type TaskRepository interface {
 	// that key comes first; the rest are recently updated first. At most limit.
 	Search(ctx context.Context, viewerID entity.UserID, pattern string, key *TaskKeyQuery, limit int) ([]*entity.Task, error)
 	// Update writes everything task operations change: project, number, title, description,
-	// status, assignee, archive time and update time.
+	// status, priority, due date, assignee, parent, archive time and update time.
 	Update(ctx context.Context, task *entity.Task) error
 	SoftDelete(ctx context.Context, id entity.TaskID, now time.Time) error
 	// UnassignInProject removes the user from the project's tasks: a removed member or one
@@ -39,4 +39,11 @@ type TaskRepository interface {
 	// Archived tasks are cleared too (ADR-0027). Returns the IDs of the changed tasks: each gets
 	// an assignee_changed event (ADR-0028).
 	UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) ([]entity.TaskID, error)
+	// ListSubtasks — subtasks of the task, archived ones included, by number (ADR-0036).
+	ListSubtasks(ctx context.Context, parentID entity.TaskID) ([]*entity.Task, error)
+	// HasSubtasks — whether the task has non-deleted subtasks, archived ones included.
+	HasSubtasks(ctx context.Context, id entity.TaskID) (bool, error)
+	// DetachSubtasks clears the parent of the task's subtasks and returns their IDs: each gets a
+	// parent_changed event (ADR-0036).
+	DetachSubtasks(ctx context.Context, parentID entity.TaskID, now time.Time) ([]entity.TaskID, error)
 }

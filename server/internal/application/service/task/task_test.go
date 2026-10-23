@@ -234,7 +234,7 @@ func TestLockFollowsMovedTask(t *testing.T) {
 
 // A move locks both projects in ascending ID order; the task gets the next number of the new project and
 // its key; if the assignee is not a member of the new project, the task is left without an assignee,
-// the status stays the same.
+// the status stays the same; the task's subtasks are detached and stay (ADR-0036).
 func TestMoveTask(t *testing.T) {
 	module, d := newModule(t)
 	txtest.Expect(d.tx)
@@ -249,6 +249,7 @@ func TestMoveTask(t *testing.T) {
 		d.members.EXPECT().Get(txtest.InTx, backendID, ivanID).Return(nil, notFound()),
 		d.projects.EXPECT().NextTaskNumber(txtest.InTx, backendID).Return(4, nil),
 		d.labels.EXPECT().ClearTask(txtest.InTx, taskID).Return(nil),
+		d.tasks.EXPECT().DetachSubtasks(txtest.InTx, taskID, now).Return([]entity.TaskID{"subtask"}, nil),
 		d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, got *entity.Task) error {
 			if got.ProjectID != backendID || got.Key() != "BE-4" || got.AssigneeID != nil || got.Status != entity.StatusInReview ||
 				got.Labels == nil || len(got.Labels) != 0 {
@@ -257,7 +258,7 @@ func TestMoveTask(t *testing.T) {
 			return nil
 		}),
 	)
-	events := d.expectEvents(2)
+	events := d.expectEvents(3)
 	if _, err := module.Move.Execute(context.Background(), string(userID), string(taskID), string(backendID)); err != nil {
 		t.Fatal(err)
 	}
@@ -268,6 +269,10 @@ func TestMoveTask(t *testing.T) {
 	}
 	if unassigned.Kind != entity.EventAssigneeChanged || *unassigned.FromUser != ivanID || unassigned.ToUser != nil {
 		t.Errorf("assignee: %+v", unassigned)
+	}
+	if detached := (*events)[2]; detached.Kind != entity.EventParentChanged || detached.TaskID != "subtask" ||
+		*detached.FromKey != "DS-12" || detached.ToKey != nil {
+		t.Errorf("detached subtask: %+v", detached)
 	}
 }
 
@@ -525,6 +530,7 @@ func TestDeleteArchived(t *testing.T) {
 		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(p, nil)
 		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
 		if p.ArchivedAt == nil {
+			d.tasks.EXPECT().DetachSubtasks(txtest.InTx, taskID, now).Return(nil, nil)
 			d.tasks.EXPECT().SoftDelete(txtest.InTx, taskID, now).Return(nil)
 		}
 		return module.Delete.Execute(context.Background(), string(userID), string(taskID))
