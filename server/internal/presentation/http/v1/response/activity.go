@@ -48,6 +48,8 @@ type TaskEvent struct {
 	ToStatusID   *string   `json:"toStatusId"`
 	FromPriority *string   `json:"fromPriority"`
 	ToPriority   *string   `json:"toPriority"`
+	FromDueDate  *string   `json:"fromDueDate"`
+	ToDueDate    *string   `json:"toDueDate"`
 	FromUser     *User     `json:"fromUser"`
 	ToUser       *User     `json:"toUser"`
 	FromKey      *string   `json:"fromKey"`
@@ -89,6 +91,8 @@ func NewTaskEvents(events []dto.TaskEvent) []TaskEvent {
 			ToStatusID:   status(e.ToStatus),
 			FromPriority: priority(e.FromPriority),
 			ToPriority:   priority(e.ToPriority),
+			FromDueDate:  e.FromDueDate,
+			ToDueDate:    e.ToDueDate,
 			FromUser:     user(v.FromUser),
 			ToUser:       user(v.ToUser),
 			FromKey:      e.FromKey,

@@ -32,6 +32,8 @@ type taskEvent struct {
 	ToStatusID   *string `json:"toStatusId"`
 	FromPriority *string `json:"fromPriority"`
 	ToPriority   *string `json:"toPriority"`
+	FromDueDate  *string `json:"fromDueDate"`
+	ToDueDate    *string `json:"toDueDate"`
 	FromUser     *user   `json:"fromUser"`
 	ToUser       *user   `json:"toUser"`
 	FromKey      *string `json:"fromKey"`
@@ -58,6 +60,8 @@ func (e taskEvent) describe() string {
 		out += " " + str(e.FromStatusID) + "→" + str(e.ToStatusID)
 	case e.FromPriority != nil || e.ToPriority != nil:
 		out += " " + str(e.FromPriority) + "→" + str(e.ToPriority)
+	case e.FromDueDate != nil || e.ToDueDate != nil:
+		out += " " + str(e.FromDueDate) + "→" + str(e.ToDueDate)
 	case e.FromKey != nil || e.ToKey != nil:
 		out += " " + str(e.FromKey) + "→" + str(e.ToKey)
 	case e.FromUser != nil || e.ToUser != nil:

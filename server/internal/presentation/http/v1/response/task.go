@@ -16,8 +16,10 @@ type Task struct {
 	Description *string `json:"description"`
 	StatusID    string  `json:"statusId"`
 	Priority    string  `json:"priority"`
-	AuthorID    string  `json:"authorId"`
-	AssigneeID  *string `json:"assigneeId"`
+	// DueDate — YYYY-MM-DD or nil (ADR-0034)
+	DueDate    *string `json:"dueDate"`
+	AuthorID   string  `json:"authorId"`
+	AssigneeID *string `json:"assigneeId"`
 	// ArchivedAt and ProjectArchived — the task's own archive and its project's (ADR-0027)
 	ArchivedAt      *time.Time `json:"archivedAt"`
 	ProjectArchived bool       `json:"projectArchived"`
@@ -31,6 +33,11 @@ func NewTask(t *entity.Task) Task {
 		id := string(*t.AssigneeID)
 		assignee = &id
 	}
+	var dueDate *string
+	if t.DueDate != nil {
+		d := entity.FormatDueDate(*t.DueDate)
+		dueDate = &d
+	}
 	// Time is in UTC (ADR-0018): the database returns it in the server's time zone
 	return Task{
 		ID:              string(t.ID),
@@ -41,6 +48,7 @@ func NewTask(t *entity.Task) Task {
 		Description:     t.Description,
 		StatusID:        string(t.Status),
 		Priority:        string(t.Priority),
+		DueDate:         dueDate,
 		AuthorID:        string(t.AuthorID),
 		AssigneeID:      assignee,
 		ArchivedAt:      utc(t.ArchivedAt),

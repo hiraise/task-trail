@@ -4,6 +4,11 @@ Read first: [ADR-0034](../../adr/0034-task-due-date.md), the stage [README](READ
 C, D, H and «Approved values» in [00-mockups.md](00-mockups.md). Step 3 must be merged. Step 2 is the
 closest example: it added the priority the same way. Names marked *(new)* do not exist yet.
 
+Step 3 already did the feed part, so that the web did not break on a `due_date_changed` event: the kind
+and `fromDueDate`/`toDueDate` in `TaskEvent` with their mapping and `mappers.test.ts` case, the
+`fromDueDate`/`toDueDate`/`dueDate: null` DTO fixtures, `events.dueDateChanged`, `events.dueDateSet`,
+`events.dueDateRemoved`, `DESCRIBE.due_date_changed` and its `feed.test.ts` case. Skip those items below.
+
 ## Model, mapper, repository
 
 - `Task.dueDate?: string` — `YYYY-MM-DD`, a calendar day; `undefined` — no due date.

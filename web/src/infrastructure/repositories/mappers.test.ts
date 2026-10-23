@@ -151,6 +151,7 @@ describe("toTask", () => {
     description: null,
     statusId: "in_review" as const,
     priority: "normal" as const,
+    dueDate: null,
     authorId: avatarId,
     assigneeId: null,
     archivedAt: null,
@@ -218,6 +219,7 @@ describe("toSearchResult", () => {
           description: null,
           statusId: "open",
           priority: "normal",
+          dueDate: null,
           authorId: id,
           assigneeId: null,
           archivedAt: null,
@@ -347,6 +349,8 @@ describe("toTaskEvent", () => {
     toStatusId: null,
     fromPriority: null,
     toPriority: null,
+    fromDueDate: null,
+    toDueDate: null,
     fromUser: null,
     toUser: null,
     fromKey: null,
@@ -366,6 +370,8 @@ describe("toTaskEvent", () => {
       toStatusId: undefined,
       fromPriority: undefined,
       toPriority: undefined,
+      fromDueDate: undefined,
+      toDueDate: undefined,
       fromUser: undefined,
       toUser: undefined,
       fromKey: undefined,
@@ -389,6 +395,9 @@ describe("toTaskEvent", () => {
     expect(
       toTaskEvent({ ...dto, kind: "priority_changed", fromPriority: "normal", toPriority: "urgent" }),
     ).toMatchObject({ fromPriority: "normal", toPriority: "urgent" });
+    expect(
+      toTaskEvent({ ...dto, kind: "due_date_changed", fromDueDate: null, toDueDate: "2026-10-30" }),
+    ).toMatchObject({ fromDueDate: undefined, toDueDate: "2026-10-30" });
     expect(toTaskEvent({ ...dto, kind: "moved", fromKey: "DS-1", toKey: "BE-4" })).toMatchObject({
       fromKey: "DS-1",
       toKey: "BE-4",

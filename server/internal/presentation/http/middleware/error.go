@@ -148,6 +148,8 @@ func messageForTag(fe validator.FieldError) string {
 		return "обязательное поле"
 	case "email", "uuid", "url", "uri":
 		return "неверный формат"
+	case "datetime":
+		return "нужна дата ГГГГ-ММ-ДД"
 	case "min":
 		return fmt.Sprintf("не короче %s", fe.Param())
 	case "max":

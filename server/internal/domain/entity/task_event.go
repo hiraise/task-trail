@@ -16,12 +16,14 @@ const (
 	EventArchived        TaskEventKind = "archived"
 	EventRestored        TaskEventKind = "restored"
 	EventPriorityChanged TaskEventKind = "priority_changed"
+	EventDueDateChanged  TaskEventKind = "due_date_changed"
 )
 
 // TaskEvent — a row of task history, written by the operation itself in its transaction with
 // the time of the change; never edited or deleted (ADR-0028). Change fields are set only by
 // the kinds that use them: status_changed — FromStatus/ToStatus, priority_changed —
-// FromPriority/ToPriority, assignee_changed — FromUser/ToUser (nil — no assignee), moved — FromKey/ToKey.
+// FromPriority/ToPriority, due_date_changed — FromDueDate/ToDueDate (YYYY-MM-DD, nil — no date),
+// assignee_changed — FromUser/ToUser (nil — no assignee), moved — FromKey/ToKey.
 type TaskEvent struct {
 	ID           TaskEventID
 	TaskID       TaskID
@@ -31,6 +33,8 @@ type TaskEvent struct {
 	ToStatus     *TaskStatus
 	FromPriority *TaskPriority
 	ToPriority   *TaskPriority
+	FromDueDate  *string
+	ToDueDate    *string
 	FromUser     *UserID
 	ToUser       *UserID
 	FromKey      *string

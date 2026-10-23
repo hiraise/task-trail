@@ -34,6 +34,21 @@ func (f *TaskEventFactory) PriorityChanged(taskID entity.TaskID, actorID entity.
 	return e
 }
 
+// DueDateChanged — from and to are due dates, nil — no date; history keeps them as YYYY-MM-DD.
+func (f *TaskEventFactory) DueDateChanged(taskID entity.TaskID, actorID entity.UserID, from, to *time.Time, now time.Time) *entity.TaskEvent {
+	e := f.New(taskID, actorID, entity.EventDueDateChanged, now)
+	e.FromDueDate, e.ToDueDate = formatDueDate(from), formatDueDate(to)
+	return e
+}
+
+func formatDueDate(date *time.Time) *string {
+	if date == nil {
+		return nil
+	}
+	s := entity.FormatDueDate(*date)
+	return &s
+}
+
 // AssigneeChanged — from and to are assignees, nil — no assignee.
 func (f *TaskEventFactory) AssigneeChanged(taskID entity.TaskID, actorID entity.UserID, from, to *entity.UserID, now time.Time) *entity.TaskEvent {
 	e := f.New(taskID, actorID, entity.EventAssigneeChanged, now)

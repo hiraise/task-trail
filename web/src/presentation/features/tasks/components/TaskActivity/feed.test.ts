@@ -66,6 +66,14 @@ describe("describeEvent", () => {
     );
   });
 
+  it("tells a changed, a set and a removed due date apart", () => {
+    expect(line({ kind: "due_date_changed", fromDueDate: "2026-10-30", toDueDate: "2026-11-02" })).toBe(
+      "Срок: 30.10.2026 → 02.11.2026",
+    );
+    expect(line({ kind: "due_date_changed", toDueDate: "2026-10-30" })).toBe("Срок установлен: 30.10.2026");
+    expect(line({ kind: "due_date_changed", fromDueDate: "2026-10-30" })).toBe("Срок снят");
+  });
+
   it("tells a changed, a set and a removed assignee apart", () => {
     expect(line({ kind: "assignee_changed", fromUser: anna, toUser: petr })).toBe(
       "Ответственный: Анна → Пётр",

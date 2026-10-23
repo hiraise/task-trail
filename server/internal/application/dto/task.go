@@ -1,6 +1,10 @@
 package dto
 
-import "task-trail/internal/domain/entity"
+import (
+	"time"
+
+	"task-trail/internal/domain/entity"
+)
 
 type CreateTask struct {
 	ProjectID   string
@@ -12,6 +16,8 @@ type CreateTask struct {
 	Status entity.TaskStatus
 	// Priority — the priority of the new task; the request without priority gets normal (ADR-0033).
 	Priority entity.TaskPriority
+	// DueDate — the due date of the new task (00:00 UTC) or nil (ADR-0034).
+	DueDate *time.Time
 }
 
 // TaskChanges is what to change in a task: Name if not nil; the description if DescriptionSet,

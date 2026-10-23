@@ -66,6 +66,33 @@ func TestTaskPriority(t *testing.T) {
 	}
 }
 
+// A due date is a calendar day: YYYY-MM-DD in and out, an impossible day is an error (ADR-0034).
+func TestTaskDueDate(t *testing.T) {
+	date, err := entity.ParseDueDate("2026-10-30")
+	if err != nil || !date.Equal(entity.NewDueDate(2026, time.October, 30)) || entity.FormatDueDate(date) != "2026-10-30" {
+		t.Fatalf("parse 2026-10-30: %v, %v", date, err)
+	}
+	if _, err := entity.ParseDueDate("2026-02-30"); err == nil {
+		t.Error("2026-02-30 is parsed")
+	}
+	same := entity.NewDueDate(2026, time.October, 30)
+	other := entity.NewDueDate(2026, time.October, 31)
+	if !entity.SameDueDate(nil, nil) || entity.SameDueDate(nil, &date) || entity.SameDueDate(&date, nil) ||
+		!entity.SameDueDate(&date, &same) || entity.SameDueDate(&date, &other) {
+		t.Error("SameDueDate")
+	}
+
+	task, err := entity.NewTask("task", "design", "DS", 7, "anna", entity.TaskDraft{Name: "Кнопка", Status: entity.StatusOpen, DueDate: &date}, nil, taskTime)
+	if err != nil || task.DueDate == nil || !task.DueDate.Equal(date) {
+		t.Fatalf("new task with a due date: %+v, %v", task, err)
+	}
+	later := taskTime.Add(time.Hour)
+	task.SetDueDate(nil, later)
+	if task.DueDate != nil || !task.UpdatedAt.Equal(later) {
+		t.Fatalf("remove the due date: %+v", task)
+	}
+}
+
 // The assignee must be a member of the task's project; nil removes the assignee.
 func TestTaskAssignTo(t *testing.T) {
 	ivan := &entity.ProjectMember{ProjectID: "design", UserID: "ivan", Role: entity.RoleMember}

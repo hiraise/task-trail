@@ -249,6 +249,10 @@ export type Task = {
     description: string | null;
     statusId: TaskStatusId;
     priority: TaskPriority;
+    /**
+     * A calendar day (ADR-0034); null — no due date
+     */
+    dueDate: string | null;
     authorId: Uuid;
     assigneeId: string | null;
     /**
@@ -276,6 +280,10 @@ export type CreateTaskRequest = {
      * The priority of the new task; absent — `normal`.
      */
     priority?: TaskPriority;
+    /**
+     * The due date of the new task (ADR-0034); absent or `null` — no due date.
+     */
+    dueDate?: string | null;
 };
 
 export type UpdateTaskRequest = {
@@ -289,6 +297,13 @@ export type ChangeTaskStatusRequest = {
 
 export type ChangeTaskPriorityRequest = {
     priority: TaskPriority;
+};
+
+export type ChangeTaskDueDateRequest = {
+    /**
+     * A calendar day `YYYY-MM-DD`; `null` removes the due date (ADR-0034)
+     */
+    dueDate: string | null;
 };
 
 export type MoveTaskRequest = {
@@ -336,16 +351,17 @@ export type UpdateCommentRequest = {
 
 /**
  * What changed (ADR-0028): `created`; `edited` — the name or description, without the old text;
- * `status_changed`; `priority_changed` (ADR-0033); `assignee_changed` — also when the assignee left or was removed from the
+ * `status_changed`; `priority_changed` (ADR-0033); `due_date_changed` (ADR-0034); `assignee_changed` — also when the assignee left or was removed from the
  * project; `moved` — to another project, the task key changed; `archived`; `restored`.
  *
  */
-export type TaskEventKind = 'created' | 'edited' | 'status_changed' | 'priority_changed' | 'assignee_changed' | 'moved' | 'archived' | 'restored';
+export type TaskEventKind = 'created' | 'edited' | 'status_changed' | 'priority_changed' | 'due_date_changed' | 'assignee_changed' | 'moved' | 'archived' | 'restored';
 
 /**
  * A row of task history. Change fields are always present and `null` unless the kind uses them:
  * `status_changed` — `fromStatusId`, `toStatusId`; `priority_changed` — `fromPriority`,
- * `toPriority`; `assignee_changed` — `fromUser`, `toUser`
+ * `toPriority`; `due_date_changed` — `fromDueDate`, `toDueDate` (`null` — no due date);
+ * `assignee_changed` — `fromUser`, `toUser`
  * (`null` — no assignee); `moved` — `fromKey`, `toKey`.
  *
  */
@@ -362,6 +378,8 @@ export type TaskEvent = {
     toStatusId: TaskStatusId | null;
     fromPriority: TaskPriority | null;
     toPriority: TaskPriority | null;
+    fromDueDate: string | null;
+    toDueDate: string | null;
     fromUser: User | null;
     toUser: User | null;
     fromKey: string | null;
@@ -1856,6 +1874,49 @@ export type ChangeTaskPriorityResponses = {
 };
 
 export type ChangeTaskPriorityResponse = ChangeTaskPriorityResponses[keyof ChangeTaskPriorityResponses];
+
+export type ChangeTaskDueDateData = {
+    body: ChangeTaskDueDateRequest;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/due-date';
+};
+
+export type ChangeTaskDueDateErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ChangeTaskDueDateError = ChangeTaskDueDateErrors[keyof ChangeTaskDueDateErrors];
+
+export type ChangeTaskDueDateResponses = {
+    /**
+     * Due date changed
+     */
+    200: Task;
+};
+
+export type ChangeTaskDueDateResponse = ChangeTaskDueDateResponses[keyof ChangeTaskDueDateResponses];
 
 export type ChangeTaskAssigneeData = {
     body: ChangeTaskAssigneeRequest;

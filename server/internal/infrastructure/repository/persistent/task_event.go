@@ -22,6 +22,8 @@ type taskEventData struct {
 	ToStatus     *entity.TaskStatus   `json:"toStatus,omitempty"`
 	FromPriority *entity.TaskPriority `json:"fromPriority,omitempty"`
 	ToPriority   *entity.TaskPriority `json:"toPriority,omitempty"`
+	FromDueDate  *string              `json:"fromDueDate,omitempty"`
+	ToDueDate    *string              `json:"toDueDate,omitempty"`
 	FromUser     *entity.UserID       `json:"fromUser,omitempty"`
 	ToUser       *entity.UserID       `json:"toUser,omitempty"`
 	FromKey      *string              `json:"fromKey,omitempty"`
@@ -37,6 +39,7 @@ func (r *PGTaskEventRepository) Create(ctx context.Context, e *entity.TaskEvent)
 		"data": taskEventData{
 			FromStatus: e.FromStatus, ToStatus: e.ToStatus,
 			FromPriority: e.FromPriority, ToPriority: e.ToPriority,
+			FromDueDate: e.FromDueDate, ToDueDate: e.ToDueDate,
 			FromUser: e.FromUser, ToUser: e.ToUser,
 			FromKey: e.FromKey, ToKey: e.ToKey,
 		},
@@ -61,6 +64,7 @@ func (r *PGTaskEventRepository) ListByTask(ctx context.Context, taskID entity.Ta
 		e.ID, e.TaskID, e.ActorID, e.Kind = entity.TaskEventID(id), entity.TaskID(taskID), entity.UserID(actorID), entity.TaskEventKind(kind)
 		e.FromStatus, e.ToStatus = data.FromStatus, data.ToStatus
 		e.FromPriority, e.ToPriority = data.FromPriority, data.ToPriority
+		e.FromDueDate, e.ToDueDate = data.FromDueDate, data.ToDueDate
 		e.FromUser, e.ToUser = data.FromUser, data.ToUser
 		e.FromKey, e.ToKey = data.FromKey, data.ToKey
 		return e, nil

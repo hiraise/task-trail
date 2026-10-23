@@ -24,6 +24,7 @@ type task struct {
 	Description     *string `json:"description"`
 	StatusID        string  `json:"statusId"`
 	Priority        string  `json:"priority"`
+	DueDate         *string `json:"dueDate"`
 	AuthorID        string  `json:"authorId"`
 	AssigneeID      *string `json:"assigneeId"`
 	ArchivedAt      *string `json:"archivedAt"`
@@ -235,6 +236,44 @@ func TestTaskPriority(t *testing.T) {
 	requireEvents(t, s, button.ID, history...)
 }
 
+// A due date is a day or null: set on creation, changed and removed with due_date_changed; the same
+// value writes nothing; a past day is accepted (ADR-0034).
+func TestTaskDueDate(t *testing.T) {
+	s := apitest.New(t, contract.Load(t))
+	admin := registerAdmin(t, s).Email
+	design := createProject(t, s, "Дизайн-система").Project.ID
+	if got := createTask(t, s, design, "Форма", ""); got.DueDate != nil {
+		t.Fatalf("task without a due date: %+v", got)
+	}
+	rec := s.Do(http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "dueDate": "2026-10-30"})
+	apitest.RequireStatus(t, rec, http.StatusCreated)
+	button := apitest.Decode[task](t, rec)
+	if button.DueDate == nil || *button.DueDate != "2026-10-30" {
+		t.Fatalf("task with a due date: %+v", button)
+	}
+	if got := apitest.Decode[task](t, s.Do(http.MethodGet, "/v1/tasks/"+button.ID, nil)); !reflect.DeepEqual(got, button) {
+		t.Fatalf("read back: %+v", got)
+	}
+	path := "/v1/tasks/" + button.ID + "/due-date"
+	if got := changeTask(t, s, path, map[string]any{"dueDate": "2026-11-02"}); got.DueDate == nil || *got.DueDate != "2026-11-02" {
+		t.Fatalf("after the change: %+v", got)
+	}
+	if got := changeTask(t, s, path, `{"dueDate": null}`); got.DueDate != nil {
+		t.Fatalf("after the removal: %+v", got)
+	}
+	history := []string{
+		"due_date_changed by " + admin + " 2026-11-02→-",
+		"due_date_changed by " + admin + " 2026-10-30→2026-11-02",
+		"created by " + admin,
+	}
+	requireEvents(t, s, button.ID, history...)
+	changeTask(t, s, path, `{"dueDate": null}`)
+	requireEvents(t, s, button.ID, history...)
+	if got := changeTask(t, s, path, map[string]any{"dueDate": "2020-01-01"}); got.DueDate == nil || *got.DueDate != "2020-01-01" {
+		t.Fatalf("a past date: %+v", got)
+	}
+}
+
 // A non-member neither sees nor changes the task: 404, as if it did not exist (ADR-0018).
 func TestTaskAccess(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
@@ -254,6 +293,7 @@ func TestTaskAccess(t *testing.T) {
 		{http.MethodDelete, path, nil},
 		{http.MethodPatch, path + "/status", map[string]any{"statusId": "done"}},
 		{http.MethodPatch, path + "/priority", map[string]any{"priority": "urgent"}},
+		{http.MethodPatch, path + "/due-date", map[string]any{"dueDate": "2026-10-30"}},
 		{http.MethodPatch, path + "/assignee", `{"assigneeId": null}`},
 		{http.MethodPatch, path + "/project", map[string]any{"projectId": other}},
 		{http.MethodGet, "/v1/projects/" + design + "/tasks", nil},
@@ -301,6 +341,7 @@ func TestTaskValidation(t *testing.T) {
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "assigneeId": "42"}, "assigneeId"},
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "statusId": "closed"}, "statusId"},
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "priority": "top"}, "priority"},
+		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "dueDate": "30.10.2026"}, "dueDate"},
 		{http.MethodPatch, path, map[string]any{}, "name"},
 		{http.MethodPatch, path, `{"name": null}`, "name"},
 		{http.MethodPatch, path, map[string]any{"name": ""}, "name"},
@@ -308,6 +349,10 @@ func TestTaskValidation(t *testing.T) {
 		{http.MethodPatch, path + "/status", map[string]any{"statusId": "closed"}, "statusId"},
 		{http.MethodPatch, path + "/priority", map[string]any{}, "priority"},
 		{http.MethodPatch, path + "/priority", map[string]any{"priority": "top"}, "priority"},
+		{http.MethodPatch, path + "/due-date", map[string]any{}, "dueDate"},
+		{http.MethodPatch, path + "/due-date", map[string]any{"dueDate": "30.10.2026"}, "dueDate"},
+		{http.MethodPatch, path + "/due-date", map[string]any{"dueDate": "2026-02-30"}, "dueDate"},
+		{http.MethodPatch, path + "/due-date", map[string]any{"dueDate": "2026-10-30T00:00:00Z"}, "dueDate"},
 		{http.MethodPatch, path + "/assignee", map[string]any{}, "assigneeId"},
 		{http.MethodPatch, path + "/assignee", map[string]any{"assigneeId": "42"}, "assigneeId"},
 		{http.MethodPatch, path + "/project", map[string]any{}, "projectId"},
@@ -317,6 +362,14 @@ func TestTaskValidation(t *testing.T) {
 		apiErr := apitest.RequireError(t, s.Do(c.method, c.path, c.body), http.StatusUnprocessableEntity, "VALIDATION_FAILED")
 		if _, ok := apiErr.Details[c.field]; !ok {
 			t.Errorf("%s %s %v: details lack %s: %v", c.method, c.path, c.body, c.field, apiErr.Details)
+		}
+	}
+
+	// The due date texts: a missing field and a wrong format (ADR-0034)
+	for body, want := range map[string]string{`{}`: "обязательное поле", `{"dueDate": "30.10.2026"}`: "нужна дата ГГГГ-ММ-ДД"} {
+		apiErr := apitest.RequireError(t, s.Do(http.MethodPatch, path+"/due-date", body), http.StatusUnprocessableEntity, "VALIDATION_FAILED")
+		if apiErr.Details["dueDate"] != want {
+			t.Errorf("%s: %v", body, apiErr.Details)
 		}
 	}
 

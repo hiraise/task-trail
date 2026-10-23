@@ -14,7 +14,7 @@ import (
 //   - taskpriority — a task priority from the fixed set (ADR-0033);
 //   - projectkey — a project key (ADR-0026), checked after normalizeProjectKey;
 //   - mailbox — the mail sender: an email address, optionally with a name (ADR-0017);
-//   - values of Optional fields and required fields that may be null.
+//   - values of Optional fields and required fields that may be null (assigneeId, dueDate).
 func RegisterValidators(v *validator.Validate) error {
 	if err := v.RegisterValidation("maxbytes", maxBytes); err != nil {
 		return err
@@ -39,6 +39,7 @@ func RegisterValidators(v *validator.Validate) error {
 	v.RegisterStructValidation(checkRename, renameReq{})
 	v.RegisterStructValidation(checkUpdateProject, updateProjectReq{})
 	v.RegisterStructValidation(requireAssignee, changeTaskAssigneeReq{})
+	v.RegisterStructValidation(requireDueDate, changeTaskDueDateReq{})
 	return nil
 }
 

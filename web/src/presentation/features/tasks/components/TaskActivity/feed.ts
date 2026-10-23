@@ -1,8 +1,11 @@
+import { parseISO } from "date-fns";
+
 import type { TaskComment } from "@/domain/models/TaskComment";
 import type { TaskEvent, TaskEventKind } from "@/domain/models/TaskEvent";
 import { getUserDisplayName } from "@/domain/models/User";
 import type { TaskStatusId } from "@/domain/types";
 import { tasksTexts } from "@/shared/locales/tasks";
+import { formatDate } from "@/shared/utils/formatters";
 import { interpolate } from "@/shared/utils/interpolate";
 
 export type FeedItem =
@@ -51,6 +54,18 @@ function describeAssignee({ fromUser, toUser }: TaskEvent): string {
     : texts.assigneeRemoved;
 }
 
+// A due date is a calendar day: parseISO reads YYYY-MM-DD as local midnight, new Date() would
+// read it as UTC and show the previous day west of Greenwich (ADR-0034).
+function describeDueDate({ fromDueDate, toDueDate }: TaskEvent): string {
+  const day = (date: string) => formatDate(parseISO(date));
+
+  if (fromDueDate && toDueDate) {
+    return interpolate(texts.dueDateChanged, { from: day(fromDueDate), to: day(toDueDate) });
+  }
+
+  return toDueDate ? interpolate(texts.dueDateSet, { date: day(toDueDate) }) : texts.dueDateRemoved;
+}
+
 const DESCRIBE: Record<TaskEventKind, (event: TaskEvent, statusName: StatusName) => string> = {
   created: () => texts.created,
   edited: () => texts.edited,
@@ -66,6 +81,7 @@ const DESCRIBE: Record<TaskEventKind, (event: TaskEvent, statusName: StatusName)
       from: fromPriority ? tasksTexts.priorities[fromPriority] : "",
       to: toPriority ? tasksTexts.priorities[toPriority] : "",
     }),
+  due_date_changed: describeDueDate,
   moved: ({ fromKey, toKey }) => interpolate(texts.moved, { from: fromKey ?? "", to: toKey ?? "" }),
   assignee_changed: describeAssignee,
 };
