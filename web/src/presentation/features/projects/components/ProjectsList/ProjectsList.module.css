@@ -1,0 +1,14 @@
+/* One column on a phone, two from 768 px. */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .cards {
+    display: grid;
+    grid-auto-rows: 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

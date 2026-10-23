@@ -44,7 +44,9 @@ export const toProject = (dto: ProjectDto): Project => ({
   name: dto.name,
   description: dto.description ?? undefined,
   key: dto.key,
+  archivedAt: dto.archivedAt ?? undefined,
   createdAt: dto.createdAt,
+  updatedAt: dto.updatedAt,
   tasksCount: dto.tasksCount,
 });
 
@@ -74,6 +76,8 @@ export const toTask = (dto: TaskDto): Task => ({
   statusId: dto.statusId,
   authorId: dto.authorId,
   assigneeId: dto.assigneeId ?? undefined,
+  archivedAt: dto.archivedAt ?? undefined,
+  projectArchived: dto.projectArchived,
   createdAt: dto.createdAt,
   updatedAt: dto.updatedAt,
 });

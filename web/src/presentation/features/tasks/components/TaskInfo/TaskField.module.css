@@ -29,6 +29,12 @@
   background-color: var(--bg-secondary-2);
 }
 
+.readOnly,
+.readOnly:active {
+  cursor: default;
+  background-color: var(--bg-secondary);
+}
+
 .value {
   display: flex;
   flex-direction: row;
@@ -94,6 +100,11 @@
 
   .button:active {
     background-color: var(--bg-secondary);
+  }
+
+  .readOnly,
+  .readOnly:active {
+    background-color: transparent;
   }
 
   .chevron {

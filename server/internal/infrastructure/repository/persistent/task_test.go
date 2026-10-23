@@ -29,8 +29,13 @@ func describeTask(t *entity.Task) string {
 		a := string(*t.AssigneeID)
 		assignee = &a
 	}
-	return fmt.Sprintf("%s %s %s %q %q %s author=%s assignee=%s %s %s", t.ID, t.ProjectID, t.Key(), t.Name, deref(t.Description),
-		t.Status, t.AuthorID, deref(assignee), t.CreatedAt.UTC().Format(time.RFC3339), t.UpdatedAt.UTC().Format(time.RFC3339))
+	archived := "<nil>"
+	if t.ArchivedAt != nil {
+		archived = t.ArchivedAt.UTC().Format(time.RFC3339)
+	}
+	return fmt.Sprintf("%s %s %s %q %q %s author=%s assignee=%s archived=%s projectArchived=%v %s %s", t.ID, t.ProjectID, t.Key(), t.Name,
+		deref(t.Description), t.Status, t.AuthorID, deref(assignee), archived, t.ProjectArchived,
+		t.CreatedAt.UTC().Format(time.RFC3339), t.UpdatedAt.UTC().Format(time.RFC3339))
 }
 
 // A task is written and read in full; lists put newest first and skip deleted tasks; an assignee's
@@ -105,10 +110,10 @@ func TestTaskRepository(t *testing.T) {
 	if err != nil || describeTask(got) != describeTask(button) || got.Key() != string(keyOf(design))+"-1" {
 		t.Fatalf("read %v, %v\nwritten %s", got, err, describeTask(button))
 	}
-	if ids := taskIDs(repo.ListInProject(ctx, design)); !slices.Equal(ids, []entity.TaskID{form.ID, button.ID}) {
+	if ids := taskIDs(repo.ListInProject(ctx, design, false)); !slices.Equal(ids, []entity.TaskID{form.ID, button.ID}) {
 		t.Errorf("project tasks: %v", ids)
 	}
-	if ids := taskIDs(repo.ListAssigned(ctx, ivan.ID)); !slices.Equal(ids, []entity.TaskID{button.ID}) {
+	if ids := taskIDs(repo.ListAssigned(ctx, ivan.ID, false)); !slices.Equal(ids, []entity.TaskID{button.ID}) {
 		t.Errorf("Ivan's tasks: %v", ids)
 	}
 
@@ -126,10 +131,10 @@ func TestTaskRepository(t *testing.T) {
 	if button.Number != 2 {
 		t.Errorf("the moved task got number %d in the backend project", button.Number)
 	}
-	if ids := taskIDs(repo.ListInProject(ctx, backend)); !slices.Equal(ids, []entity.TaskID{api.ID, button.ID}) {
+	if ids := taskIDs(repo.ListInProject(ctx, backend, false)); !slices.Equal(ids, []entity.TaskID{api.ID, button.ID}) {
 		t.Errorf("backend tasks: %v", ids)
 	}
-	if ids := taskIDs(repo.ListAssigned(ctx, ivan.ID)); len(ids) != 0 {
+	if ids := taskIDs(repo.ListAssigned(ctx, ivan.ID, false)); len(ids) != 0 {
 		t.Errorf("Ivan's tasks after the move: %v", ids)
 	}
 
@@ -140,7 +145,7 @@ func TestTaskRepository(t *testing.T) {
 	requireCode(t, repo.Update(ctx, form), domain.EntityNotFound)
 	_, err = repo.Get(ctx, form.ID)
 	requireCode(t, err, domain.EntityNotFound)
-	if ids := taskIDs(repo.ListInProject(ctx, design)); len(ids) != 0 {
+	if ids := taskIDs(repo.ListInProject(ctx, design, false)); len(ids) != 0 {
 		t.Errorf("project tasks after delete: %v", ids)
 	}
 	var deletedAt time.Time
@@ -149,4 +154,106 @@ func TestTaskRepository(t *testing.T) {
 	}
 	_, err = repo.Get(ctx, entity.TaskID(id.New().Generate()))
 	requireCode(t, err, domain.EntityNotFound)
+}
+
+// Archive (ADR-0027): Update writes archived_at, tasks read their project's flag; project lists filter
+// by the task's own flag, the assignee's lists — by the task's or the project's; leaving a project
+// clears the assignee of archived tasks too.
+func TestTaskArchive(t *testing.T) {
+	pool := testdb.New(t)
+	ctx := context.Background()
+	repo := persistent.NewTaskRepo(pool)
+	projects := persistent.NewProjectRepo(pool)
+	anna := createUser(t, pool, "anna@example.com", "Анна")
+	ivan := createUser(t, pool, "ivan@example.com", "Иван")
+	design := createProject(t, pool, "Дизайн-система")
+	backend := createProject(t, pool, "Бэкенд")
+	members := persistent.NewProjectMemberRepo(pool, factory.NewUserFactory(id.New(), clock.New(now)))
+	for _, m := range []*entity.ProjectMember{
+		entity.NewMember(design, anna.ID, now), entity.NewMember(design, ivan.ID, now), entity.NewMember(backend, ivan.ID, now),
+	} {
+		if err := members.Add(ctx, m); err != nil {
+			t.Fatal(err)
+		}
+	}
+	get := func(id string) *entity.Task {
+		t.Helper()
+		task, err := repo.Get(ctx, entity.TaskID(id))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return task
+	}
+	ids := func(tasks []*entity.Task, err error) []string {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out []string
+		for _, task := range tasks {
+			out = append(out, string(task.ID))
+		}
+		slices.Sort(out)
+		return out
+	}
+	sorted := func(ids ...string) []string {
+		slices.Sort(ids)
+		return ids
+	}
+
+	active := insertTask(t, pool, design, anna, ivan)
+	archived := get(insertTask(t, pool, design, anna, ivan))
+	inBackend := insertTask(t, pool, backend, ivan, ivan)
+	later := now.Add(time.Hour)
+	archived.Archive(later)
+	if err := repo.Update(ctx, archived); err != nil {
+		t.Fatal(err)
+	}
+	if got := get(string(archived.ID)); got.ArchivedAt == nil || !got.ArchivedAt.Equal(later) || !got.UpdatedAt.Equal(later) || got.ProjectArchived {
+		t.Fatalf("archived task: %s", describeTask(got))
+	}
+
+	backendProject, err := projects.GetForUpdate(ctx, backend)
+	if err != nil {
+		t.Fatal(err)
+	}
+	backendProject.Archive(later)
+	if err := projects.Update(ctx, backendProject); err != nil {
+		t.Fatal(err)
+	}
+	if got := get(inBackend); !got.ProjectArchived || got.ArchivedAt != nil {
+		t.Fatalf("task of an archived project: %s", describeTask(got))
+	}
+
+	if got := ids(repo.ListInProject(ctx, design, false)); !slices.Equal(got, []string{active}) {
+		t.Errorf("active design tasks: %v", got)
+	}
+	if got := ids(repo.ListInProject(ctx, design, true)); !slices.Equal(got, []string{string(archived.ID)}) {
+		t.Errorf("archived design tasks: %v", got)
+	}
+	// In an archived project, the tabs go by the task's own flag
+	if got := ids(repo.ListInProject(ctx, backend, false)); !slices.Equal(got, []string{inBackend}) {
+		t.Errorf("active backend tasks: %v", got)
+	}
+	if got := ids(repo.ListAssigned(ctx, ivan.ID, false)); !slices.Equal(got, []string{active}) {
+		t.Errorf("Ivan's active tasks: %v", got)
+	}
+	if got := ids(repo.ListAssigned(ctx, ivan.ID, true)); !slices.Equal(got, sorted(string(archived.ID), inBackend)) {
+		t.Errorf("Ivan's archived tasks: %v", got)
+	}
+
+	if err := repo.UnassignInProject(ctx, design, ivan.ID, later); err != nil {
+		t.Fatal(err)
+	}
+	if got := get(string(archived.ID)); got.AssigneeID != nil {
+		t.Errorf("leaving clears the assignee of an archived task: %s", describeTask(got))
+	}
+
+	archived.Restore(later.Add(time.Hour))
+	if err := repo.Update(ctx, archived); err != nil {
+		t.Fatal(err)
+	}
+	if got := get(string(archived.ID)); got.ArchivedAt != nil {
+		t.Fatalf("restored task: %s", describeTask(got))
+	}
 }

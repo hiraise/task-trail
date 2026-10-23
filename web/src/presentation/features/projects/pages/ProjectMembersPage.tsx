@@ -1,5 +1,6 @@
 import { useParams } from "@tanstack/react-router";
 
+import { isProjectArchived } from "@/domain/models/Project";
 import type { ProjectId } from "@/domain/types";
 import { DeviceBased, RedirectScreen } from "@/presentation/shared";
 import { PagesMobileTemplate } from "@/presentation/shared/components/Layout";
@@ -27,7 +28,7 @@ function MembersScreen({ projectId }: { projectId: ProjectId }) {
   const { data: members = [] } = useProjectMembers(projectId);
   const { mutate: addMembers } = useAddMembers();
   const { showInviteUser } = useGlobalModals();
-  const canInvite = project ? canInviteMembers(project.role) : false;
+  const canInvite = project ? !isProjectArchived(project) && canInviteMembers(project.role) : false;
 
   const handleAddMembers = async () => {
     const emails = await showInviteUser({ projectId });

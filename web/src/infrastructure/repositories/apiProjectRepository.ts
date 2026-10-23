@@ -5,6 +5,7 @@ import type {
   ProjectCreated,
   ProjectDetails,
   Project,
+  SetArchivedRequest,
   UpdateProjectRequest,
 } from "../api/generated";
 import { API_ROUTES } from "../config/apiRoutes";
@@ -18,7 +19,8 @@ import { toInvitationResult, toProject, toProjectDetails } from "./mappers";
 const createProjectRepository = (http: HttpClient): ProjectRepository => ({
   findById: async (id) => toProjectDetails(await http.get<ProjectDetails>(API_ROUTES.PROJECT_BY_ID(id))),
 
-  findAll: async () => (await http.get<Project[]>(API_ROUTES.PROJECTS)).map(toProject),
+  findAll: async (archived) =>
+    (await http.get<Project[]>(API_ROUTES.PROJECTS, { params: { archived } })).map(toProject),
 
   // Addresses from emails are invited in the same request and emails go out at once — a longer timeout
   create: async ({ name, description, key, emails }) => {
@@ -37,6 +39,12 @@ const createProjectRepository = (http: HttpClient): ProjectRepository => ({
     const body: UpdateProjectRequest = changes;
 
     return toProjectDetails(await http.patch<ProjectDetails>(API_ROUTES.PROJECT_BY_ID(id), body));
+  },
+
+  setArchived: async (id, archived) => {
+    const body: SetArchivedRequest = { archived };
+
+    return toProjectDetails(await http.patch<ProjectDetails>(API_ROUTES.PROJECT_ARCHIVED(id), body));
   },
 
   delete: async (id) => {

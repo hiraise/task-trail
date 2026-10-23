@@ -35,7 +35,12 @@ func (r *taskRoutes) listInProject(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	tasks, err := r.services.ListInProject.Execute(c, r.userID(c), projectID)
+	archived, err := queryBool(c, "archived")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	tasks, err := r.services.ListInProject.Execute(c, r.userID(c), projectID, archived)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -44,7 +49,12 @@ func (r *taskRoutes) listInProject(c *gin.Context) {
 }
 
 func (r *taskRoutes) listAssigned(c *gin.Context) {
-	tasks, err := r.services.ListAssigned.Execute(c, r.userID(c))
+	archived, err := queryBool(c, "archived")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	tasks, err := r.services.ListAssigned.Execute(c, r.userID(c), archived)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -156,6 +166,25 @@ func (r *taskRoutes) move(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewTask(t))
 }
 
+func (r *taskRoutes) setArchived(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	archived, err := request.BindSetArchived(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.SetArchived.Execute(c, r.userID(c), taskID, archived)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
 func (r *taskRoutes) delete(c *gin.Context) {
 	taskID, err := pathID(c, "taskId")
 	if err != nil {
@@ -187,4 +216,5 @@ func NewTaskRouter(
 	g.PATCH("/tasks/:taskId/status", r.changeStatus)
 	g.PATCH("/tasks/:taskId/assignee", r.changeAssignee)
 	g.PATCH("/tasks/:taskId/project", r.move)
+	g.PATCH("/tasks/:taskId/archived", r.setArchived)
 }

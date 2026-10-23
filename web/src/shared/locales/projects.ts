@@ -42,6 +42,15 @@ export const projectsTexts = {
   changeRoleFailed: "Не удалось сменить роль",
   removeAdmin: "Убрать из администраторов",
 
+  // Archive (ADR-0027)
+  restore: "Вернуть из архива",
+  projectArchived: "Проект перемещён в архив",
+  projectRestored: "Проект возвращён из архива",
+  archiveProjectFailed: "Не удалось переместить проект в архив",
+  restoreProjectFailed: "Не удалось вернуть проект из архива",
+  emptyArchive:
+    "У вас нет ни одного архивного проекта. Вы можете добавить в архив любой проект через настройки",
+
   // Invitation result per email (InvitationResult, ADR-0017)
   invitations: {
     title: "Приглашения",

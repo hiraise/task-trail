@@ -1,7 +1,7 @@
 import { mockBoards } from "@/application/dto/MockBoardDto";
 import { EmptyListState, Icon } from "@/presentation/shared";
 import { TasksDesktopTemplate, TopBarDesktop } from "@/presentation/shared/components/Layout";
-import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
+import { useListSort } from "@/presentation/shared/hooks";
 import { ASSETS } from "@/shared/config/assets";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
@@ -48,11 +48,12 @@ export function BoardsDesktopPage() {
   );
 }
 
+// Boards are sorted in stage 2, step 4 (docs/plans/stage-2/04-boards.md)
 function SortButton() {
-  const { showSortOptions } = useGlobalModals();
+  const { openSort } = useListSort("boards");
 
   return (
-    <button onClick={showSortOptions} className={styles.sortButton}>
+    <button onClick={openSort} className={styles.sortButton}>
       <Icon as={ICONS.sort} size="24px" inheritColor />
     </button>
   );

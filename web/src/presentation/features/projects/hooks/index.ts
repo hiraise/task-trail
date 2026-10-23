@@ -13,3 +13,4 @@ export { useProjectMembers } from "./useProjectMembers";
 export { useProjectMenuItems } from "./useProjectMenuItems";
 export { useProjects } from "./useProjects";
 export { useRemoveMember } from "./useRemoveMember";
+export { useSetProjectArchived } from "./useSetProjectArchived";

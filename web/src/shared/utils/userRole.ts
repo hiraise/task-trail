@@ -19,7 +19,7 @@ export const canChangeProjectKey = (role: ProjectRole): boolean => role === "own
 
 export const canChangeRoles = (role: ProjectRole): boolean => role === "owner";
 
-/** The server has no archive yet (stage 2) — the menu item stays a placeholder for the owner. */
+/** Only the owner archives and restores the project; any member archives a task (ADR-0027). */
 export const canArchiveProject = (role: ProjectRole): boolean => role === "owner";
 
 /** The owner does not leave the project but deletes it. */

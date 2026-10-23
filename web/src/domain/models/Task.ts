@@ -14,8 +14,16 @@ export interface Task {
   authorId: UserId;
   /** undefined when unassigned; the assignee is always a member of the task's project */
   assigneeId?: UserId;
+  /** ISO 8601 in UTC; undefined when the task is not archived on its own (ADR-0027) */
+  archivedAt?: string;
+  /** The task's project is archived: the task is read-only too */
+  projectArchived: boolean;
   /** ISO 8601 in UTC */
   createdAt: string;
   /** ISO 8601 in UTC */
   updatedAt: string;
 }
+
+/** The task is read-only: archived on its own or together with its project (ADR-0027). */
+export const isTaskArchived = (task: Task): boolean =>
+  task.archivedAt !== undefined || task.projectArchived;

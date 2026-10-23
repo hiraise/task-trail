@@ -25,7 +25,7 @@ export type Password = string;
 
 export type Username = string;
 
-export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
+export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
 
 export type ApiError = {
     code: ErrorCode;
@@ -144,7 +144,15 @@ export type Project = {
     name: string;
     description: string | null;
     key: ProjectKey;
+    /**
+     * When the project was archived; `null` — active (ADR-0027)
+     */
+    archivedAt: string | null;
     createdAt: DateTime;
+    updatedAt: DateTime;
+    /**
+     * Tasks not archived on their own (ADR-0027)
+     */
     tasksCount: number;
 };
 
@@ -237,6 +245,14 @@ export type Task = {
     statusId: TaskStatusId;
     authorId: Uuid;
     assigneeId: string | null;
+    /**
+     * When the task was archived on its own; `null` — not archived (ADR-0027)
+     */
+    archivedAt: string | null;
+    /**
+     * The task's project is archived; the task is read-only then too
+     */
+    projectArchived: boolean;
     createdAt: DateTime;
     updatedAt: DateTime;
 };
@@ -259,6 +275,13 @@ export type ChangeTaskStatusRequest = {
 
 export type MoveTaskRequest = {
     projectId: Uuid;
+};
+
+export type SetArchivedRequest = {
+    /**
+     * `true` — archive, `false` — restore (ADR-0027)
+     */
+    archived: boolean;
 };
 
 export type ChangeTaskAssigneeRequest = {
@@ -334,6 +357,11 @@ export type ProjectId = Uuid;
 export type TaskId = Uuid;
 
 export type UserId = Uuid;
+
+/**
+ * `true` — archived items, `false` or absent — active ones (ADR-0027); another value — `422`
+ */
+export type Archived = boolean;
 
 export type GetPublicSettingsData = {
     body?: never;
@@ -776,7 +804,12 @@ export type UploadAvatarResponse = UploadAvatarResponses[keyof UploadAvatarRespo
 export type ListCurrentUserTasksData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * `true` — archived items, `false` or absent — active ones (ADR-0027); another value — `422`
+         */
+        archived?: boolean;
+    };
     url: '/v1/users/me/tasks';
 };
 
@@ -785,6 +818,10 @@ export type ListCurrentUserTasksErrors = {
      * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
     /**
      * `INTERNAL` — server error
      */
@@ -869,7 +906,12 @@ export type GetFileResponses = {
 export type ListProjectsData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * `true` — archived items, `false` or absent — active ones (ADR-0027); another value — `422`
+         */
+        archived?: boolean;
+    };
     url: '/v1/projects';
 };
 
@@ -878,6 +920,10 @@ export type ListProjectsErrors = {
      * `UNAUTHENTICATED` — not signed in or the session has expired
      */
     401: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
     /**
      * `INTERNAL` — server error
      */
@@ -1068,7 +1114,7 @@ export type UpdateProjectErrors = {
      */
     404: ApiError;
     /**
-     * `PROJECT_KEY_TAKEN` — the key is taken by another project
+     * `PROJECT_KEY_TAKEN` — the key is taken by another project; `PROJECT_ARCHIVED`
      */
     409: ApiError;
     /**
@@ -1091,6 +1137,49 @@ export type UpdateProjectResponses = {
 };
 
 export type UpdateProjectResponse = UpdateProjectResponses[keyof UpdateProjectResponses];
+
+export type SetProjectArchivedData = {
+    body: SetArchivedRequest;
+    path: {
+        projectId: Uuid;
+    };
+    query?: never;
+    url: '/v1/projects/{projectId}/archived';
+};
+
+export type SetProjectArchivedErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role or service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type SetProjectArchivedError = SetProjectArchivedErrors[keyof SetProjectArchivedErrors];
+
+export type SetProjectArchivedResponses = {
+    /**
+     * Project archived or restored
+     */
+    200: ProjectDetails;
+};
+
+export type SetProjectArchivedResponse = SetProjectArchivedResponses[keyof SetProjectArchivedResponses];
 
 export type ListProjectMembersData = {
     body?: never;
@@ -1150,6 +1239,10 @@ export type AddProjectMembersErrors = {
      */
     404: ApiError;
     /**
+     * `PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)
+     */
+    409: ApiError;
+    /**
      * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
@@ -1194,6 +1287,10 @@ export type RemoveProjectMemberErrors = {
      */
     404: ApiError;
     /**
+     * `PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)
+     */
+    409: ApiError;
+    /**
      * `INTERNAL` — server error
      */
     500: ApiError;
@@ -1233,6 +1330,10 @@ export type ChangeProjectMemberRoleErrors = {
      * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
+    /**
+     * `PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)
+     */
+    409: ApiError;
     /**
      * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
@@ -1298,7 +1399,12 @@ export type ListProjectTasksData = {
     path: {
         projectId: Uuid;
     };
-    query?: never;
+    query?: {
+        /**
+         * `true` — archived items, `false` or absent — active ones (ADR-0027); another value — `422`
+         */
+        archived?: boolean;
+    };
     url: '/v1/projects/{projectId}/tasks';
 };
 
@@ -1311,6 +1417,10 @@ export type ListProjectTasksErrors = {
      * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
     /**
      * `INTERNAL` — server error
      */
@@ -1374,6 +1484,10 @@ export type CreateTaskErrors = {
      */
     404: ApiError;
     /**
+     * `PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)
+     */
+    409: ApiError;
+    /**
      * `ASSIGNEE_NOT_MEMBER` — the assignee is not a project member; `VALIDATION_FAILED`
      */
     422: ApiError;
@@ -1412,6 +1526,10 @@ export type DeleteTaskErrors = {
      * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
+    /**
+     * `PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)
+     */
+    409: ApiError;
     /**
      * `INTERNAL` — server error
      */
@@ -1483,6 +1601,10 @@ export type UpdateTaskErrors = {
      */
     404: ApiError;
     /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
      * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
@@ -1521,6 +1643,10 @@ export type ChangeTaskStatusErrors = {
      * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
      */
     404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
     /**
      * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
@@ -1561,6 +1687,10 @@ export type ChangeTaskAssigneeErrors = {
      */
     404: ApiError;
     /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
      * `ASSIGNEE_NOT_MEMBER` — the assignee is not a project member; `VALIDATION_FAILED`
      */
     422: ApiError;
@@ -1600,6 +1730,10 @@ export type MoveTaskErrors = {
      */
     404: ApiError;
     /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
      * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
      */
     422: ApiError;
@@ -1619,6 +1753,49 @@ export type MoveTaskResponses = {
 };
 
 export type MoveTaskResponse = MoveTaskResponses[keyof MoveTaskResponses];
+
+export type SetTaskArchivedData = {
+    body: SetArchivedRequest;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/archived';
+};
+
+export type SetTaskArchivedErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type SetTaskArchivedError = SetTaskArchivedErrors[keyof SetTaskArchivedErrors];
+
+export type SetTaskArchivedResponses = {
+    /**
+     * Task archived or restored
+     */
+    200: Task;
+};
+
+export type SetTaskArchivedResponse = SetTaskArchivedResponses[keyof SetTaskArchivedResponses];
 
 export type GetServiceSettingsData = {
     body?: never;

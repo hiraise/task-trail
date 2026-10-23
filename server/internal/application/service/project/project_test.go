@@ -273,3 +273,85 @@ func TestUpdateProjectKey(t *testing.T) {
 		}
 	})
 }
+
+// expectLockedArchived: like expectLocked, the project is archived.
+func (d *deps) expectLockedArchived(role entity.ProjectRole) {
+	txtest.Expect(d.tx)
+	at := now.Add(-time.Hour)
+	d.projects.EXPECT().GetForUpdate(txtest.InTx, projectID).Return(&entity.Project{ID: projectID, Name: "Дизайн-система", ArchivedAt: &at}, nil)
+	d.members.EXPECT().Get(txtest.InTx, projectID, ownerID).Return(&entity.ProjectMember{ProjectID: projectID, UserID: ownerID, Role: role}, nil)
+}
+
+// Only the owner archives and restores a project (ADR-0027); an administrator gets 403.
+func TestSetProjectArchived(t *testing.T) {
+	t.Run("administrator", func(t *testing.T) {
+		module, d := newModule(t)
+		d.expectLocked(entity.RoleAdmin)
+		_, err := module.SetArchived.Execute(context.Background(), string(ownerID), string(projectID), true)
+		if !domain.HasCode(err, domain.Forbidden) {
+			t.Fatalf("%v", err)
+		}
+	})
+	t.Run("owner archives", func(t *testing.T) {
+		module, d := newModule(t)
+		d.expectLocked(entity.RoleOwner)
+		d.projects.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, p *entity.Project) error {
+			if p.ArchivedAt == nil || !p.ArchivedAt.Equal(now) || !p.UpdatedAt.Equal(now) {
+				t.Errorf("project written: %+v", p)
+			}
+			return nil
+		})
+		d.projects.EXPECT().GetView(txtest.InTx, projectID, ownerID).Return(&repository.ProjectView{}, nil)
+		if _, err := module.SetArchived.Execute(context.Background(), string(ownerID), string(projectID), true); err != nil {
+			t.Fatal(err)
+		}
+	})
+	t.Run("owner restores", func(t *testing.T) {
+		module, d := newModule(t)
+		d.expectLockedArchived(entity.RoleOwner)
+		d.projects.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, p *entity.Project) error {
+			if p.ArchivedAt != nil || !p.UpdatedAt.Equal(now) {
+				t.Errorf("project written: %+v", p)
+			}
+			return nil
+		})
+		d.projects.EXPECT().GetView(txtest.InTx, projectID, ownerID).Return(&repository.ProjectView{}, nil)
+		if _, err := module.SetArchived.Execute(context.Background(), string(ownerID), string(projectID), false); err != nil {
+			t.Fatal(err)
+		}
+	})
+}
+
+// An archived project and its members do not change; leaving it is allowed (ADR-0027).
+func TestArchivedProjectIsReadOnly(t *testing.T) {
+	name := "Дизайн"
+	module, d := newModule(t)
+	d.expectLockedArchived(entity.RoleOwner)
+	_, err := module.Update.Execute(context.Background(), string(ownerID), string(projectID), dto.ProjectChanges{Name: &name})
+	if !domain.HasCode(err, domain.ProjectArchived) {
+		t.Fatalf("update: %v", err)
+	}
+	d.expectLockedArchived(entity.RoleOwner)
+	_, err = module.ChangeRole.Execute(context.Background(), string(ownerID), string(projectID), string(annaID), entity.RoleAdmin)
+	if !domain.HasCode(err, domain.ProjectArchived) {
+		t.Fatalf("role change: %v", err)
+	}
+	d.expectLockedArchived(entity.RoleOwner)
+	err = module.RemoveMember.Execute(context.Background(), string(ownerID), string(projectID), string(annaID))
+	if !domain.HasCode(err, domain.ProjectArchived) {
+		t.Fatalf("removal: %v", err)
+	}
+	d.expectEnv(nil)
+	d.expectLockedArchived(entity.RoleOwner)
+	_, err = module.AddMembers.Execute(context.Background(), string(ownerID), string(projectID), []string{"ivan@example.com"})
+	if !domain.HasCode(err, domain.ProjectArchived) {
+		t.Fatalf("invitation: %v", err)
+	}
+
+	d.expectLockedArchived(entity.RoleMember)
+	d.members.EXPECT().Remove(txtest.InTx, projectID, ownerID).Return(nil)
+	d.tasks.EXPECT().UnassignInProject(txtest.InTx, projectID, ownerID, now).Return(nil)
+	if err := module.Leave.Execute(context.Background(), string(ownerID), string(projectID)); err != nil {
+		t.Fatalf("leaving: %v", err)
+	}
+}

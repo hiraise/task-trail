@@ -16,17 +16,19 @@ import (
 )
 
 type task struct {
-	ID          string  `json:"id"`
-	ProjectID   string  `json:"projectId"`
-	Number      int     `json:"number"`
-	Key         string  `json:"key"`
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	StatusID    string  `json:"statusId"`
-	AuthorID    string  `json:"authorId"`
-	AssigneeID  *string `json:"assigneeId"`
-	CreatedAt   string  `json:"createdAt"`
-	UpdatedAt   string  `json:"updatedAt"`
+	ID              string  `json:"id"`
+	ProjectID       string  `json:"projectId"`
+	Number          int     `json:"number"`
+	Key             string  `json:"key"`
+	Name            string  `json:"name"`
+	Description     *string `json:"description"`
+	StatusID        string  `json:"statusId"`
+	AuthorID        string  `json:"authorId"`
+	AssigneeID      *string `json:"assigneeId"`
+	ArchivedAt      *string `json:"archivedAt"`
+	ProjectArchived bool    `json:"projectArchived"`
+	CreatedAt       string  `json:"createdAt"`
+	UpdatedAt       string  `json:"updatedAt"`
 }
 
 type taskStatus struct {

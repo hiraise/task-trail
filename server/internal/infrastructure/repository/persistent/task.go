@@ -28,13 +28,14 @@ func (r *PGTaskRepository) Create(ctx context.Context, t *entity.Task) error {
 		"status":      t.Status,
 		"author_id":   t.AuthorID,
 		"assignee_id": t.AssigneeID,
+		"archived_at": t.ArchivedAt,
 		"created_at":  t.CreatedAt,
 		"updated_at":  t.UpdatedAt,
 	})
 }
 
-// taskColumns are read FROM taskTables: the project key comes from the task's project.
-const taskColumns = `t.id, t.project_id, p.key, t.number, t.name, t.description, t.status, t.author_id, t.assignee_id, t.created_at, t.updated_at`
+// taskColumns are read FROM taskTables: the project key and archive flag come from the task's project.
+const taskColumns = `t.id, t.project_id, p.key, p.archived_at IS NOT NULL, t.number, t.name, t.description, t.status, t.author_id, t.assignee_id, t.archived_at, t.created_at, t.updated_at`
 
 const taskTables = ` FROM tasks t JOIN projects p ON p.id = t.project_id`
 
@@ -50,17 +51,19 @@ func (r *PGTaskRepository) Get(ctx context.Context, id entity.TaskID) (*entity.T
 	return task, nil
 }
 
-func (r *PGTaskRepository) ListInProject(ctx context.Context, projectID entity.ProjectID) ([]*entity.Task, error) {
-	query := `SELECT ` + taskColumns + taskTables + ` WHERE t.project_id = $1 AND t.deleted_at IS NULL` + newestFirst
-	return r.list(ctx, query, projectID)
+func (r *PGTaskRepository) ListInProject(ctx context.Context, projectID entity.ProjectID, archived bool) ([]*entity.Task, error) {
+	query := `SELECT ` + taskColumns + taskTables + `
+		WHERE t.project_id = $1 AND t.deleted_at IS NULL AND (t.archived_at IS NOT NULL) = $2` + newestFirst
+	return r.list(ctx, query, projectID, archived)
 }
 
-func (r *PGTaskRepository) ListAssigned(ctx context.Context, userID entity.UserID) ([]*entity.Task, error) {
+func (r *PGTaskRepository) ListAssigned(ctx context.Context, userID entity.UserID, archived bool) ([]*entity.Task, error) {
 	query := `
 		SELECT ` + taskColumns + taskTables + `
 		JOIN project_members m ON m.project_id = t.project_id AND m.user_id = t.assignee_id
-		WHERE t.assignee_id = $1 AND t.deleted_at IS NULL` + newestFirst
-	return r.list(ctx, query, userID)
+		WHERE t.assignee_id = $1 AND t.deleted_at IS NULL
+			AND (t.archived_at IS NOT NULL OR p.archived_at IS NOT NULL) = $2` + newestFirst
+	return r.list(ctx, query, userID, archived)
 }
 
 func (r *PGTaskRepository) list(ctx context.Context, query string, args ...any) ([]*entity.Task, error) {
@@ -77,9 +80,10 @@ func (r *PGTaskRepository) list(ctx context.Context, query string, args ...any) 
 
 func (r *PGTaskRepository) Update(ctx context.Context, t *entity.Task) error {
 	tag, err := r.getDb(ctx).Exec(ctx, `
-		UPDATE tasks SET project_id = $2, number = $3, name = $4, description = $5, status = $6, assignee_id = $7, updated_at = $8
+		UPDATE tasks SET project_id = $2, number = $3, name = $4, description = $5, status = $6, assignee_id = $7,
+			archived_at = $8, updated_at = $9
 		WHERE id = $1 AND deleted_at IS NULL`,
-		t.ID, t.ProjectID, t.Number, t.Name, t.Description, t.Status, t.AssigneeID, t.UpdatedAt)
+		t.ID, t.ProjectID, t.Number, t.Name, t.Description, t.Status, t.AssigneeID, t.ArchivedAt, t.UpdatedAt)
 	if err != nil {
 		return r.handleError(err)
 	}
@@ -100,6 +104,7 @@ func (r *PGTaskRepository) SoftDelete(ctx context.Context, id entity.TaskID, now
 	return nil
 }
 
+// UnassignInProject clears archived tasks too: an assignee is always a member (ADR-0027).
 func (r *PGTaskRepository) UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) error {
 	_, err := r.getDb(ctx).Exec(ctx,
 		`UPDATE tasks SET assignee_id = NULL, updated_at = $3 WHERE project_id = $1 AND assignee_id = $2 AND deleted_at IS NULL`,
@@ -114,7 +119,8 @@ func scanTask(row pgx.Row) (*entity.Task, error) {
 	var id, projectID, projectKey, status, authorID string
 	var assigneeID *string
 	t := &entity.Task{}
-	if err := row.Scan(&id, &projectID, &projectKey, &t.Number, &t.Name, &t.Description, &status, &authorID, &assigneeID, &t.CreatedAt, &t.UpdatedAt); err != nil {
+	if err := row.Scan(&id, &projectID, &projectKey, &t.ProjectArchived, &t.Number, &t.Name, &t.Description, &status, &authorID,
+		&assigneeID, &t.ArchivedAt, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, err
 	}
 	t.ProjectKey = entity.ProjectKey(projectKey)

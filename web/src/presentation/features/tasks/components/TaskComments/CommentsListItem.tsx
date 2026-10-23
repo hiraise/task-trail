@@ -6,7 +6,13 @@ import { formatDate } from "@/shared/utils/formatters";
 import styles from "./CommentsList.module.css";
 import CommentUserInfo from "./CommentUserInfo";
 
-export default function CommentsListItem({ comment }: { comment: TaskComment }) {
+interface CommentsListItemProps {
+  comment: TaskComment;
+  /** No menu: the task is archived */
+  readOnly: boolean;
+}
+
+export default function CommentsListItem({ comment, readOnly }: CommentsListItemProps) {
   //TODO: implement menu items
 
   return (
@@ -17,7 +23,9 @@ export default function CommentsListItem({ comment }: { comment: TaskComment }) 
           createdAt={formatDate(comment.createdAt)}
           updatedAt={comment.updatedAt ? formatDate(comment.updatedAt) : undefined}
         />
-        <DropdownMenu trigger={<IconButton icon={ICONS.menu} size="24px" />} items={[]} />
+        {!readOnly && (
+          <DropdownMenu trigger={<IconButton icon={ICONS.menu} size="24px" />} items={[]} />
+        )}
       </div>
       <span>{comment.text}</span>
     </div>

@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { useEffect, useRef, useState } from "react";
 
-import type { Project } from "@/domain/models/Project";
-import { DropdownMenu, IconButton } from "@/presentation/shared";
+import { isProjectArchived, type Project } from "@/domain/models/Project";
+import { ArchiveTag, DropdownMenu, IconButton } from "@/presentation/shared";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
@@ -42,13 +42,18 @@ export function ProjectInfo({ project, owner, menuItems }: ProjectInfoProps) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h2 className={styles.name}>{project.name}</h2>
-        <div className={styles.menu}>
-          <DropdownMenu
-            trigger={<IconButton icon={ICONS.menuHorizontal} size="24px" />}
-            items={menuItems}
-          />
+        <div className={styles.title}>
+          <h2 className={styles.name}>{project.name}</h2>
+          {isProjectArchived(project) && <ArchiveTag className={styles.tag} />}
         </div>
+        {menuItems.length > 0 && (
+          <div className={styles.menu}>
+            <DropdownMenu
+              trigger={<IconButton icon={ICONS.menuHorizontal} size="24px" />}
+              items={menuItems}
+            />
+          </div>
+        )}
       </div>
       {project.description && (
         <div className={styles.description}>

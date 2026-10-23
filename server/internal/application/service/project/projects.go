@@ -11,13 +11,13 @@ import (
 	"task-trail/internal/domain/service"
 )
 
-// ListProjectsService returns the projects where the user is a member.
+// ListProjectsService returns the active or archived projects where the user is a member.
 type ListProjectsService struct {
 	projects repository.ProjectRepository
 }
 
-func (s *ListProjectsService) Execute(ctx context.Context, userID string) ([]*repository.ProjectView, error) {
-	return s.projects.ListViews(ctx, entity.UserID(userID))
+func (s *ListProjectsService) Execute(ctx context.Context, userID string, archived bool) ([]*repository.ProjectView, error) {
+	return s.projects.ListViews(ctx, entity.UserID(userID), archived)
 }
 
 // GetProjectService returns a project and the user's role in it; a non-member gets ENTITY_NOT_FOUND.
@@ -90,6 +90,9 @@ func (s *UpdateProjectService) Execute(ctx context.Context, userID, projectID st
 		if err != nil {
 			return err
 		}
+		if err := project.RequireActive(); err != nil {
+			return err
+		}
 		if err := member.RequireManager(); err != nil {
 			return err
 		}
@@ -107,6 +110,42 @@ func (s *UpdateProjectService) Execute(ctx context.Context, userID, projectID st
 		}
 		if changes.Key != nil {
 			project.ChangeKey(entity.ProjectKey(*changes.Key), now)
+		}
+		if err := s.projects.Update(ctx, project); err != nil {
+			return err
+		}
+		view, err = s.projects.GetView(ctx, project.ID, member.UserID)
+		return err
+	}
+	if err := s.txManager.DoWithTx(ctx, f); err != nil {
+		return nil, err
+	}
+	return view, nil
+}
+
+// SetProjectArchivedService archives or restores a project: only the owner (ADR-0027). The same value
+// again changes nothing. The tasks keep their own archive flags.
+type SetProjectArchivedService struct {
+	txManager transaction.TxManager
+	clock     service.Clock
+	access    *access
+	projects  repository.ProjectRepository
+}
+
+func (s *SetProjectArchivedService) Execute(ctx context.Context, userID, projectID string, archived bool) (*repository.ProjectView, error) {
+	var view *repository.ProjectView
+	f := func(ctx context.Context) error {
+		project, member, err := s.access.lock(ctx, projectID, userID)
+		if err != nil {
+			return err
+		}
+		if err := member.RequireOwner(); err != nil {
+			return err
+		}
+		if archived {
+			project.Archive(s.clock.Now())
+		} else {
+			project.Restore(s.clock.Now())
 		}
 		if err := s.projects.Update(ctx, project); err != nil {
 			return err

@@ -13,12 +13,12 @@ export function invalidateTaskLists(
   projectId: ProjectId,
   { countChanged = false } = {},
 ): void {
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.tasks(projectId) });
-  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.mine });
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.taskLists(projectId) });
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.mineLists });
 
   if (countChanged) {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.detail(projectId), exact: true });
-    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.all });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.lists });
   }
 }
 

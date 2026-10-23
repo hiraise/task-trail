@@ -72,33 +72,33 @@ func (mr *MockTaskRepositoryMockRecorder) Get(ctx, id any) *gomock.Call {
 }
 
 // ListAssigned mocks base method.
-func (m *MockTaskRepository) ListAssigned(ctx context.Context, userID entity.UserID) ([]*entity.Task, error) {
+func (m *MockTaskRepository) ListAssigned(ctx context.Context, userID entity.UserID, archived bool) ([]*entity.Task, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListAssigned", ctx, userID)
+	ret := m.ctrl.Call(m, "ListAssigned", ctx, userID, archived)
 	ret0, _ := ret[0].([]*entity.Task)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListAssigned indicates an expected call of ListAssigned.
-func (mr *MockTaskRepositoryMockRecorder) ListAssigned(ctx, userID any) *gomock.Call {
+func (mr *MockTaskRepositoryMockRecorder) ListAssigned(ctx, userID, archived any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAssigned", reflect.TypeOf((*MockTaskRepository)(nil).ListAssigned), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAssigned", reflect.TypeOf((*MockTaskRepository)(nil).ListAssigned), ctx, userID, archived)
 }
 
 // ListInProject mocks base method.
-func (m *MockTaskRepository) ListInProject(ctx context.Context, projectID entity.ProjectID) ([]*entity.Task, error) {
+func (m *MockTaskRepository) ListInProject(ctx context.Context, projectID entity.ProjectID, archived bool) ([]*entity.Task, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListInProject", ctx, projectID)
+	ret := m.ctrl.Call(m, "ListInProject", ctx, projectID, archived)
 	ret0, _ := ret[0].([]*entity.Task)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListInProject indicates an expected call of ListInProject.
-func (mr *MockTaskRepositoryMockRecorder) ListInProject(ctx, projectID any) *gomock.Call {
+func (mr *MockTaskRepositoryMockRecorder) ListInProject(ctx, projectID, archived any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInProject", reflect.TypeOf((*MockTaskRepository)(nil).ListInProject), ctx, projectID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInProject", reflect.TypeOf((*MockTaskRepository)(nil).ListInProject), ctx, projectID, archived)
 }
 
 // SoftDelete mocks base method.

@@ -30,6 +30,7 @@ func (r *PGProjectRepository) Create(ctx context.Context, p *entity.Project) err
 		"name":        p.Name,
 		"description": p.Description,
 		"key":         p.Key,
+		"archived_at": p.ArchivedAt,
 		"created_at":  p.CreatedAt,
 		"updated_at":  p.UpdatedAt,
 	})
@@ -45,7 +46,7 @@ func keyTaken(err error, p *entity.Project) error {
 	return err
 }
 
-const projectColumns = `p.id, p.name, p.description, p.key, p.created_at, p.updated_at`
+const projectColumns = `p.id, p.name, p.description, p.key, p.archived_at, p.created_at, p.updated_at`
 
 func (r *PGProjectRepository) GetForUpdate(ctx context.Context, id entity.ProjectID) (*entity.Project, error) {
 	query := `SELECT ` + projectColumns + ` FROM projects p WHERE p.id = $1 AND p.deleted_at IS NULL FOR UPDATE`
@@ -56,10 +57,11 @@ func (r *PGProjectRepository) GetForUpdate(ctx context.Context, id entity.Projec
 	return project, nil
 }
 
-// projectViews selects projects as member $1 sees them: the number of non-deleted tasks and the member's role.
+// projectViews selects projects as member $1 sees them: the number of tasks neither deleted nor archived
+// on their own (ADR-0027) and the member's role.
 const projectViews = `
 	SELECT ` + projectColumns + `,
-		(SELECT count(*) FROM tasks t WHERE t.project_id = p.id AND t.deleted_at IS NULL),
+		(SELECT count(*) FROM tasks t WHERE t.project_id = p.id AND t.deleted_at IS NULL AND t.archived_at IS NULL),
 		m.role
 	FROM projects p
 	JOIN project_members m ON m.project_id = p.id AND m.user_id = $1
@@ -73,8 +75,9 @@ func (r *PGProjectRepository) GetView(ctx context.Context, id entity.ProjectID, 
 	return view, nil
 }
 
-func (r *PGProjectRepository) ListViews(ctx context.Context, userID entity.UserID) ([]*repository.ProjectView, error) {
-	rows, err := r.getDb(ctx).Query(ctx, projectViews+` ORDER BY p.created_at DESC, p.id`, userID)
+func (r *PGProjectRepository) ListViews(ctx context.Context, userID entity.UserID, archived bool) ([]*repository.ProjectView, error) {
+	query := projectViews + ` AND (p.archived_at IS NOT NULL) = $2 ORDER BY p.created_at DESC, p.id`
+	rows, err := r.getDb(ctx).Query(ctx, query, userID, archived)
 	if err != nil {
 		return nil, r.handleError(err)
 	}
@@ -87,8 +90,9 @@ func (r *PGProjectRepository) ListViews(ctx context.Context, userID entity.UserI
 
 func (r *PGProjectRepository) Update(ctx context.Context, p *entity.Project) error {
 	tag, err := r.getDb(ctx).Exec(ctx,
-		`UPDATE projects SET name = $2, description = $3, key = $4, updated_at = $5 WHERE id = $1 AND deleted_at IS NULL`,
-		p.ID, p.Name, p.Description, p.Key, p.UpdatedAt)
+		`UPDATE projects SET name = $2, description = $3, key = $4, archived_at = $5, updated_at = $6
+		WHERE id = $1 AND deleted_at IS NULL`,
+		p.ID, p.Name, p.Description, p.Key, p.ArchivedAt, p.UpdatedAt)
 	if err != nil {
 		return keyTaken(r.handleError(err), p)
 	}
@@ -132,7 +136,7 @@ func (r *PGProjectRepository) SoftDelete(ctx context.Context, id entity.ProjectI
 func scanProject(row pgx.Row, extra ...any) (*entity.Project, error) {
 	var id, key string
 	p := &entity.Project{}
-	if err := row.Scan(append([]any{&id, &p.Name, &p.Description, &key, &p.CreatedAt, &p.UpdatedAt}, extra...)...); err != nil {
+	if err := row.Scan(append([]any{&id, &p.Name, &p.Description, &key, &p.ArchivedAt, &p.CreatedAt, &p.UpdatedAt}, extra...)...); err != nil {
 		return nil, err
 	}
 	p.ID, p.Key = entity.ProjectID(id), entity.ProjectKey(key)

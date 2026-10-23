@@ -38,6 +38,11 @@ type moveTaskReq struct {
 
 func (r *moveTaskReq) normalize() { normalizeID(&r.ProjectID) }
 
+// setArchivedReq — SetArchivedRequest: a pointer, so that required tells a missing field from false.
+type setArchivedReq struct {
+	Archived *bool `json:"archived" binding:"required"`
+}
+
 // normalizeID lowercases a UUID from the body, as PostgreSQL stores and returns it:
 // otherwise IDs from the request and the database would not match when compared.
 func normalizeID(id *string) {
@@ -102,4 +107,13 @@ func BindMoveTask(c *gin.Context) (string, error) {
 		return "", err
 	}
 	return body.ProjectID, nil
+}
+
+// BindSetArchived returns whether to archive (true) or restore (false) a task or a project.
+func BindSetArchived(c *gin.Context) (bool, error) {
+	body, err := validate[setArchivedReq](c)
+	if err != nil {
+		return false, err
+	}
+	return *body.Archived, nil
 }

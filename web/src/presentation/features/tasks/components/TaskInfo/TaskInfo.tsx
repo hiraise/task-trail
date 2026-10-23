@@ -2,10 +2,10 @@ import clsx from "clsx";
 
 import type { ProjectDetails } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
-import type { Task } from "@/domain/models/Task";
+import { isTaskArchived, type Task } from "@/domain/models/Task";
 import type { TaskStatus } from "@/domain/models/TaskStatus";
 import { getUserDisplayName } from "@/domain/models/User";
-import { DropdownMenu, IconButton } from "@/presentation/shared";
+import { ArchiveTag, DropdownMenu, IconButton } from "@/presentation/shared";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
@@ -27,16 +27,18 @@ interface TaskInfoProps {
 
 /**
  * Task: status, key above the name, name, description, assignee and project — each is changed in its
- * own modal.
+ * own modal. An archived task is read-only: an The "Archive" tag tag instead of the status, fields are not
+ * clickable (ADR-0027).
  */
 export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInfoProps) {
   const { changeStatus, selectAssignee, selectProject } = useTaskActions(task);
+  const archived = isTaskArchived(task);
 
   return (
     <div className={styles.info}>
       <div className={styles.header}>
         <div className={styles.heading}>
-          <TaskStatusBadge status={status} onClick={changeStatus} />
+          {archived ? <ArchiveTag /> : <TaskStatusBadge status={status} onClick={changeStatus} />}
           <div className={styles.title}>
             <span className={clsx("caption-reg", styles.key)}>{task.key}</span>
             <h2 className={styles.name}>{task.name}</h2>
@@ -60,14 +62,14 @@ export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInf
           label={tasksTexts.assignee}
           value={assignee && getUserDisplayName(assignee)}
           placeholder={tasksTexts.noAssignee}
-          onClick={selectAssignee}
+          onClick={archived ? undefined : selectAssignee}
         />
         <TaskField
           icon={ICONS.project}
           label={tasksTexts.project}
           value={project.name}
           placeholder={tasksTexts.project}
-          onClick={selectProject}
+          onClick={archived ? undefined : selectProject}
         />
       </div>
     </div>

@@ -88,18 +88,18 @@ func (mr *MockProjectRepositoryMockRecorder) GetView(ctx, id, userID any) *gomoc
 }
 
 // ListViews mocks base method.
-func (m *MockProjectRepository) ListViews(ctx context.Context, userID entity.UserID) ([]*repository.ProjectView, error) {
+func (m *MockProjectRepository) ListViews(ctx context.Context, userID entity.UserID, archived bool) ([]*repository.ProjectView, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListViews", ctx, userID)
+	ret := m.ctrl.Call(m, "ListViews", ctx, userID, archived)
 	ret0, _ := ret[0].([]*repository.ProjectView)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListViews indicates an expected call of ListViews.
-func (mr *MockProjectRepositoryMockRecorder) ListViews(ctx, userID any) *gomock.Call {
+func (mr *MockProjectRepositoryMockRecorder) ListViews(ctx, userID, archived any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListViews", reflect.TypeOf((*MockProjectRepository)(nil).ListViews), ctx, userID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListViews", reflect.TypeOf((*MockProjectRepository)(nil).ListViews), ctx, userID, archived)
 }
 
 // NextTaskNumber mocks base method.

@@ -23,7 +23,12 @@ func (r *projectRoutes) userID(c *gin.Context) string {
 }
 
 func (r *projectRoutes) list(c *gin.Context) {
-	views, err := r.services.List.Execute(c, r.userID(c))
+	archived, err := queryBool(c, "archived")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	views, err := r.services.List.Execute(c, r.userID(c), archived)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -88,6 +93,25 @@ func (r *projectRoutes) update(c *gin.Context) {
 		return
 	}
 	view, err := r.services.Update.Execute(c, r.userID(c), projectID, changes)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewProjectDetails(view))
+}
+
+func (r *projectRoutes) setArchived(c *gin.Context) {
+	projectID, err := pathID(c, "projectId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	archived, err := request.BindSetArchived(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	view, err := r.services.SetArchived.Execute(c, r.userID(c), projectID, archived)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -211,6 +235,7 @@ func NewProjectRouter(
 	g.GET("/:projectId", r.get)
 	g.PATCH("/:projectId", r.update)
 	g.DELETE("/:projectId", r.delete)
+	g.PATCH("/:projectId/archived", r.setArchived)
 	g.GET("/:projectId/members", r.members)
 	g.POST("/:projectId/members", r.addMembers)
 	g.PATCH("/:projectId/members/:userId", r.changeRole)

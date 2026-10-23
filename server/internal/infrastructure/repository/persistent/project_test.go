@@ -80,12 +80,12 @@ func TestProjectRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if p := view.Project; p.ID != design.ID || p.Name != "Дизайн-система" || *p.Description != "Компоненты" ||
-		p.Key != "DS" || !p.CreatedAt.Equal(now) || view.TasksCount != 1 || view.Role != entity.RoleMember {
+		p.Key != "DS" || p.ArchivedAt != nil || !p.CreatedAt.Equal(now) || view.TasksCount != 1 || view.Role != entity.RoleMember {
 		t.Fatalf("project as Ivan sees it: %+v %+v", view, view.Project)
 	}
 	_, err = repo.GetView(ctx, backend.ID, ivan.ID)
 	requireCode(t, err, domain.EntityNotFound)
-	list, err := repo.ListViews(ctx, anna.ID)
+	list, err := repo.ListViews(ctx, anna.ID, false)
 	if err != nil || len(list) != 2 || list[0].Project.ID != backend.ID || list[1].Project.ID != design.ID ||
 		list[0].Role != entity.RoleOwner || list[0].Project.Description != nil {
 		t.Fatalf("Anna's projects: %+v, %v", list, err)
@@ -100,6 +100,25 @@ func TestProjectRepository(t *testing.T) {
 	if got, err := repo.GetForUpdate(ctx, design.ID); err != nil || got.Name != "Дизайн-система 2" || got.Description != nil || got.Key != "ДС" ||
 		!got.UpdatedAt.Equal(now.Add(time.Hour)) {
 		t.Fatalf("after update: %+v, %v", got, err)
+	}
+
+	// Archive (ADR-0027): lists by the project's flag; tasks archived on their own are not counted
+	archivedTask := insertTask(t, pool, design.ID, anna, nil)
+	if _, err := pool.Exec(ctx, `UPDATE tasks SET archived_at = $1 WHERE id = $2`, now, archivedTask); err != nil {
+		t.Fatal(err)
+	}
+	design.Archive(now.Add(2 * time.Hour))
+	if err := repo.Update(ctx, design); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := repo.GetForUpdate(ctx, design.ID); err != nil || got.ArchivedAt == nil || !got.ArchivedAt.Equal(now.Add(2*time.Hour)) {
+		t.Fatalf("archived project: %+v, %v", got, err)
+	}
+	if list, err := repo.ListViews(ctx, anna.ID, false); err != nil || len(list) != 1 || list[0].Project.ID != backend.ID {
+		t.Fatalf("Anna's active projects: %+v, %v", list, err)
+	}
+	if list, err := repo.ListViews(ctx, anna.ID, true); err != nil || len(list) != 1 || list[0].Project.ID != design.ID || list[0].TasksCount != 1 {
+		t.Fatalf("Anna's archived projects: %+v, %v", list, err)
 	}
 
 	if err := repo.SoftDelete(ctx, design.ID, now); err != nil {
@@ -121,7 +140,7 @@ func TestProjectRepository(t *testing.T) {
 		(SELECT count(*) FROM project_members WHERE project_id = $1)`, design.ID).Scan(&liveTasks, &kept); err != nil || liveTasks != 0 || kept != 2 {
 		t.Fatalf("after delete: tasks %d, memberships %d, %v", liveTasks, kept, err)
 	}
-	if list, err := repo.ListViews(ctx, anna.ID); err != nil || len(list) != 1 {
+	if list, err := repo.ListViews(ctx, anna.ID, true); err != nil || len(list) != 0 {
 		t.Fatalf("after delete: %+v, %v", list, err)
 	}
 }

@@ -1,9 +1,9 @@
-import { toast } from "sonner";
-
+import { isProjectArchived } from "@/domain/models/Project";
 import type { ProjectId } from "@/domain/types";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
+import { projectsTexts } from "@/shared/locales/projects";
 import { TEXTS } from "@/shared/locales/texts";
 import {
   canArchiveProject,
@@ -18,17 +18,24 @@ import { useAddMembers } from "./useAddMembers";
 import { useDeleteProject } from "./useDeleteProject";
 import { useLeaveProject } from "./useLeaveProject";
 import { useProject } from "./useProject";
+import { useSetProjectArchived } from "./useSetProjectArchived";
 
-/** Project actions based on the current user's role in it (shared/utils/userRole.ts). */
+/**
+ * Project actions based on the current user's role in it (shared/utils/userRole.ts). An archived
+ * project is read-only: the owner restores or deletes it, the others leave it (ADR-0027).
+ */
 export const useProjectMenuItems = (projectId: ProjectId) => {
   const { data: project } = useProject(projectId);
   const { mutate: leave } = useLeaveProject();
   const { mutate: deleteById } = useDeleteProject();
   const { mutate: addMembers } = useAddMembers();
+  const { mutate: setArchived } = useSetProjectArchived();
   const { showEditProject, showMoveToArchive, showDeleteItem, showLeaveProject, showInviteUser } =
     useGlobalModals();
 
   if (!project) return { menuItems: [] };
+
+  const archived = isProjectArchived(project);
 
   const menuItems: MenuItem[] = [
     {
@@ -42,7 +49,7 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
           description: project.description,
           key: canChangeProjectKey(project.role) ? project.key : undefined,
         }),
-      isVisible: canEditProject(project.role),
+      isVisible: !archived && canEditProject(project.role),
     },
     {
       label: TEXTS.projects.inviteMember,
@@ -53,23 +60,30 @@ export const useProjectMenuItems = (projectId: ProjectId) => {
 
         if (emails && emails.length > 0) addMembers({ projectId, emails });
       },
-      isVisible: canInviteMembers(project.role),
+      isVisible: !archived && canInviteMembers(project.role),
     },
     {
       label: TEXTS.projects.moveToArchive,
       icon: ICONS.archive,
       color: "var(--icon-tertiary)",
       onClick: async () => {
-        const result = await showMoveToArchive({
+        const confirmed = await showMoveToArchive({
           type: "project",
           id: project.id,
           title: project.name,
         });
 
-        // The server has no archive yet — stage 2 (docs/roadmap.md)
-        if (result) toast.warning(`Project id: ${result} moved to archive`);
+        if (confirmed) setArchived({ projectId, archived: true });
       },
-      isVisible: canArchiveProject(project.role),
+      isVisible: !archived && canArchiveProject(project.role),
+    },
+    {
+      // Restoring needs no confirmation: it is undone by archiving again
+      label: projectsTexts.restore,
+      icon: ICONS.archive,
+      color: "var(--icon-tertiary)",
+      onClick: () => setArchived({ projectId, archived: false }),
+      isVisible: archived && canArchiveProject(project.role),
     },
     {
       label: TEXTS.projects.leave,

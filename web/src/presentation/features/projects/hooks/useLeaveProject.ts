@@ -20,7 +20,9 @@ export function useLeaveProject() {
       toast.success(projectsTexts.projectLeft);
       navigate({ to: ROUTES.projects, replace: true });
       queryClient.removeQueries({ queryKey: QUERY_KEYS.invalidate.project(projectId) });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.lists });
+      // Leaving clears the user as the assignee of the project's tasks
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.mineLists });
     },
     onError: (error) => toastError(error, projectsTexts.leaveProjectFailed),
   });

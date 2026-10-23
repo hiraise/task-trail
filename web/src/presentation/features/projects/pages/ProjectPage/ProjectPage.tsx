@@ -1,5 +1,6 @@
 import { useParams } from "@tanstack/react-router";
 
+import { isProjectArchived } from "@/domain/models/Project";
 import { getUserDisplayName } from "@/domain/models/User";
 import { BackButton } from "@/presentation/shared";
 import { TopBarBackMobile } from "@/presentation/shared/components/Layout";
@@ -14,13 +15,14 @@ import styles from "./ProjectPage.module.css";
 /**
  * Project page. On a phone — a top bar with the project menu in a bottom sheet and members as
  * a link to their own page; from 768 px — cards, a "…" menu next to the name and a member list.
- * CSS switches the layout (ADR-0008).
+ * CSS switches the layout (ADR-0008). An archived project is read-only: no "Create task" (ADR-0027).
  */
 export function ProjectPage() {
   const { id: projectId } = useParams({ from: "/_main/projects/$id/" });
   const { data } = useProjectDetail(projectId);
   const { menuItems } = useProjectMenuItems(projectId);
   const { showProjectSettings } = useGlobalModals();
+  const archived = data ? isProjectArchived(data.project) : false;
 
   return (
     <div className={styles.page}>
@@ -48,8 +50,8 @@ export function ProjectPage() {
           <section className={styles.section}>
             <ProjectTasks
               projectId={projectId}
-              tasks={data.tasks}
               members={data.members}
+              projectArchived={archived}
               className={styles.tasks}
             />
           </section>
@@ -61,7 +63,7 @@ export function ProjectPage() {
           <section className={styles.section} />
         </div>
       )}
-      {data && <FloatingButton projectId={projectId} />}
+      {data && !archived && <FloatingButton projectId={projectId} />}
     </div>
   );
 }

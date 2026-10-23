@@ -7,18 +7,22 @@ import { SubmitButton } from "../SubmitButton";
 import type { TabItem } from "./TabPanel.types";
 import { TabType } from "./TabPanel.types";
 import { useTabPanel } from "./TabPanelContext";
-import styles from "./TabPanelDesktop.module.css";
+import styles from "./TabPanel.module.css";
 
-export function TabPanelDesktop() {
+const tabs: TabItem[] = [
+  { id: TabType.ACTIVE, label: TEXTS.tasks.active },
+  { id: TabType.ARCHIVED, label: TEXTS.tasks.archived },
+];
+
+/**
+ * the Active / Archived tabs (ADR-0027). On a phone — a segmented control, from 768 px — underlined tabs;
+ * CSS switches the look (ADR-0008).
+ */
+export function TabPanel() {
   const { activeTab, setActiveTab } = useTabPanel();
 
-  const tabs: TabItem[] = [
-    { id: TabType.ACTIVE, label: TEXTS.tasks.active },
-    { id: TabType.ARCHIVED, label: TEXTS.tasks.archived },
-  ];
-
   return (
-    <div className={styles.tabsContainer} role="tablist" aria-label="Task filter tabs">
+    <div className={styles.tabsContainer} role="tablist">
       {tabs.map((tab) => (
         <div
           key={tab.id}
@@ -28,7 +32,7 @@ export function TabPanelDesktop() {
           tabIndex={activeTab === tab.id ? 0 : -1}
         >
           <SubmitButton variant="text" onClick={() => setActiveTab(tab.id)}>
-            <span className="body-reg-2">{tab.label}</span>
+            <span className={clsx("body-reg-2", styles.label)}>{tab.label}</span>
           </SubmitButton>
         </div>
       ))}

@@ -7,6 +7,7 @@ export { useMoveTask } from "./useMoveTask";
 export { useMyTasks } from "./useMyTasks";
 export { useOpenCreateTask } from "./useOpenCreateTask";
 export { useProjectTasks } from "./useProjectTasks";
+export { useSetTaskArchived } from "./useSetTaskArchived";
 export { useTask } from "./useTask";
 export { useTaskActions } from "./useTaskActions";
 export { useTaskDetail } from "./useTaskDetail";

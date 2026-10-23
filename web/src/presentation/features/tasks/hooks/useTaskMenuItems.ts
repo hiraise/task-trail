@@ -1,39 +1,52 @@
-import { toast } from "sonner";
-
-import type { Task } from "@/domain/models/Task";
+import { isTaskArchived, type Task } from "@/domain/models/Task";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
+import { tasksTexts } from "@/shared/locales/tasks";
 import { TEXTS } from "@/shared/locales/texts";
 
 import { useDeleteTask } from "./useDeleteTask";
+import { useSetTaskArchived } from "./useSetTaskArchived";
 
-/** Task actions: any member of the task's project can edit and delete it (API contract). */
+/**
+ * Task actions: any member of the task's project edits, archives and deletes it (API contract).
+ * An archived task is only restored or deleted; a task of an archived project has no actions
+ * (ADR-0027).
+ */
 export const useTaskMenuItems = (task?: Task) => {
   const { mutate: deleteTask } = useDeleteTask();
+  const { mutate: setArchived } = useSetTaskArchived();
   const { showEditTask, showMoveToArchive, showDeleteItem } = useGlobalModals();
 
-  if (!task) return { menuItems: [] };
+  if (!task || task.projectArchived) return { menuItems: [] };
 
+  const archived = isTaskArchived(task);
   const menuItems: MenuItem[] = [
     {
       label: TEXTS.tasks.edit,
       icon: ICONS.edit,
       color: "var(--icon-tertiary)",
       onClick: () => showEditTask(task),
-      isVisible: true,
+      isVisible: !archived,
     },
     {
       label: TEXTS.tasks.moveToArchive,
       icon: ICONS.archive,
       color: "var(--icon-tertiary)",
       onClick: async () => {
-        const result = await showMoveToArchive({ type: "task", id: task.id, title: task.name });
+        const confirmed = await showMoveToArchive({ type: "task", id: task.id, title: task.name });
 
-        // The server has no archive yet — stage 2 (docs/roadmap.md)
-        if (result) toast.warning(`Task id: ${task.id} moved to archive`);
+        if (confirmed) setArchived({ taskId: task.id, archived: true });
       },
-      isVisible: true,
+      isVisible: !archived,
+    },
+    {
+      // Restoring needs no confirmation: it is undone by archiving again
+      label: tasksTexts.restore,
+      icon: ICONS.archive,
+      color: "var(--icon-tertiary)",
+      onClick: () => setArchived({ taskId: task.id, archived: false }),
+      isVisible: archived,
     },
     {
       label: TEXTS.tasks.delete,
@@ -48,5 +61,5 @@ export const useTaskMenuItems = (task?: Task) => {
     },
   ];
 
-  return { menuItems };
+  return { menuItems: menuItems.filter((item) => item.isVisible) };
 };

@@ -21,7 +21,7 @@ export function useEditProject() {
     mutationFn: ({ projectId, ...changes }) => projectRepository.update(projectId, changes),
     onSuccess: (project, { key }) => {
       queryClient.setQueryData(QUERY_KEYS.project.detail(project.id), project);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.lists });
       if (key !== undefined) {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(project.id) });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });

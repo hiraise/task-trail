@@ -1,5 +1,6 @@
 // Package project holds the use cases of projects and their members: roles per ADR-0003, invitations
-// per ADR-0016 and ADR-0017, soft deletion per ADR-0001.
+// per ADR-0016 and ADR-0017, soft deletion per ADR-0001, archive per ADR-0027: an archived project
+// and its members do not change, except leaving, deleting and restoring it.
 package project
 
 import (
@@ -18,6 +19,7 @@ type ProjectModule struct {
 	Get          *GetProjectService
 	Create       *CreateProjectService
 	Update       *UpdateProjectService
+	SetArchived  *SetProjectArchivedService
 	Delete       *DeleteProjectService
 	Candidates   *CandidatesService
 	Members      *ListMembersService
@@ -64,11 +66,12 @@ func New(d Deps) *ProjectModule {
 			members:   d.MemberRepo,
 			inviter:   invitations,
 		},
-		Update:     &UpdateProjectService{txManager: d.TxManager, clock: d.Clock, access: access, projects: d.ProjectRepo},
-		Delete:     &DeleteProjectService{txManager: d.TxManager, clock: d.Clock, access: access, projects: d.ProjectRepo},
-		Candidates: &CandidatesService{members: d.MemberRepo, users: d.UserRepo},
-		Members:    &ListMembersService{members: d.MemberRepo},
-		AddMembers: &AddMembersService{txManager: d.TxManager, access: access, inviter: invitations},
+		Update:      &UpdateProjectService{txManager: d.TxManager, clock: d.Clock, access: access, projects: d.ProjectRepo},
+		SetArchived: &SetProjectArchivedService{txManager: d.TxManager, clock: d.Clock, access: access, projects: d.ProjectRepo},
+		Delete:      &DeleteProjectService{txManager: d.TxManager, clock: d.Clock, access: access, projects: d.ProjectRepo},
+		Candidates:  &CandidatesService{members: d.MemberRepo, users: d.UserRepo},
+		Members:     &ListMembersService{members: d.MemberRepo},
+		AddMembers:  &AddMembersService{txManager: d.TxManager, access: access, inviter: invitations},
 		ChangeRole: &ChangeRoleService{
 			txManager: d.TxManager,
 			clock:     d.Clock,

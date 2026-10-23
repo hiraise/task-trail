@@ -236,3 +236,120 @@ func TestGetTaskNotMember(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 }
+
+func archivedProject(id entity.ProjectID) *entity.Project {
+	p := project(id)
+	at := now.Add(-time.Minute)
+	p.ArchivedAt = &at
+	return p
+}
+
+func archivedTask(projectID entity.ProjectID) *entity.Task {
+	t := stored(projectID, nil)
+	at := now.Add(-time.Minute)
+	t.ArchivedAt = &at
+	return t
+}
+
+// An archived task or a task of an archived project does not change (ADR-0027): 409, nothing is written.
+func TestArchivedTaskIsReadOnly(t *testing.T) {
+	for name, c := range map[string]struct {
+		task    *entity.Task
+		project *entity.Project
+		code    domain.ErrorCode
+	}{
+		"archived task":    {archivedTask(designID), project(designID), domain.TaskArchived},
+		"archived project": {stored(designID, nil), archivedProject(designID), domain.ProjectArchived},
+	} {
+		t.Run(name, func(t *testing.T) {
+			module, d := newModule(t)
+			txtest.Expect(d.tx)
+			d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(c.task, nil).Times(2)
+			d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(c.project, nil)
+			d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+			_, err := module.ChangeStatus.Execute(context.Background(), string(userID), string(taskID), entity.StatusDone)
+			if !domain.HasCode(err, c.code) {
+				t.Fatalf("%v", err)
+			}
+		})
+	}
+}
+
+// A task is not created in an archived project and not moved into one; the target project's archive
+// is checked after the membership in it.
+func TestArchivedProjectTakesNoTasks(t *testing.T) {
+	t.Run("creation", func(t *testing.T) {
+		module, d := newModule(t)
+		txtest.Expect(d.tx)
+		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(archivedProject(designID), nil)
+		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+		_, err := module.Create.Execute(context.Background(), string(userID), dto.CreateTask{ProjectID: string(designID), Name: "Кнопка"})
+		if !domain.HasCode(err, domain.ProjectArchived) {
+			t.Fatalf("%v", err)
+		}
+	})
+	t.Run("move", func(t *testing.T) {
+		module, d := newModule(t)
+		txtest.Expect(d.tx)
+		d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(stored(designID, nil), nil).Times(2)
+		d.projects.EXPECT().GetForUpdate(txtest.InTx, backendID).Return(archivedProject(backendID), nil)
+		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(project(designID), nil)
+		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+		d.members.EXPECT().Get(txtest.InTx, backendID, userID).Return(member(backendID, userID), nil)
+		_, err := module.Move.Execute(context.Background(), string(userID), string(taskID), string(backendID))
+		if !domain.HasCode(err, domain.ProjectArchived) {
+			t.Fatalf("%v", err)
+		}
+	})
+}
+
+// Any member archives and restores a task; the same value again keeps the update time.
+// In an archived project — PROJECT_ARCHIVED.
+func TestSetTaskArchived(t *testing.T) {
+	run := func(t *testing.T, task *entity.Task, p *entity.Project, archived bool) (*entity.Task, error) {
+		module, d := newModule(t)
+		txtest.Expect(d.tx)
+		d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(task, nil).Times(2)
+		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(p, nil)
+		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+		if p.ArchivedAt == nil {
+			d.tasks.EXPECT().Update(txtest.InTx, task).Return(nil)
+		}
+		return module.SetArchived.Execute(context.Background(), string(userID), string(taskID), archived)
+	}
+	if got, err := run(t, stored(designID, nil), project(designID), true); err != nil || got.ArchivedAt == nil ||
+		!got.ArchivedAt.Equal(now) || !got.UpdatedAt.Equal(now) {
+		t.Fatalf("archive: %+v, %v", got, err)
+	}
+	if got, err := run(t, archivedTask(designID), project(designID), true); err != nil || !got.ArchivedAt.Equal(now.Add(-time.Minute)) ||
+		!got.UpdatedAt.Equal(now.Add(-time.Hour)) {
+		t.Fatalf("archive again: %+v, %v", got, err)
+	}
+	if got, err := run(t, archivedTask(designID), project(designID), false); err != nil || got.ArchivedAt != nil || !got.UpdatedAt.Equal(now) {
+		t.Fatalf("restore: %+v, %v", got, err)
+	}
+	if _, err := run(t, archivedTask(designID), archivedProject(designID), false); !domain.HasCode(err, domain.ProjectArchived) {
+		t.Fatalf("restore in an archived project: %v", err)
+	}
+}
+
+// An archived task can be deleted, a task of an archived project cannot.
+func TestDeleteArchived(t *testing.T) {
+	run := func(t *testing.T, task *entity.Task, p *entity.Project) error {
+		module, d := newModule(t)
+		txtest.Expect(d.tx)
+		d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(task, nil).Times(2)
+		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(p, nil)
+		d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+		if p.ArchivedAt == nil {
+			d.tasks.EXPECT().SoftDelete(txtest.InTx, taskID, now).Return(nil)
+		}
+		return module.Delete.Execute(context.Background(), string(userID), string(taskID))
+	}
+	if err := run(t, archivedTask(designID), project(designID)); err != nil {
+		t.Fatalf("archived task: %v", err)
+	}
+	if err := run(t, stored(designID, nil), archivedProject(designID)); !domain.HasCode(err, domain.ProjectArchived) {
+		t.Fatalf("archived project: %v", err)
+	}
+}

@@ -1,41 +1,29 @@
-import { useState } from "react";
-
 import { TEXTS } from "@/shared/locales/texts";
+import type { SortOptionValue } from "@/shared/utils/sortItems";
 
-import { DeviceBased, DialogButtons } from "../../components";
+import { SubmitButton } from "../../components";
+import { useGlobalModalProps } from "../../hooks/useGlobalModalProps";
+import type { SortOptionsProps } from "../../hooks/useGlobalModals";
 import { BaseModal, type BaseModalProps } from "../BaseModal";
 
-import type { SortOption } from "./SortItems";
-import { SortItems, SortItemsDesktop } from "./SortItems";
-import { options } from "./SortItems/SortItems.types";
+import { SortItems } from "./SortItems";
+import styles from "./SortItemsModal.module.css";
 
-export function SortItemsModal(props: BaseModalProps<string>) {
-  const [selectedOption, setSelectedOption] = useState<SortOption>(options[0]);
-
-  const handleMobileSort = (option: SortOption) => {
-    setSelectedOption(option);
-    props.onClose(option.value);
-  };
-
-  const handleDesktopSort = (option: SortOption) => {
-    setSelectedOption(option);
-  };
-
-  const handleApply = () => {
-    props.onClose(selectedOption.value);
-  };
+/**
+ * Sorting of a list: opens with the current option; picking an option applies it and closes the modal
+ * (Figma comment 1636:45413), "Cancel" closes it without a change.
+ */
+export function SortItemsModal(props: BaseModalProps<SortOptionValue>) {
+  const { current = "updatedAt" } = useGlobalModalProps<SortOptionsProps>() ?? {};
 
   return (
     <BaseModal {...props} title={TEXTS.sort}>
-      <DeviceBased
-        desktop={
-          <>
-            <SortItemsDesktop selectedOption={selectedOption} onSelect={handleDesktopSort} />
-            <DialogButtons onClose={() => props.onClose()} onApply={handleApply} />
-          </>
-        }
-        mobile={<SortItems selectedOption={selectedOption} onSelect={handleMobileSort} />}
-      />
+      <div className={styles.content}>
+        <SortItems selected={current} onSelect={(option) => props.onClose(option.value)} />
+        <SubmitButton variant="secondary" onClick={() => props.onClose()}>
+          {TEXTS.cancel}
+        </SubmitButton>
+      </div>
     </BaseModal>
   );
 }

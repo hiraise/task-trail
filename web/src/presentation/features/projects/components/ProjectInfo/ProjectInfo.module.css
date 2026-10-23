@@ -12,8 +12,21 @@
   gap: 12px;
 }
 
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
 .name {
   overflow-wrap: anywhere;
+}
+
+.tag {
+  align-self: center;
 }
 
 .description {

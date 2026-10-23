@@ -21,7 +21,9 @@ type project struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 	Key         string  `json:"key"`
+	ArchivedAt  *string `json:"archivedAt"`
 	CreatedAt   string  `json:"createdAt"`
+	UpdatedAt   string  `json:"updatedAt"`
 	TasksCount  int     `json:"tasksCount"`
 	Role        string  `json:"role"`
 }

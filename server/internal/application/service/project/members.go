@@ -46,6 +46,9 @@ func (s *AddMembersService) Execute(ctx context.Context, userID, projectID strin
 		if err != nil {
 			return err
 		}
+		if err := project.RequireActive(); err != nil {
+			return err
+		}
 		if err := member.RequireManager(); err != nil {
 			return err
 		}
@@ -73,6 +76,9 @@ func (s *ChangeRoleService) Execute(ctx context.Context, userID, projectID, targ
 	f := func(ctx context.Context) error {
 		project, member, err := s.access.lock(ctx, projectID, userID)
 		if err != nil {
+			return err
+		}
+		if err := project.RequireActive(); err != nil {
 			return err
 		}
 		// Not the owner: 403, even if there is no such member
@@ -117,6 +123,9 @@ func (s *RemoveMemberService) Execute(ctx context.Context, userID, projectID, ta
 		if err != nil {
 			return err
 		}
+		if err := project.RequireActive(); err != nil {
+			return err
+		}
 		// A member gets 403, even if there is nobody to remove
 		if err := member.RequireManager(); err != nil {
 			return err
@@ -132,8 +141,8 @@ func (s *RemoveMemberService) Execute(ctx context.Context, userID, projectID, ta
 	})
 }
 
-// LeaveService leaves a project: an administrator or a member. The leaver's tasks in the project
-// are left without an assignee.
+// LeaveService leaves a project: an administrator or a member, an archived project too (ADR-0027).
+// The leaver's tasks in the project are left without an assignee.
 type LeaveService struct {
 	txManager transaction.TxManager
 	clock     service.Clock

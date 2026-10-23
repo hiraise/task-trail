@@ -19,6 +19,8 @@ const (
 	CodeAssigneeNotMember    ErrorCode = "ASSIGNEE_NOT_MEMBER"
 	CodeLastAdmin            ErrorCode = "LAST_ADMIN"
 	CodeProjectKeyTaken      ErrorCode = "PROJECT_KEY_TAKEN"
+	CodeTaskArchived         ErrorCode = "TASK_ARCHIVED"
+	CodeProjectArchived      ErrorCode = "PROJECT_ARCHIVED"
 	CodeMailDisabled         ErrorCode = "MAIL_DISABLED"
 	CodeMailSendFailed       ErrorCode = "MAIL_SEND_FAILED"
 	CodeMailConnectionFailed ErrorCode = "MAIL_CONNECTION_FAILED"

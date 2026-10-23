@@ -4,13 +4,6 @@
   gap: 8px;
 }
 
-.wideTitle {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  height: 32px;
-}
-
 .empty {
   display: flex;
   flex-direction: column;
@@ -39,6 +32,6 @@
   }
 
   .wideOnly {
-    display: flex;
+    display: block;
   }
 }
