@@ -21,6 +21,7 @@ const (
 	CodeProjectKeyTaken      ErrorCode = "PROJECT_KEY_TAKEN"
 	CodeTaskArchived         ErrorCode = "TASK_ARCHIVED"
 	CodeProjectArchived      ErrorCode = "PROJECT_ARCHIVED"
+	CodeCommentEditExpired   ErrorCode = "COMMENT_EDIT_EXPIRED"
 	CodeMailDisabled         ErrorCode = "MAIL_DISABLED"
 	CodeMailSendFailed       ErrorCode = "MAIL_SEND_FAILED"
 	CodeMailConnectionFailed ErrorCode = "MAIL_CONNECTION_FAILED"

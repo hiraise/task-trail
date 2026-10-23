@@ -83,7 +83,10 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 		if task, err = s.factory.New(author, project.Key, number, data.Name, data.Description, assignee); err != nil {
 			return err
 		}
-		return e.tasks.Create(ctx, task)
+		if err := e.tasks.Create(ctx, task); err != nil {
+			return err
+		}
+		return e.record(ctx, e.newEvent.New(task.ID, author.UserID, entity.EventCreated, task.CreatedAt))
 	}
 	if err := e.txManager.DoWithTx(ctx, f); err != nil {
 		return nil, err
@@ -91,20 +94,26 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 	return task, nil
 }
 
-// UpdateTaskService changes the name and description.
+// UpdateTaskService changes the name and description; one "edited" event per request if either
+// changed (ADR-0028).
 type UpdateTaskService struct {
 	editor *editor
 }
 
 func (s *UpdateTaskService) Execute(ctx context.Context, userID, taskID string, changes dto.TaskChanges) (*entity.Task, error) {
-	return s.editor.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) error {
+	e := s.editor
+	return e.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error) {
+		name, description := task.Name, task.Description
 		if changes.Name != nil {
 			task.Rename(*changes.Name, now)
 		}
 		if changes.DescriptionSet {
 			task.Describe(changes.Description, now)
 		}
-		return nil
+		if task.Name == name && equal(task.Description, description) {
+			return nil, nil
+		}
+		return []*entity.TaskEvent{e.newEvent.New(task.ID, entity.UserID(userID), entity.EventEdited, now)}, nil
 	})
 }
 
@@ -113,9 +122,14 @@ type ChangeStatusService struct {
 }
 
 func (s *ChangeStatusService) Execute(ctx context.Context, userID, taskID string, status entity.TaskStatus) (*entity.Task, error) {
-	return s.editor.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) error {
+	e := s.editor
+	return e.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error) {
+		from := task.Status
 		task.ChangeStatus(status, now)
-		return nil
+		if from == status {
+			return nil, nil
+		}
+		return []*entity.TaskEvent{e.newEvent.StatusChanged(task.ID, entity.UserID(userID), from, status, now)}, nil
 	})
 }
 
@@ -125,12 +139,20 @@ type ChangeAssigneeService struct {
 }
 
 func (s *ChangeAssigneeService) Execute(ctx context.Context, userID, taskID string, assigneeID *string) (*entity.Task, error) {
-	return s.editor.edit(ctx, userID, taskID, nil, func(ctx context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) error {
-		assignee, err := s.editor.assignee(ctx, task.ProjectID, assigneeID)
+	e := s.editor
+	return e.edit(ctx, userID, taskID, nil, func(ctx context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error) {
+		assignee, err := e.assignee(ctx, task.ProjectID, assigneeID)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		return task.AssignTo(assignee, now)
+		from := task.AssigneeID
+		if err := task.AssignTo(assignee, now); err != nil {
+			return nil, err
+		}
+		if equal(from, task.AssigneeID) {
+			return nil, nil
+		}
+		return []*entity.TaskEvent{e.newEvent.AssigneeChanged(task.ID, entity.UserID(userID), from, task.AssigneeID, now)}, nil
 	})
 }
 
@@ -145,15 +167,15 @@ type MoveTaskService struct {
 func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID string) (*entity.Task, error) {
 	e := s.editor
 	target := entity.ProjectID(projectID)
-	return e.edit(ctx, userID, taskID, []entity.ProjectID{target}, func(ctx context.Context, task *entity.Task, projects map[entity.ProjectID]*entity.Project, now time.Time) error {
+	return e.edit(ctx, userID, taskID, []entity.ProjectID{target}, func(ctx context.Context, task *entity.Task, projects map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error) {
 		if task.ProjectID == target {
-			return nil
+			return nil, nil
 		}
 		if _, err := e.members.Get(ctx, target, entity.UserID(userID)); err != nil {
-			return err
+			return nil, err
 		}
 		if err := projects[target].RequireActive(); err != nil {
-			return err
+			return nil, err
 		}
 		var assignee *entity.ProjectMember
 		if task.AssigneeID != nil {
@@ -162,15 +184,22 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 			case err == nil:
 				assignee = member
 			case !domain.HasCode(err, domain.EntityNotFound):
-				return err
+				return nil, err
 			}
 		}
 		number, err := e.projects.NextTaskNumber(ctx, target)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		fromKey, fromAssignee := task.Key(), task.AssigneeID
 		task.MoveTo(target, projects[target].Key, number, assignee, now)
-		return nil
+		actor := entity.UserID(userID)
+		// "moved" goes first: the assignee is removed because of the move
+		events := []*entity.TaskEvent{e.newEvent.Moved(task.ID, actor, fromKey, task.Key(), now)}
+		if !equal(fromAssignee, task.AssigneeID) {
+			events = append(events, e.newEvent.AssigneeChanged(task.ID, actor, fromAssignee, task.AssigneeID, now))
+		}
+		return events, nil
 	})
 }
 
@@ -192,12 +221,21 @@ func (s *SetTaskArchivedService) Execute(ctx context.Context, userID, taskID str
 			return err
 		}
 		now := e.clock.Now()
+		if (t.ArchivedAt != nil) == archived {
+			task = t
+			return nil
+		}
+		kind := entity.EventRestored
 		if archived {
 			t.Archive(now)
+			kind = entity.EventArchived
 		} else {
 			t.Restore(now)
 		}
 		if err := e.tasks.Update(ctx, t); err != nil {
+			return err
+		}
+		if err := e.record(ctx, e.newEvent.New(t.ID, entity.UserID(userID), kind, now)); err != nil {
 			return err
 		}
 		task = t
@@ -227,4 +265,9 @@ func (s *DeleteTaskService) Execute(ctx context.Context, userID, taskID string) 
 		}
 		return e.tasks.SoftDelete(ctx, task.ID, e.clock.Now())
 	})
+}
+
+// equal compares optional values: both nil or both set and equal.
+func equal[T comparable](a, b *T) bool {
+	return (a == nil && b == nil) || (a != nil && b != nil && *a == *b)
 }

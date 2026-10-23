@@ -932,6 +932,111 @@ paths:
         "409": { $ref: "#/components/responses/ProjectArchived" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
+  /v1/tasks/{taskId}/comments:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    get:
+      tags: [tasks]
+      operationId: listTaskComments
+      summary: Task comments
+      description: "Role: any in the task's project. Newest first; equal times — the later written first (ADR-0028)."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TaskComment" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      tags: [tasks]
+      operationId: createTaskComment
+      summary: Write a comment
+      description: "Role: any in the task's project; neither the task nor its project is archived (ADR-0027)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateCommentRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "201":
+          description: Comment written
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TaskComment" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/tasks/{taskId}/comments/{commentId}:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+      - $ref: "#/components/parameters/CommentId"
+    patch:
+      tags: [tasks]
+      operationId: updateTaskComment
+      summary: Edit a comment
+      description: |
+        Only the author, while less than 24 hours have passed since the comment was written (ADR-0028);
+        neither the task nor its project is archived. A comment of another task — `404`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateCommentRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Comment edited
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TaskComment" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/CommentReadOnly" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+    delete:
+      tags: [tasks]
+      operationId: deleteTaskComment
+      summary: Delete a comment
+      description: |
+        The author, the project owner or a project admin, at any time (ADR-0028); neither the task nor
+        its project is archived. The comment is erased at once. A comment of another task — `404`.
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Comment deleted
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
+
+  /v1/tasks/{taskId}/events:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    get:
+      tags: [tasks]
+      operationId: listTaskEvents
+      summary: Task change history
+      description: "Role: any in the task's project. Newest first; equal times — the later written first (ADR-0028)."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TaskEvent" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
   /v1/admin/settings:
     get:
       tags: [admin]
@@ -1137,6 +1242,11 @@ components:
       in: path
       required: true
       schema: { $ref: "#/components/schemas/Uuid" }
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
     UserId:
       name: userId
       in: path
@@ -1200,6 +1310,11 @@ components:
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ApiError" }
+    CommentReadOnly:
+      description: "`COMMENT_EDIT_EXPIRED` — 24 hours have passed since the comment was written; `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project is archived"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }
     Internal:
       description: "`INTERNAL` — server error"
       content:
@@ -1255,6 +1370,7 @@ components:
         - PROJECT_KEY_TAKEN
         - TASK_ARCHIVED
         - PROJECT_ARCHIVED
+        - COMMENT_EDIT_EXPIRED
         - FILE_TOO_LARGE
         - FILE_TYPE_NOT_ALLOWED
         - MAIL_DISABLED
@@ -1574,6 +1690,77 @@ components:
         assigneeId:
           type: [string, "null"]
           format: uuid
+
+    CommentText:
+      type: string
+      minLength: 1
+      maxLength: 10000
+      description: Plain text; the server trims spaces at the ends before validation (ADR-0028)
+    TaskComment:
+      type: object
+      required: [id, taskId, author, text, createdAt, editedAt]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        taskId: { $ref: "#/components/schemas/Uuid" }
+        author:
+          $ref: "#/components/schemas/User"
+          description: Shown even if the author has left the project
+        text: { $ref: "#/components/schemas/CommentText" }
+        createdAt: { $ref: "#/components/schemas/DateTime" }
+        editedAt:
+          type: [string, "null"]
+          format: date-time
+          description: When the text was last edited; `null` — never
+    CreateCommentRequest:
+      type: object
+      required: [text]
+      properties:
+        text: { $ref: "#/components/schemas/CommentText" }
+    UpdateCommentRequest:
+      type: object
+      required: [text]
+      properties:
+        text: { $ref: "#/components/schemas/CommentText" }
+    TaskEventKind:
+      type: string
+      enum: [created, edited, status_changed, assignee_changed, moved, archived, restored]
+      description: |
+        What changed (ADR-0028): `created`; `edited` — the name or description, without the old text;
+        `status_changed`; `assignee_changed` — also when the assignee left or was removed from the
+        project; `moved` — to another project, the task key changed; `archived`; `restored`.
+    TaskEvent:
+      type: object
+      required: [id, taskId, kind, actor, createdAt, fromStatusId, toStatusId, fromUser, toUser, fromKey, toKey]
+      description: |
+        A row of task history. Change fields are always present and `null` unless the kind uses them:
+        `status_changed` — `fromStatusId`, `toStatusId`; `assignee_changed` — `fromUser`, `toUser`
+        (`null` — no assignee); `moved` — `fromKey`, `toKey`.
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        taskId: { $ref: "#/components/schemas/Uuid" }
+        kind: { $ref: "#/components/schemas/TaskEventKind" }
+        actor:
+          $ref: "#/components/schemas/User"
+          description: Who made the change
+        createdAt: { $ref: "#/components/schemas/DateTime" }
+        fromStatusId:
+          oneOf:
+            - $ref: "#/components/schemas/TaskStatusId"
+            - type: "null"
+        toStatusId:
+          oneOf:
+            - $ref: "#/components/schemas/TaskStatusId"
+            - type: "null"
+        fromUser:
+          oneOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+        toUser:
+          oneOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+        fromKey: { type: [string, "null"] }
+        toKey: { type: [string, "null"] }
 
     ServiceSettings:
       type: object

@@ -242,8 +242,18 @@ func TestTaskArchive(t *testing.T) {
 		t.Errorf("Ivan's archived tasks: %v", got)
 	}
 
-	if err := repo.UnassignInProject(ctx, design, ivan.ID, later); err != nil {
+	unassigned, err := repo.UnassignInProject(ctx, design, ivan.ID, later)
+	if err != nil {
 		t.Fatal(err)
+	}
+	if got := sorted(func() []string {
+		var out []string
+		for _, id := range unassigned {
+			out = append(out, string(id))
+		}
+		return out
+	}()...); !slices.Equal(got, sorted(active, string(archived.ID))) {
+		t.Errorf("unassigned tasks: %v", got)
 	}
 	if got := get(string(archived.ID)); got.AssigneeID != nil {
 		t.Errorf("leaving clears the assignee of an archived task: %s", describeTask(got))

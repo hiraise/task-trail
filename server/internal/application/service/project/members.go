@@ -7,6 +7,7 @@ import (
 	"task-trail/internal/application/dto"
 	"task-trail/internal/application/transaction"
 	"task-trail/internal/domain/entity"
+	"task-trail/internal/domain/factory"
 	"task-trail/internal/domain/repository"
 	"task-trail/internal/domain/service"
 )
@@ -114,7 +115,7 @@ type RemoveMemberService struct {
 	clock     service.Clock
 	access    *access
 	members   repository.ProjectMemberRepository
-	tasks     repository.TaskRepository
+	leaver    *leaver
 }
 
 func (s *RemoveMemberService) Execute(ctx context.Context, userID, projectID, targetID string) error {
@@ -137,7 +138,7 @@ func (s *RemoveMemberService) Execute(ctx context.Context, userID, projectID, ta
 		if err := member.CheckRemove(target); err != nil {
 			return err
 		}
-		return leave(ctx, s.members, s.tasks, target, s.clock.Now())
+		return s.leaver.leave(ctx, target, member.UserID, s.clock.Now())
 	})
 }
 
@@ -148,7 +149,7 @@ type LeaveService struct {
 	clock     service.Clock
 	access    *access
 	members   repository.ProjectMemberRepository
-	tasks     repository.TaskRepository
+	leaver    *leaver
 }
 
 func (s *LeaveService) Execute(ctx context.Context, userID, projectID string) error {
@@ -160,14 +161,33 @@ func (s *LeaveService) Execute(ctx context.Context, userID, projectID string) er
 		if err := member.CheckLeave(); err != nil {
 			return err
 		}
-		return leave(ctx, s.members, s.tasks, member, s.clock.Now())
+		return s.leaver.leave(ctx, member, member.UserID, s.clock.Now())
 	})
 }
 
-// leave removes the membership and unassigns the person from the project's tasks.
-func leave(ctx context.Context, members repository.ProjectMemberRepository, tasks repository.TaskRepository, m *entity.ProjectMember, now time.Time) error {
-	if err := members.Remove(ctx, m.ProjectID, m.UserID); err != nil {
+// leaver removes members from a project.
+type leaver struct {
+	members  repository.ProjectMemberRepository
+	tasks    repository.TaskRepository
+	events   repository.TaskEventRepository
+	newEvent *factory.TaskEventFactory
+}
+
+// leave removes the membership and unassigns the person from the project's tasks, archived ones
+// included; each such task gets an assignee_changed event by actor (ADR-0028).
+func (l *leaver) leave(ctx context.Context, m *entity.ProjectMember, actor entity.UserID, now time.Time) error {
+	if err := l.members.Remove(ctx, m.ProjectID, m.UserID); err != nil {
 		return err
 	}
-	return tasks.UnassignInProject(ctx, m.ProjectID, m.UserID, now)
+	ids, err := l.tasks.UnassignInProject(ctx, m.ProjectID, m.UserID, now)
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		from := m.UserID
+		if err := l.events.Create(ctx, l.newEvent.AssigneeChanged(id, actor, &from, nil, now)); err != nil {
+			return err
+		}
+	}
+	return nil
 }

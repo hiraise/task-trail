@@ -116,11 +116,12 @@ func (mr *MockTaskRepositoryMockRecorder) SoftDelete(ctx, id, now any) *gomock.C
 }
 
 // UnassignInProject mocks base method.
-func (m *MockTaskRepository) UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) error {
+func (m *MockTaskRepository) UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) ([]entity.TaskID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnassignInProject", ctx, projectID, userID, now)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].([]entity.TaskID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // UnassignInProject indicates an expected call of UnassignInProject.

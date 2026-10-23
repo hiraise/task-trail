@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// taskRoutes are tasks and their statuses: /v1/tasks/*, /v1/task-statuses, project tasks
+// taskRoutes are tasks, their statuses and feeds: /v1/tasks/*, /v1/task-statuses, project tasks
 // and the current user's tasks in the contract.
 type taskRoutes struct {
 	cm       *contextmanager.GinContextManager
@@ -198,6 +198,95 @@ func (r *taskRoutes) delete(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (r *taskRoutes) listComments(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	comments, err := r.services.ListComments.Execute(c, r.userID(c), taskID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTaskComments(comments))
+}
+
+func (r *taskRoutes) createComment(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	text, err := request.BindComment(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	comment, err := r.services.CreateComment.Execute(c, r.userID(c), taskID, text)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, response.NewTaskComment(*comment))
+}
+
+func (r *taskRoutes) updateComment(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	commentID, err := pathID(c, "commentId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	text, err := request.BindComment(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	comment, err := r.services.EditComment.Execute(c, r.userID(c), taskID, commentID, text)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTaskComment(*comment))
+}
+
+func (r *taskRoutes) deleteComment(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	commentID, err := pathID(c, "commentId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if err := r.services.DeleteComment.Execute(c, r.userID(c), taskID, commentID); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+func (r *taskRoutes) listEvents(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	events, err := r.services.ListEvents.Execute(c, r.userID(c), taskID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTaskEvents(events))
+}
+
 func NewTaskRouter(
 	router *gin.RouterGroup,
 	services *task.TaskModule,
@@ -217,4 +306,9 @@ func NewTaskRouter(
 	g.PATCH("/tasks/:taskId/assignee", r.changeAssignee)
 	g.PATCH("/tasks/:taskId/project", r.move)
 	g.PATCH("/tasks/:taskId/archived", r.setArchived)
+	g.GET("/tasks/:taskId/comments", r.listComments)
+	g.POST("/tasks/:taskId/comments", r.createComment)
+	g.PATCH("/tasks/:taskId/comments/:commentId", r.updateComment)
+	g.DELETE("/tasks/:taskId/comments/:commentId", r.deleteComment)
+	g.GET("/tasks/:taskId/events", r.listEvents)
 }

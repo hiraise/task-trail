@@ -115,6 +115,8 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	memberRepo := persistent.NewProjectMemberRepo(pool, userFactory)
 	projectRepo := persistent.NewProjectRepo(pool)
 	taskRepo := persistent.NewTaskRepo(pool)
+	eventRepo := persistent.NewTaskEventRepo(pool)
+	eventFactory := factory.NewTaskEventFactory(idGen)
 	invitationRepo := persistent.NewInvitationRepo(pool)
 	settingsRepo := persistent.NewSettingsRepo(pool, box)
 	var mailerOpts []notification.Option
@@ -161,18 +163,25 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		MemberRepo:        memberRepo,
 		UserRepo:          userRepo,
 		TaskRepo:          taskRepo,
+		EventRepo:         eventRepo,
+		EventFactory:      eventFactory,
 		InvitationRepo:    invitationRepo,
 		InvitationFactory: factory.NewInvitationFactory(idGen, linktoken.New(), clk, invitationLifetime),
 		SettingsRepo:      settingsRepo,
 		Mailer:            mailer,
 	})
 	taskModule := task.New(task.Deps{
-		TxManager:   txManager,
-		Clock:       clk,
-		ProjectRepo: projectRepo,
-		MemberRepo:  memberRepo,
-		TaskRepo:    taskRepo,
-		TaskFactory: factory.NewTaskFactory(idGen, clk),
+		TxManager:      txManager,
+		Clock:          clk,
+		ProjectRepo:    projectRepo,
+		MemberRepo:     memberRepo,
+		TaskRepo:       taskRepo,
+		TaskFactory:    factory.NewTaskFactory(idGen, clk),
+		UserRepo:       userRepo,
+		CommentRepo:    persistent.NewCommentRepo(pool),
+		CommentFactory: factory.NewCommentFactory(idGen, clk),
+		EventRepo:      eventRepo,
+		EventFactory:   eventFactory,
 	})
 	adminModule := admin.New(admin.Deps{
 		TxManager:    txManager,

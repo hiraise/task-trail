@@ -26,6 +26,7 @@ type TaskRepository interface {
 	SoftDelete(ctx context.Context, id entity.TaskID, now time.Time) error
 	// UnassignInProject removes the user from the project's tasks: a removed member or one
 	// who left is no longer an assignee (contract, removeProjectMember and leaveProject).
-	// Archived tasks are cleared too (ADR-0027).
-	UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) error
+	// Archived tasks are cleared too (ADR-0027). Returns the IDs of the changed tasks: each gets
+	// an assignee_changed event (ADR-0028).
+	UnassignInProject(ctx context.Context, projectID entity.ProjectID, userID entity.UserID, now time.Time) ([]entity.TaskID, error)
 }

@@ -1,5 +1,7 @@
 package dto
 
+import "task-trail/internal/domain/entity"
+
 type CreateTask struct {
 	ProjectID   string
 	Name        string
@@ -14,4 +16,19 @@ type TaskChanges struct {
 	Name           *string
 	DescriptionSet bool
 	Description    *string
+}
+
+// Comment is a task comment with its author (ADR-0028).
+type Comment struct {
+	Comment *entity.Comment
+	Author  *entity.UserAccount
+}
+
+// TaskEvent is a task history row with the people it mentions; FromUser and ToUser are nil when
+// the event has no such assignee.
+type TaskEvent struct {
+	Event    *entity.TaskEvent
+	Actor    *entity.UserAccount
+	FromUser *entity.UserAccount
+	ToUser   *entity.UserAccount
 }

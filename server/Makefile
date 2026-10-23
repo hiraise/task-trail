@@ -13,6 +13,8 @@ mock:
 	mockgen -source=internal/domain/repository/project_member.go -destination=test/mocks/mock_project_member.go -package=mocks
 	mockgen -source=internal/domain/repository/project.go -destination=test/mocks/mock_project.go -package=mocks
 	mockgen -source=internal/domain/repository/task.go -destination=test/mocks/mock_task.go -package=mocks
+	mockgen -source=internal/domain/repository/comment.go -destination=test/mocks/mock_comment.go -package=mocks
+	mockgen -source=internal/domain/repository/task_event.go -destination=test/mocks/mock_task_event.go -package=mocks
 	mockgen -source=internal/domain/service/mailer.go -destination=test/mocks/mock_mailer.go -package=mocks
 	mockgen -source=internal/domain/repository/file.go -destination=test/mocks/mock_file.go -package=mocks
 	mockgen -source=internal/domain/service/file_storage.go -destination=test/mocks/mock_file_storage.go -package=mocks
