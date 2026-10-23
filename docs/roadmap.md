@@ -15,8 +15,10 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   ([ADR-0029](adr/0029-boards-over-projects.md)); the kanban with drag and drop and the task modal;
   search — `GET /v1/search` and the search screen ([ADR-0030](adr/0030-search-by-substring.md)).
   Next — stage 3, plan — [docs/plans/stage-3/](plans/stage-3/README.md) with ADRs 0033–0039, accepted
-  on 2026-10-23; step 0 is done — the mockups of all stage 3 screens are approved; the next step is
-  step 1 — priority on the server.
+  on 2026-10-23; step 0 is done — the mockups of all stage 3 screens are approved; step 1 is done —
+  priority on the server ([ADR-0033](adr/0033-task-priority.md)): `Task.priority`,
+  `PATCH /v1/tasks/{taskId}/priority`, the `priority_changed` event; the next step is step 2 —
+  priority in the web.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;

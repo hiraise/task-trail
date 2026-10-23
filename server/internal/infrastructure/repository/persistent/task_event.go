@@ -18,12 +18,14 @@ func NewTaskEventRepo(db *pgxpool.Pool) *PGTaskEventRepository {
 
 // taskEventData — task_events.data: only the change fields the event sets.
 type taskEventData struct {
-	FromStatus *entity.TaskStatus `json:"fromStatus,omitempty"`
-	ToStatus   *entity.TaskStatus `json:"toStatus,omitempty"`
-	FromUser   *entity.UserID     `json:"fromUser,omitempty"`
-	ToUser     *entity.UserID     `json:"toUser,omitempty"`
-	FromKey    *string            `json:"fromKey,omitempty"`
-	ToKey      *string            `json:"toKey,omitempty"`
+	FromStatus   *entity.TaskStatus   `json:"fromStatus,omitempty"`
+	ToStatus     *entity.TaskStatus   `json:"toStatus,omitempty"`
+	FromPriority *entity.TaskPriority `json:"fromPriority,omitempty"`
+	ToPriority   *entity.TaskPriority `json:"toPriority,omitempty"`
+	FromUser     *entity.UserID       `json:"fromUser,omitempty"`
+	ToUser       *entity.UserID       `json:"toUser,omitempty"`
+	FromKey      *string              `json:"fromKey,omitempty"`
+	ToKey        *string              `json:"toKey,omitempty"`
 }
 
 func (r *PGTaskEventRepository) Create(ctx context.Context, e *entity.TaskEvent) error {
@@ -34,6 +36,7 @@ func (r *PGTaskEventRepository) Create(ctx context.Context, e *entity.TaskEvent)
 		"kind":     e.Kind,
 		"data": taskEventData{
 			FromStatus: e.FromStatus, ToStatus: e.ToStatus,
+			FromPriority: e.FromPriority, ToPriority: e.ToPriority,
 			FromUser: e.FromUser, ToUser: e.ToUser,
 			FromKey: e.FromKey, ToKey: e.ToKey,
 		},
@@ -57,6 +60,7 @@ func (r *PGTaskEventRepository) ListByTask(ctx context.Context, taskID entity.Ta
 		}
 		e.ID, e.TaskID, e.ActorID, e.Kind = entity.TaskEventID(id), entity.TaskID(taskID), entity.UserID(actorID), entity.TaskEventKind(kind)
 		e.FromStatus, e.ToStatus = data.FromStatus, data.ToStatus
+		e.FromPriority, e.ToPriority = data.FromPriority, data.ToPriority
 		e.FromUser, e.ToUser = data.FromUser, data.ToUser
 		e.FromKey, e.ToKey = data.FromKey, data.ToKey
 		return e, nil

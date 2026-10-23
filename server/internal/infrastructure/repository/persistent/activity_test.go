@@ -94,6 +94,7 @@ func TestTaskEventRepository(t *testing.T) {
 		f.AssigneeChanged(task, anna.ID, nil, &ivan.ID, later),
 		f.Moved(task, anna.ID, "DS-1", "BE-4", later),
 		f.AssigneeChanged(task, anna.ID, &ivan.ID, nil, later),
+		f.PriorityChanged(task, anna.ID, entity.PriorityNormal, entity.PriorityUrgent, later),
 	}
 	for _, e := range written {
 		if err := repo.Create(ctx, e); err != nil {

@@ -12,4 +12,7 @@ export type TaskId = string;
  */
 export type TaskStatusId = "open" | "in_progress" | "in_review" | "done";
 
+/** Task priority (ADR-0033): a fixed set; display names live in `tasksTexts.priorities`. */
+export type TaskPriorityId = "low" | "normal" | "high" | "urgent";
+
 export type UserId = string;

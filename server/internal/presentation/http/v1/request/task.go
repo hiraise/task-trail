@@ -16,6 +16,7 @@ type createTaskReq struct {
 	Description *string `json:"description"`
 	AssigneeID  *string `json:"assigneeId" binding:"omitnil,uuid"`
 	StatusID    *string `json:"statusId" binding:"omitnil,taskstatus"`
+	Priority    *string `json:"priority" binding:"omitnil,taskpriority"`
 }
 
 func (r *createTaskReq) normalize() {
@@ -25,6 +26,10 @@ func (r *createTaskReq) normalize() {
 
 type changeTaskStatusReq struct {
 	StatusID string `json:"statusId" binding:"required,taskstatus"`
+}
+
+type changeTaskPriorityReq struct {
+	Priority string `json:"priority" binding:"required,taskpriority"`
 }
 
 type changeTaskAssigneeReq struct {
@@ -64,6 +69,10 @@ func taskStatus(fl validator.FieldLevel) bool {
 	return entity.TaskStatus(fl.Field().String()).Valid()
 }
 
+func taskPriority(fl validator.FieldLevel) bool {
+	return entity.TaskPriority(fl.Field().String()).Valid()
+}
+
 func BindCreateTask(c *gin.Context) (dto.CreateTask, error) {
 	body, err := validate[createTaskReq](c)
 	if err != nil {
@@ -73,7 +82,14 @@ func BindCreateTask(c *gin.Context) (dto.CreateTask, error) {
 	if body.StatusID != nil {
 		status = entity.TaskStatus(*body.StatusID)
 	}
-	return dto.CreateTask{ProjectID: body.ProjectID, Name: body.Name, Description: body.Description, AssigneeID: body.AssigneeID, Status: status}, nil
+	priority := entity.PriorityNormal
+	if body.Priority != nil {
+		priority = entity.TaskPriority(*body.Priority)
+	}
+	return dto.CreateTask{
+		ProjectID: body.ProjectID, Name: body.Name, Description: body.Description, AssigneeID: body.AssigneeID,
+		Status: status, Priority: priority,
+	}, nil
 }
 
 func BindUpdateTask(c *gin.Context) (dto.TaskChanges, error) {
@@ -94,6 +110,14 @@ func BindChangeTaskStatus(c *gin.Context) (entity.TaskStatus, error) {
 		return "", err
 	}
 	return entity.TaskStatus(body.StatusID), nil
+}
+
+func BindChangeTaskPriority(c *gin.Context) (entity.TaskPriority, error) {
+	body, err := validate[changeTaskPriorityReq](c)
+	if err != nil {
+		return "", err
+	}
+	return entity.TaskPriority(body.Priority), nil
 }
 
 // BindChangeTaskAssignee returns the assignee; nil removes the assignee.

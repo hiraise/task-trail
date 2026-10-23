@@ -61,6 +61,11 @@ const DESCRIBE: Record<TaskEventKind, (event: TaskEvent, statusName: StatusName)
       from: fromStatusId ? statusName(fromStatusId) : "",
       to: toStatusId ? statusName(toStatusId) : "",
     }),
+  priority_changed: ({ fromPriority, toPriority }) =>
+    interpolate(texts.priority, {
+      from: fromPriority ? tasksTexts.priorities[fromPriority] : "",
+      to: toPriority ? tasksTexts.priorities[toPriority] : "",
+    }),
   moved: ({ fromKey, toKey }) => interpolate(texts.moved, { from: fromKey ?? "", to: toKey ?? "" }),
   assignee_changed: describeAssignee,
 };

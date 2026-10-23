@@ -129,6 +129,8 @@ export const toTaskEvent = (dto: TaskEventDto): TaskEvent => ({
   createdAt: dto.createdAt,
   fromStatusId: dto.fromStatusId ?? undefined,
   toStatusId: dto.toStatusId ?? undefined,
+  fromPriority: dto.fromPriority ?? undefined,
+  toPriority: dto.toPriority ?? undefined,
   fromUser: dto.fromUser ? toUser(dto.fromUser) : undefined,
   toUser: dto.toUser ? toUser(dto.toUser) : undefined,
   fromKey: dto.fromKey ?? undefined,

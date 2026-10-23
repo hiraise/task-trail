@@ -15,6 +15,7 @@ type Task struct {
 	Name        string  `json:"name"`
 	Description *string `json:"description"`
 	StatusID    string  `json:"statusId"`
+	Priority    string  `json:"priority"`
 	AuthorID    string  `json:"authorId"`
 	AssigneeID  *string `json:"assigneeId"`
 	// ArchivedAt and ProjectArchived — the task's own archive and its project's (ADR-0027)
@@ -39,6 +40,7 @@ func NewTask(t *entity.Task) Task {
 		Name:            t.Name,
 		Description:     t.Description,
 		StatusID:        string(t.Status),
+		Priority:        string(t.Priority),
 		AuthorID:        string(t.AuthorID),
 		AssigneeID:      assignee,
 		ArchivedAt:      utc(t.ArchivedAt),

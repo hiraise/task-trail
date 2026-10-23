@@ -1,4 +1,4 @@
-import type { TaskId, TaskStatusId } from "../types";
+import type { TaskId, TaskPriorityId, TaskStatusId } from "../types";
 
 import type { User } from "./User";
 
@@ -7,6 +7,7 @@ export type TaskEventKind =
   | "created"
   | "edited"
   | "status_changed"
+  | "priority_changed"
   | "assignee_changed"
   | "moved"
   | "archived"
@@ -14,7 +15,7 @@ export type TaskEventKind =
 
 /**
  * A row of task history. Change fields are set only by the kinds that use them:
- * `status_changed` — statuses, `assignee_changed` — users (undefined — no assignee), `moved` — keys.
+ * `status_changed` — statuses, `priority_changed` — priorities, `assignee_changed` — users (undefined — no assignee), `moved` — keys.
  */
 export interface TaskEvent {
   id: string;
@@ -25,6 +26,8 @@ export interface TaskEvent {
   createdAt: string;
   fromStatusId?: TaskStatusId;
   toStatusId?: TaskStatusId;
+  fromPriority?: TaskPriorityId;
+  toPriority?: TaskPriorityId;
   fromUser?: User;
   toUser?: User;
   fromKey?: string;

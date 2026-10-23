@@ -2,8 +2,8 @@
 // The stack administrator signs in, refreshes the session and opens Swagger; creates a project with
 // a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
 // mail, from the API response), gets a task with the key <project key>-1, changes its status, writes,
-// edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027), finds
-// it by key and by part of its name (ADR-0030), uploads
+// edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027),
+// changes its priority (ADR-0033), finds it by key and by part of its name (ADR-0030), uploads
 // an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
 // a user of the stack. Run: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
@@ -140,6 +140,12 @@ try {
   await call(member, "PATCH", `/v1/tasks/${task?.id}/status`, 409, { json: { statusId: "done" } });
   const restored = await call(member, "PATCH", `/v1/tasks/${task?.id}/archived`, 200, { json: { archived: false } });
   check(restored?.archivedAt === null, "the task is restored from the archive");
+
+  // Priority (ADR-0033): a member changes it, the history gets priority_changed
+  const prioritized = await call(member, "PATCH", `/v1/tasks/${task?.id}/priority`, 200, { json: { priority: "urgent" } });
+  check(prioritized?.priority === "urgent", "the assignee set the priority to urgent");
+  const afterPriority = await call(member, "GET", `/v1/tasks/${task?.id}/events`, 200);
+  check(afterPriority?.[0]?.kind === "priority_changed", `the newest history event → ${afterPriority?.[0]?.kind}`);
 
   // Search (ADR-0030): the task by its key in lower case comes first; by part of its name
   const byKey = await call(member, "GET", `/v1/search?q=${encodeURIComponent(task?.key?.toLowerCase())}`, 200);

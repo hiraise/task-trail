@@ -28,8 +28,8 @@ approved before step 2 — the first web step; server steps 1 and 3 may be done 
 | # | Step | File | Status |
 | --- | --- | --- | --- |
 | 0 | Mockups of all stage 3 screens | [00-mockups.md](00-mockups.md) | done |
-| 1 | Priority — server | [01-priority-server.md](01-priority-server.md) | next |
-| 2 | Priority — web, the shared card line `TaskMeta` | [02-priority-web.md](02-priority-web.md) | |
+| 1 | Priority — server | [01-priority-server.md](01-priority-server.md) | done |
+| 2 | Priority — web, the shared card line `TaskMeta` | [02-priority-web.md](02-priority-web.md) | next |
 | 3 | Due date — server | [03-due-date-server.md](03-due-date-server.md) | |
 | 4 | Due date — web | [04-due-date-web.md](04-due-date-web.md) | |
 | 5 | Labels — server | [05-labels-server.md](05-labels-server.md) | |

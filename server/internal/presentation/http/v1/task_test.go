@@ -23,6 +23,7 @@ type task struct {
 	Name            string  `json:"name"`
 	Description     *string `json:"description"`
 	StatusID        string  `json:"statusId"`
+	Priority        string  `json:"priority"`
 	AuthorID        string  `json:"authorId"`
 	AssigneeID      *string `json:"assigneeId"`
 	ArchivedAt      *string `json:"archivedAt"`
@@ -113,7 +114,7 @@ func TestTaskLifecycle(t *testing.T) {
 	apitest.RequireStatus(t, rec, http.StatusCreated)
 	button := apitest.Decode[task](t, rec)
 	want := task{
-		ID: button.ID, ProjectID: design, Number: 1, Key: designProject.Key + "-1", Name: "Кнопка", Description: ptr("Основная"), StatusID: "open",
+		ID: button.ID, ProjectID: design, Number: 1, Key: designProject.Key + "-1", Name: "Кнопка", Description: ptr("Основная"), StatusID: "open", Priority: "normal",
 		AuthorID: ivan.ID, AssigneeID: &admin.ID, CreatedAt: "2026-10-21T12:00:00Z", UpdatedAt: "2026-10-21T12:00:00Z",
 	}
 	if !reflect.DeepEqual(button, want) {
@@ -208,6 +209,32 @@ func TestCreateTaskInStatus(t *testing.T) {
 	}
 }
 
+// A task without priority is normal; a change writes priority_changed, the same value — nothing (ADR-0033).
+func TestTaskPriority(t *testing.T) {
+	s := apitest.New(t, contract.Load(t))
+	admin := registerAdmin(t, s).Email
+	design := createProject(t, s, "Дизайн-система").Project.ID
+	if got := createTask(t, s, design, "Форма", ""); got.Priority != "normal" {
+		t.Fatalf("task without priority: %+v", got)
+	}
+	rec := s.Do(http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "priority": "high"})
+	apitest.RequireStatus(t, rec, http.StatusCreated)
+	button := apitest.Decode[task](t, rec)
+	if button.Priority != "high" {
+		t.Fatalf("task with priority high: %+v", button)
+	}
+	path := "/v1/tasks/" + button.ID + "/priority"
+	if got := changeTask(t, s, path, map[string]any{"priority": "urgent"}); got.Priority != "urgent" {
+		t.Fatalf("after the change: %+v", got)
+	}
+	history := []string{"priority_changed by " + admin + " high→urgent", "created by " + admin}
+	requireEvents(t, s, button.ID, history...)
+	if got := changeTask(t, s, path, map[string]any{"priority": "urgent"}); got.Priority != "urgent" {
+		t.Fatalf("the same priority: %+v", got)
+	}
+	requireEvents(t, s, button.ID, history...)
+}
+
 // A non-member neither sees nor changes the task: 404, as if it did not exist (ADR-0018).
 func TestTaskAccess(t *testing.T) {
 	s := apitest.New(t, contract.Load(t))
@@ -226,6 +253,7 @@ func TestTaskAccess(t *testing.T) {
 		{http.MethodPatch, path, map[string]any{"name": "Чужая"}},
 		{http.MethodDelete, path, nil},
 		{http.MethodPatch, path + "/status", map[string]any{"statusId": "done"}},
+		{http.MethodPatch, path + "/priority", map[string]any{"priority": "urgent"}},
 		{http.MethodPatch, path + "/assignee", `{"assigneeId": null}`},
 		{http.MethodPatch, path + "/project", map[string]any{"projectId": other}},
 		{http.MethodGet, "/v1/projects/" + design + "/tasks", nil},
@@ -272,11 +300,14 @@ func TestTaskValidation(t *testing.T) {
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": strings.Repeat("я", 255)}, "name"},
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "assigneeId": "42"}, "assigneeId"},
 		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "statusId": "closed"}, "statusId"},
+		{http.MethodPost, "/v1/tasks", map[string]any{"projectId": design, "name": "Кнопка", "priority": "top"}, "priority"},
 		{http.MethodPatch, path, map[string]any{}, "name"},
 		{http.MethodPatch, path, `{"name": null}`, "name"},
 		{http.MethodPatch, path, map[string]any{"name": ""}, "name"},
 		{http.MethodPatch, path + "/status", map[string]any{}, "statusId"},
 		{http.MethodPatch, path + "/status", map[string]any{"statusId": "closed"}, "statusId"},
+		{http.MethodPatch, path + "/priority", map[string]any{}, "priority"},
+		{http.MethodPatch, path + "/priority", map[string]any{"priority": "top"}, "priority"},
 		{http.MethodPatch, path + "/assignee", map[string]any{}, "assigneeId"},
 		{http.MethodPatch, path + "/assignee", map[string]any{"assigneeId": "42"}, "assigneeId"},
 		{http.MethodPatch, path + "/project", map[string]any{}, "projectId"},

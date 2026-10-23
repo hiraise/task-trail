@@ -128,6 +128,25 @@ func (r *taskRoutes) changeStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewTask(t))
 }
 
+func (r *taskRoutes) changePriority(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	priority, err := request.BindChangeTaskPriority(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	t, err := r.services.ChangePriority.Execute(c, r.userID(c), taskID, priority)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewTask(t))
+}
+
 func (r *taskRoutes) changeAssignee(c *gin.Context) {
 	taskID, err := pathID(c, "taskId")
 	if err != nil {
@@ -303,6 +322,7 @@ func NewTaskRouter(
 	g.PATCH("/tasks/:taskId", r.update)
 	g.DELETE("/tasks/:taskId", r.delete)
 	g.PATCH("/tasks/:taskId/status", r.changeStatus)
+	g.PATCH("/tasks/:taskId/priority", r.changePriority)
 	g.PATCH("/tasks/:taskId/assignee", r.changeAssignee)
 	g.PATCH("/tasks/:taskId/project", r.move)
 	g.PATCH("/tasks/:taskId/archived", r.setArchived)

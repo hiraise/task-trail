@@ -28,6 +28,12 @@ func (f *TaskEventFactory) StatusChanged(taskID entity.TaskID, actorID entity.Us
 	return e
 }
 
+func (f *TaskEventFactory) PriorityChanged(taskID entity.TaskID, actorID entity.UserID, from, to entity.TaskPriority, now time.Time) *entity.TaskEvent {
+	e := f.New(taskID, actorID, entity.EventPriorityChanged, now)
+	e.FromPriority, e.ToPriority = &from, &to
+	return e
+}
+
 // AssigneeChanged — from and to are assignees, nil — no assignee.
 func (f *TaskEventFactory) AssigneeChanged(taskID entity.TaskID, actorID entity.UserID, from, to *entity.UserID, now time.Time) *entity.TaskEvent {
 	e := f.New(taskID, actorID, entity.EventAssigneeChanged, now)
