@@ -3,7 +3,7 @@
 // a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
 // mail, from the API response), gets a task with the key <project key>-1, changes its status, writes,
 // edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027),
-// changes its priority (ADR-0033), finds it by key and by part of its name (ADR-0030), uploads
+// changes its priority (ADR-0033) and due date (ADR-0034), finds it by key and by part of its name (ADR-0030), uploads
 // an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
 // a user of the stack. Run: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
@@ -146,6 +146,13 @@ try {
   check(prioritized?.priority === "urgent", "the assignee set the priority to urgent");
   const afterPriority = await call(member, "GET", `/v1/tasks/${task?.id}/events`, 200);
   check(afterPriority?.[0]?.kind === "priority_changed", `the newest history event → ${afterPriority?.[0]?.kind}`);
+
+  // Due date (ADR-0034): a member sets tomorrow, the history gets due_date_changed
+  const tomorrow = new Date(Date.now() + 864e5).toISOString().slice(0, 10);
+  const dated = await call(member, "PATCH", `/v1/tasks/${task?.id}/due-date`, 200, { json: { dueDate: tomorrow } });
+  check(dated?.dueDate === tomorrow, `the assignee set the due date to ${tomorrow}`);
+  const afterDueDate = await call(member, "GET", `/v1/tasks/${task?.id}/events`, 200);
+  check(afterDueDate?.[0]?.kind === "due_date_changed", `the newest history event → ${afterDueDate?.[0]?.kind}`);
 
   // Search (ADR-0030): the task by its key in lower case comes first; by part of its name
   const byKey = await call(member, "GET", `/v1/search?q=${encodeURIComponent(task?.key?.toLowerCase())}`, 200);

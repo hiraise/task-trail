@@ -33,8 +33,12 @@ func describeTask(t *entity.Task) string {
 	if t.ArchivedAt != nil {
 		archived = t.ArchivedAt.UTC().Format(time.RFC3339)
 	}
-	return fmt.Sprintf("%s %s %s %q %q %s %s author=%s assignee=%s archived=%s projectArchived=%v %s %s", t.ID, t.ProjectID, t.Key(), t.Name,
-		deref(t.Description), t.Status, t.Priority, t.AuthorID, deref(assignee), archived, t.ProjectArchived,
+	dueDate := "<nil>"
+	if t.DueDate != nil {
+		dueDate = entity.FormatDueDate(*t.DueDate)
+	}
+	return fmt.Sprintf("%s %s %s %q %q %s %s due=%s author=%s assignee=%s archived=%s projectArchived=%v %s %s", t.ID, t.ProjectID, t.Key(), t.Name,
+		deref(t.Description), t.Status, t.Priority, dueDate, t.AuthorID, deref(assignee), archived, t.ProjectArchived,
 		t.CreatedAt.UTC().Format(time.RFC3339), t.UpdatedAt.UTC().Format(time.RFC3339))
 }
 
@@ -99,7 +103,8 @@ func TestTaskRepository(t *testing.T) {
 		return ids
 	}
 	description := "Основная кнопка"
-	button := newTask(annaDesign, entity.TaskDraft{Name: "Кнопка", Description: &description, Priority: entity.PriorityHigh}, ivanDesign)
+	dueDate := entity.NewDueDate(2026, time.October, 30)
+	button := newTask(annaDesign, entity.TaskDraft{Name: "Кнопка", Description: &description, Priority: entity.PriorityHigh, DueDate: &dueDate}, ivanDesign)
 	form := newTask(annaDesign, entity.TaskDraft{Name: "Форма"}, nil)
 	api := newTask(annaBackend, entity.TaskDraft{Name: "API"}, nil)
 	// Ivan is the assignee of a task in a project where he is not a member: such a task is not shown to him
@@ -108,7 +113,8 @@ func TestTaskRepository(t *testing.T) {
 	}
 
 	got, err := repo.Get(ctx, button.ID)
-	if err != nil || describeTask(got) != describeTask(button) || got.Key() != string(keyOf(design))+"-1" {
+	if err != nil || describeTask(got) != describeTask(button) || got.Key() != string(keyOf(design))+"-1" ||
+		got.DueDate == nil || !got.DueDate.Equal(dueDate) || got.DueDate.Location() != time.UTC {
 		t.Fatalf("read %v, %v\nwritten %s", got, err, describeTask(button))
 	}
 	if ids := taskIDs(repo.ListInProject(ctx, design, false)); !slices.Equal(ids, []entity.TaskID{form.ID, button.ID}) {
@@ -123,6 +129,7 @@ func TestTaskRepository(t *testing.T) {
 	button.Describe(nil, later)
 	button.ChangeStatus(entity.StatusDone, later)
 	button.ChangePriority(entity.PriorityUrgent, later)
+	button.SetDueDate(nil, later)
 	button.MoveTo(backend, keyOf(backend), nextNumber(backend), nil, later)
 	if err := repo.Update(ctx, button); err != nil {
 		t.Fatal(err)

@@ -2,6 +2,7 @@ package request
 
 import (
 	"strings"
+	"time"
 
 	"task-trail/internal/application/dto"
 	"task-trail/internal/domain/entity"
@@ -17,6 +18,7 @@ type createTaskReq struct {
 	AssigneeID  *string `json:"assigneeId" binding:"omitnil,uuid"`
 	StatusID    *string `json:"statusId" binding:"omitnil,taskstatus"`
 	Priority    *string `json:"priority" binding:"omitnil,taskpriority"`
+	DueDate     *string `json:"dueDate" binding:"omitnil,datetime=2006-01-02"`
 }
 
 func (r *createTaskReq) normalize() {
@@ -30,6 +32,11 @@ type changeTaskStatusReq struct {
 
 type changeTaskPriorityReq struct {
 	Priority string `json:"priority" binding:"required,taskpriority"`
+}
+
+// changeTaskDueDateReq — ChangeTaskDueDateRequest: datetime also rejects days like 2026-02-30.
+type changeTaskDueDateReq struct {
+	DueDate Optional[string] `json:"dueDate" binding:"omitnil,datetime=2006-01-02"`
 }
 
 type changeTaskAssigneeReq struct {
@@ -65,6 +72,14 @@ func requireAssignee(sl validator.StructLevel) {
 	}
 }
 
+// requireDueDate: the due date is required in the request, null removes it
+// (ChangeTaskDueDateRequest in the contract).
+func requireDueDate(sl validator.StructLevel) {
+	if r := sl.Current().Interface().(changeTaskDueDateReq); !r.DueDate.Set {
+		sl.ReportError(r.DueDate, "dueDate", "DueDate", "required", "")
+	}
+}
+
 func taskStatus(fl validator.FieldLevel) bool {
 	return entity.TaskStatus(fl.Field().String()).Valid()
 }
@@ -86,9 +101,13 @@ func BindCreateTask(c *gin.Context) (dto.CreateTask, error) {
 	if body.Priority != nil {
 		priority = entity.TaskPriority(*body.Priority)
 	}
+	dueDate, err := parseDueDate(body.DueDate)
+	if err != nil {
+		return dto.CreateTask{}, err
+	}
 	return dto.CreateTask{
 		ProjectID: body.ProjectID, Name: body.Name, Description: body.Description, AssigneeID: body.AssigneeID,
-		Status: status, Priority: priority,
+		Status: status, Priority: priority, DueDate: dueDate,
 	}, nil
 }
 
@@ -118,6 +137,27 @@ func BindChangeTaskPriority(c *gin.Context) (entity.TaskPriority, error) {
 		return "", err
 	}
 	return entity.TaskPriority(body.Priority), nil
+}
+
+// BindChangeTaskDueDate returns the due date; nil removes it.
+func BindChangeTaskDueDate(c *gin.Context) (*time.Time, error) {
+	body, err := validate[changeTaskDueDateReq](c)
+	if err != nil {
+		return nil, err
+	}
+	return parseDueDate(body.DueDate.Value)
+}
+
+// parseDueDate parses a due date the validator has already checked; nil stays nil.
+func parseDueDate(s *string) (*time.Time, error) {
+	if s == nil {
+		return nil, nil
+	}
+	date, err := entity.ParseDueDate(*s)
+	if err != nil {
+		return nil, err
+	}
+	return &date, nil
 }
 
 // BindChangeTaskAssignee returns the assignee; nil removes the assignee.

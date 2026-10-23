@@ -2,6 +2,7 @@ package task_test
 
 import (
 	"context"
+	"reflect"
 	"testing"
 	"time"
 
@@ -48,11 +49,11 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 	}
 	clk := clock.New(now)
 	return task.New(task.Deps{
-		TxManager:   d.tx,
-		Clock:       clk,
-		ProjectRepo: d.projects,
-		MemberRepo:  d.members,
-		TaskRepo:    d.tasks,
+		TxManager:    d.tx,
+		Clock:        clk,
+		ProjectRepo:  d.projects,
+		MemberRepo:   d.members,
+		TaskRepo:     d.tasks,
 		TaskFactory:  factory.NewTaskFactory(id.New(), clk),
 		EventRepo:    d.events,
 		EventFactory: factory.NewTaskEventFactory(id.New()),
@@ -151,6 +152,58 @@ func TestChangePriority(t *testing.T) {
 			}
 			if e := (*events)[0]; e.Kind != entity.EventPriorityChanged || *e.FromPriority != entity.PriorityNormal || *e.ToPriority != entity.PriorityUrgent ||
 				e.ActorID != userID || e.TaskID != taskID || !e.CreatedAt.Equal(now) {
+				t.Errorf("event %+v", e)
+			}
+		})
+	}
+}
+
+// A due date change writes due_date_changed with YYYY-MM-DD; nil removes the date; the same day
+// writes no event (ADR-0034).
+func TestChangeDueDate(t *testing.T) {
+	oct30 := entity.NewDueDate(2026, time.October, 30)
+	nov2 := entity.NewDueDate(2026, time.November, 2)
+	str := func(s string) *string { return &s }
+	for name, c := range map[string]struct {
+		from, to *time.Time
+		event    *entity.TaskEvent
+	}{
+		"set":        {nil, &oct30, &entity.TaskEvent{FromDueDate: nil, ToDueDate: str("2026-10-30")}},
+		"change":     {&oct30, &nov2, &entity.TaskEvent{FromDueDate: str("2026-10-30"), ToDueDate: str("2026-11-02")}},
+		"remove":     {&nov2, nil, &entity.TaskEvent{FromDueDate: str("2026-11-02"), ToDueDate: nil}},
+		"the same":   {&oct30, new(entity.NewDueDate(2026, time.October, 30)), nil},
+		"none again": {nil, nil, nil},
+	} {
+		t.Run(name, func(t *testing.T) {
+			module, d := newModule(t)
+			txtest.Expect(d.tx)
+			task := stored(designID, nil)
+			task.DueDate = c.from
+			d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(task, nil).Times(2)
+			d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(project(designID), nil)
+			d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+			d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).Return(nil)
+			count := 0
+			if c.event != nil {
+				count = 1
+			}
+			events := d.expectEvents(count)
+			got, err := module.ChangeDueDate.Execute(context.Background(), string(userID), string(taskID), c.to)
+			if err != nil || !entity.SameDueDate(got.DueDate, c.to) {
+				t.Fatalf("%+v, %v", got, err)
+			}
+			if c.event == nil {
+				if !got.UpdatedAt.Equal(now.Add(-time.Hour)) {
+					t.Errorf("the same due date changed updatedAt: %v", got.UpdatedAt)
+				}
+				return
+			}
+			if !got.UpdatedAt.Equal(now) {
+				t.Errorf("updatedAt %v", got.UpdatedAt)
+			}
+			e := (*events)[0]
+			if e.Kind != entity.EventDueDateChanged || !reflect.DeepEqual(e.FromDueDate, c.event.FromDueDate) ||
+				!reflect.DeepEqual(e.ToDueDate, c.event.ToDueDate) || e.ActorID != userID || e.TaskID != taskID || !e.CreatedAt.Equal(now) {
 				t.Errorf("event %+v", e)
 			}
 		})
@@ -257,14 +310,15 @@ func TestCreateTask(t *testing.T) {
 	)
 	events := d.expectEvents(1)
 	description := "Основная кнопка"
+	dueDate := entity.NewDueDate(2026, time.October, 30)
 	got, err := module.Create.Execute(context.Background(), string(userID),
-		dto.CreateTask{ProjectID: string(designID), Name: "Кнопка", Description: &description, AssigneeID: &ivan, Status: entity.StatusInProgress})
+		dto.CreateTask{ProjectID: string(designID), Name: "Кнопка", Description: &description, AssigneeID: &ivan, Status: entity.StatusInProgress, DueDate: &dueDate})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got.ID == "" || got.ProjectID != designID || got.Number != 3 || got.Key() != "DS-3" || got.Name != "Кнопка" || *got.Description != description ||
 		got.Status != entity.StatusInProgress || got.Priority != entity.PriorityNormal || got.AuthorID != userID || *got.AssigneeID != ivanID ||
-		!got.CreatedAt.Equal(now) || !got.UpdatedAt.Equal(now) {
+		!entity.SameDueDate(got.DueDate, &dueDate) || !got.CreatedAt.Equal(now) || !got.UpdatedAt.Equal(now) {
 		t.Fatalf("task: %+v", got)
 	}
 	if e := (*events)[0]; e.Kind != entity.EventCreated || e.TaskID != got.ID || e.ActorID != userID || !e.CreatedAt.Equal(now) {

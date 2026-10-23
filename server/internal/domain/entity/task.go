@@ -21,7 +21,9 @@ type Task struct {
 	Description *string
 	Status      TaskStatus
 	Priority    TaskPriority
-	AuthorID    UserID
+	// DueDate — a calendar day at 00:00 UTC (ADR-0034); nil — no due date.
+	DueDate  *time.Time
+	AuthorID UserID
 	// AssigneeID — the assignee, a member of the task's project, or nil.
 	AssigneeID *UserID
 	// ArchivedAt — when the task was archived; nil — the task is active (ADR-0027).
@@ -33,12 +35,14 @@ type Task struct {
 	UpdatedAt       time.Time
 }
 
-// TaskDraft — the fields a new task is created with. An empty Priority means PriorityNormal.
+// TaskDraft — the fields a new task is created with. An empty Priority means PriorityNormal;
+// a nil DueDate — no due date.
 type TaskDraft struct {
 	Name        string
 	Description *string
 	Status      TaskStatus
 	Priority    TaskPriority
+	DueDate     *time.Time
 }
 
 // NewTask — a new task from draft with number number of project projectKey;
@@ -57,6 +61,7 @@ func NewTask(id TaskID, projectID ProjectID, projectKey ProjectKey, number int, 
 		Description: draft.Description,
 		Status:      draft.Status,
 		Priority:    priority,
+		DueDate:     draft.DueDate,
 		AuthorID:    authorID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
@@ -119,6 +124,35 @@ func (t *Task) ChangeStatus(status TaskStatus, now time.Time) {
 func (t *Task) ChangePriority(priority TaskPriority, now time.Time) {
 	t.Priority = priority
 	t.UpdatedAt = now
+}
+
+// SetDueDate sets the due date (a value from NewDueDate or ParseDueDate); nil removes it.
+func (t *Task) SetDueDate(date *time.Time, now time.Time) {
+	t.DueDate = date
+	t.UpdatedAt = now
+}
+
+// NewDueDate — a due date: the calendar day at 00:00 UTC (ADR-0034).
+func NewDueDate(year int, month time.Month, day int) time.Time {
+	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+}
+
+// ParseDueDate parses a due date written as YYYY-MM-DD; the result is 00:00 UTC.
+func ParseDueDate(s string) (time.Time, error) {
+	return time.Parse(time.DateOnly, s)
+}
+
+// FormatDueDate writes a due date as YYYY-MM-DD — in responses and in history.
+func FormatDueDate(t time.Time) string {
+	return t.UTC().Format(time.DateOnly)
+}
+
+// SameDueDate — both dates are absent, or both are set to the same calendar day.
+func SameDueDate(a, b *time.Time) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	return FormatDueDate(*a) == FormatDueDate(*b)
 }
 
 // AssignTo sets the assignee by their project membership; nil removes the assignee.

@@ -88,6 +88,7 @@ func TestTaskEventRepository(t *testing.T) {
 	task := entity.TaskID(insertTask(t, pool, design, anna, nil))
 
 	later := now.Add(time.Minute)
+	dueDate := entity.NewDueDate(2026, time.October, 30)
 	written := []*entity.TaskEvent{
 		f.New(task, anna.ID, entity.EventCreated, now),
 		f.StatusChanged(task, anna.ID, entity.StatusOpen, entity.StatusDone, later),
@@ -95,6 +96,8 @@ func TestTaskEventRepository(t *testing.T) {
 		f.Moved(task, anna.ID, "DS-1", "BE-4", later),
 		f.AssigneeChanged(task, anna.ID, &ivan.ID, nil, later),
 		f.PriorityChanged(task, anna.ID, entity.PriorityNormal, entity.PriorityUrgent, later),
+		f.DueDateChanged(task, anna.ID, nil, &dueDate, later),
+		f.DueDateChanged(task, anna.ID, &dueDate, nil, later),
 	}
 	for _, e := range written {
 		if err := repo.Create(ctx, e); err != nil {

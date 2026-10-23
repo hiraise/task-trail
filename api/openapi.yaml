@@ -880,6 +880,34 @@ paths:
         "409": { $ref: "#/components/responses/TaskReadOnly" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
+  /v1/tasks/{taskId}/due-date:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    patch:
+      tags: [tasks]
+      operationId: changeTaskDueDate
+      summary: Change the due date
+      description: |
+        Role: any in the task's project; neither the task nor its project is archived (ADR-0034).
+        `dueDate: null` removes the due date; any valid day is accepted, also a past one. The same day
+        again changes nothing and writes no event.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeTaskDueDateRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Due date changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
   /v1/tasks/{taskId}/assignee:
     parameters:
       - $ref: "#/components/parameters/TaskId"
@@ -1910,7 +1938,7 @@ components:
       description: Fixed set from the lowest (ADR-0033); display names live in the web
     Task:
       type: object
-      required: [id, projectId, number, key, name, description, statusId, priority, authorId, assigneeId, archivedAt, projectArchived, createdAt, updatedAt]
+      required: [id, projectId, number, key, name, description, statusId, priority, dueDate, authorId, assigneeId, archivedAt, projectArchived, createdAt, updatedAt]
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         projectId: { $ref: "#/components/schemas/Uuid" }
@@ -1925,6 +1953,10 @@ components:
         description: { type: [string, "null"] }
         statusId: { $ref: "#/components/schemas/TaskStatusId" }
         priority: { $ref: "#/components/schemas/TaskPriority" }
+        dueDate:
+          type: [string, "null"]
+          format: date
+          description: A calendar day (ADR-0034); null — no due date
         authorId: { $ref: "#/components/schemas/Uuid" }
         assigneeId:
           type: [string, "null"]
@@ -1954,6 +1986,10 @@ components:
         priority:
           $ref: "#/components/schemas/TaskPriority"
           description: The priority of the new task; absent — `normal`.
+        dueDate:
+          type: [string, "null"]
+          format: date
+          description: The due date of the new task (ADR-0034); absent or `null` — no due date.
     UpdateTaskRequest:
       type: object
       minProperties: 1
@@ -1970,6 +2006,14 @@ components:
       required: [priority]
       properties:
         priority: { $ref: "#/components/schemas/TaskPriority" }
+    ChangeTaskDueDateRequest:
+      type: object
+      required: [dueDate]
+      properties:
+        dueDate:
+          type: [string, "null"]
+          format: date
+          description: A calendar day `YYYY-MM-DD`; `null` removes the due date (ADR-0034)
     MoveTaskRequest:
       type: object
       required: [projectId]
@@ -2022,18 +2066,19 @@ components:
         text: { $ref: "#/components/schemas/CommentText" }
     TaskEventKind:
       type: string
-      enum: [created, edited, status_changed, priority_changed, assignee_changed, moved, archived, restored]
+      enum: [created, edited, status_changed, priority_changed, due_date_changed, assignee_changed, moved, archived, restored]
       description: |
         What changed (ADR-0028): `created`; `edited` — the name or description, without the old text;
-        `status_changed`; `priority_changed` (ADR-0033); `assignee_changed` — also when the assignee left or was removed from the
+        `status_changed`; `priority_changed` (ADR-0033); `due_date_changed` (ADR-0034); `assignee_changed` — also when the assignee left or was removed from the
         project; `moved` — to another project, the task key changed; `archived`; `restored`.
     TaskEvent:
       type: object
-      required: [id, taskId, kind, actor, createdAt, fromStatusId, toStatusId, fromPriority, toPriority, fromUser, toUser, fromKey, toKey]
+      required: [id, taskId, kind, actor, createdAt, fromStatusId, toStatusId, fromPriority, toPriority, fromDueDate, toDueDate, fromUser, toUser, fromKey, toKey]
       description: |
         A row of task history. Change fields are always present and `null` unless the kind uses them:
         `status_changed` — `fromStatusId`, `toStatusId`; `priority_changed` — `fromPriority`,
-        `toPriority`; `assignee_changed` — `fromUser`, `toUser`
+        `toPriority`; `due_date_changed` — `fromDueDate`, `toDueDate` (`null` — no due date);
+        `assignee_changed` — `fromUser`, `toUser`
         (`null` — no assignee); `moved` — `fromKey`, `toKey`.
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
@@ -2059,6 +2104,12 @@ components:
           oneOf:
             - $ref: "#/components/schemas/TaskPriority"
             - type: "null"
+        fromDueDate:
+          type: [string, "null"]
+          format: date
+        toDueDate:
+          type: [string, "null"]
+          format: date
         fromUser:
           oneOf:
             - $ref: "#/components/schemas/User"

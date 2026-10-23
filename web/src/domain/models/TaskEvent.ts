@@ -8,6 +8,7 @@ export type TaskEventKind =
   | "edited"
   | "status_changed"
   | "priority_changed"
+  | "due_date_changed"
   | "assignee_changed"
   | "moved"
   | "archived"
@@ -15,7 +16,8 @@ export type TaskEventKind =
 
 /**
  * A row of task history. Change fields are set only by the kinds that use them:
- * `status_changed` — statuses, `priority_changed` — priorities, `assignee_changed` — users (undefined — no assignee), `moved` — keys.
+ * `status_changed` — statuses, `priority_changed` — priorities,
+ * `due_date_changed` — days `YYYY-MM-DD` (undefined — no due date), `assignee_changed` — users (undefined — no assignee), `moved` — keys.
  */
 export interface TaskEvent {
   id: string;
@@ -28,6 +30,8 @@ export interface TaskEvent {
   toStatusId?: TaskStatusId;
   fromPriority?: TaskPriorityId;
   toPriority?: TaskPriorityId;
+  fromDueDate?: string;
+  toDueDate?: string;
   fromUser?: User;
   toUser?: User;
   fromKey?: string;

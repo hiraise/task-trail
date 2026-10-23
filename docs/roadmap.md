@@ -19,7 +19,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   priority on the server ([ADR-0033](adr/0033-task-priority.md)): `Task.priority`,
   `PATCH /v1/tasks/{taskId}/priority`, the `priority_changed` event; step 2 is done — priority in
   the web: the field and picker on the task page, the new task form, icons on the cards (`TaskMeta`),
-  the «По приоритету» sort; the next step is step 3 — due date on the server.
+  the «По приоритету» sort; step 3 is done — due date on the server
+  ([ADR-0034](adr/0034-task-due-date.md)): `Task.dueDate`, `PATCH /v1/tasks/{taskId}/due-date`, the
+  `due_date_changed` event; the next step is step 4 — due date in the web.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
