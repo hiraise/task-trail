@@ -23,8 +23,8 @@ a step change in one PR (ADR-0005).
 | --- | --- | --- | --- |
 | 0 | Code comments and developer-facing strings in English | [00-english-comments.md](00-english-comments.md) | done |
 | 1 | Task keys `DS-1` | [01-task-keys.md](01-task-keys.md) | done |
-| 2 | Archive and list sorting | [02-archive-and-sorting.md](02-archive-and-sorting.md) | next |
-| 3 | Task activity: comments and history | [03-task-activity.md](03-task-activity.md) | planned |
+| 2 | Archive and list sorting | [02-archive-and-sorting.md](02-archive-and-sorting.md) | done |
+| 3 | Task activity: comments and history | [03-task-activity.md](03-task-activity.md) | next |
 | 4 | Boards: list, creation, board info | [04-boards.md](04-boards.md) | planned |
 | 5 | Kanban and the task modal | [05-kanban.md](05-kanban.md) | planned |
 | 6 | Search | [06-search.md](06-search.md) | planned |

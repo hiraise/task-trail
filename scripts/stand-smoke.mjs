@@ -1,7 +1,8 @@
 // Smoke test of the running local stack (ADR-0010): calls the API through /api, like a browser.
 // The stack administrator signs in, refreshes the session and opens Swagger; creates a project with
 // a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
-// mail, from the API response), gets a task with the key <project key>-1 and changes its status, uploads
+// mail, from the API response), gets a task with the key <project key>-1, changes its status, archives
+// and restores it (ADR-0027), uploads
 // an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
 // a user of the stack. Run: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
@@ -115,6 +116,16 @@ try {
   check(moved?.statusId === "in_progress", "assignee moved the task to in progress");
   const projectTasks = await call(admin, "GET", `/v1/projects/${projectId}/tasks`, 200);
   check(projectTasks?.find?.((item) => item.id === task?.id)?.statusId === "in_progress", "the new status is visible in the project tasks");
+
+  // Archive (ADR-0027): an archived task leaves the active list and is read-only until restored
+  const archived = await call(member, "PATCH", `/v1/tasks/${task?.id}/archived`, 200, { json: { archived: true } });
+  check(archived?.archivedAt !== null && archived?.archivedAt !== undefined, "the assignee archived the task");
+  const archivedList = await call(admin, "GET", `/v1/projects/${projectId}/tasks?archived=true`, 200);
+  check(archivedList?.some?.((item) => item.id === task?.id), "the task is in the project's archived tasks");
+  // An archived task does not change: 409
+  await call(member, "PATCH", `/v1/tasks/${task?.id}/status`, 409, { json: { statusId: "done" } });
+  const restored = await call(member, "PATCH", `/v1/tasks/${task?.id}/archived`, 200, { json: { archived: false } });
+  check(restored?.archivedAt === null, "the task is restored from the archive");
 
   const avatar = new Uint8Array(AVATAR_SIZE);
   avatar.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);

@@ -27,7 +27,7 @@ Variables only, do not repeat values — `scripts/rules.mjs` checks this (ADR-00
 | --- | --- | --- |
 | Backgrounds, icons, borders, shadows | `web/src/styles/globals.css` | page — `--bg-secondary`, card — `--bg-card` and `--shade-01`, field and the «Отменить» button — `--bg-secondary`, form block in a card — `--bg-primary`, dark button — `--bg-primary-contrast` |
 | Text and font | `web/src/styles/text.css` | font — `var(--font-family)` (Manrope); text `--text-primary`, label and explanation — `--text-secondary`, description in a modal — `--text-tertiary`, error — `--text-critical` |
-| Badges | `--bg-accent-yellow` — admin, `--bg-accent-blue` — member, `--bg-accent-green` — on, `--bg-secondary` — off | |
+| Badges | `--bg-accent-yellow` — admin, `--bg-accent-blue` — member, `--bg-accent-green` — on, `--bg-secondary` — off and «Архив» (`ArchiveTag`) | |
 | Accent | `--icon-accent` | selected radio button, link |
 
 Text classes (`text.css`): `h2` — page and modal title, `h4` — card title,
@@ -79,6 +79,17 @@ on the right.
   (`useMembersMenuItems`, `useAdminUserMenuItems`).
 - Notifications — `sonner` (`toast`, `toastError`), bottom right: success — what was done and to
   whom, error — what is wrong and what to do.
+
+## Lists: tabs, sorting, empty state
+
+- «Активные / Архивные» — `TabPanel` inside `TabPanelProvider` (one provider per list): a segmented
+  control on a phone, underlined tabs from 768 px. Next to it — the sort button; the choice is kept per
+  list by `useListSort(listId)`, the list is sorted with `sortItems` (`shared/utils/sortItems.ts`).
+  The sort modal applies an option on tap and closes.
+- An archived task or project shows `ArchiveTag` («Архив», `caption-med` on `--bg-secondary`) in place
+  of the status or next to the name; its fields are not clickable (ADR-0027).
+- An empty list — `EmptyListState`: a picture, a text and, when there is something to create, a button.
+  The archive has no button.
 
 ## People lists
 
