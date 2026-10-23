@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import type { Project } from "@/domain/models/Project";
-import { MembersAvatarList } from "@/presentation/shared";
+import { isProjectArchived, type Project } from "@/domain/models/Project";
+import { ArchiveTag, HighlightedText, MembersAvatarList } from "@/presentation/shared";
 import { useProjectMembers } from "@/presentation/shared/hooks";
 import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
 
@@ -9,9 +9,11 @@ import styles from "./ProjectCard.module.css";
 
 interface ProjectCardProps {
   project: Project;
+  /** A search query to highlight in the name (ADR-0030) */
+  highlight?: string;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
+export function ProjectCard({ project, highlight }: ProjectCardProps) {
   const { data: members = [] } = useProjectMembers(project.id);
 
   const [isHovered, setIsHovered] = useState(false);
@@ -29,7 +31,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={styles.cardTextWrapper}>
-        <h4 style={titleStyle}>{project.name}</h4>
+        {isProjectArchived(project) && <ArchiveTag />}
+        <h4 style={titleStyle}>
+          <HighlightedText text={project.name} highlight={highlight} />
+        </h4>
         <p className="body-reg-2" style={textStyle}>
           {project.description}
         </p>

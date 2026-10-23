@@ -10,7 +10,6 @@ export * from "./LoadingScreen";
 export * from "./MenuButton";
 export * from "./MembersAvatarList";
 export * from "./RedirectScreen";
-export * from "./Search";
 export * from "./SubmitButton";
 export * from "./TabPanel";
 export * from "./UserAvatar";

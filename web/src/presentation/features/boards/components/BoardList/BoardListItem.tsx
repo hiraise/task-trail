@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
 import type { Board } from "@/domain/models/Board";
-import { DropdownMenu, IconButton } from "@/presentation/shared";
+import { DropdownMenu, HighlightedText, IconButton } from "@/presentation/shared";
 import { MembersAvatarList } from "@/presentation/shared/components/MembersAvatarList";
 import { ICONS } from "@/shared/config/icons";
 import { pluralizeTasks } from "@/shared/utils/pluralizeTasks";
@@ -10,15 +10,23 @@ import { useBoardMenuItems } from "../../hooks";
 
 import styles from "./BoardListItem.module.css";
 
+interface BoardListItemProps {
+  board: Board;
+  /** A search query to highlight in the name (ADR-0030) */
+  highlight?: string;
+}
+
 /** A board card in "My boards": name up to three lines, task count, member avatars, the "…" menu. */
-export function BoardListItem({ board }: { board: Board }) {
+export function BoardListItem({ board, highlight }: BoardListItemProps) {
   const { menuItems } = useBoardMenuItems(board);
 
   return (
     <div className={styles.cardWrapper}>
       <Link to="/boards/$id" params={{ id: board.id }} className={styles.card}>
         <div className={styles.titleWrapper}>
-          <h4 className="multiline-3">{board.name}</h4>
+          <h4 className="multiline-3">
+            <HighlightedText text={board.name} highlight={highlight} />
+          </h4>
           <span className="caption-reg">{pluralizeTasks(board.tasksCount)}</span>
         </div>
         <MembersAvatarList maxVisible={6} users={board.members} />

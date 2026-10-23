@@ -93,6 +93,9 @@ on the right.
   of the status or next to the name; its fields are not clickable (ADR-0027).
 - An empty list — `EmptyListState`: a picture, a text and, when there is something to create, a button.
   The archive has no button.
+- A search query in names — `HighlightedText`: case-insensitive occurrences in `--text-accent`.
+  Cards take it as a `highlight` prop (`ProjectCard`, `BoardListItem`, `ProjectTask`). Another
+  feature shows these cards through `presentation/shared/components/domainComponents.ts`.
 
 ## People lists
 

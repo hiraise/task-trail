@@ -4,6 +4,7 @@ import type { InvitationResult } from "@/domain/models/Invitation";
 import type { PasswordResetLink } from "@/domain/models/PasswordResetLink";
 import type { Project, ProjectDetails } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
+import type { SearchResult } from "@/domain/models/SearchResult";
 import type { MailSettings, ServiceSettings } from "@/domain/models/ServiceSettings";
 import type { Task } from "@/domain/models/Task";
 import type { TaskComment } from "@/domain/models/TaskComment";
@@ -21,6 +22,7 @@ import type {
   PasswordResetLink as PasswordResetLinkDto,
   ProjectDetails as ProjectDetailsDto,
   Project as ProjectDto,
+  SearchResult as SearchResultDto,
   ServiceSettings as ServiceSettingsDto,
   TaskComment as TaskCommentDto,
   TaskEvent as TaskEventDto,
@@ -102,6 +104,12 @@ export const toBoard = (dto: BoardDto): Board => ({
   })),
   members: dto.members.map(toUser),
   tasksCount: dto.tasksCount,
+});
+
+export const toSearchResult = (dto: SearchResultDto): SearchResult => ({
+  projects: dto.projects.map(toProject),
+  boards: dto.boards.map(toBoard),
+  tasks: dto.tasks.map(toTask),
 });
 
 export const toTaskComment = (dto: TaskCommentDto): TaskComment => ({
