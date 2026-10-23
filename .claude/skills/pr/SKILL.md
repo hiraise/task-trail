@@ -22,7 +22,8 @@ the order.
 
 1. The change is visible in the UI or API — bring up the local stack `scripts/dev.sh up`, run
    `scripts/dev.sh smoke` ([ADR-0010](../../../docs/adr/0010-local-development.md)) and check the
-   scenario yourself before calling the customer. A `server/` change that the web client does not
+   scenario yourself before calling the customer. Screens — with `/ui-check`, not with screenshots
+   in this session ([ADR-0040](../../../docs/adr/0040-agent-context-economy.md)). A `server/` change that the web client does not
    show yet — in the local stack's Swagger (`/api/docs/`), with tests and the `scripts/dev.sh check`
    output.
 2. Tell the customer briefly, in Russian: what changed, where to find it (screen, action, URL), what
@@ -56,10 +57,13 @@ the order.
 
 ## 4. CI and after
 
-1. `gh pr checks <N> --watch` — in the background. Failed — `gh run view <id> --log-failed`, repeat
-   the step locally with the same `scripts/dev.sh` command, fix, push.
+1. `scripts/dev.sh ci <N>` with `run_in_background: true` — one notification when CI finishes; do not
+   poll with `sleep` or `gh pr checks`. Failed — the output has the log before the first error: repeat
+   the step locally with the same `scripts/dev.sh` command, fix, push, wait again.
 2. Give the customer, in Russian, the PR link and the CI result, and say the context can be cleared
    (`/clear`): the next step starts from the repository
-   ([ADR-0032](../../../docs/adr/0032-one-session-plan-steps.md)). The customer merges the PR.
-3. The customer asks to merge the PR — the `/merge` skill. The customer merged it themselves —
-   `scripts/dev.sh cleanup` of the main folder removes the worktree and the branch.
+   ([ADR-0032](../../../docs/adr/0032-one-session-plan-steps.md)), and `/merge <N>` and
+   `/code-review <N>` do not need this chat. The customer merges the PR.
+3. The customer asks to merge the PR — the `/merge` skill with the PR number: it runs in its own
+   context, relay its result. The customer merged it themselves — `scripts/dev.sh cleanup` of the
+   main folder removes the worktree and the branch.

@@ -33,7 +33,7 @@ Only the customer can change the principles, and only with a new ADR.
 | Web client design | [ADR-0008](docs/adr/0008-web-architecture.md) | agents |
 | Design | `docs/design-system.md`: tokens, layout, components; a new screen needs a mockup approved by the customer ([ADR-0025](docs/adr/0025-design-system-in-repo.md)). Screens drawn earlier — Figma, file `UXrW16oivWuiKjTmVJgXcT` (393, 768 and 1200+ px), not extended | agents |
 | Working rules | `CLAUDE.md` | agents |
-| Repeatable procedures: handing over a task (`/pr`), merging a PR (`/merge`) | `.claude/skills/` | agents |
+| Repeatable procedures: a plan step (`/step`), checking screens (`/ui-check`), handing over a task (`/pr`), merging a PR (`/merge`), planning a stage (`/plan-stage`) | `.claude/skills/` | agents |
 
 - No specific task from the customer — start with `docs/roadmap.md`: it links to the current stage
   plan, and the plan names the next step.
@@ -44,6 +44,21 @@ Only the customer can change the principles, and only with a new ADR.
   ADRs are mandatory. Proposed ADRs wait for the customer's decision — follow them until the customer
   decides otherwise.
 - Documentation is updated in the same change as the code, not "later".
+
+## Saving context
+
+Every request re-reads the whole session: a long tool output is paid for again on every later step
+([ADR-0040](docs/adr/0040-agent-context-economy.md)).
+
+- Read the function, not the file: `grep -n` or `git grep -n`, then a line range (`sed -n 'a,bp'`).
+  No dumps of folders (`for f in …; do cat`, unfiltered `find`); a list — `git ls-files <dir>`.
+  `api/openapi.yaml` — by the section of a path or a schema.
+- A question about many files that needs a conclusion, not the text — an `Explore` subagent with
+  a brief. A subagent starts fresh; a fork copies the whole session — fork only a small one.
+- Long output goes to a file in the scratchpad; read its tail or the failed part.
+- Wait in the background: `run_in_background` for CI (`scripts/dev.sh ci`) and other long commands;
+  never poll with `sleep`.
+- Screens are checked by `/ui-check` in its own context; `/merge` runs in its own context too.
 
 ## When an ADR is needed
 
