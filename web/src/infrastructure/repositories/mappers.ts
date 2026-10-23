@@ -83,6 +83,7 @@ export const toTask = (dto: TaskDto): Task => ({
   description: dto.description ?? undefined,
   statusId: dto.statusId,
   priority: dto.priority,
+  dueDate: dto.dueDate ?? undefined,
   authorId: dto.authorId,
   assigneeId: dto.assigneeId ?? undefined,
   archivedAt: dto.archivedAt ?? undefined,

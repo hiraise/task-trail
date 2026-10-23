@@ -61,6 +61,11 @@
   color: var(--text-secondary);
 }
 
+/* tone="critical": an overdue due date */
+.critical {
+  color: var(--text-critical);
+}
+
 .chevron {
   display: flex;
 }

@@ -19,6 +19,12 @@ export interface ChangeTaskPriorityPayload {
   priority: TaskPriorityId;
 }
 
+export interface ChangeTaskDueDatePayload {
+  taskId: TaskId;
+  /** YYYY-MM-DD; null removes the due date */
+  dueDate: string | null;
+}
+
 export interface ChangeTaskAssigneePayload {
   taskId: TaskId;
   /** null unassigns the task */

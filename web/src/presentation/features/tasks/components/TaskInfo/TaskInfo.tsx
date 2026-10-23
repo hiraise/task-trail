@@ -9,6 +9,7 @@ import { ArchiveTag, DropdownMenu, IconButton, PriorityIcon } from "@/presentati
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
+import { formatDueDate, isOverdue } from "@/shared/utils/dueDate";
 
 import { useTaskActions } from "../../hooks";
 import { TaskStatusBadge } from "../TaskStatusBadge";
@@ -25,13 +26,34 @@ interface TaskInfoProps {
   menuItems: MenuItem[];
 }
 
+interface DueDateFieldProps {
+  dueDate?: string;
+  resolved: boolean;
+  onClick?: () => void;
+}
+
+/** The due date row: today, tomorrow or the day; overdue — in --text-critical (ADR-0034). */
+function DueDateField({ dueDate, resolved, onClick }: DueDateFieldProps) {
+  return (
+    <TaskField
+      icon={ICONS.calendar}
+      label={tasksTexts.dueDate}
+      value={dueDate && formatDueDate(dueDate)}
+      placeholder={tasksTexts.noDueDate}
+      tone={isOverdue(dueDate, resolved) ? "critical" : undefined}
+      onClick={onClick}
+    />
+  );
+}
+
 /**
  * Task: status, key above the name, name, description, assignee and project — each is changed in its
  * own modal. An archived task is read-only: an The "Archive" tag tag instead of the status, fields are not
  * clickable (ADR-0027).
  */
 export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInfoProps) {
-  const { changeStatus, changePriority, selectAssignee, selectProject } = useTaskActions(task);
+  const { changeStatus, changePriority, changeDueDate, selectAssignee, selectProject } =
+    useTaskActions(task);
   const archived = isTaskArchived(task);
 
   return (
@@ -77,6 +99,11 @@ export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInf
           value={tasksTexts.priorities[task.priority]}
           placeholder={tasksTexts.priority}
           onClick={archived ? undefined : changePriority}
+        />
+        <DueDateField
+          dueDate={task.dueDate}
+          resolved={!!status?.isResolved}
+          onClick={archived ? undefined : changeDueDate}
         />
       </div>
     </div>

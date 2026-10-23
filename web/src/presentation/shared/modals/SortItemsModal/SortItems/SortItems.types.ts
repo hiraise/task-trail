@@ -11,6 +11,7 @@ export const options: SortOption[] = [
   { value: "nameAsc", label: "По алфавиту А – Я" },
   { value: "nameDesc", label: "По алфавиту Я – А" },
   { value: "priority", label: "По приоритету" },
+  { value: "dueDate", label: "По сроку" },
 ];
 
 export interface SortItemsProps {

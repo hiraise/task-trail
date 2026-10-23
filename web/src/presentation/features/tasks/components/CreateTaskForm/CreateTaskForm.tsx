@@ -7,6 +7,7 @@ import { FormFieldError, Input, PriorityIcon, SubmitButton, Textarea } from "@/p
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
+import { formatDueDate } from "@/shared/utils/dueDate";
 
 import { useProject, useProjectMembers } from "../../../projects/hooks";
 import { useCreateTask } from "../../hooks";
@@ -30,13 +31,16 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     allowedProjectIds,
     statusId,
     priority,
+    dueDate,
     setName,
     setDescription,
     setProjectId,
     setAssigneeId,
     setPriority,
+    setDueDate,
   } = store;
-  const { showSelectAssignee, showSelectProject, showChangePriority } = useGlobalModals();
+  const { showSelectAssignee, showSelectProject, showChangePriority, showChangeDueDate } =
+    useGlobalModals();
   const { mutateAsync: createTask } = useCreateTask({ openTask: !statusId });
   const { data: project } = useProject(projectId);
   const { data: members } = useProjectMembers(projectId ?? "");
@@ -92,6 +96,13 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
     if (selected) setPriority(selected);
   };
 
+  const handleChangeDueDate = async () => {
+    const selected = await showChangeDueDate({ dueDate });
+
+    // null — the date was removed or the field left empty
+    if (selected !== undefined) setDueDate(selected ?? undefined);
+  };
+
   const submitHandler = async (values: CreateTaskFormData) => {
     // The project from an old draft may be unavailable now: the user left it or it was deleted
     if (!project) {
@@ -108,6 +119,7 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
         assigneeId: assignee?.id,
         statusId,
         priority,
+        dueDate,
       });
       store.reset();
       onSubmit();
@@ -155,6 +167,12 @@ export function CreateTaskForm({ onSubmit }: CreateTaskFormProps) {
           placeholder={tasksTexts.priority}
           value={tasksTexts.priorities[priority]}
           onClick={handleChangePriority}
+        />
+        <SelectionField
+          icon={ICONS.calendar}
+          placeholder={tasksTexts.dueDate}
+          value={dueDate && formatDueDate(dueDate)}
+          onClick={handleChangeDueDate}
         />
       </div>
       <SubmitButton type="submit" disabled={isSubmitting}>

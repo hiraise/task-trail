@@ -23,6 +23,11 @@ export interface ChangePriorityProps {
   priority?: TaskPriorityId;
 }
 
+export interface ChangeDueDateProps {
+  /** Current due date, YYYY-MM-DD */
+  dueDate?: string;
+}
+
 export interface SelectAssigneeProps {
   /** Assignee: from this project's members; no project, nobody to choose from */
   projectId?: ProjectId;
@@ -204,6 +209,9 @@ export const useGlobalModals = () => {
       safeOpen<TaskStatusId>(MODAL_TYPE.CHANGE_STATUS, { ...props }),
     showChangePriority: (props?: ChangePriorityProps) =>
       safeOpen<TaskPriorityId>(MODAL_TYPE.CHANGE_PRIORITY, { ...props }),
+    /** YYYY-MM-DD; `null` removes the due date, closing — `undefined` */
+    showChangeDueDate: (props?: ChangeDueDateProps) =>
+      safeOpen<string | null>(MODAL_TYPE.CHANGE_DUE_DATE, { ...props }),
     showSelectAssignee: (props?: SelectAssigneeProps) =>
       safeOpen<ProjectMember>(MODAL_TYPE.SELECT_ASSIGNEE, { ...props }),
   };

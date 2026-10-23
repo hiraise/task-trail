@@ -12,6 +12,8 @@ export interface Task {
   description?: string;
   statusId: TaskStatusId;
   priority: TaskPriorityId;
+  /** A calendar day YYYY-MM-DD; undefined — no due date (ADR-0034) */
+  dueDate?: string;
   authorId: UserId;
   /** undefined when unassigned; the assignee is always a member of the task's project */
   assigneeId?: UserId;

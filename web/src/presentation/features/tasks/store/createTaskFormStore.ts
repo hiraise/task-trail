@@ -21,12 +21,15 @@ interface CreateTaskFormState {
    */
   statusId?: TaskStatusId;
   priority: TaskPriorityId;
+  /** YYYY-MM-DD; undefined — no due date (ADR-0034) */
+  dueDate?: string;
   setName: (name: string) => void;
   setDescription: (description: string) => void;
   setProjectId: (projectId: ProjectId) => void;
   setAssigneeId: (assigneeId?: UserId) => void;
   setStatusId: (statusId?: TaskStatusId) => void;
   setPriority: (priority: TaskPriorityId) => void;
+  setDueDate: (dueDate?: string) => void;
   /** Limits the project choice; a draft project outside the limit is cleared */
   limitProjects: (projectIds?: ProjectId[]) => void;
   reset: () => void;
@@ -40,6 +43,7 @@ const empty = {
   allowedProjectIds: undefined,
   statusId: undefined,
   priority: DEFAULT_TASK_PRIORITY,
+  dueDate: undefined,
 };
 
 export const useCreateTaskFormStore = create<CreateTaskFormState>((set) => ({
@@ -50,6 +54,7 @@ export const useCreateTaskFormStore = create<CreateTaskFormState>((set) => ({
   setAssigneeId: (assigneeId) => set({ assigneeId }),
   setStatusId: (statusId) => set({ statusId }),
   setPriority: (priority) => set({ priority }),
+  setDueDate: (dueDate) => set({ dueDate }),
   limitProjects: (allowedProjectIds) =>
     set((state) => {
       if (!allowedProjectIds) return { allowedProjectIds };

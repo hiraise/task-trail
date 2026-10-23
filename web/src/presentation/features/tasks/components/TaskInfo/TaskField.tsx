@@ -15,20 +15,30 @@ interface TaskFieldProps {
   /** No value — `placeholder` is shown instead */
   value?: string;
   placeholder: string;
+  /** `critical` draws the value in --text-critical, like an overdue due date (ADR-0034) */
+  tone?: "critical";
   /** No handler — the field is read-only, like in an archived task (ADR-0027) */
   onClick?: () => void;
 }
 
 /**
- * A task field changed by picking a value: assignee, project, priority. On a phone — a panel with an arrow;
+ * A task field changed by picking a value: assignee, project, priority, due date. On a phone — a panel with an arrow;
  * from 768 px — a label on the left and the value, with an edit icon on hover.
  */
-export function TaskField({ icon, iconNode, label, value, placeholder, onClick }: TaskFieldProps) {
+export function TaskField({
+  icon,
+  iconNode,
+  label,
+  value,
+  placeholder,
+  tone,
+  onClick,
+}: TaskFieldProps) {
   const text = value ?? placeholder;
   const content = (
     <span className={styles.value}>
       {iconNode ?? (icon && <Icon as={icon} size="24px" />)}
-      <span className={clsx("body-reg-2", styles.text, !value && styles.empty)}>{text}</span>
+      <span className={clsx("body-reg-2", styles.text, !value && styles.empty, value && tone && styles[tone])}>{text}</span>
     </span>
   );
 
