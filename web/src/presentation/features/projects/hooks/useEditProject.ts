@@ -25,6 +25,8 @@ export function useEditProject() {
       if (key !== undefined) {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(project.id) });
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
+        // Boards show project keys and task keys (ADR-0029)
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.board.prefix });
       }
       toast.success(projectsTexts.projectUpdated);
     },

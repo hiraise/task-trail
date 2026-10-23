@@ -1,0 +1,60 @@
+/* Up to 767 px — phone: top bar on grey, the list below it down to the bottom navigation bar.
+   From 768 px — a header with a button and a white card (breakpoints — presentation/shared/hooks/useDevice.ts). */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  height: 100dvh;
+  background: var(--bg-primary-contrast);
+}
+
+.phoneTopBar {
+  padding: 8px 20px 12px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  background-color: var(--bg-secondary);
+}
+
+.wideTopBar,
+.wideOnly {
+  display: none;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 20px calc(var(--bottom-nav-height) + 20px);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  background-color: var(--bg-primary);
+}
+
+@media (min-width: 768px) {
+  .page {
+    gap: 16px;
+    height: 100%;
+    background: transparent;
+  }
+
+  .phoneTopBar,
+  .phoneOnly {
+    display: none;
+  }
+
+  .wideTopBar,
+  .wideOnly {
+    display: block;
+  }
+
+  .content {
+    gap: 16px;
+    padding: 20px;
+    border-radius: 12px;
+    background-color: var(--bg-card);
+    box-shadow: var(--shade-01);
+  }
+}

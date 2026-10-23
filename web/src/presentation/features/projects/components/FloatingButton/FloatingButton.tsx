@@ -7,12 +7,23 @@ import { useOpenCreateTask } from "../../../tasks/hooks";
 
 import styles from "./FloatingButton.module.css";
 
-/** "Create task" on the project page: the form opens with this project preselected. */
-export function FloatingButton({ projectId }: { projectId: ProjectId }) {
+interface FloatingButtonProps {
+  /** The project page: the form opens with this project preselected */
+  projectId?: ProjectId;
+  /** A board: only its projects can be chosen (ADR-0029) */
+  allowedProjectIds?: ProjectId[];
+}
+
+/** "Create task" on a project or board page. */
+export function FloatingButton({ projectId, allowedProjectIds }: FloatingButtonProps) {
   const openCreateTask = useOpenCreateTask();
 
   return (
-    <button type="button" className={styles.container} onClick={() => openCreateTask(projectId)}>
+    <button
+      type="button"
+      className={styles.container}
+      onClick={() => openCreateTask(projectId, allowedProjectIds)}
+    >
       <span className="btn-font-m">{TEXTS.tasks.createButton}</span>
       <div className={styles.icon}>
         <Icon as={ICONS.plus} size="32px" inheritColor />

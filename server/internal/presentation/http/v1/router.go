@@ -3,6 +3,7 @@ package v1
 import (
 	"task-trail/internal/application/service/access"
 	"task-trail/internal/application/service/admin"
+	"task-trail/internal/application/service/board"
 	"task-trail/internal/application/service/file"
 	"task-trail/internal/application/service/project"
 	"task-trail/internal/application/service/task"
@@ -19,6 +20,7 @@ type Modules struct {
 	File    *file.FileModule
 	Project *project.ProjectModule
 	Task    *task.TaskModule
+	Board   *board.BoardModule
 	Admin   *admin.AdminModule
 }
 
@@ -35,5 +37,6 @@ func NewRouter(
 	NewFileRouter(g, modules.File)
 	NewProjectRouter(g, modules.Project, authMW, cm)
 	NewTaskRouter(g, modules.Task, authMW, cm)
+	NewBoardRouter(g, modules.Board, authMW, cm)
 	NewAdminRouter(g, modules.Admin, modules.Access, authMW, adminMW, cm)
 }

@@ -47,6 +47,8 @@ tags:
     description: projects and members
   - name: tasks
     description: tasks and their statuses (ADR-0002)
+  - name: boards
+    description: boards — a view over tasks of several projects (ADR-0029)
   - name: files
     description: files (ADR-0013)
   - name: admin
@@ -1037,6 +1039,215 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
 
+  /v1/boards:
+    get:
+      tags: [boards]
+      operationId: listBoards
+      summary: Boards the user is a member of
+      description: Any signed-in user. Newest first.
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Boards
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Board" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+    post:
+      tags: [boards]
+      operationId: createBoard
+      summary: Create a board
+      description: |
+        Any signed-in user; the creator becomes the owner and a member. Projects — only those where
+        the owner is a member; members — only people who share a project with the owner, as in
+        `listProjectCandidates` (ADR-0029). Repeated IDs and the owner in `memberIds` are skipped.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateBoardRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "201":
+          description: Board created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Board" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/BoardInvalid" }
+
+  /v1/boards/{boardId}:
+    parameters:
+      - $ref: "#/components/parameters/BoardId"
+    get:
+      tags: [boards]
+      operationId: getBoard
+      summary: A board
+      description: "Any board member. A non-member — `404` (ADR-0029)."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Board
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Board" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [boards]
+      operationId: updateBoard
+      summary: Rename a board
+      description: "The board owner; another member — `403`, a non-member — `404`."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateBoardRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Board renamed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Board" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+    delete:
+      tags: [boards]
+      operationId: deleteBoard
+      summary: Delete a board
+      description: "The board owner. Deleted at once; the tasks stay (ADR-0029)."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Board deleted
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/boards/{boardId}/projects:
+    parameters:
+      - $ref: "#/components/parameters/BoardId"
+    put:
+      tags: [boards]
+      operationId: setBoardProjects
+      summary: Replace the board projects
+      description: |
+        The board owner. Replaces the board projects where the owner is a member; projects the owner
+        does not see stay on the board (ADR-0029). Each new project — one where the owner is a member.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetBoardProjectsRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Projects replaced
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Board" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/BoardInvalid" }
+
+  /v1/boards/{boardId}/members:
+    parameters:
+      - $ref: "#/components/parameters/BoardId"
+    post:
+      tags: [boards]
+      operationId: addBoardMembers
+      summary: Add board members
+      description: |
+        The board owner. Only people who share a project with the owner (ADR-0029); those already
+        on the board are skipped. There are no email invitations to a board.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AddBoardMembersRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Members added
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Board" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/BoardInvalid" }
+
+  /v1/boards/{boardId}/members/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/BoardId"
+      - $ref: "#/components/parameters/UserId"
+    delete:
+      tags: [boards]
+      operationId: removeBoardMember
+      summary: Remove a board member
+      description: "The board owner; not themselves. The member's tasks do not change."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Member removed
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`OWNER_CANNOT_LEAVE` — the owner cannot remove themselves, only delete the board"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+
+  /v1/boards/{boardId}/leave:
+    parameters:
+      - $ref: "#/components/parameters/BoardId"
+    delete:
+      tags: [boards]
+      operationId: leaveBoard
+      summary: Leave a board
+      description: "A board member except the owner."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "204":
+          description: The user is no longer a board member
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`OWNER_CANNOT_LEAVE` — the owner cannot leave, only delete the board"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+
+  /v1/boards/{boardId}/tasks:
+    parameters:
+      - $ref: "#/components/parameters/BoardId"
+    get:
+      tags: [boards]
+      operationId: listBoardTasks
+      summary: Board tasks
+      description: |
+        Any board member. Tasks of the board projects where the current user is a project member;
+        neither the task nor its project is archived (ADR-0027); the assignee is a board member or
+        nobody (ADR-0029). Recently updated first.
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
   /v1/admin/settings:
     get:
       tags: [admin]
@@ -1247,6 +1458,11 @@ components:
       in: path
       required: true
       schema: { $ref: "#/components/schemas/Uuid" }
+    BoardId:
+      name: boardId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
     UserId:
       name: userId
       in: path
@@ -1266,7 +1482,7 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/ApiError" }
     Forbidden:
-      description: "`FORBIDDEN` — insufficient project role or service administrator rights"
+      description: "`FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights"
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ApiError" }
@@ -1312,6 +1528,14 @@ components:
           schema: { $ref: "#/components/schemas/ApiError" }
     CommentReadOnly:
       description: "`COMMENT_EDIT_EXPIRED` — 24 hours have passed since the comment was written; `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project is archived"
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ApiError" }
+    BoardInvalid:
+      description: |
+        `BOARD_PROJECT_UNAVAILABLE` — the board owner is not a member of a project from the request;
+        `BOARD_MEMBER_UNAVAILABLE` — a user from the request shares no project with the owner (ADR-0029);
+        `VALIDATION_FAILED`
       content:
         application/json:
           schema: { $ref: "#/components/schemas/ApiError" }
@@ -1371,6 +1595,8 @@ components:
         - TASK_ARCHIVED
         - PROJECT_ARCHIVED
         - COMMENT_EDIT_EXPIRED
+        - BOARD_PROJECT_UNAVAILABLE
+        - BOARD_MEMBER_UNAVAILABLE
         - FILE_TOO_LARGE
         - FILE_TYPE_NOT_ALLOWED
         - MAIL_DISABLED
@@ -1761,6 +1987,81 @@ components:
             - type: "null"
         fromKey: { type: [string, "null"] }
         toKey: { type: [string, "null"] }
+
+    BoardName:
+      type: string
+      minLength: 1
+      maxLength: 200
+    BoardProject:
+      type: object
+      required: [id, name, key, archivedAt]
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { type: string }
+        key: { $ref: "#/components/schemas/ProjectKey" }
+        archivedAt:
+          type: [string, "null"]
+          format: date-time
+          description: When the project was archived; `null` — active (ADR-0027)
+    Board:
+      type: object
+      required: [id, name, ownerId, createdAt, updatedAt, projects, members, tasksCount]
+      description: A board as its member sees it (ADR-0029)
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        name: { $ref: "#/components/schemas/BoardName" }
+        ownerId: { $ref: "#/components/schemas/Uuid" }
+        createdAt: { $ref: "#/components/schemas/DateTime" }
+        updatedAt: { $ref: "#/components/schemas/DateTime" }
+        projects:
+          type: array
+          description: Board projects where the current user is a project member, by name
+          items: { $ref: "#/components/schemas/BoardProject" }
+        members:
+          type: array
+          description: Board members — the owner first, the others in order of joining
+          items: { $ref: "#/components/schemas/User" }
+        tasksCount:
+          type: integer
+          minimum: 0
+          description: The tasks `listBoardTasks` returns to the current user
+    CreateBoardRequest:
+      type: object
+      required: [name, projectIds]
+      properties:
+        name: { $ref: "#/components/schemas/BoardName" }
+        projectIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/Uuid" }
+        memberIds:
+          type: array
+          maxItems: 50
+          items: { $ref: "#/components/schemas/Uuid" }
+    UpdateBoardRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { $ref: "#/components/schemas/BoardName" }
+    SetBoardProjectsRequest:
+      type: object
+      required: [projectIds]
+      properties:
+        projectIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/Uuid" }
+    AddBoardMembersRequest:
+      type: object
+      required: [userIds]
+      properties:
+        userIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: { $ref: "#/components/schemas/Uuid" }
 
     ServiceSettings:
       type: object

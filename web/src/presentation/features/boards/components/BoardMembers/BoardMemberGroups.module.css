@@ -1,0 +1,93 @@
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-secondary-2);
+}
+
+.group:last-child {
+  border-bottom: none;
+}
+
+.tag {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.ownerTag {
+  background-color: var(--bg-accent-yellow);
+}
+
+.memberTag {
+  background-color: var(--bg-accent-blue);
+}
+
+/* Phone — one column; wider — two, more on large screens, as project members */
+.members {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 20px;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .members {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 0;
+}
+
+.user {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.text > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email,
+.empty {
+  color: var(--text-secondary);
+}
+
+.empty {
+  padding: 8px 0;
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

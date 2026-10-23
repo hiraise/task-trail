@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+}
+
+.toggle {
+  transition: transform 0.2s ease;
+}
+
+.toggle.expanded {
+  transform: rotate(90deg);
+}
+
+/* Up to 767 px — phone (presentation/shared/hooks/useDevice.ts) */
+.wideOnly {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .phoneOnly {
+    display: none;
+  }
+
+  .wideOnly {
+    display: block;
+  }
+}

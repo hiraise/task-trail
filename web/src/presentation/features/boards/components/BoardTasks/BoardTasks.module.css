@@ -1,0 +1,54 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 160px;
+  border-radius: 12px;
+  background-color: var(--bg-secondary-2);
+}
+
+.empty > p {
+  color: var(--text-secondary);
+  max-width: 240px;
+  text-align: center;
+}
+
+/* Up to 767 px — phone (presentation/shared/hooks/useDevice.ts) */
+.wideOnly {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .phoneOnly {
+    display: none;
+  }
+
+  .wideOnly {
+    display: block;
+  }
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* The title and the sort button in one row (frame 1772:145700) */
+.title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

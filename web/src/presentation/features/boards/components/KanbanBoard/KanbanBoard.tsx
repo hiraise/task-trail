@@ -1,6 +1,6 @@
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 
-import type { MockBoardDto } from "@/application/dto/MockBoardDto";
+import type { Board } from "@/domain/models/Board";
 
 import { useKanbanDragDrop } from "../../hooks";
 
@@ -11,7 +11,7 @@ import { KanbanHeader } from "./KanbanHeader";
 import { KanbanTaskItem } from "./KanbanTaskItem";
 import Swimline from "./Swimline";
 
-export function KanbanBoard({ board }: { board: MockBoardDto }) {
+export function KanbanBoard({ board }: { board: Board }) {
   const { activeTask, handlers, getTasksByUser, countTaskByStatus } =
     useKanbanDragDrop(mockBoardTasks);
 

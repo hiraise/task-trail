@@ -23,6 +23,8 @@ export function useDeleteProject() {
       queryClient.removeQueries({ queryKey: QUERY_KEYS.invalidate.project(projectId) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.lists });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.mineLists });
+      // Boards show the project and its tasks (ADR-0029)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.board.prefix });
     },
   });
 }

@@ -22,6 +22,11 @@ import {
   TaskSettingsModal,
   ChangeTaskStatusModal,
   PasswordResetLinkModal,
+  CreateBoardModal,
+  SelectBoardProjectsModal,
+  SelectBoardMembersModal,
+  RenameBoardModal,
+  BoardSettingsModal,
 } from "./lazyModalComponents";
 import { ModalAppearContext } from "./modalAppear";
 
@@ -46,6 +51,11 @@ const MODAL_COMPONENTS = {
   [MODAL_TYPE.CONFIRM]: ConfirmModal,
   [MODAL_TYPE.ADMIN_USER_ACTIONS]: AdminUserActionsModal,
   [MODAL_TYPE.PASSWORD_RESET_LINK]: PasswordResetLinkModal,
+  [MODAL_TYPE.CREATE_BOARD]: CreateBoardModal,
+  [MODAL_TYPE.SELECT_BOARD_PROJECTS]: SelectBoardProjectsModal,
+  [MODAL_TYPE.SELECT_BOARD_MEMBERS]: SelectBoardMembersModal,
+  [MODAL_TYPE.RENAME_BOARD]: RenameBoardModal,
+  [MODAL_TYPE.BOARD_SETTINGS]: BoardSettingsModal,
 } as const;
 
 export function GlobalModalManager() {

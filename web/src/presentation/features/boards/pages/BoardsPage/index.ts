@@ -1,2 +1,1 @@
-export { BoardsDesktopPage } from "./BoardsDesktopPage";
-export { BoardsMobilePage } from "./BoardsMobilePage";
+export { BoardsPage } from "./BoardsPage";

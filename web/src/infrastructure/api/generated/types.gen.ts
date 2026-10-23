@@ -25,7 +25,7 @@ export type Password = string;
 
 export type Username = string;
 
-export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'COMMENT_EDIT_EXPIRED' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
+export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'COMMENT_EDIT_EXPIRED' | 'BOARD_PROJECT_UNAVAILABLE' | 'BOARD_MEMBER_UNAVAILABLE' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
 
 export type ApiError = {
     code: ErrorCode;
@@ -347,6 +347,59 @@ export type TaskEvent = {
     toKey: string | null;
 };
 
+export type BoardName = string;
+
+export type BoardProject = {
+    id: Uuid;
+    name: string;
+    key: ProjectKey;
+    /**
+     * When the project was archived; `null` — active (ADR-0027)
+     */
+    archivedAt: string | null;
+};
+
+/**
+ * A board as its member sees it (ADR-0029)
+ */
+export type Board = {
+    id: Uuid;
+    name: BoardName;
+    ownerId: Uuid;
+    createdAt: DateTime;
+    updatedAt: DateTime;
+    /**
+     * Board projects where the current user is a project member, by name
+     */
+    projects: Array<BoardProject>;
+    /**
+     * Board members — the owner first, the others in order of joining
+     */
+    members: Array<User>;
+    /**
+     * The tasks `listBoardTasks` returns to the current user
+     */
+    tasksCount: number;
+};
+
+export type CreateBoardRequest = {
+    name: BoardName;
+    projectIds: Array<Uuid>;
+    memberIds?: Array<Uuid>;
+};
+
+export type UpdateBoardRequest = {
+    name: BoardName;
+};
+
+export type SetBoardProjectsRequest = {
+    projectIds: Array<Uuid>;
+};
+
+export type AddBoardMembersRequest = {
+    userIds: Array<Uuid>;
+};
+
 export type ServiceSettings = {
     /**
      * Web address with a path; links in emails and invitations are built from it
@@ -416,6 +469,8 @@ export type ProjectId = Uuid;
 export type TaskId = Uuid;
 
 export type CommentId = Uuid;
+
+export type BoardId = Uuid;
 
 export type UserId = Uuid;
 
@@ -1054,7 +1109,7 @@ export type ListProjectCandidatesErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -1093,7 +1148,7 @@ export type DeleteProjectErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -1167,7 +1222,7 @@ export type UpdateProjectErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -1214,7 +1269,7 @@ export type SetProjectArchivedErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -1292,7 +1347,7 @@ export type AddProjectMembersErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -1340,7 +1395,7 @@ export type RemoveProjectMemberErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -1384,7 +1439,7 @@ export type ChangeProjectMemberRoleErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -1952,7 +2007,7 @@ export type DeleteTaskCommentErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -1996,7 +2051,7 @@ export type UpdateTaskCommentErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -2063,6 +2118,398 @@ export type ListTaskEventsResponses = {
 
 export type ListTaskEventsResponse = ListTaskEventsResponses[keyof ListTaskEventsResponses];
 
+export type ListBoardsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/boards';
+};
+
+export type ListBoardsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ListBoardsError = ListBoardsErrors[keyof ListBoardsErrors];
+
+export type ListBoardsResponses = {
+    /**
+     * Boards
+     */
+    200: Array<Board>;
+};
+
+export type ListBoardsResponse = ListBoardsResponses[keyof ListBoardsResponses];
+
+export type CreateBoardData = {
+    body: CreateBoardRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/boards';
+};
+
+export type CreateBoardErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `BOARD_PROJECT_UNAVAILABLE` — the board owner is not a member of a project from the request;
+     * `BOARD_MEMBER_UNAVAILABLE` — a user from the request shares no project with the owner (ADR-0029);
+     * `VALIDATION_FAILED`
+     *
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type CreateBoardError = CreateBoardErrors[keyof CreateBoardErrors];
+
+export type CreateBoardResponses = {
+    /**
+     * Board created
+     */
+    201: Board;
+};
+
+export type CreateBoardResponse = CreateBoardResponses[keyof CreateBoardResponses];
+
+export type DeleteBoardData = {
+    body?: never;
+    path: {
+        boardId: Uuid;
+    };
+    query?: never;
+    url: '/v1/boards/{boardId}';
+};
+
+export type DeleteBoardErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type DeleteBoardError = DeleteBoardErrors[keyof DeleteBoardErrors];
+
+export type DeleteBoardResponses = {
+    /**
+     * Board deleted
+     */
+    204: void;
+};
+
+export type DeleteBoardResponse = DeleteBoardResponses[keyof DeleteBoardResponses];
+
+export type GetBoardData = {
+    body?: never;
+    path: {
+        boardId: Uuid;
+    };
+    query?: never;
+    url: '/v1/boards/{boardId}';
+};
+
+export type GetBoardErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type GetBoardError = GetBoardErrors[keyof GetBoardErrors];
+
+export type GetBoardResponses = {
+    /**
+     * Board
+     */
+    200: Board;
+};
+
+export type GetBoardResponse = GetBoardResponses[keyof GetBoardResponses];
+
+export type UpdateBoardData = {
+    body: UpdateBoardRequest;
+    path: {
+        boardId: Uuid;
+    };
+    query?: never;
+    url: '/v1/boards/{boardId}';
+};
+
+export type UpdateBoardErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type UpdateBoardError = UpdateBoardErrors[keyof UpdateBoardErrors];
+
+export type UpdateBoardResponses = {
+    /**
+     * Board renamed
+     */
+    200: Board;
+};
+
+export type UpdateBoardResponse = UpdateBoardResponses[keyof UpdateBoardResponses];
+
+export type SetBoardProjectsData = {
+    body: SetBoardProjectsRequest;
+    path: {
+        boardId: Uuid;
+    };
+    query?: never;
+    url: '/v1/boards/{boardId}/projects';
+};
+
+export type SetBoardProjectsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `BOARD_PROJECT_UNAVAILABLE` — the board owner is not a member of a project from the request;
+     * `BOARD_MEMBER_UNAVAILABLE` — a user from the request shares no project with the owner (ADR-0029);
+     * `VALIDATION_FAILED`
+     *
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type SetBoardProjectsError = SetBoardProjectsErrors[keyof SetBoardProjectsErrors];
+
+export type SetBoardProjectsResponses = {
+    /**
+     * Projects replaced
+     */
+    200: Board;
+};
+
+export type SetBoardProjectsResponse = SetBoardProjectsResponses[keyof SetBoardProjectsResponses];
+
+export type AddBoardMembersData = {
+    body: AddBoardMembersRequest;
+    path: {
+        boardId: Uuid;
+    };
+    query?: never;
+    url: '/v1/boards/{boardId}/members';
+};
+
+export type AddBoardMembersErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `BOARD_PROJECT_UNAVAILABLE` — the board owner is not a member of a project from the request;
+     * `BOARD_MEMBER_UNAVAILABLE` — a user from the request shares no project with the owner (ADR-0029);
+     * `VALIDATION_FAILED`
+     *
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type AddBoardMembersError = AddBoardMembersErrors[keyof AddBoardMembersErrors];
+
+export type AddBoardMembersResponses = {
+    /**
+     * Members added
+     */
+    200: Board;
+};
+
+export type AddBoardMembersResponse = AddBoardMembersResponses[keyof AddBoardMembersResponses];
+
+export type RemoveBoardMemberData = {
+    body?: never;
+    path: {
+        boardId: Uuid;
+        userId: Uuid;
+    };
+    query?: never;
+    url: '/v1/boards/{boardId}/members/{userId}';
+};
+
+export type RemoveBoardMemberErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
+     */
+    403: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `OWNER_CANNOT_LEAVE` — the owner cannot remove themselves, only delete the board
+     */
+    409: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type RemoveBoardMemberError = RemoveBoardMemberErrors[keyof RemoveBoardMemberErrors];
+
+export type RemoveBoardMemberResponses = {
+    /**
+     * Member removed
+     */
+    204: void;
+};
+
+export type RemoveBoardMemberResponse = RemoveBoardMemberResponses[keyof RemoveBoardMemberResponses];
+
+export type LeaveBoardData = {
+    body?: never;
+    path: {
+        boardId: Uuid;
+    };
+    query?: never;
+    url: '/v1/boards/{boardId}/leave';
+};
+
+export type LeaveBoardErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `OWNER_CANNOT_LEAVE` — the owner cannot leave, only delete the board
+     */
+    409: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type LeaveBoardError = LeaveBoardErrors[keyof LeaveBoardErrors];
+
+export type LeaveBoardResponses = {
+    /**
+     * The user is no longer a board member
+     */
+    204: void;
+};
+
+export type LeaveBoardResponse = LeaveBoardResponses[keyof LeaveBoardResponses];
+
+export type ListBoardTasksData = {
+    body?: never;
+    path: {
+        boardId: Uuid;
+    };
+    query?: never;
+    url: '/v1/boards/{boardId}/tasks';
+};
+
+export type ListBoardTasksErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ListBoardTasksError = ListBoardTasksErrors[keyof ListBoardTasksErrors];
+
+export type ListBoardTasksResponses = {
+    /**
+     * Tasks
+     */
+    200: Array<Task>;
+};
+
+export type ListBoardTasksResponse = ListBoardTasksResponses[keyof ListBoardTasksResponses];
+
 export type GetServiceSettingsData = {
     body?: never;
     path?: never;
@@ -2076,7 +2523,7 @@ export type GetServiceSettingsErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -2109,7 +2556,7 @@ export type UpdateServiceSettingsErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -2146,7 +2593,7 @@ export type DisableMailErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -2179,7 +2626,7 @@ export type SaveMailSettingsErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -2220,7 +2667,7 @@ export type SendTestMailErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -2261,7 +2708,7 @@ export type ListUsersErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -2296,7 +2743,7 @@ export type UpdateUserAdminFlagErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**
@@ -2343,7 +2790,7 @@ export type CreatePasswordResetLinkErrors = {
      */
     401: ApiError;
     /**
-     * `FORBIDDEN` — insufficient project role or service administrator rights
+     * `FORBIDDEN` — insufficient project role, not the board owner, or no service administrator rights
      */
     403: ApiError;
     /**

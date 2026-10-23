@@ -25,8 +25,8 @@ a step change in one PR (ADR-0005).
 | 1 | Task keys `DS-1` | [01-task-keys.md](01-task-keys.md) | done |
 | 2 | Archive and list sorting | [02-archive-and-sorting.md](02-archive-and-sorting.md) | done |
 | 3 | Task activity: comments and history | [03-task-activity.md](03-task-activity.md) | done |
-| 4 | Boards: list, creation, board info | [04-boards.md](04-boards.md) | next |
-| 5 | Kanban and the task modal | [05-kanban.md](05-kanban.md) | planned |
+| 4 | Boards: list, creation, board info | [04-boards.md](04-boards.md) | done |
+| 5 | Kanban and the task modal | [05-kanban.md](05-kanban.md) | next |
 | 6 | Search | [06-search.md](06-search.md) | planned |
 
 Finished a step — set its status to `done` here and point "next" at the following step, in the same PR;

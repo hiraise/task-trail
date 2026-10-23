@@ -24,6 +24,8 @@ export function useLeaveProject() {
       // Leaving clears the user as the assignee of the project's tasks: assignees and histories
       // of many tasks changed (ADR-0028)
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
+      // Boards show the project and its tasks (ADR-0029)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.board.prefix });
     },
     onError: (error) => toastError(error, projectsTexts.leaveProjectFailed),
   });

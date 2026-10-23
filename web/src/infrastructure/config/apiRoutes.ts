@@ -1,4 +1,4 @@
-import type { CommentId, ProjectId, TaskId, UserId } from "@/domain/types";
+import type { BoardId, CommentId, ProjectId, TaskId, UserId } from "@/domain/types";
 
 /** API address (`VITE_API_URL`, web/README.md); on the local stack — the relative `/api`. */
 export const API_URL: string = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -10,6 +10,7 @@ const USERS = `${API_VERSION}/users`;
 const USERS_ME = `${USERS}/me`;
 const PROJECTS = `${API_VERSION}/projects`;
 const TASKS = `${API_VERSION}/tasks`;
+const BOARDS = `${API_VERSION}/boards`;
 const FILES = `${API_VERSION}/files`;
 const INVITATIONS = `${AUTH}/invitations`;
 const ADMIN = `${API_VERSION}/admin`;
@@ -50,6 +51,14 @@ export const API_ROUTES = {
   TASK_COMMENT: (id: TaskId, commentId: CommentId) => `${TASKS}/${id}/comments/${commentId}`,
   TASK_EVENTS: (id: TaskId) => `${TASKS}/${id}/events`,
   TASK_STATUSES: `${API_VERSION}/task-statuses`,
+  // BOARDS API (ADR-0029)
+  BOARDS: BOARDS,
+  BOARD_BY_ID: (id: BoardId) => `${BOARDS}/${id}`,
+  BOARD_PROJECTS: (id: BoardId) => `${BOARDS}/${id}/projects`,
+  BOARD_MEMBERS: (id: BoardId) => `${BOARDS}/${id}/members`,
+  BOARD_MEMBER: (boardId: BoardId, userId: UserId) => `${BOARDS}/${boardId}/members/${userId}`,
+  LEAVE_BOARD: (id: BoardId) => `${BOARDS}/${id}/leave`,
+  BOARD_TASKS: (id: BoardId) => `${BOARDS}/${id}/tasks`,
   // USERS API
   CURRENT_USER: USERS_ME,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,

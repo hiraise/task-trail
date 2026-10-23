@@ -18,6 +18,8 @@ export function useRemoveMember() {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invalidate.project(projectId) });
       // The member's tasks are unassigned: assignees and histories of many tasks changed (ADR-0028)
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.task.all });
+      // Boards show the project and its tasks (ADR-0029)
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.board.prefix });
       toast.success(projectsTexts.memberRemoved);
     },
     onError: (error) => toastError(error, projectsTexts.removeMemberFailed),

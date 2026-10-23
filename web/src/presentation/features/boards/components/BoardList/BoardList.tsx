@@ -1,9 +1,9 @@
-import type { MockBoardDto } from "@/application/dto/MockBoardDto";
+import type { Board } from "@/domain/models/Board";
 
 import { BoardListItem } from "./BoardListItem";
 import styles from "./BoardListItem.module.css";
 
-export function BoardList({ boards }: { boards: MockBoardDto[] }) {
+export function BoardList({ boards }: { boards: Board[] }) {
   return (
     <div className={styles.boardList}>
       {boards.map((board) => (

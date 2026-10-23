@@ -1,1 +1,1 @@
-export { BoardMobilePage } from "./BoardMobilePage";
+export { BoardInfoPage, BoardPage } from "./BoardPage";
