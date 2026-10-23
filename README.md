@@ -26,6 +26,7 @@
 scripts/dev.sh check    # всё, что проверяет CI: правила, сервер, веб
 scripts/dev.sh server   # только сервер: vet, тесты, golangci-lint
 scripts/dev.sh web      # только веб: типы API из контракта, линтер, тесты, типы и сборка
+scripts/dev.sh ci 42    # дождаться CI пулл-реквеста 42 (или main) и вывести итог; при падении — лог до первой ошибки
 ```
 
 Переменные окружения сервера — в [server/README.md](server/README.md), веба — в [web/README.md](web/README.md).
@@ -45,6 +46,7 @@ scripts/dev.sh smoke    # дымовая проверка: вход, пригл�
 scripts/dev.sh logs     # логи всех сервисов, или одного: logs server
 scripts/dev.sh down     # остановить, база и файлы сохраняются
 scripts/dev.sh reset    # остановить и стереть базу и файлы
+scripts/dev.sh screens out /tasks   # скриншоты стенда на 393, 768 и 1200 px под администратором; Playwright скачивается в .cache/
 ```
 
 | Адрес | Что там |
