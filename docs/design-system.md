@@ -120,7 +120,8 @@ on the right.
   (`body-reg` size), «Убрать срок» (`SubmitButton variant="text"`, only when a date is set) and
   `DialogButtons` with «Применить» on every width (artboard C).
 - `TaskField` with `children` draws them in place of the value text — a wrapping row, gap 4 px, no
-  line clamp — and takes `ariaValue` for its `aria-label`: the «Метки» row with chips, «Добавить» when
+  line clamp; from 768 px the row takes the full width and grows in height — and takes `ariaValue`
+  for its `aria-label`: the «Метки» row with chips, «Добавить» when
   empty.
 - A radio row with an icon — `RadioButton` with `icon` (before the label, gap 8 px), like the priority
   picker `TaskPriorityList`.
@@ -137,7 +138,8 @@ Labels of a project (ADR-0035), artboards C and I of the stage 3 canvas.
   `outline-offset: 2px`. A `radiogroup` of `radio` buttons named by the color.
 - The picker `SelectLabelsModal` (`features/labels`) — a search field «Найти или создать метку», rows
   `CheckBox` + `LabelChip` (min height 36, padding `6px 4px`, gap 12), the whole row toggles; at 10
-  selected the other rows are disabled and «Не больше 10 меток» shows under the list. No exact name
+  selected the other rows are disabled — the checkbox and the chip at opacity 0.4 — and «Не больше 10 меток»
+  shows under the list. No exact name
   match — the block «Создать метку «…»» on `--bg-secondary-2` (radius 8): it opens the caption «Цвет»,
   `ColorSwatches` and the preview chip with «Создать». `DialogButtons` with «Применить» on every width,
   full screen on a phone.

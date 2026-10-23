@@ -74,7 +74,9 @@ export function LabelOptions({ projectId, selectedIds, onChange }: LabelOptionsP
                   onChange={() => toggle(label)}
                 />
               </span>
-              <LabelChip label={label} />
+              <span className={styles.chip}>
+                <LabelChip label={label} />
+              </span>
             </div>
           );
         })}

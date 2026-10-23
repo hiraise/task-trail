@@ -106,6 +106,13 @@
     background-color: transparent;
   }
 
+  /* Chips take the whole row and wrap onto more lines instead of a fixed height */
+  .wrap {
+    flex: 1;
+    height: auto;
+    min-height: 40px;
+  }
+
   .button:hover,
   .button:focus-visible {
     background-color: var(--bg-secondary-2);

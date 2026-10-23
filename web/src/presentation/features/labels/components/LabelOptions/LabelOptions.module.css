@@ -28,8 +28,15 @@
   cursor: default;
 }
 
-.check {
+.check,
+.chip {
   display: flex;
+  min-width: 0;
+}
+
+/* The whole row is dimmed at the limit: the chip like the disabled CheckBox (artboard C) */
+.row.disabled .chip {
+  opacity: 0.4;
 }
 
 .empty,

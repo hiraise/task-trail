@@ -60,7 +60,7 @@ export function TaskField({
     return (
       <div className={styles.field}>
         <span className={clsx("body-reg-2", styles.label)}>{label}</span>
-        <div className={clsx(styles.button, styles.readOnly)} aria-label={`${label}: ${text}`}>
+        <div className={clsx(styles.button, styles.readOnly, children && styles.wrap)} aria-label={`${label}: ${text}`}>
           {content}
         </div>
       </div>
@@ -72,7 +72,7 @@ export function TaskField({
       <span className={clsx("body-reg-2", styles.label)}>{label}</span>
       <button
         type="button"
-        className={styles.button}
+        className={clsx(styles.button, children && styles.wrap)}
         onClick={onClick}
         aria-label={`${label}: ${text}`}
       >
