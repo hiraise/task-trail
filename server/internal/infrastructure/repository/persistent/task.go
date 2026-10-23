@@ -27,6 +27,7 @@ func (r *PGTaskRepository) Create(ctx context.Context, t *entity.Task) error {
 		"name":        t.Name,
 		"description": t.Description,
 		"status":      t.Status,
+		"priority":    t.Priority,
 		"author_id":   t.AuthorID,
 		"assignee_id": t.AssigneeID,
 		"archived_at": t.ArchivedAt,
@@ -36,7 +37,7 @@ func (r *PGTaskRepository) Create(ctx context.Context, t *entity.Task) error {
 }
 
 // taskColumns are read FROM taskTables: the project key and archive flag come from the task's project.
-const taskColumns = `t.id, t.project_id, p.key, p.archived_at IS NOT NULL, t.number, t.name, t.description, t.status, t.author_id, t.assignee_id, t.archived_at, t.created_at, t.updated_at`
+const taskColumns = `t.id, t.project_id, p.key, p.archived_at IS NOT NULL, t.number, t.name, t.description, t.status, t.priority, t.author_id, t.assignee_id, t.archived_at, t.created_at, t.updated_at`
 
 const taskTables = ` FROM tasks t JOIN projects p ON p.id = t.project_id`
 
@@ -99,9 +100,9 @@ func (r *PGTaskRepository) list(ctx context.Context, query string, args ...any) 
 func (r *PGTaskRepository) Update(ctx context.Context, t *entity.Task) error {
 	tag, err := r.getDb(ctx).Exec(ctx, `
 		UPDATE tasks SET project_id = $2, number = $3, name = $4, description = $5, status = $6, assignee_id = $7,
-			archived_at = $8, updated_at = $9
+			archived_at = $8, updated_at = $9, priority = $10
 		WHERE id = $1 AND deleted_at IS NULL`,
-		t.ID, t.ProjectID, t.Number, t.Name, t.Description, t.Status, t.AssigneeID, t.ArchivedAt, t.UpdatedAt)
+		t.ID, t.ProjectID, t.Number, t.Name, t.Description, t.Status, t.AssigneeID, t.ArchivedAt, t.UpdatedAt, t.Priority)
 	if err != nil {
 		return r.handleError(err)
 	}
@@ -144,14 +145,15 @@ func (r *PGTaskRepository) UnassignInProject(ctx context.Context, projectID enti
 }
 
 func scanTask(row pgx.Row) (*entity.Task, error) {
-	var id, projectID, projectKey, status, authorID string
+	var id, projectID, projectKey, status, priority, authorID string
 	var assigneeID *string
 	t := &entity.Task{}
-	if err := row.Scan(&id, &projectID, &projectKey, &t.ProjectArchived, &t.Number, &t.Name, &t.Description, &status, &authorID,
+	if err := row.Scan(&id, &projectID, &projectKey, &t.ProjectArchived, &t.Number, &t.Name, &t.Description, &status, &priority, &authorID,
 		&assigneeID, &t.ArchivedAt, &t.CreatedAt, &t.UpdatedAt); err != nil {
 		return nil, err
 	}
 	t.ProjectKey = entity.ProjectKey(projectKey)
+	t.Priority = entity.TaskPriority(priority)
 	t.ID, t.ProjectID, t.Status, t.AuthorID = entity.TaskID(id), entity.ProjectID(projectID), entity.TaskStatus(status), entity.UserID(authorID)
 	if assigneeID != nil {
 		assignee := entity.UserID(*assigneeID)

@@ -11,7 +11,7 @@ const (
 	someID   = "8d0c1f0e-6f2a-4b8e-9a1c-0d2e3f4a5b6c"
 	someUser = `{"id":"` + someID + `","email":"a@b.c","username":null,"avatarId":null,"isAdmin":true}`
 	someTask = `{"id":"` + someID + `","projectId":"` + someID + `","number":1,"key":"DS-1","name":"n","description":null,` +
-		`"statusId":"open","authorId":"` + someID + `","assigneeId":null,"archivedAt":null,"projectArchived":false,` +
+		`"statusId":"open","priority":"normal","authorId":"` + someID + `","assigneeId":null,"archivedAt":null,"projectArchived":false,` +
 		`"createdAt":"2026-10-21T10:00:00Z","updatedAt":"2026-10-21T10:00:00.123Z"}`
 	someMail = `{"host":"mailpit","port":1025,"encryption":"none","sender":"TaskTrail <a@b.c>",` +
 		`"username":null,"passwordSet":false}`

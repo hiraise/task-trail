@@ -80,7 +80,7 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 		if err != nil {
 			return err
 		}
-		if task, err = s.factory.New(author, project.Key, number, data.Name, data.Description, data.Status, assignee); err != nil {
+		if task, err = s.factory.New(author, project.Key, number, entity.TaskDraft{Name: data.Name, Description: data.Description, Status: data.Status, Priority: data.Priority}, assignee); err != nil {
 			return err
 		}
 		if err := e.tasks.Create(ctx, task); err != nil {
@@ -130,6 +130,23 @@ func (s *ChangeStatusService) Execute(ctx context.Context, userID, taskID string
 			return nil, nil
 		}
 		return []*entity.TaskEvent{e.newEvent.StatusChanged(task.ID, entity.UserID(userID), from, status, now)}, nil
+	})
+}
+
+// ChangePriorityService changes the priority; the same value writes no event (ADR-0033).
+type ChangePriorityService struct {
+	editor *editor
+}
+
+func (s *ChangePriorityService) Execute(ctx context.Context, userID, taskID string, priority entity.TaskPriority) (*entity.Task, error) {
+	e := s.editor
+	return e.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error) {
+		from := task.Priority
+		if from == priority {
+			return nil, nil
+		}
+		task.ChangePriority(priority, now)
+		return []*entity.TaskEvent{e.newEvent.PriorityChanged(task.ID, entity.UserID(userID), from, priority, now)}, nil
 	})
 }
 

@@ -74,6 +74,7 @@ func TestTaskArchive(t *testing.T) {
 	}
 	conflict(http.MethodPatch, path, map[string]any{"name": "Новое"})
 	conflict(http.MethodPatch, path+"/status", map[string]any{"statusId": "done"})
+	conflict(http.MethodPatch, path+"/priority", map[string]any{"priority": "urgent"})
 	conflict(http.MethodPatch, path+"/assignee", map[string]any{"assigneeId": nil})
 	conflict(http.MethodPatch, path+"/project", map[string]any{"projectId": backend})
 
@@ -151,6 +152,7 @@ func TestProjectArchive(t *testing.T) {
 		taskPath := "/v1/tasks/" + id
 		conflict(http.MethodPatch, taskPath, map[string]any{"name": "Новое"})
 		conflict(http.MethodPatch, taskPath+"/status", map[string]any{"statusId": "done"})
+		conflict(http.MethodPatch, taskPath+"/priority", map[string]any{"priority": "urgent"})
 		conflict(http.MethodPatch, taskPath+"/assignee", map[string]any{"assigneeId": nil})
 		conflict(http.MethodPatch, taskPath+"/project", map[string]any{"projectId": backend})
 		conflict(http.MethodPatch, taskPath+"/archived", map[string]any{"archived": false})

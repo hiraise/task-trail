@@ -82,6 +82,7 @@ func member(projectID entity.ProjectID, userID entity.UserID) *entity.ProjectMem
 func stored(projectID entity.ProjectID, assignee *entity.UserID) *entity.Task {
 	return &entity.Task{
 		ID: taskID, ProjectID: projectID, ProjectKey: project(projectID).Key, Number: 12, Name: "Кнопка", Status: entity.StatusInReview,
+		Priority: entity.PriorityNormal,
 		AuthorID: userID, AssigneeID: assignee, CreatedAt: now.Add(-time.Hour), UpdatedAt: now.Add(-time.Hour),
 	}
 }
@@ -115,6 +116,44 @@ func TestEditLocksTaskProject(t *testing.T) {
 	if e := (*events)[0]; e.Kind != entity.EventStatusChanged || *e.FromStatus != entity.StatusInReview || *e.ToStatus != entity.StatusDone ||
 		e.ActorID != userID || e.TaskID != taskID || !e.CreatedAt.Equal(now) {
 		t.Errorf("event %+v", e)
+	}
+}
+
+// A priority change writes priority_changed; the same value writes no event (ADR-0033).
+func TestChangePriority(t *testing.T) {
+	for name, c := range map[string]struct {
+		to     entity.TaskPriority
+		events int
+	}{
+		"another priority": {entity.PriorityUrgent, 1},
+		"the same":         {entity.PriorityNormal, 0},
+	} {
+		t.Run(name, func(t *testing.T) {
+			module, d := newModule(t)
+			txtest.Expect(d.tx)
+			d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(stored(designID, nil), nil).Times(2)
+			d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(project(designID), nil)
+			d.members.EXPECT().Get(txtest.InTx, designID, userID).Return(member(designID, userID), nil)
+			d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).Return(nil)
+			events := d.expectEvents(c.events)
+			got, err := module.ChangePriority.Execute(context.Background(), string(userID), string(taskID), c.to)
+			if err != nil || got.Priority != c.to {
+				t.Fatalf("%+v, %v", got, err)
+			}
+			if c.events == 0 {
+				if !got.UpdatedAt.Equal(now.Add(-time.Hour)) {
+					t.Errorf("the same priority changed updatedAt: %v", got.UpdatedAt)
+				}
+				return
+			}
+			if !got.UpdatedAt.Equal(now) {
+				t.Errorf("updatedAt %v", got.UpdatedAt)
+			}
+			if e := (*events)[0]; e.Kind != entity.EventPriorityChanged || *e.FromPriority != entity.PriorityNormal || *e.ToPriority != entity.PriorityUrgent ||
+				e.ActorID != userID || e.TaskID != taskID || !e.CreatedAt.Equal(now) {
+				t.Errorf("event %+v", e)
+			}
+		})
 	}
 }
 
@@ -224,7 +263,7 @@ func TestCreateTask(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.ID == "" || got.ProjectID != designID || got.Number != 3 || got.Key() != "DS-3" || got.Name != "Кнопка" || *got.Description != description ||
-		got.Status != entity.StatusInProgress || got.AuthorID != userID || *got.AssigneeID != ivanID ||
+		got.Status != entity.StatusInProgress || got.Priority != entity.PriorityNormal || got.AuthorID != userID || *got.AssigneeID != ivanID ||
 		!got.CreatedAt.Equal(now) || !got.UpdatedAt.Equal(now) {
 		t.Fatalf("task: %+v", got)
 	}

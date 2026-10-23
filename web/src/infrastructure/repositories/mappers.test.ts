@@ -150,6 +150,7 @@ describe("toTask", () => {
     name: "Собрать отчёт",
     description: null,
     statusId: "in_review" as const,
+    priority: "normal" as const,
     authorId: avatarId,
     assigneeId: null,
     archivedAt: null,
@@ -215,6 +216,7 @@ describe("toSearchResult", () => {
           name: "Первая",
           description: null,
           statusId: "open",
+          priority: "normal",
           authorId: id,
           assigneeId: null,
           archivedAt: null,
@@ -342,6 +344,8 @@ describe("toTaskEvent", () => {
     createdAt: "2026-10-22T08:00:00Z",
     fromStatusId: null,
     toStatusId: null,
+    fromPriority: null,
+    toPriority: null,
     fromUser: null,
     toUser: null,
     fromKey: null,
@@ -359,6 +363,8 @@ describe("toTaskEvent", () => {
       createdAt: dto.createdAt,
       fromStatusId: undefined,
       toStatusId: undefined,
+      fromPriority: undefined,
+      toPriority: undefined,
       fromUser: undefined,
       toUser: undefined,
       fromKey: undefined,
@@ -379,6 +385,9 @@ describe("toTaskEvent", () => {
     expect(
       toTaskEvent({ ...dto, kind: "status_changed", fromStatusId: "open", toStatusId: "done" }),
     ).toMatchObject({ fromStatusId: "open", toStatusId: "done" });
+    expect(
+      toTaskEvent({ ...dto, kind: "priority_changed", fromPriority: "normal", toPriority: "urgent" }),
+    ).toMatchObject({ fromPriority: "normal", toPriority: "urgent" });
     expect(toTaskEvent({ ...dto, kind: "moved", fromKey: "DS-1", toKey: "BE-4" })).toMatchObject({
       fromKey: "DS-1",
       toKey: "BE-4",

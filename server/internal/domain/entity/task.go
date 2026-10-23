@@ -20,6 +20,7 @@ type Task struct {
 	Name        string
 	Description *string
 	Status      TaskStatus
+	Priority    TaskPriority
 	AuthorID    UserID
 	// AssigneeID — the assignee, a member of the task's project, or nil.
 	AssigneeID *UserID
@@ -32,17 +33,30 @@ type Task struct {
 	UpdatedAt       time.Time
 }
 
-// NewTask — a new task in status status with number number of project projectKey;
+// TaskDraft — the fields a new task is created with. An empty Priority means PriorityNormal.
+type TaskDraft struct {
+	Name        string
+	Description *string
+	Status      TaskStatus
+	Priority    TaskPriority
+}
+
+// NewTask — a new task from draft with number number of project projectKey;
 // assignee — the assignee's membership in the project or nil.
-func NewTask(id TaskID, projectID ProjectID, projectKey ProjectKey, number int, authorID UserID, name string, description *string, status TaskStatus, assignee *ProjectMember, now time.Time) (*Task, error) {
+func NewTask(id TaskID, projectID ProjectID, projectKey ProjectKey, number int, authorID UserID, draft TaskDraft, assignee *ProjectMember, now time.Time) (*Task, error) {
+	priority := draft.Priority
+	if priority == "" {
+		priority = PriorityNormal
+	}
 	t := &Task{
 		ID:          id,
 		ProjectID:   projectID,
 		ProjectKey:  projectKey,
 		Number:      number,
-		Name:        name,
-		Description: description,
-		Status:      status,
+		Name:        draft.Name,
+		Description: draft.Description,
+		Status:      draft.Status,
+		Priority:    priority,
 		AuthorID:    authorID,
 		CreatedAt:   now,
 		UpdatedAt:   now,
@@ -99,6 +113,11 @@ func (t *Task) Describe(description *string, now time.Time) {
 
 func (t *Task) ChangeStatus(status TaskStatus, now time.Time) {
 	t.Status = status
+	t.UpdatedAt = now
+}
+
+func (t *Task) ChangePriority(priority TaskPriority, now time.Time) {
+	t.Priority = priority
 	t.UpdatedAt = now
 }
 

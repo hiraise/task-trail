@@ -1,3 +1,5 @@
+import type { TaskPriorityId } from "@/domain/types";
+
 export const tasksTexts = {
   taskNamePlaceholder: "Название задачи",
   taskDescriptionPlaceholder: "Описание задачи",
@@ -6,6 +8,13 @@ export const tasksTexts = {
   requiredField: "Заполните поле",
   newTask: "Новая задача",
   assignee: "Ответственный",
+  priority: "Приоритет",
+  priorities: {
+    urgent: "Срочный",
+    high: "Высокий",
+    normal: "Обычный",
+    low: "Низкий",
+  } satisfies Record<TaskPriorityId, string>,
   project: "Проект",
   noAssignee: "Не назначен",
   chooseProjectFirst: "Сначала выберите проект — ответственный выбирается из его участников",
@@ -51,6 +60,7 @@ export const tasksTexts = {
   events: {
     created: "Задача создана",
     status: "{from} → {to}",
+    priority: "Приоритет: {from} → {to}",
     assigneeChanged: "Ответственный: {from} → {to}",
     assigneeSet: "Назначен ответственный: {name}",
     assigneeRemoved: "Ответственный снят",

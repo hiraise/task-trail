@@ -5,6 +5,11 @@ artboards A, B, C, D, H, I and «Approved values» in [00-mockups.md](00-mockups
 `Task.priority`, `PATCH /v1/tasks/{taskId}/priority` and their generated types exist. Names marked
 *(new)* do not exist yet.
 
+Step 1 already did the feed part, so that the web did not break on a `priority_changed` event:
+`TaskPriorityId`, the kind and `fromPriority`/`toPriority` in `TaskEvent` with their mapping and
+`mappers.test.ts` cases, `tasksTexts.priority`, `tasksTexts.priorities`, `events.priority`,
+`DESCRIBE.priority_changed` and its `feed.test.ts` case. Skip those items below.
+
 This step also creates `TaskMeta` — the line of small badges under a task name in all cards. Steps 4,
 6 and 9 add their badges to it.
 

@@ -11,6 +11,7 @@ import (
 //   - maxbytes=N — a string of at most N bytes in UTF-8 (password and the bcrypt limit);
 //   - httpurl — a full http(s) address without query or fragment: links are built from it (ADR-0015);
 //   - taskstatus — a task status from the fixed set (ADR-0003);
+//   - taskpriority — a task priority from the fixed set (ADR-0033);
 //   - projectkey — a project key (ADR-0026), checked after normalizeProjectKey;
 //   - mailbox — the mail sender: an email address, optionally with a name (ADR-0017);
 //   - values of Optional fields and required fields that may be null.
@@ -22,6 +23,9 @@ func RegisterValidators(v *validator.Validate) error {
 		return err
 	}
 	if err := v.RegisterValidation("taskstatus", taskStatus); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("taskpriority", taskPriority); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("projectkey", projectKey); err != nil {

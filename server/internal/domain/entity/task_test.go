@@ -43,14 +43,37 @@ func TestTaskStatuses(t *testing.T) {
 	}
 }
 
+// A draft without a priority gives normal; the set is fixed (ADR-0033).
+func TestTaskPriority(t *testing.T) {
+	task, err := entity.NewTask("task", "design", "DS", 7, "anna", entity.TaskDraft{Name: "Кнопка", Status: entity.StatusOpen, Priority: entity.PriorityHigh}, nil, taskTime)
+	if err != nil || task.Priority != entity.PriorityHigh {
+		t.Fatalf("new task with a priority: %+v, %v", task, err)
+	}
+	later := taskTime.Add(time.Hour)
+	task.ChangePriority(entity.PriorityUrgent, later)
+	if task.Priority != entity.PriorityUrgent || !task.UpdatedAt.Equal(later) {
+		t.Fatalf("change the priority: %+v", task)
+	}
+	for _, p := range []entity.TaskPriority{entity.PriorityLow, entity.PriorityNormal, entity.PriorityHigh, entity.PriorityUrgent} {
+		if !p.Valid() {
+			t.Errorf("%q is not valid", p)
+		}
+	}
+	for _, p := range []entity.TaskPriority{"", "top", "Normal"} {
+		if p.Valid() {
+			t.Errorf("%q is valid", p)
+		}
+	}
+}
+
 // The assignee must be a member of the task's project; nil removes the assignee.
 func TestTaskAssignTo(t *testing.T) {
 	ivan := &entity.ProjectMember{ProjectID: "design", UserID: "ivan", Role: entity.RoleMember}
-	task, err := entity.NewTask("task", "design", "DS", 7, "anna", "Кнопка", nil, entity.StatusInProgress, ivan, taskTime)
+	task, err := entity.NewTask("task", "design", "DS", 7, "anna", entity.TaskDraft{Name: "Кнопка", Status: entity.StatusInProgress}, ivan, taskTime)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if task.Status != entity.StatusInProgress || task.AuthorID != "anna" || task.AssigneeID == nil || *task.AssigneeID != "ivan" ||
+	if task.Status != entity.StatusInProgress || task.Priority != entity.PriorityNormal || task.AuthorID != "anna" || task.AssigneeID == nil || *task.AssigneeID != "ivan" ||
 		task.Number != 7 || task.Key() != "DS-7" || !task.CreatedAt.Equal(taskTime) || !task.UpdatedAt.Equal(taskTime) {
 		t.Fatalf("new task: %+v", task)
 	}
@@ -66,7 +89,7 @@ func TestTaskAssignTo(t *testing.T) {
 	if err := task.AssignTo(nil, later); err != nil || task.AssigneeID != nil || !task.UpdatedAt.Equal(later) {
 		t.Fatalf("remove the assignee: %+v, %v", task, err)
 	}
-	if _, err := entity.NewTask("task", "design", "DS", 7, "anna", "Кнопка", nil, entity.StatusOpen, elsewhere, taskTime); !domain.HasCode(err, domain.AssigneeNotMember) {
+	if _, err := entity.NewTask("task", "design", "DS", 7, "anna", entity.TaskDraft{Name: "Кнопка", Status: entity.StatusOpen}, elsewhere, taskTime); !domain.HasCode(err, domain.AssigneeNotMember) {
 		t.Fatalf("new task with an outside assignee: %v", err)
 	}
 }

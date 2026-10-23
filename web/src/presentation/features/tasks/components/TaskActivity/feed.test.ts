@@ -60,6 +60,12 @@ describe("describeEvent", () => {
     );
   });
 
+  it("names priorities", () => {
+    expect(line({ kind: "priority_changed", fromPriority: "normal", toPriority: "urgent" })).toBe(
+      "Приоритет: Обычный → Срочный",
+    );
+  });
+
   it("tells a changed, a set and a removed assignee apart", () => {
     expect(line({ kind: "assignee_changed", fromUser: anna, toUser: petr })).toBe(
       "Ответственный: Анна → Пётр",

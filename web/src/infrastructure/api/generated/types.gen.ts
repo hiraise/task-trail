@@ -229,6 +229,11 @@ export type TaskStatus = {
     isResolved: boolean;
 };
 
+/**
+ * Fixed set from the lowest (ADR-0033); display names live in the web
+ */
+export type TaskPriority = 'low' | 'normal' | 'high' | 'urgent';
+
 export type Task = {
     id: Uuid;
     projectId: Uuid;
@@ -243,6 +248,7 @@ export type Task = {
     name: string;
     description: string | null;
     statusId: TaskStatusId;
+    priority: TaskPriority;
     authorId: Uuid;
     assigneeId: string | null;
     /**
@@ -266,6 +272,10 @@ export type CreateTaskRequest = {
      * The status of the new task; absent — the status with `isDefault`.
      */
     statusId?: TaskStatusId;
+    /**
+     * The priority of the new task; absent — `normal`.
+     */
+    priority?: TaskPriority;
 };
 
 export type UpdateTaskRequest = {
@@ -275,6 +285,10 @@ export type UpdateTaskRequest = {
 
 export type ChangeTaskStatusRequest = {
     statusId: TaskStatusId;
+};
+
+export type ChangeTaskPriorityRequest = {
+    priority: TaskPriority;
 };
 
 export type MoveTaskRequest = {
@@ -322,15 +336,16 @@ export type UpdateCommentRequest = {
 
 /**
  * What changed (ADR-0028): `created`; `edited` — the name or description, without the old text;
- * `status_changed`; `assignee_changed` — also when the assignee left or was removed from the
+ * `status_changed`; `priority_changed` (ADR-0033); `assignee_changed` — also when the assignee left or was removed from the
  * project; `moved` — to another project, the task key changed; `archived`; `restored`.
  *
  */
-export type TaskEventKind = 'created' | 'edited' | 'status_changed' | 'assignee_changed' | 'moved' | 'archived' | 'restored';
+export type TaskEventKind = 'created' | 'edited' | 'status_changed' | 'priority_changed' | 'assignee_changed' | 'moved' | 'archived' | 'restored';
 
 /**
  * A row of task history. Change fields are always present and `null` unless the kind uses them:
- * `status_changed` — `fromStatusId`, `toStatusId`; `assignee_changed` — `fromUser`, `toUser`
+ * `status_changed` — `fromStatusId`, `toStatusId`; `priority_changed` — `fromPriority`,
+ * `toPriority`; `assignee_changed` — `fromUser`, `toUser`
  * (`null` — no assignee); `moved` — `fromKey`, `toKey`.
  *
  */
@@ -345,6 +360,8 @@ export type TaskEvent = {
     createdAt: DateTime;
     fromStatusId: TaskStatusId | null;
     toStatusId: TaskStatusId | null;
+    fromPriority: TaskPriority | null;
+    toPriority: TaskPriority | null;
     fromUser: User | null;
     toUser: User | null;
     fromKey: string | null;
@@ -1796,6 +1813,49 @@ export type ChangeTaskStatusResponses = {
 };
 
 export type ChangeTaskStatusResponse = ChangeTaskStatusResponses[keyof ChangeTaskStatusResponses];
+
+export type ChangeTaskPriorityData = {
+    body: ChangeTaskPriorityRequest;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/priority';
+};
+
+export type ChangeTaskPriorityErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task is archived; `PROJECT_ARCHIVED` — its project or the target project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ChangeTaskPriorityError = ChangeTaskPriorityErrors[keyof ChangeTaskPriorityErrors];
+
+export type ChangeTaskPriorityResponses = {
+    /**
+     * Priority changed
+     */
+    200: Task;
+};
+
+export type ChangeTaskPriorityResponse = ChangeTaskPriorityResponses[keyof ChangeTaskPriorityResponses];
 
 export type ChangeTaskAssigneeData = {
     body: ChangeTaskAssigneeRequest;

@@ -46,6 +46,8 @@ type TaskEvent struct {
 	CreatedAt    time.Time `json:"createdAt"`
 	FromStatusID *string   `json:"fromStatusId"`
 	ToStatusID   *string   `json:"toStatusId"`
+	FromPriority *string   `json:"fromPriority"`
+	ToPriority   *string   `json:"toPriority"`
 	FromUser     *User     `json:"fromUser"`
 	ToUser       *User     `json:"toUser"`
 	FromKey      *string   `json:"fromKey"`
@@ -58,6 +60,13 @@ func NewTaskEvents(events []dto.TaskEvent) []TaskEvent {
 			return nil
 		}
 		v := string(*s)
+		return &v
+	}
+	priority := func(p *entity.TaskPriority) *string {
+		if p == nil {
+			return nil
+		}
+		v := string(*p)
 		return &v
 	}
 	user := func(u *entity.UserAccount) *User {
@@ -78,6 +87,8 @@ func NewTaskEvents(events []dto.TaskEvent) []TaskEvent {
 			CreatedAt:    e.CreatedAt.UTC(),
 			FromStatusID: status(e.FromStatus),
 			ToStatusID:   status(e.ToStatus),
+			FromPriority: priority(e.FromPriority),
+			ToPriority:   priority(e.ToPriority),
 			FromUser:     user(v.FromUser),
 			ToUser:       user(v.ToUser),
 			FromKey:      e.FromKey,

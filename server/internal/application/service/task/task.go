@@ -23,6 +23,7 @@ type TaskModule struct {
 	Create         *CreateTaskService
 	Update         *UpdateTaskService
 	ChangeStatus   *ChangeStatusService
+	ChangePriority *ChangePriorityService
 	ChangeAssignee *ChangeAssigneeService
 	Move           *MoveTaskService
 	SetArchived    *SetTaskArchivedService
@@ -63,6 +64,7 @@ func New(d Deps) *TaskModule {
 		Create:         &CreateTaskService{editor: e, factory: d.TaskFactory},
 		Update:         &UpdateTaskService{editor: e},
 		ChangeStatus:   &ChangeStatusService{editor: e},
+		ChangePriority: &ChangePriorityService{editor: e},
 		ChangeAssignee: &ChangeAssigneeService{editor: e},
 		Move:           &MoveTaskService{editor: e},
 		SetArchived:    &SetTaskArchivedService{editor: e},

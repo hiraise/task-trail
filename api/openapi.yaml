@@ -853,6 +853,33 @@ paths:
         "409": { $ref: "#/components/responses/TaskReadOnly" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
+  /v1/tasks/{taskId}/priority:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    patch:
+      tags: [tasks]
+      operationId: changeTaskPriority
+      summary: Change the priority
+      description: |
+        Role: any in the task's project; neither the task nor its project is archived (ADR-0033).
+        The same priority again changes nothing and writes no event.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeTaskPriorityRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Priority changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
   /v1/tasks/{taskId}/assignee:
     parameters:
       - $ref: "#/components/parameters/TaskId"
@@ -1877,9 +1904,13 @@ components:
         isResolved:
           type: boolean
           description: The task is done — only for `done`
+    TaskPriority:
+      type: string
+      enum: [low, normal, high, urgent]
+      description: Fixed set from the lowest (ADR-0033); display names live in the web
     Task:
       type: object
-      required: [id, projectId, number, key, name, description, statusId, authorId, assigneeId, archivedAt, projectArchived, createdAt, updatedAt]
+      required: [id, projectId, number, key, name, description, statusId, priority, authorId, assigneeId, archivedAt, projectArchived, createdAt, updatedAt]
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         projectId: { $ref: "#/components/schemas/Uuid" }
@@ -1893,6 +1924,7 @@ components:
         name: { type: string, minLength: 1, maxLength: 254 }
         description: { type: [string, "null"] }
         statusId: { $ref: "#/components/schemas/TaskStatusId" }
+        priority: { $ref: "#/components/schemas/TaskPriority" }
         authorId: { $ref: "#/components/schemas/Uuid" }
         assigneeId:
           type: [string, "null"]
@@ -1919,6 +1951,9 @@ components:
         statusId:
           $ref: "#/components/schemas/TaskStatusId"
           description: The status of the new task; absent — the status with `isDefault`.
+        priority:
+          $ref: "#/components/schemas/TaskPriority"
+          description: The priority of the new task; absent — `normal`.
     UpdateTaskRequest:
       type: object
       minProperties: 1
@@ -1930,6 +1965,11 @@ components:
       required: [statusId]
       properties:
         statusId: { $ref: "#/components/schemas/TaskStatusId" }
+    ChangeTaskPriorityRequest:
+      type: object
+      required: [priority]
+      properties:
+        priority: { $ref: "#/components/schemas/TaskPriority" }
     MoveTaskRequest:
       type: object
       required: [projectId]
@@ -1982,17 +2022,18 @@ components:
         text: { $ref: "#/components/schemas/CommentText" }
     TaskEventKind:
       type: string
-      enum: [created, edited, status_changed, assignee_changed, moved, archived, restored]
+      enum: [created, edited, status_changed, priority_changed, assignee_changed, moved, archived, restored]
       description: |
         What changed (ADR-0028): `created`; `edited` — the name or description, without the old text;
-        `status_changed`; `assignee_changed` — also when the assignee left or was removed from the
+        `status_changed`; `priority_changed` (ADR-0033); `assignee_changed` — also when the assignee left or was removed from the
         project; `moved` — to another project, the task key changed; `archived`; `restored`.
     TaskEvent:
       type: object
-      required: [id, taskId, kind, actor, createdAt, fromStatusId, toStatusId, fromUser, toUser, fromKey, toKey]
+      required: [id, taskId, kind, actor, createdAt, fromStatusId, toStatusId, fromPriority, toPriority, fromUser, toUser, fromKey, toKey]
       description: |
         A row of task history. Change fields are always present and `null` unless the kind uses them:
-        `status_changed` — `fromStatusId`, `toStatusId`; `assignee_changed` — `fromUser`, `toUser`
+        `status_changed` — `fromStatusId`, `toStatusId`; `priority_changed` — `fromPriority`,
+        `toPriority`; `assignee_changed` — `fromUser`, `toUser`
         (`null` — no assignee); `moved` — `fromKey`, `toKey`.
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
@@ -2009,6 +2050,14 @@ components:
         toStatusId:
           oneOf:
             - $ref: "#/components/schemas/TaskStatusId"
+            - type: "null"
+        fromPriority:
+          oneOf:
+            - $ref: "#/components/schemas/TaskPriority"
+            - type: "null"
+        toPriority:
+          oneOf:
+            - $ref: "#/components/schemas/TaskPriority"
             - type: "null"
         fromUser:
           oneOf:

@@ -33,8 +33,8 @@ func describeTask(t *entity.Task) string {
 	if t.ArchivedAt != nil {
 		archived = t.ArchivedAt.UTC().Format(time.RFC3339)
 	}
-	return fmt.Sprintf("%s %s %s %q %q %s author=%s assignee=%s archived=%s projectArchived=%v %s %s", t.ID, t.ProjectID, t.Key(), t.Name,
-		deref(t.Description), t.Status, t.AuthorID, deref(assignee), archived, t.ProjectArchived,
+	return fmt.Sprintf("%s %s %s %q %q %s %s author=%s assignee=%s archived=%s projectArchived=%v %s %s", t.ID, t.ProjectID, t.Key(), t.Name,
+		deref(t.Description), t.Status, t.Priority, t.AuthorID, deref(assignee), archived, t.ProjectArchived,
 		t.CreatedAt.UTC().Format(time.RFC3339), t.UpdatedAt.UTC().Format(time.RFC3339))
 }
 
@@ -74,9 +74,10 @@ func TestTaskRepository(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	newTask := func(author *entity.ProjectMember, name string, description *string, assignee *entity.ProjectMember) *entity.Task {
+	newTask := func(author *entity.ProjectMember, draft entity.TaskDraft, assignee *entity.ProjectMember) *entity.Task {
 		t.Helper()
-		task, err := f.New(author, keyOf(author.ProjectID), nextNumber(author.ProjectID), name, description, entity.DefaultTaskStatus(), assignee)
+		draft.Status = entity.DefaultTaskStatus()
+		task, err := f.New(author, keyOf(author.ProjectID), nextNumber(author.ProjectID), draft, assignee)
 		if err == nil {
 			err = repo.Create(ctx, task)
 		}
@@ -98,9 +99,9 @@ func TestTaskRepository(t *testing.T) {
 		return ids
 	}
 	description := "Основная кнопка"
-	button := newTask(annaDesign, "Кнопка", &description, ivanDesign)
-	form := newTask(annaDesign, "Форма", nil, nil)
-	api := newTask(annaBackend, "API", nil, nil)
+	button := newTask(annaDesign, entity.TaskDraft{Name: "Кнопка", Description: &description, Priority: entity.PriorityHigh}, ivanDesign)
+	form := newTask(annaDesign, entity.TaskDraft{Name: "Форма"}, nil)
+	api := newTask(annaBackend, entity.TaskDraft{Name: "API"}, nil)
 	// Ivan is the assignee of a task in a project where he is not a member: such a task is not shown to him
 	if _, err := pool.Exec(ctx, `UPDATE tasks SET assignee_id = $1 WHERE id = $2`, ivan.ID, api.ID); err != nil {
 		t.Fatal(err)
@@ -121,6 +122,7 @@ func TestTaskRepository(t *testing.T) {
 	button.Rename("Большая кнопка", later)
 	button.Describe(nil, later)
 	button.ChangeStatus(entity.StatusDone, later)
+	button.ChangePriority(entity.PriorityUrgent, later)
 	button.MoveTo(backend, keyOf(backend), nextNumber(backend), nil, later)
 	if err := repo.Update(ctx, button); err != nil {
 		t.Fatal(err)

@@ -10,6 +10,8 @@ type CreateTask struct {
 	AssigneeID *string
 	// Status — the status of the new task; the request without statusId gets the default one.
 	Status entity.TaskStatus
+	// Priority — the priority of the new task; the request without priority gets normal (ADR-0033).
+	Priority entity.TaskPriority
 }
 
 // TaskChanges is what to change in a task: Name if not nil; the description if DescriptionSet,
