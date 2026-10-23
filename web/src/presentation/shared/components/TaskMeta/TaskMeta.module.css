@@ -5,3 +5,14 @@
   gap: 8px;
   color: var(--text-secondary);
 }
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Overdue: the due date is before today and the status is not resolved (ADR-0034) */
+.overdue {
+  color: var(--text-critical);
+}

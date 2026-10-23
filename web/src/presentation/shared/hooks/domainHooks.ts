@@ -17,6 +17,6 @@ export { useGetCurrentUser } from "@/presentation/features/user/hooks";
 export { useProjectMembers, useProjects } from "@/presentation/features/projects/hooks";
 
 // Task domain hooks
-export { useProjectTasks } from "@/presentation/features/tasks/hooks";
+export { useProjectTasks, useTaskStatuses } from "@/presentation/features/tasks/hooks";
 
 // Add more domain hooks as needed...

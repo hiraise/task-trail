@@ -6,6 +6,7 @@ import ArrowLeft from "@/assets/icons/ArrowLeft.svg?react";
 import ArrowLeftWithPadding from "@/assets/icons/ArrowLeftWithPadding.svg?react";
 import ArrowRight from "@/assets/icons/ArrowRight.svg?react";
 import ArrowRightWithPadding from "@/assets/icons/ArrowRightWithPadding.svg?react";
+import CalendarIcon from "@/assets/icons/CalendarIcon.svg?react";
 import CameraIcon from "@/assets/icons/camera.svg?react";
 import CheckIcon from "@/assets/icons/check.svg?react";
 import CheckMarkIcon from "@/assets/icons/checkMark.svg?react";
@@ -72,6 +73,7 @@ export const ICONS = {
   priorityHigh: PriorityHighIcon,
   priorityNormal: PriorityNormalIcon,
   priorityLow: PriorityLowIcon,
+  calendar: CalendarIcon,
 };
 
 // Design elements

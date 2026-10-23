@@ -1,4 +1,5 @@
 export { useChangeTaskAssignee } from "./useChangeTaskAssignee";
+export { useChangeTaskDueDate } from "./useChangeTaskDueDate";
 export { useChangeTaskPriority } from "./useChangeTaskPriority";
 export { useChangeTaskStatus } from "./useChangeTaskStatus";
 export { useCreateTask } from "./useCreateTask";

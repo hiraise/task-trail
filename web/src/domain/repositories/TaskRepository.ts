@@ -14,6 +14,8 @@ export interface NewTask {
   statusId?: TaskStatusId;
   /** undefined — `normal` (ADR-0033) */
   priority?: TaskPriorityId;
+  /** YYYY-MM-DD; undefined — no due date (ADR-0034) */
+  dueDate?: string;
 }
 
 export interface TaskChanges {
@@ -38,6 +40,8 @@ export interface TaskRepository {
   update(id: TaskId, changes: TaskChanges): Promise<Task>;
   changeStatus(id: TaskId, statusId: TaskStatusId): Promise<Task>;
   changePriority(id: TaskId, priority: TaskPriorityId): Promise<Task>;
+  /** YYYY-MM-DD; null removes the due date (ADR-0034) */
+  changeDueDate(id: TaskId, dueDate: string | null): Promise<Task>;
   /** null unassigns the task */
   changeAssignee(id: TaskId, assigneeId: UserId | null): Promise<Task>;
   /** Moves to another project; if the assignee is not a member of the new project, the task is unassigned */

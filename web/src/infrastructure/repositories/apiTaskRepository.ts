@@ -2,6 +2,7 @@ import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 
 import type {
   ChangeTaskAssigneeRequest,
+  ChangeTaskDueDateRequest,
   ChangeTaskPriorityRequest,
   ChangeTaskStatusRequest,
   CreateCommentRequest,
@@ -34,7 +35,7 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
   findStatuses: async () =>
     (await http.get<TaskStatus[]>(API_ROUTES.TASK_STATUSES)).map(toTaskStatus),
 
-  create: async ({ projectId, name, description, assigneeId, statusId, priority }) => {
+  create: async ({ projectId, name, description, assigneeId, statusId, priority, dueDate }) => {
     const body: CreateTaskRequest = {
       projectId,
       name,
@@ -42,6 +43,7 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
       assigneeId: assigneeId ?? null,
       ...(statusId && { statusId }),
       ...(priority && { priority }),
+      ...(dueDate && { dueDate }),
     };
 
     return toTask(await http.post<Task>(API_ROUTES.TASKS, body));
@@ -63,6 +65,12 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
     const body: ChangeTaskPriorityRequest = { priority };
 
     return toTask(await http.patch<Task>(API_ROUTES.TASK_PRIORITY(id), body));
+  },
+
+  changeDueDate: async (id, dueDate) => {
+    const body: ChangeTaskDueDateRequest = { dueDate };
+
+    return toTask(await http.patch<Task>(API_ROUTES.TASK_DUE_DATE(id), body));
   },
 
   changeAssignee: async (id, assigneeId) => {

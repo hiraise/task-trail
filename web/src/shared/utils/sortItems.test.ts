@@ -42,6 +42,24 @@ describe("sortItems", () => {
     expect(sortItems(tasks, "priority").map((task) => task.name)).toEqual(["d", "b", "e", "a", "c"]);
   });
 
+  it("due date — the earliest first, ties newest updated first, no date last", () => {
+    const task = (name: string, updatedAt: string, dueDate?: string) => ({
+      name,
+      createdAt: "2026-10-20T08:00:00Z",
+      updatedAt,
+      dueDate,
+    });
+    const tasks = [
+      task("a", "2026-10-20T08:00:00Z"),
+      task("b", "2026-10-20T08:00:00Z", "2026-11-02"),
+      task("c", "2026-10-20T08:00:00Z", "2026-10-30"),
+      task("d", "2026-10-22T08:00:00Z", "2026-10-30"),
+      task("e", "2026-10-22T08:00:00Z"),
+    ];
+
+    expect(sortItems(tasks, "dueDate").map((task) => task.name)).toEqual(["d", "c", "b", "e", "a"]);
+  });
+
   it("does not change the list it got", () => {
     sortItems(items, "nameAsc");
     expect(items[0].name).toBe("бюджет");

@@ -170,6 +170,7 @@ describe("toTask", () => {
       description: undefined,
       statusId: "in_review",
       priority: "normal",
+      dueDate: undefined,
       authorId: avatarId,
       assigneeId: undefined,
       archivedAt: undefined,
@@ -184,6 +185,10 @@ describe("toTask", () => {
       description: "К пятнице",
       assigneeId: id,
     });
+  });
+
+  it("due date as in the response", () => {
+    expect(toTask({ ...dto, dueDate: "2026-10-30" })).toMatchObject({ dueDate: "2026-10-30" });
   });
 
   it("archive of the task and of its project as in the response", () => {

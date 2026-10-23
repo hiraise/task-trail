@@ -1,3 +1,4 @@
+export * from "./ChangeDueDateModal";
 export * from "./ChangeTaskPriorityModal";
 export * from "./ChangeTaskStatusModal";
 export * from "./CreateTaskModal";

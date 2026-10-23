@@ -2,7 +2,7 @@ import { TASK_PRIORITY_ORDER } from "@/domain/models/TaskPriority";
 import type { TaskPriorityId } from "@/domain/types";
 
 /** How a list is sorted: the options of the sort modal (Figma 1157:25705, stage 3 artboard H). */
-export type SortOptionValue = "updatedAt" | "createdAt" | "nameAsc" | "nameDesc" | "priority";
+export type SortOptionValue = "updatedAt" | "createdAt" | "nameAsc" | "nameDesc" | "priority" | "dueDate";
 
 export const DEFAULT_SORT: SortOptionValue = "updatedAt";
 
@@ -12,10 +12,11 @@ export const SORT_OPTION_VALUES: readonly SortOptionValue[] = [
   "nameAsc",
   "nameDesc",
   "priority",
+  "dueDate",
 ];
 
 /** Options shown only for task lists: other items have no such field. */
-export const TASK_SORT_OPTIONS = ["priority"] as const satisfies readonly SortOptionValue[];
+export const TASK_SORT_OPTIONS = ["priority", "dueDate"] as const satisfies readonly SortOptionValue[];
 
 interface Sortable {
   name: string;
@@ -25,6 +26,8 @@ interface Sortable {
   updatedAt: string;
   /** Tasks only (ADR-0033) */
   priority?: TaskPriorityId;
+  /** Tasks only, YYYY-MM-DD (ADR-0034) */
+  dueDate?: string;
 }
 
 const byName = (a: Sortable, b: Sortable) => a.name.localeCompare(b.name, "ru");
@@ -41,6 +44,19 @@ const priorityRank = (item: Sortable) =>
 const byPriority = (a: Sortable, b: Sortable) =>
   priorityRank(a) - priorityRank(b) || newestFirst("updatedAt")(a, b);
 
+// The earliest due date first, no date — last; ties — newest updated first (ADR-0034).
+// YYYY-MM-DD strings compare as dates.
+const byDueDate = (a: Sortable, b: Sortable) => {
+  if (a.dueDate !== b.dueDate) {
+    if (!a.dueDate) return 1;
+    if (!b.dueDate) return -1;
+
+    return a.dueDate.localeCompare(b.dueDate);
+  }
+
+  return newestFirst("updatedAt")(a, b);
+};
+
 /**
  * A sorted copy of the list. Lists are not paginated, so the web sorts them (ADR-0027): dates — newest
  * first, names — in Russian alphabetical order. Equal items keep the server order.
@@ -52,6 +68,7 @@ export function sortItems<T extends Sortable>(items: readonly T[], option: SortO
     nameAsc: byName,
     nameDesc: (a: Sortable, b: Sortable) => byName(b, a),
     priority: byPriority,
+    dueDate: byDueDate,
   }[option];
 
   return [...items].sort(compare);

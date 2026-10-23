@@ -103,13 +103,20 @@ on the right.
 
 - The three task cards — the project, board and search row (`ProjectTask`), the «Мои задачи» card
   (`TaskList`) and the kanban card (`KanbanCard`) — show `TaskMeta` under the name: a `caption-reg`
-  line of badges in `--text-secondary`, gap 8 px, wrapping. Now — the priority icon; later steps add
-  the due date, subtasks and labels to it. A card with nothing to show has no meta line.
+  line of badges in `--text-secondary`, gap 8 px, wrapping. Now — the priority icon and the due date
+  chip; later steps add subtasks and labels to it. A card with nothing to show has no meta line.
+- The due date chip — `ICONS.calendar` 16 px and the date, gap 2 px: «Сегодня», «Завтра», «30 окт»,
+  another year «30 окт 2027» (`formatDueDate` in `shared/utils/dueDate.ts`). Overdue — the date is before
+  today and the status is not resolved — the chip is `--text-critical` (ADR-0034).
 - `PriorityIcon` — the icon of a priority level colored by its token, with the name as `aria-label`
   and `title`. Cards show it for `low`, `high` and `urgent` only (16 px); the «Приоритет» field on the
   task page (24 px), the new task form (18 px) and the picker show it for every level.
 - A field with the icon of its current value — `TaskField` and `SelectionField` take `iconNode` in place
   of `icon`.
+- `TaskField` with `tone="critical"` draws its value in `--text-critical`: the overdue «Срок» row.
+- The due date picker `ChangeDueDateModal` — the native `<input type="date">` styled like `Input`
+  (`body-reg` size), «Убрать срок» (`SubmitButton variant="text"`, only when a date is set) and
+  `DialogButtons` with «Применить» on every width (artboard C).
 - A radio row with an icon — `RadioButton` with `icon` (before the label, gap 8 px), like the priority
   picker `TaskPriorityList`.
 

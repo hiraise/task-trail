@@ -21,7 +21,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   the web: the field and picker on the task page, the new task form, icons on the cards (`TaskMeta`),
   the «По приоритету» sort; step 3 is done — due date on the server
   ([ADR-0034](adr/0034-task-due-date.md)): `Task.dueDate`, `PATCH /v1/tasks/{taskId}/due-date`, the
-  `due_date_changed` event; the next step is step 4 — due date in the web.
+  `due_date_changed` event; step 4 is done — due date in the web: the «Срок» row and picker on the task
+  page, the new task form, the chip on the cards with «Сегодня»/«Завтра» and overdue in red, the «По сроку»
+  sort; the next step is step 5 — labels on the server ([ADR-0035](adr/0035-project-labels.md)).
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
