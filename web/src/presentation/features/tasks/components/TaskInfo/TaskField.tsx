@@ -12,7 +12,8 @@ interface TaskFieldProps {
   /** No value — `placeholder` is shown instead */
   value?: string;
   placeholder: string;
-  onClick: () => void;
+  /** No handler — the field is read-only, like in an archived task (ADR-0027) */
+  onClick?: () => void;
 }
 
 /**
@@ -21,6 +22,23 @@ interface TaskFieldProps {
  */
 export function TaskField({ icon, label, value, placeholder, onClick }: TaskFieldProps) {
   const text = value ?? placeholder;
+  const content = (
+    <span className={styles.value}>
+      <Icon as={icon} size="24px" />
+      <span className={clsx("body-reg-2", styles.text, !value && styles.empty)}>{text}</span>
+    </span>
+  );
+
+  if (!onClick) {
+    return (
+      <div className={styles.field}>
+        <span className={clsx("body-reg-2", styles.label)}>{label}</span>
+        <div className={clsx(styles.button, styles.readOnly)} aria-label={`${label}: ${text}`}>
+          {content}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.field}>
@@ -31,10 +49,7 @@ export function TaskField({ icon, label, value, placeholder, onClick }: TaskFiel
         onClick={onClick}
         aria-label={`${label}: ${text}`}
       >
-        <span className={styles.value}>
-          <Icon as={icon} size="24px" />
-          <span className={clsx("body-reg-2", styles.text, !value && styles.empty)}>{text}</span>
-        </span>
+        {content}
         <span className={styles.chevron}>
           <Icon as={ICONS.downArrow} size="24px" />
         </span>

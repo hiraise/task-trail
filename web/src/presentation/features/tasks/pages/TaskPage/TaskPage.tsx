@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import { isTaskArchived } from "@/domain/models/Task";
 import type { TaskId } from "@/domain/types";
 import { BackButton } from "@/presentation/shared";
 import { TopBarBackMobile } from "@/presentation/shared/components/Layout";
@@ -23,6 +24,7 @@ export function TaskPage({ taskId }: { taskId: TaskId }) {
   const { data, error } = useTaskDetail(taskId);
   const { menuItems } = useTaskMenuItems(data?.task);
   const { showTaskSettings } = useGlobalModals();
+  const archived = data ? isTaskArchived(data.task) : false;
 
   useProjectInPath(data?.task.projectId, taskId);
 
@@ -40,7 +42,7 @@ export function TaskPage({ taskId }: { taskId: TaskId }) {
             />
           </section>
           <section className={styles.section}>
-            <Comments />
+            <Comments readOnly={archived} />
           </section>
         </>
       );
@@ -69,8 +71,8 @@ export function TaskPage({ taskId }: { taskId: TaskId }) {
     <div className={styles.page}>
       <div className={styles.topBar}>
         <TopBarBackMobile
-          title={TEXTS.projects.task}
-          variant={data ? "menu" : "none"}
+          title={archived ? tasksTexts.archivedTask : TEXTS.projects.task}
+          variant={menuItems.length > 0 ? "menu" : "none"}
           onActionClick={() => data && showTaskSettings(data.task)}
         />
       </div>

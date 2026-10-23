@@ -51,19 +51,29 @@ describe("toProject", () => {
     name: "Сайт",
     description: null,
     key: "РМП",
+    archivedAt: null,
     createdAt: "2026-10-22T08:00:00Z",
+    updatedAt: "2026-10-22T09:00:00Z",
     tasksCount: 3,
   };
 
-  it("no description — undefined, the rest as in the response", () => {
+  it("no description or archive — undefined, the rest as in the response", () => {
     expect(toProject(dto)).toEqual({
       id,
       name: "Сайт",
       description: undefined,
       key: "РМП",
+      archivedAt: undefined,
       createdAt: "2026-10-22T08:00:00Z",
+      updatedAt: "2026-10-22T09:00:00Z",
       tasksCount: 3,
     });
+  });
+
+  it("archived project keeps the archive time", () => {
+    expect(toProject({ ...dto, archivedAt: "2026-10-23T10:00:00Z" }).archivedAt).toBe(
+      "2026-10-23T10:00:00Z",
+    );
   });
 
   it("project with the current user's role", () => {
@@ -113,6 +123,8 @@ describe("toTask", () => {
     statusId: "in_review" as const,
     authorId: avatarId,
     assigneeId: null,
+    archivedAt: null,
+    projectArchived: false,
     createdAt: "2026-10-22T08:00:00Z",
     updatedAt: "2026-10-22T09:30:00Z",
   };
@@ -128,6 +140,8 @@ describe("toTask", () => {
       statusId: "in_review",
       authorId: avatarId,
       assigneeId: undefined,
+      archivedAt: undefined,
+      projectArchived: false,
       createdAt: "2026-10-22T08:00:00Z",
       updatedAt: "2026-10-22T09:30:00Z",
     });
@@ -138,6 +152,12 @@ describe("toTask", () => {
       description: "К пятнице",
       assigneeId: id,
     });
+  });
+
+  it("archive of the task and of its project as in the response", () => {
+    expect(
+      toTask({ ...dto, archivedAt: "2026-10-23T10:00:00Z", projectArchived: true }),
+    ).toMatchObject({ archivedAt: "2026-10-23T10:00:00Z", projectArchived: true });
   });
 });
 

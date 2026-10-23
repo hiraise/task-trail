@@ -32,16 +32,24 @@ export const QUERY_KEYS = {
   },
   task: {
     all: ["task"] as const,
-    /** Tasks assigned to the current user */
-    mine: ["task", "mine"] as const,
+    /** Both lists of tasks assigned to the current user — a prefix for invalidation */
+    mineLists: ["task", "mine"] as const,
+    /** Tasks assigned to the current user: active or archived (ADR-0027) */
+    mine: (archived: boolean) => ["task", "mine", archived] as const,
     detail: (id: TaskId) => ["task", id] as const,
     /** Task statuses: one set shared by all projects */
     statuses: ["task-statuses"] as const,
   },
   project: {
-    all: ["project", "all"] as const,
+    /** Both project lists — a prefix for invalidation */
+    lists: ["project", "all"] as const,
+    /** Active or archived projects (ADR-0027) */
+    list: (archived: boolean) => ["project", "all", archived] as const,
     detail: (id: ProjectId) => ["project", id] as const,
-    tasks: (id: ProjectId) => ["project", id, "tasks"] as const,
+    /** Both task lists of the project — a prefix for invalidation */
+    taskLists: (id: ProjectId) => ["project", id, "tasks"] as const,
+    /** The project's tasks by their own archive flag */
+    tasks: (id: ProjectId, archived: boolean) => ["project", id, "tasks", archived] as const,
     members: (id: ProjectId) => ["project", id, "members"] as const,
     candidates: {
       all: ["project", "candidates"] as const,

@@ -38,12 +38,14 @@ export const API_ROUTES = {
   GET_CANDIDATES: `${PROJECTS}/candidates`,
   LEAVE_PROJECT: (id: ProjectId) => `${PROJECTS}/${id}/leave`,
   PROJECT_TASKS: (id: ProjectId) => `${PROJECTS}/${id}/tasks`,
+  PROJECT_ARCHIVED: (id: ProjectId) => `${PROJECTS}/${id}/archived`,
   // TASKS API: each task operation has its own URL (ADR-0002)
   TASKS: TASKS,
   TASK_BY_ID: (id: TaskId) => `${TASKS}/${id}`,
   TASK_STATUS: (id: TaskId) => `${TASKS}/${id}/status`,
   TASK_ASSIGNEE: (id: TaskId) => `${TASKS}/${id}/assignee`,
   TASK_PROJECT: (id: TaskId) => `${TASKS}/${id}/project`,
+  TASK_ARCHIVED: (id: TaskId) => `${TASKS}/${id}/archived`,
   TASK_STATUSES: `${API_VERSION}/task-statuses`,
   // USERS API
   CURRENT_USER: USERS_ME,

@@ -4,25 +4,30 @@ import type { Project } from "@/domain/models/Project";
 import { EmptyListState } from "@/presentation/shared";
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 import { ASSETS } from "@/shared/config/assets";
+import { projectsTexts } from "@/shared/locales/projects";
 import { TEXTS } from "@/shared/locales/texts";
 
 import { ProjectCard } from "../ProjectCard";
 
-import desktopStyles from "./ProjectsList.desktop.module.css";
-import mobileStyles from "./ProjectsList.mobile.module.css";
-
-type ProjectListVariant = "desktop" | "mobile";
+import styles from "./ProjectsList.module.css";
 
 interface ProjectsListProps {
   projects: Project[];
-  variant?: ProjectListVariant;
+  /** The Archived tab: its empty state has no "Create project" button */
+  archived?: boolean;
 }
 
-export function ProjectsList({ projects, variant = "desktop" }: ProjectsListProps) {
+export function ProjectsList({ projects, archived = false }: ProjectsListProps) {
   const { showCreateProject } = useGlobalModals();
 
-  if (projects.length === 0)
-    return (
+  if (projects.length === 0) {
+    return archived ? (
+      <EmptyListState
+        src={ASSETS.images.project}
+        alt={TEXTS.projects.projectAlt}
+        text={projectsTexts.emptyArchive}
+      />
+    ) : (
       <EmptyListState
         src={ASSETS.images.project}
         alt={TEXTS.projects.projectAlt}
@@ -31,12 +36,11 @@ export function ProjectsList({ projects, variant = "desktop" }: ProjectsListProp
         onClick={showCreateProject}
       />
     );
-
-  const containerStyles = variant === "mobile" ? mobileStyles : desktopStyles;
+  }
 
   return (
-    <div className={containerStyles.cards}>
-      {projects?.map((project) => (
+    <div className={styles.cards}>
+      {projects.map((project) => (
         <Link key={project.id} to={"/projects/$id"} params={{ id: project.id }}>
           <ProjectCard project={project} />
         </Link>

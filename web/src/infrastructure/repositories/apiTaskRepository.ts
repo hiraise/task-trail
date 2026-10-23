@@ -5,6 +5,7 @@ import type {
   ChangeTaskStatusRequest,
   CreateTaskRequest,
   MoveTaskRequest,
+  SetArchivedRequest,
   Task,
   TaskStatus,
   UpdateTaskRequest,
@@ -19,10 +20,11 @@ import { toTask, toTaskStatus } from "./mappers";
 const createTaskRepository = (http: HttpClient): TaskRepository => ({
   findById: async (id) => toTask(await http.get<Task>(API_ROUTES.TASK_BY_ID(id))),
 
-  findByProjectId: async (projectId) =>
-    (await http.get<Task[]>(API_ROUTES.PROJECT_TASKS(projectId))).map(toTask),
+  findByProjectId: async (projectId, archived) =>
+    (await http.get<Task[]>(API_ROUTES.PROJECT_TASKS(projectId), { params: { archived } })).map(toTask),
 
-  findAssignedToMe: async () => (await http.get<Task[]>(API_ROUTES.USER_TASKS)).map(toTask),
+  findAssignedToMe: async (archived) =>
+    (await http.get<Task[]>(API_ROUTES.USER_TASKS, { params: { archived } })).map(toTask),
 
   findStatuses: async () =>
     (await http.get<TaskStatus[]>(API_ROUTES.TASK_STATUSES)).map(toTaskStatus),
@@ -60,6 +62,12 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
     const body: MoveTaskRequest = { projectId };
 
     return toTask(await http.patch<Task>(API_ROUTES.TASK_PROJECT(id), body));
+  },
+
+  setArchived: async (id, archived) => {
+    const body: SetArchivedRequest = { archived };
+
+    return toTask(await http.patch<Task>(API_ROUTES.TASK_ARCHIVED(id), body));
   },
 
   delete: async (id) => {

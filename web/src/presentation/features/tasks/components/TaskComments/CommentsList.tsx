@@ -2,11 +2,11 @@ import { mockComments } from "./Comments.mocks";
 import styles from "./CommentsList.module.css";
 import CommentsListItem from "./CommentsListItem";
 
-export function CommentsList() {
+export function CommentsList({ readOnly }: { readOnly: boolean }) {
   return (
     <div className={styles.comments}>
       {mockComments.map((comment) => (
-        <CommentsListItem key={comment.id} comment={comment} />
+        <CommentsListItem key={comment.id} comment={comment} readOnly={readOnly} />
       ))}
     </div>
   );

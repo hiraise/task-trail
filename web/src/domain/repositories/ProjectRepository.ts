@@ -27,8 +27,11 @@ export interface ProjectCreated {
 
 export interface ProjectRepository {
   findById(id: ProjectId): Promise<ProjectDetails>;
-  findAll(): Promise<Project[]>;
+  /** Active projects, or archived ones with archived = true (ADR-0027) */
+  findAll(archived: boolean): Promise<Project[]>;
   create(project: NewProject): Promise<ProjectCreated>;
   update(id: ProjectId, changes: ProjectChanges): Promise<ProjectDetails>;
+  /** Archives (true) or restores (false) a project; only the owner */
+  setArchived(id: ProjectId, archived: boolean): Promise<ProjectDetails>;
   delete(id: ProjectId): Promise<void>;
 }

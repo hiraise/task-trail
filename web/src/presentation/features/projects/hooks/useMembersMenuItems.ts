@@ -1,3 +1,4 @@
+import { isProjectArchived } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { getUserDisplayName } from "@/domain/models/User";
 import type { ProjectId } from "@/domain/types";
@@ -16,7 +17,7 @@ import { useRemoveMember } from "./useRemoveMember";
 /**
  * Member actions based on the current user's role: the owner changes roles; the owner removes
  * (anyone but themselves) or an admin removes (members only). There is no self entry — users
- * leave via the project menu.
+ * leave via the project menu. Members of an archived project do not change (ADR-0027).
  */
 export const useMembersMenuItems = (member: ProjectMember, projectId: ProjectId) => {
   const { data: project } = useProject(projectId);
@@ -25,7 +26,9 @@ export const useMembersMenuItems = (member: ProjectMember, projectId: ProjectId)
   const { mutate: removeMember } = useRemoveMember();
   const { showDeleteItem } = useGlobalModals();
 
-  if (!project || !currentUser || member.id === currentUser.id) return { menuItems: [] };
+  if (!project || !currentUser || member.id === currentUser.id || isProjectArchived(project)) {
+    return { menuItems: [] };
+  }
 
   const memberId = member.id;
   const items: MenuItem[] = [

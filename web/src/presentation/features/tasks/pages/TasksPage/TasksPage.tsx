@@ -9,17 +9,21 @@ import {
   useTabPanel,
 } from "@/presentation/shared";
 import { TopBarDesktop, TopBarMobile } from "@/presentation/shared/components/Layout";
-import { useGetCurrentUser, useProjects } from "@/presentation/shared/hooks";
-import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
+import { useGetCurrentUser, useListSort, useProjects } from "@/presentation/shared/hooks";
 import { ASSETS } from "@/shared/config/assets";
+import { tasksTexts } from "@/shared/locales/tasks";
 import { TEXTS } from "@/shared/locales/texts";
+import { sortItems } from "@/shared/utils/sortItems";
 
 import { TaskList } from "../../components";
 import { useMyTasks, useOpenCreateTask } from "../../hooks";
 
 import styles from "./TasksPage.module.css";
 
-/** "My tasks" — tasks assigned to the current user across all their projects. */
+/**
+ * "My tasks" — tasks assigned to the current user across all their projects. Archived — tasks
+ * archived on their own or with their project (ADR-0027).
+ */
 export function TasksPage() {
   return (
     <TabPanelProvider>
@@ -32,20 +36,39 @@ export function TasksPage() {
 // (ADR-0008): both are in the markup, one is visible depending on the screen width.
 function TasksScreen() {
   const { activeTab } = useTabPanel();
-  const { showSortOptions } = useGlobalModals();
+  const archived = activeTab === TabType.ARCHIVED;
+  const { sort, openSort } = useListSort("my-tasks");
   const openCreateTask = useOpenCreateTask();
-  const { data: tasks } = useMyTasks();
+  const { data: tasks } = useMyTasks(archived);
   const { data: projects } = useProjects();
+  // An archived task may belong to an archived project: its name is in the other list
+  const { data: archivedProjects } = useProjects(true, { enabled: archived });
   const { data: currentUser } = useGetCurrentUser();
 
   const projectNames = useMemo(
-    () => new Map(projects?.map((project) => [project.id, project.name])),
-    [projects],
+    () =>
+      new Map(
+        [...(projects ?? []), ...(archivedProjects ?? [])].map((project) => [
+          project.id,
+          project.name,
+        ]),
+      ),
+    [projects, archivedProjects],
   );
+  const sorted = useMemo(() => tasks && sortItems(tasks, sort), [tasks, sort]);
 
-  const renderActive = () => {
-    if (!tasks) return null;
-    if (tasks.length === 0) {
+  const renderList = () => {
+    if (!sorted) return null;
+    if (sorted.length === 0 && archived) {
+      return (
+        <EmptyListState
+          src={ASSETS.images.task}
+          alt={TEXTS.tasks.taskAlt}
+          text={tasksTexts.emptyArchive}
+        />
+      );
+    }
+    if (sorted.length === 0) {
       return (
         <EmptyListState
           src={ASSETS.images.task}
@@ -57,7 +80,7 @@ function TasksScreen() {
       );
     }
 
-    return <TaskList tasks={tasks} projectNames={projectNames} assignee={currentUser} />;
+    return <TaskList tasks={sorted} projectNames={projectNames} assignee={currentUser} />;
   };
 
   return (
@@ -74,14 +97,12 @@ function TasksScreen() {
       </div>
       <div className={styles.content}>
         <div className={styles.phoneOnly}>
-          <ContentTopBarMobile onClick={showSortOptions} />
+          <ContentTopBarMobile onClick={openSort} />
         </div>
         <div className={styles.wideOnly}>
-          <ContentTopBarDesktop onClick={showSortOptions} />
+          <ContentTopBarDesktop onClick={openSort} />
         </div>
-        {activeTab === TabType.ACTIVE && renderActive()}
-        {/* The server has no archive yet — stage 2 (docs/roadmap.md) */}
-        {activeTab === TabType.ARCHIVED && <h1>Архив</h1>}
+        {renderList()}
       </div>
     </div>
   );

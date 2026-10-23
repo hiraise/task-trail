@@ -15,6 +15,7 @@ const task: Task = {
   description: "К пятнице",
   statusId: "open",
   authorId: "7d1e9a52-6f0b-4c1f-8f43-2a9e5b7c1d08",
+  projectArchived: false,
   createdAt: "2026-10-22T08:00:00Z",
   updatedAt: "2026-10-22T08:00:00Z",
 };

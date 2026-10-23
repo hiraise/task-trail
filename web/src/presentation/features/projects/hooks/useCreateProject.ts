@@ -23,7 +23,7 @@ export function useCreateProject() {
       projectRepository.create({ name, description, key, emails }),
     onSuccess: ({ project }) => {
       queryClient.setQueryData(QUERY_KEYS.project.detail(project.id), project);
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.all });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.project.lists });
       toast.success(projectsTexts.projectCreated);
       navigate({ to: "/projects/$id", params: { id: project.id } });
     },

@@ -13,6 +13,16 @@ export const tasksTexts = {
   noProjects: "Нет проектов — создайте проект, чтобы ставить в нём задачи",
   notFound: "Задача не найдена: её удалили или у вас нет доступа к её проекту",
   loadFailed: "Не удалось открыть задачу",
+
+  // Archive (ADR-0027)
+  archivedTask: "Архивная задача",
+  restore: "Вернуть из архива",
+  taskArchived: "Задача перемещена в архив",
+  taskRestored: "Задача возвращена из архива",
+  archiveTaskFailed: "Не удалось переместить задачу в архив",
+  restoreTaskFailed: "Не удалось вернуть задачу из архива",
+  emptyArchive: "Архивных задач нет",
+  noActiveTasks: "Активных задач нет",
   tasks: {
     title: "Задачи",
     noTasks: "Нет задач",

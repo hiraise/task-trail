@@ -1,5 +1,6 @@
 export * from "./Actions";
 export * from "./ActionsMenu";
+export * from "./ArchiveTag";
 export * from "./ContentTopBar";
 export * from "./DeviceBased";
 export * from "./DialogButtons";

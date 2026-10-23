@@ -1,0 +1,59 @@
+/* Up to 767 px — a segmented control; from 768 px — underlined tabs. */
+.tabsContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 12px;
+  background-color: var(--bg-secondary);
+  height: 40px;
+  flex: 1;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.tab .label {
+  font-weight: 500;
+}
+
+.tab:not(.active) {
+  color: var(--text-tertiary);
+  opacity: 0.5;
+}
+
+.tab.active {
+  background-color: var(--bg-card);
+}
+
+@media (min-width: 768px) {
+  .tabsContainer {
+    justify-content: flex-start;
+    padding: 0;
+    border-radius: 0;
+    background-color: transparent;
+    height: auto;
+    flex: initial;
+  }
+
+  .tab {
+    width: auto;
+    border-radius: 0;
+    border-bottom: 2px solid var(--bg-secondary-2);
+  }
+
+  .tab .label {
+    font-weight: 400;
+  }
+
+  .tab.active {
+    background-color: transparent;
+    border-bottom: 2px solid var(--bg-primary-contrast);
+  }
+}

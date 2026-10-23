@@ -9,6 +9,7 @@ import type { Task } from "@/domain/models/Task";
 import type { ProjectId, TaskId, TaskStatusId, UserId } from "@/domain/types";
 import type { ModalType } from "@/presentation/app";
 import { MODAL_TYPE, useGlobalModalContext } from "@/presentation/app";
+import type { SortOptionValue } from "@/shared/utils/sortItems";
 
 export interface ChangeStatusProps {
   /** Current task status */
@@ -62,6 +63,10 @@ export interface ActionProps {
   type: "task" | "project" | "member";
 }
 
+export interface SortOptionsProps {
+  current: SortOptionValue;
+}
+
 export interface ConfirmProps {
   title: string;
   description?: string;
@@ -100,7 +105,9 @@ export const useGlobalModals = () => {
     // Selection modals
     showSelectProject: (projectId?: ProjectId) =>
       safeOpen<Project>(MODAL_TYPE.SELECT_PROJECT, { projectId }),
-    showSortOptions: () => safeOpen<void>(MODAL_TYPE.SORT_ITEMS),
+    /** Opens with the current option; the chosen one is returned, closing — `undefined` */
+    showSortOptions: (current: SortOptionValue) =>
+      safeOpen<SortOptionValue>(MODAL_TYPE.SORT_ITEMS, { current }),
 
     // Creation modals
     showCreateTask: () => safeOpen<void>(MODAL_TYPE.CREATE_TASK),
@@ -111,8 +118,9 @@ export const useGlobalModals = () => {
       safeOpen<void>(MODAL_TYPE.INVITATION_RESULTS, { ...props }),
 
     // Common actions
+    /** Consent is the item ID; refusal or closing is `undefined` */
     showMoveToArchive: (props?: ActionProps) =>
-      safeOpen<number>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
+      safeOpen<TaskId | ProjectId>(MODAL_TYPE.MOVE_TO_ARCHIVE, { ...props }),
     showDeleteItem: (props?: ActionProps) =>
       safeOpen<TaskId | ProjectId | UserId>(MODAL_TYPE.DELETE, { ...props }),
     showCropImage: (file?: File) => safeOpen<File>(MODAL_TYPE.CROP_IMAGE, { file }),

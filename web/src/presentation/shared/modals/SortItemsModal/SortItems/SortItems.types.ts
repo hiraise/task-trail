@@ -1,9 +1,11 @@
+import type { SortOptionValue } from "@/shared/utils/sortItems";
+
 export interface SortOption {
-  value: string;
+  value: SortOptionValue;
   label: string;
 }
 
-export const options = [
+export const options: SortOption[] = [
   { value: "updatedAt", label: "По дате последнего обновления" },
   { value: "createdAt", label: "По дате создания" },
   { value: "nameAsc", label: "По алфавиту А – Я" },
@@ -11,6 +13,6 @@ export const options = [
 ];
 
 export interface SortItemsProps {
-  selectedOption: SortOption;
+  selected: SortOptionValue;
   onSelect: (option: SortOption) => void;
 }

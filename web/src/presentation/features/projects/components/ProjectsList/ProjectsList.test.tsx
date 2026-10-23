@@ -40,7 +40,7 @@ vi.mock("../ProjectCard", () => ({
   ),
 }));
 
-describe("ProjectsListDesktop", () => {
+describe("ProjectsList", () => {
   let mockProjects: Project[];
 
   beforeEach(() => {
@@ -50,6 +50,7 @@ describe("ProjectsListDesktop", () => {
       key: `P${i + 1}`,
       description: `Description for project ${i + 1}`,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       tasksCount: (i + 1) * 10,
     }));
   });
