@@ -18,9 +18,9 @@ const (
 	WrongPassword      ErrorCode = "WRONG_PASSWORD"
 	PasswordSameAsOld  ErrorCode = "PASSWORD_SAME_AS_OLD"
 	RegistrationClosed ErrorCode = "REGISTRATION_CLOSED"
-	// Missing project role (ADR-0003) or service administrator rights (ADR-0014)
+	// Missing project role (ADR-0003), board ownership (ADR-0029) or service administrator rights (ADR-0014)
 	Forbidden ErrorCode = "FORBIDDEN"
-	// The owner does not leave a project but deletes it
+	// The owner does not leave a project or a board but deletes it
 	OwnerCannotLeave ErrorCode = "OWNER_CANNOT_LEAVE"
 	// The task assignee is not a member of its project
 	AssigneeNotMember ErrorCode = "ASSIGNEE_NOT_MEMBER"
@@ -30,6 +30,10 @@ const (
 	TaskArchived ErrorCode = "TASK_ARCHIVED"
 	// The project is archived: it, its members and tasks do not change (ADR-0027)
 	ProjectArchived ErrorCode = "PROJECT_ARCHIVED"
+	// The board owner is not a member of the project put on the board (ADR-0029)
+	BoardProjectUnavailable ErrorCode = "BOARD_PROJECT_UNAVAILABLE"
+	// The user added to a board shares no project with the board owner (ADR-0029)
+	BoardMemberUnavailable ErrorCode = "BOARD_MEMBER_UNAVAILABLE"
 	// A comment is edited only during the first 24 hours (ADR-0028)
 	CommentEditExpired ErrorCode = "COMMENT_EDIT_EXPIRED"
 	// The last service administrator cannot be removed (ADR-0014)
@@ -164,6 +168,14 @@ func ErrTaskArchived(data ...any) *DomainError {
 
 func ErrProjectArchived(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, ProjectArchived, nil, data...)
+}
+
+func ErrBoardProjectUnavailable(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, BoardProjectUnavailable, nil, data...)
+}
+
+func ErrBoardMemberUnavailable(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, BoardMemberUnavailable, nil, data...)
 }
 
 func ErrCommentEditExpired(data ...any) *DomainError {

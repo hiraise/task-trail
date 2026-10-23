@@ -12,6 +12,7 @@ mock:
 	mockgen -source=internal/domain/repository/invitation.go -destination=test/mocks/mock_invitation.go -package=mocks
 	mockgen -source=internal/domain/repository/project_member.go -destination=test/mocks/mock_project_member.go -package=mocks
 	mockgen -source=internal/domain/repository/project.go -destination=test/mocks/mock_project.go -package=mocks
+	mockgen -source=internal/domain/repository/board.go -destination=test/mocks/mock_board.go -package=mocks
 	mockgen -source=internal/domain/repository/task.go -destination=test/mocks/mock_task.go -package=mocks
 	mockgen -source=internal/domain/repository/comment.go -destination=test/mocks/mock_comment.go -package=mocks
 	mockgen -source=internal/domain/repository/task_event.go -destination=test/mocks/mock_task_event.go -package=mocks
