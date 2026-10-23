@@ -1,8 +1,8 @@
 // Smoke test of the running local stack (ADR-0010): calls the API through /api, like a browser.
 // The stack administrator signs in, refreshes the session and opens Swagger; creates a project with
 // a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
-// mail, from the API response), gets a task with the key <project key>-1, changes its status, archives
-// and restores it (ADR-0027), uploads
+// mail, from the API response), gets a task with the key <project key>-1, changes its status, writes,
+// edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027), uploads
 // an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
 // a user of the stack. Run: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
@@ -116,6 +116,19 @@ try {
   check(moved?.statusId === "in_progress", "assignee moved the task to in progress");
   const projectTasks = await call(admin, "GET", `/v1/projects/${projectId}/tasks`, 200);
   check(projectTasks?.find?.((item) => item.id === task?.id)?.statusId === "in_progress", "the new status is visible in the project tasks");
+
+  // Task feed (ADR-0028): a comment is written, edited and deleted; the history has "created" and
+  // "status_changed"
+  const comments = `/v1/tasks/${task?.id}/comments`;
+  const comment = await call(member, "POST", comments, 201, { json: { text: "  Дымовой комментарий  " } });
+  check(comment?.text === "Дымовой комментарий" && comment?.author?.email === invitee.email, "the assignee wrote a comment, the text is trimmed");
+  const edited = await call(member, "PATCH", `${comments}/${comment?.id}`, 200, { json: { text: "Исправлено" } });
+  check(edited?.text === "Исправлено" && edited?.editedAt !== null, "the author edited the comment");
+  await call(admin, "DELETE", `${comments}/${comment?.id}`, 204);
+  check((await call(member, "GET", comments, 200))?.length === 0, "the project owner deleted the comment");
+  const history = await call(member, "GET", `/v1/tasks/${task?.id}/events`, 200);
+  check(history?.map?.((event) => event.kind).join() === "status_changed,created", `the task history → ${history?.map?.((event) => event.kind)}`);
+  check(history?.[0]?.fromStatusId === "open" && history?.[0]?.toStatusId === "in_progress", "the history shows open → in_progress");
 
   // Archive (ADR-0027): an archived task leaves the active list and is read-only until restored
   const archived = await call(member, "PATCH", `/v1/tasks/${task?.id}/archived`, 200, { json: { archived: true } });
