@@ -8,6 +8,7 @@ import {
   canEditProject,
   canInviteMembers,
   canLeaveProject,
+  canManageLabels,
   canRemoveMember,
 } from "./userRole";
 
@@ -18,6 +19,10 @@ describe("permissions by project role", () => {
   it("the owner and admin edit the project and invite people", () => {
     expect(allowed(canEditProject)).toEqual(["owner", "admin"]);
     expect(allowed(canInviteMembers)).toEqual(["owner", "admin"]);
+  });
+
+  it("the owner and admin manage the project labels (ADR-0035)", () => {
+    expect(allowed(canManageLabels)).toEqual(["owner", "admin"]);
   });
 
   it("only the owner deletes the project and changes roles; anyone but the owner can leave", () => {

@@ -1,0 +1,37 @@
+/* A white block inside the labels list (artboard E, agreed deviation 5 in 00-mockups.md) */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--bg-card);
+  box-shadow: var(--shade-01);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.caption {
+  color: var(--text-secondary);
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.buttons > button {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .buttons > button {
+    flex: none;
+    width: 140px;
+  }
+}
