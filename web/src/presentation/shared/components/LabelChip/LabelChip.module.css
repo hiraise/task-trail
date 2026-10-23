@@ -1,0 +1,52 @@
+.chip {
+  display: inline-block;
+  box-sizing: border-box;
+  height: 20px;
+  max-width: 160px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: none;
+}
+
+.gray {
+  background: var(--label-gray-bg);
+  color: var(--label-gray-text);
+}
+
+.red {
+  background: var(--label-red-bg);
+  color: var(--label-red-text);
+}
+
+.orange {
+  background: var(--label-orange-bg);
+  color: var(--label-orange-text);
+}
+
+.yellow {
+  background: var(--label-yellow-bg);
+  color: var(--label-yellow-text);
+}
+
+.green {
+  background: var(--label-green-bg);
+  color: var(--label-green-text);
+}
+
+.teal {
+  background: var(--label-teal-bg);
+  color: var(--label-teal-text);
+}
+
+.blue {
+  background: var(--label-blue-bg);
+  color: var(--label-blue-text);
+}
+
+.purple {
+  background: var(--label-purple-bg);
+  color: var(--label-purple-text);
+}

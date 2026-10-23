@@ -34,6 +34,7 @@ const task = (fields: Partial<Task> = {}): Task => ({
   priority: "normal",
   authorId: "anna",
   projectArchived: false,
+  labels: [],
   createdAt: "2026-10-23T12:00:00Z",
   updatedAt: "2026-10-23T12:00:00Z",
   ...fields,
@@ -68,5 +69,21 @@ describe("TaskMeta", () => {
     render(<TaskMeta task={task({ dueDate: day(-1), statusId: "done" })} />);
 
     expect(screen.getByText(/\d/).className).not.toMatch(/overdue/);
+  });
+
+  it("five labels — three chips and +2", () => {
+    const labels = ["Баг", "Дизайн", "Тесты", "Фронтенд", "Бэкенд"].map((name, index) => ({
+      id: `label-${index}`,
+      projectId: "project",
+      name,
+      color: "blue" as const,
+    }));
+
+    render(<TaskMeta task={task({ labels })} />);
+
+    expect(screen.getByText("Баг")).toBeInTheDocument();
+    expect(screen.getByText("Тесты")).toBeInTheDocument();
+    expect(screen.queryByText("Фронтенд")).not.toBeInTheDocument();
+    expect(screen.getByText("+2")).toBeInTheDocument();
   });
 });

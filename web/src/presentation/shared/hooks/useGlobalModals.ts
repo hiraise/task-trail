@@ -8,7 +8,7 @@ import type { Project } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import type { Task } from "@/domain/models/Task";
 import type { User } from "@/domain/models/User";
-import type { BoardId, ProjectId, TaskId, TaskPriorityId, TaskStatusId, UserId } from "@/domain/types";
+import type { BoardId, LabelId, ProjectId, TaskId, TaskPriorityId, TaskStatusId, UserId } from "@/domain/types";
 import type { ModalType } from "@/presentation/app";
 import { MODAL_TYPE, useGlobalModalContext } from "@/presentation/app";
 import type { SortOptionValue } from "@/shared/utils/sortItems";
@@ -33,6 +33,13 @@ export interface SelectAssigneeProps {
   projectId?: ProjectId;
   /** Current assignee */
   userId?: UserId;
+}
+
+export interface SelectLabelsProps {
+  /** Labels of this project (ADR-0035) */
+  projectId: ProjectId;
+  /** The task's labels now */
+  labelIds: LabelId[];
 }
 
 export interface TaskProps {
@@ -214,5 +221,8 @@ export const useGlobalModals = () => {
       safeOpen<string | null>(MODAL_TYPE.CHANGE_DUE_DATE, { ...props }),
     showSelectAssignee: (props?: SelectAssigneeProps) =>
       safeOpen<ProjectMember>(MODAL_TYPE.SELECT_ASSIGNEE, { ...props }),
+    /** The chosen label IDs; closing — `undefined` */
+    showSelectLabels: (props: SelectLabelsProps) =>
+      safeOpen<LabelId[]>(MODAL_TYPE.SELECT_LABELS, { ...props }),
   };
 };

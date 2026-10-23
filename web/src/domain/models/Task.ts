@@ -1,3 +1,4 @@
+import type { Label } from "./Label";
 import type { ProjectId, TaskId, TaskPriorityId, TaskStatusId, UserId } from "../types";
 
 export interface Task {
@@ -19,6 +20,8 @@ export interface Task {
   assigneeId?: UserId;
   /** ISO 8601 in UTC; undefined when the task is not archived on its own (ADR-0027) */
   archivedAt?: string;
+  /** Labels of the task's project, ordered by name (ADR-0035) */
+  labels: Label[];
   /** The task's project is archived: the task is read-only too */
   projectArchived: boolean;
   /** ISO 8601 in UTC */

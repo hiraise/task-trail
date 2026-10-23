@@ -176,9 +176,19 @@ describe("toTask", () => {
       assigneeId: undefined,
       archivedAt: undefined,
       projectArchived: false,
+      labels: [],
       createdAt: "2026-10-22T08:00:00Z",
       updatedAt: "2026-10-22T09:30:00Z",
     });
+  });
+
+  it("labels as in the response, in its order", () => {
+    const label = { id, projectId: dto.projectId, name: "Фронтенд", color: "blue" as const };
+
+    expect(toTask({ ...dto, labels: [label, { ...label, id: avatarId, name: "Баг", color: "red" }] }).labels).toEqual([
+      label,
+      { ...label, id: avatarId, name: "Баг", color: "red" },
+    ]);
   });
 
   it("description and assignee as in the response", () => {

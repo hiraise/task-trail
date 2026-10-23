@@ -20,3 +20,8 @@
   background-color: var(--checkbox);
   border: 1px solid var(--checkbox);
 }
+
+.checkBox.disabled {
+  opacity: 0.4;
+  cursor: default;
+}

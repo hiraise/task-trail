@@ -1,4 +1,4 @@
-import type { BoardId, CommentId, ProjectId, TaskId, UserId } from "@/domain/types";
+import type { BoardId, CommentId, LabelId, ProjectId, TaskId, UserId } from "@/domain/types";
 
 /** API address (`VITE_API_URL`, web/README.md); on the local stack — the relative `/api`. */
 export const API_URL: string = import.meta.env.VITE_API_URL || "http://localhost:8080";
@@ -40,6 +40,8 @@ export const API_ROUTES = {
   LEAVE_PROJECT: (id: ProjectId) => `${PROJECTS}/${id}/leave`,
   PROJECT_TASKS: (id: ProjectId) => `${PROJECTS}/${id}/tasks`,
   PROJECT_ARCHIVED: (id: ProjectId) => `${PROJECTS}/${id}/archived`,
+  PROJECT_LABELS: (id: ProjectId) => `${PROJECTS}/${id}/labels`,
+  PROJECT_LABEL: (projectId: ProjectId, labelId: LabelId) => `${PROJECTS}/${projectId}/labels/${labelId}`,
   // TASKS API: each task operation has its own URL (ADR-0002)
   TASKS: TASKS,
   TASK_BY_ID: (id: TaskId) => `${TASKS}/${id}`,
@@ -47,6 +49,7 @@ export const API_ROUTES = {
   TASK_PRIORITY: (id: TaskId) => `${TASKS}/${id}/priority`,
   TASK_DUE_DATE: (id: TaskId) => `${TASKS}/${id}/due-date`,
   TASK_ASSIGNEE: (id: TaskId) => `${TASKS}/${id}/assignee`,
+  TASK_LABELS: (id: TaskId) => `${TASKS}/${id}/labels`,
   TASK_PROJECT: (id: TaskId) => `${TASKS}/${id}/project`,
   TASK_ARCHIVED: (id: TaskId) => `${TASKS}/${id}/archived`,
   TASK_COMMENTS: (id: TaskId) => `${TASKS}/${id}/comments`,

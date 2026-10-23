@@ -54,6 +54,8 @@ export const QUERY_KEYS = {
     /** The project's tasks by their own archive flag */
     tasks: (id: ProjectId, archived: boolean) => ["project", id, "tasks", archived] as const,
     members: (id: ProjectId) => ["project", id, "members"] as const,
+    /** Project labels (ADR-0035) */
+    labels: (id: ProjectId) => ["project", id, "labels"] as const,
     candidates: {
       all: ["project", "candidates"] as const,
       byProject: (id: ProjectId) => ["project", id, "candidates"] as const,

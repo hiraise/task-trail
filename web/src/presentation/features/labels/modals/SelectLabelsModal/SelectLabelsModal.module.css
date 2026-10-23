@@ -1,0 +1,16 @@
+/* The dialog and the bottom sheet do not limit their height: the content does, so that a long list
+   scrolls inside it and the buttons stay on the screen. 160 px — the modal title and paddings */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: calc(100dvh - 160px);
+  min-height: 0;
+}
+
+@media (min-width: 768px) {
+  .content {
+    height: auto;
+    max-height: min(600px, calc(100dvh - 160px));
+  }
+}

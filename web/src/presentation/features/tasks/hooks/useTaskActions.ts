@@ -6,9 +6,10 @@ import { useChangeTaskDueDate } from "./useChangeTaskDueDate";
 import { useChangeTaskPriority } from "./useChangeTaskPriority";
 import { useChangeTaskStatus } from "./useChangeTaskStatus";
 import { useMoveTask } from "./useMoveTask";
+import { useSetTaskLabels } from "./useSetTaskLabels";
 
 /**
- * Task status, priority, due date, assignee and project are changed by picking in a modal, each via its own endpoint
+ * Task status, priority, due date, assignee, labels and project are changed by picking in a modal, each via its own endpoint
  * (ADR-0002). Picking the current value sends no request.
  */
 export function useTaskActions(task: Task) {
@@ -17,12 +18,14 @@ export function useTaskActions(task: Task) {
     showChangePriority,
     showChangeDueDate,
     showSelectAssignee,
+    showSelectLabels,
     showSelectProject,
   } = useGlobalModals();
   const { mutate: changeStatus } = useChangeTaskStatus();
   const { mutate: changePriority } = useChangeTaskPriority();
   const { mutate: changeDueDate } = useChangeTaskDueDate();
   const { mutate: changeAssignee } = useChangeTaskAssignee();
+  const { mutate: setLabels } = useSetTaskLabels();
   const { mutate: move } = useMoveTask();
 
   return {
@@ -57,6 +60,13 @@ export function useTaskActions(task: Task) {
       }
     },
 
+    selectLabels: async () => {
+      const current = task.labels.map((label) => label.id);
+      const labelIds = await showSelectLabels({ projectId: task.projectId, labelIds: current });
+
+      if (labelIds && !sameIds(labelIds, current)) setLabels({ taskId: task.id, labelIds });
+    },
+
     selectProject: async () => {
       const project = await showSelectProject(task.projectId);
 
@@ -64,3 +74,10 @@ export function useTaskActions(task: Task) {
     },
   };
 }
+
+/** The same set of IDs in any order */
+const sameIds = (a: string[], b: string[]): boolean => {
+  const sortedB = [...b].sort();
+
+  return a.length === b.length && [...a].sort().every((id, index) => id === sortedB[index]);
+};

@@ -1,3 +1,4 @@
+import type { LabelColor } from "@/domain/models/Label";
 import type { TaskPriorityId } from "@/domain/types";
 
 export const tasksTexts = {
@@ -20,6 +21,24 @@ export const tasksTexts = {
   removeDueDate: "Убрать срок",
   today: "Сегодня",
   tomorrow: "Завтра",
+  labels: "Метки",
+  addLabels: "Добавить",
+  searchLabels: "Найти или создать метку",
+  createLabel: "Создать метку «{name}»",
+  createLabelButton: "Создать",
+  labelsLimit: "Не больше 10 меток",
+  noLabels: "В проекте пока нет меток",
+  labelColor: "Цвет",
+  labelColors: {
+    gray: "Серый",
+    red: "Красный",
+    orange: "Оранжевый",
+    yellow: "Жёлтый",
+    green: "Зелёный",
+    teal: "Бирюзовый",
+    blue: "Синий",
+    purple: "Фиолетовый",
+  } satisfies Record<LabelColor, string>,
   project: "Проект",
   noAssignee: "Не назначен",
   chooseProjectFirst: "Сначала выберите проект — ответственный выбирается из его участников",
@@ -92,4 +111,6 @@ export const tasksTexts = {
   taskMovedUnassigned:
     "Задача перенесена в проект «{project}». Ответственный снят: он не участник этого проекта",
   moveTaskFailed: "Не удалось перенести задачу",
+  setLabelsFailed: "Не удалось изменить метки",
+  createLabelFailed: "Не удалось создать метку",
 };

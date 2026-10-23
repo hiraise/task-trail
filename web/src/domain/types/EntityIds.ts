@@ -2,6 +2,8 @@ export type BoardId = string;
 
 export type CommentId = string;
 
+export type LabelId = string;
+
 export type ProjectId = string;
 
 export type TaskId = string;

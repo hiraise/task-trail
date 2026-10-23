@@ -1,7 +1,7 @@
 import type { Project } from "@/domain/models/Project";
 import type { Task } from "@/domain/models/Task";
 import type { NewTask, TaskChanges } from "@/domain/repositories/TaskRepository";
-import type { TaskId, TaskPriorityId, TaskStatusId, UserId } from "@/domain/types";
+import type { LabelId, TaskId, TaskPriorityId, TaskStatusId, UserId } from "@/domain/types";
 
 export type CreateTaskPayload = NewTask;
 
@@ -36,4 +36,10 @@ export interface MoveTaskPayload {
   task: Task;
   /** The target project */
   project: Project;
+}
+
+export interface SetTaskLabelsPayload {
+  taskId: TaskId;
+  /** The new set: 0–10 labels of the task's project (ADR-0035) */
+  labelIds: LabelId[];
 }

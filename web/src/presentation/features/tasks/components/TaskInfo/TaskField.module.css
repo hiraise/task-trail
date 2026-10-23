@@ -57,6 +57,14 @@
   text-overflow: ellipsis;
 }
 
+/* children: a wrapping row, like label chips; no line clamp */
+.children {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+
 .empty {
   color: var(--text-secondary);
 }
@@ -96,6 +104,13 @@
     padding: 4px 4px 4px 12px;
     border-radius: 58px;
     background-color: transparent;
+  }
+
+  /* Chips take the whole row and wrap onto more lines instead of a fixed height */
+  .wrap {
+    flex: 1;
+    height: auto;
+    min-height: 40px;
   }
 
   .button:hover,

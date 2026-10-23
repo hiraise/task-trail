@@ -1,11 +1,12 @@
 import clsx from "clsx";
 
+import type { Label } from "@/domain/models/Label";
 import type { ProjectDetails } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { isTaskArchived, type Task } from "@/domain/models/Task";
 import type { TaskStatus } from "@/domain/models/TaskStatus";
 import { getUserDisplayName } from "@/domain/models/User";
-import { ArchiveTag, DropdownMenu, IconButton, PriorityIcon } from "@/presentation/shared";
+import { ArchiveTag, DropdownMenu, IconButton, LabelChip, PriorityIcon } from "@/presentation/shared";
 import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
@@ -46,15 +47,32 @@ function DueDateField({ dueDate, resolved, onClick }: DueDateFieldProps) {
   );
 }
 
+/** The labels row: chips of the task's labels, the "Add" placeholder when there are none (ADR-0035). */
+function LabelsField({ labels, onClick }: { labels: Label[]; onClick?: () => void }) {
+  return (
+    <TaskField
+      icon={ICONS.label}
+      label={tasksTexts.labels}
+      placeholder={tasksTexts.addLabels}
+      ariaValue={labels.map((label) => label.name).join(", ")}
+      onClick={onClick}
+    >
+      {labels.length > 0 && labels.map((label) => <LabelChip key={label.id} label={label} />)}
+    </TaskField>
+  );
+}
+
 /**
- * Task: status, key above the name, name, description, assignee and project — each is changed in its
- * own modal. An archived task is read-only: an The "Archive" tag tag instead of the status, fields are not
- * clickable (ADR-0027).
+ * Task: status, key above the name, name, description and the fields (assignee, project, priority,
+ * due date, labels) — each is changed in its own modal. An archived task is read-only: the archive tag
+ * instead of the status, fields are not clickable (ADR-0027).
  */
 export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInfoProps) {
-  const { changeStatus, changePriority, changeDueDate, selectAssignee, selectProject } =
+  const { changeStatus, changePriority, changeDueDate, selectAssignee, selectLabels, selectProject } =
     useTaskActions(task);
   const archived = isTaskArchived(task);
+  // An archived task is read-only: its fields get no handler
+  const whenActive = (action: () => void) => (archived ? undefined : action);
 
   return (
     <div className={styles.info}>
@@ -84,27 +102,28 @@ export function TaskInfo({ task, project, status, assignee, menuItems }: TaskInf
           label={tasksTexts.assignee}
           value={assignee && getUserDisplayName(assignee)}
           placeholder={tasksTexts.noAssignee}
-          onClick={archived ? undefined : selectAssignee}
+          onClick={whenActive(selectAssignee)}
         />
         <TaskField
           icon={ICONS.project}
           label={tasksTexts.project}
           value={project.name}
           placeholder={tasksTexts.project}
-          onClick={archived ? undefined : selectProject}
+          onClick={whenActive(selectProject)}
         />
         <TaskField
           iconNode={<PriorityIcon priority={task.priority} size="24px" />}
           label={tasksTexts.priority}
           value={tasksTexts.priorities[task.priority]}
           placeholder={tasksTexts.priority}
-          onClick={archived ? undefined : changePriority}
+          onClick={whenActive(changePriority)}
         />
         <DueDateField
           dueDate={task.dueDate}
           resolved={!!status?.isResolved}
-          onClick={archived ? undefined : changeDueDate}
+          onClick={whenActive(changeDueDate)}
         />
+        <LabelsField labels={task.labels} onClick={whenActive(selectLabels)} />
       </div>
     </div>
   );

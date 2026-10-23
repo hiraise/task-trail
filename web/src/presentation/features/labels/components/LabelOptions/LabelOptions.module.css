@@ -1,0 +1,82 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  flex: 1;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 4px;
+  overflow-y: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 36px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.row.disabled {
+  cursor: default;
+}
+
+.check,
+.chip {
+  display: flex;
+  min-width: 0;
+}
+
+/* The whole row is dimmed at the limit: the chip like the disabled CheckBox (artboard C) */
+.row.disabled .chip {
+  opacity: 0.4;
+}
+
+.empty,
+.caption,
+.limit {
+  color: var(--text-secondary);
+}
+
+.limit {
+  padding: 4px 4px 0;
+}
+
+.create {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 12px 12px;
+  border-radius: 8px;
+  background-color: var(--bg-secondary-2);
+}
+
+.createRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.createFooter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.createButton {
+  margin-left: auto;
+}

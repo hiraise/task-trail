@@ -7,13 +7,16 @@ import { formatDueDate, isOverdue } from "@/shared/utils/dueDate";
 
 import { useTaskStatuses } from "@/presentation/shared/hooks";
 import { Icon } from "../../ui";
+import { LabelChip } from "../LabelChip";
 import { PriorityIcon } from "../PriorityIcon";
 
 import styles from "./TaskMeta.module.css";
 
+const MAX_CARD_LABELS = 3;
+
 /**
- * The badges under a task name in every card (artboard A of stage 3): priority, due date; subtasks
- * and labels are added by later steps. Nothing to show — renders nothing.
+ * The badges under a task name in every card (artboard A of stage 3): priority, due date, at most
+ * MAX_CARD_LABELS labels and "+N"; subtasks are added by a later step. Nothing to show — renders nothing.
  */
 export function TaskMeta({ task, className }: { task: Task; className?: string }) {
   const { data: statuses } = useTaskStatuses();
@@ -31,6 +34,12 @@ export function TaskMeta({ task, className }: { task: Task; className?: string }
         {formatDueDate(task.dueDate)}
       </span>,
     );
+  }
+  task.labels.slice(0, MAX_CARD_LABELS).forEach((label) => {
+    items.push(<LabelChip key={label.id} label={label} />);
+  });
+  if (task.labels.length > MAX_CARD_LABELS) {
+    items.push(<span key="moreLabels">+{task.labels.length - MAX_CARD_LABELS}</span>);
   }
   if (items.length === 0) return null;
 

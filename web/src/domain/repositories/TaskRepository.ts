@@ -2,7 +2,7 @@ import type { Task } from "../models/Task";
 import type { TaskComment } from "../models/TaskComment";
 import type { TaskEvent } from "../models/TaskEvent";
 import type { TaskStatus } from "../models/TaskStatus";
-import type { CommentId, ProjectId, TaskId, TaskPriorityId, TaskStatusId, UserId } from "../types";
+import type { CommentId, LabelId, ProjectId, TaskId, TaskPriorityId, TaskStatusId, UserId } from "../types";
 
 export interface NewTask {
   projectId: ProjectId;
@@ -44,6 +44,8 @@ export interface TaskRepository {
   changeDueDate(id: TaskId, dueDate: string | null): Promise<Task>;
   /** null unassigns the task */
   changeAssignee(id: TaskId, assigneeId: UserId | null): Promise<Task>;
+  /** Replaces the task's labels: 0–10 labels of its project (ADR-0035) */
+  setLabels(id: TaskId, labelIds: LabelId[]): Promise<Task>;
   /** Moves to another project; if the assignee is not a member of the new project, the task is unassigned */
   move(id: TaskId, projectId: ProjectId): Promise<Task>;
   /** Archives (true) or restores (false) a task; any member of its active project */

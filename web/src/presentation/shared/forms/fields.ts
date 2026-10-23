@@ -53,5 +53,12 @@ export const taskNameField = z
 // The contract sets no limit on the task description; empty means no description
 export const taskDescriptionField = z.string().trim();
 
+// Label name — LabelName in the contract (ADR-0035): 1–30 characters after trimming
+export const labelNameField = z
+  .string()
+  .trim()
+  .min(1, "Заполните поле")
+  .max(30, "Название длиннее 30 символов");
+
 /** How many emails the server accepts at once (AddMembersRequest, CreateProjectRequest). */
 export const MAX_INVITE_EMAILS = 50;
