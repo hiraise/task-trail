@@ -22,6 +22,12 @@ export interface Task {
   archivedAt?: string;
   /** Labels of the task's project, ordered by name (ADR-0035) */
   labels: Label[];
+  /** The parent task in the same project; undefined — not a subtask. One level (ADR-0036) */
+  parentId?: TaskId;
+  /** Non-archived subtasks */
+  subtasksTotal: number;
+  /** Non-archived subtasks in a resolved status */
+  subtasksDone: number;
   /** The task's project is archived: the task is read-only too */
   projectArchived: boolean;
   /** ISO 8601 in UTC */

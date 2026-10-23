@@ -5,6 +5,7 @@ import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
 import { TEXTS } from "@/shared/locales/texts";
 
+import { useChangeTaskParent } from "./useChangeTaskParent";
 import { useDeleteTask } from "./useDeleteTask";
 import { useSetTaskArchived } from "./useSetTaskArchived";
 
@@ -16,7 +17,8 @@ import { useSetTaskArchived } from "./useSetTaskArchived";
 export const useTaskMenuItems = (task?: Task) => {
   const { mutate: deleteTask } = useDeleteTask();
   const { mutate: setArchived } = useSetTaskArchived();
-  const { showEditTask, showMoveToArchive, showDeleteItem } = useGlobalModals();
+  const { mutate: changeParent } = useChangeTaskParent();
+  const { showEditTask, showMoveToArchive, showDeleteItem, showSelectParent } = useGlobalModals();
 
   if (!task || task.projectArchived) return { menuItems: [] };
 
@@ -28,6 +30,26 @@ export const useTaskMenuItems = (task?: Task) => {
       color: "var(--icon-tertiary)",
       onClick: () => showEditTask(task),
       isVisible: !archived,
+    },
+    {
+      // One level (ADR-0036). subtasksTotal skips archived subtasks: for a task with only archived
+      // ones the server answers 422 TASK_PARENT_INVALID, and the toast shows its text
+      label: tasksTexts.makeSubtask,
+      icon: ICONS.subtasks,
+      color: "var(--icon-tertiary)",
+      onClick: async () => {
+        const parent = await showSelectParent({ projectId: task.projectId, taskId: task.id });
+
+        if (parent) changeParent({ taskId: task.id, parentId: parent.id });
+      },
+      isVisible: !archived && !task.parentId && task.subtasksTotal === 0,
+    },
+    {
+      label: tasksTexts.detachFromParent,
+      icon: ICONS.subtasks,
+      color: "var(--icon-tertiary)",
+      onClick: () => changeParent({ taskId: task.id, parentId: null }),
+      isVisible: !archived && !!task.parentId,
     },
     {
       label: TEXTS.tasks.moveToArchive,

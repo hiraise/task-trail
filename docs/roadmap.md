@@ -32,7 +32,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   step 8 is done — subtasks on the server ([ADR-0036](adr/0036-subtasks.md)): `Task.parentId`,
   `subtasksTotal`, `subtasksDone`, `parentId` on create, `PATCH /v1/tasks/{taskId}/parent`,
   `GET /v1/tasks/{taskId}/subtasks`, the `parent_changed` event, subtasks detached on a move or delete
-  of the parent; the next step is step 9 — subtasks in the web.
+  of the parent; step 9 is done — subtasks in the web: the «Подзадачи» block with progress and quick
+  adding on the task page and in the kanban modal, the parent link, «Сделать подзадачей…» and «Отвязать
+  от родителя» in the task menu, «2/5» on the cards; the next step is step 10 — attachments on the server.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;

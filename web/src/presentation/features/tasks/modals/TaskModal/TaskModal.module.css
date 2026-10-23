@@ -21,6 +21,11 @@
   border-bottom: 1px solid var(--border-secondary-2);
 }
 
+.subtasks {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-secondary-2);
+}
+
 .activity {
   padding-top: 16px;
 }

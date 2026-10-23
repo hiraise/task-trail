@@ -11,7 +11,7 @@ import { tasksTexts } from "@/shared/locales/tasks";
 
 import { useGlobalModals } from "@/presentation/shared/hooks/useGlobalModals";
 
-import { invalidateTaskLists } from "./taskCache";
+import { invalidateRelatives, invalidateTaskLists } from "./taskCache";
 
 /**
  * Soft-deletes the task and leaves the task page: to "My tasks" or to its project. On a board the
@@ -39,6 +39,8 @@ export function useDeleteTask() {
 
       queryClient.removeQueries({ queryKey: QUERY_KEYS.task.detail(task.id) });
       invalidateTaskLists(queryClient, task.projectId, { countChanged: true });
+      // The server detached the task from its parent and its subtasks from it (ADR-0036)
+      invalidateRelatives(queryClient, task);
     },
     onError: (error) => toastError(error, tasksTexts.deleteTaskFailed),
   });

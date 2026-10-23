@@ -1,3 +1,4 @@
+import { isTaskArchived } from "@/domain/models/Task";
 import { Dialog, IconButton, type BaseModalProps } from "@/presentation/shared";
 import { useScrollLock } from "@/presentation/shared/hooks";
 import { useGlobalModalProps } from "@/presentation/shared/hooks/useGlobalModalProps";
@@ -7,7 +8,7 @@ import { hasErrorCode } from "@/shared/errors/types";
 import { tasksTexts } from "@/shared/locales/tasks";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { TaskActivity, TaskInfo } from "../../components";
+import { TaskActivity, TaskInfo, TaskSubtasks } from "../../components";
 import { useTaskDetail, useTaskMenuItems } from "../../hooks";
 
 import styles from "./TaskModal.module.css";
@@ -42,6 +43,11 @@ export function TaskModal({ isOpen, onClose }: BaseModalProps) {
                 menuItems={menuItems}
               />
             </section>
+            <TaskSubtasks
+              task={data.task}
+              readOnly={isTaskArchived(data.task)}
+              className={styles.subtasks}
+            />
             <section className={styles.activity}>
               <TaskActivity task={data.task} role={data.project.role} />
             </section>

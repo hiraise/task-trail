@@ -42,6 +42,10 @@ export const SelectProjectModal = lazy(() =>
   import("@/presentation/features/tasks/modals").then((m) => ({ default: m.SelectProjectModal })),
 );
 
+export const SelectParentModal = lazy(() =>
+  import("@/presentation/features/tasks/modals").then((m) => ({ default: m.SelectParentModal })),
+);
+
 export const CreateProjectModal = lazy(() =>
   import("@/presentation/features/projects/modals").then((m) => ({
     default: m.CreateProjectModal,

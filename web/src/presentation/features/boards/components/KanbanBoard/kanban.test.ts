@@ -29,6 +29,8 @@ const task = (id: string, fields: Partial<Task> = {}): Task => ({
   authorId: "anna",
   projectArchived: false,
   labels: [],
+  subtasksTotal: 0,
+  subtasksDone: 0,
   createdAt: "2026-10-23T12:00:00Z",
   updatedAt: "2026-10-23T12:00:00Z",
   ...fields,

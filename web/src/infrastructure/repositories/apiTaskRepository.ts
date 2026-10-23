@@ -3,6 +3,7 @@ import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 import type {
   ChangeTaskAssigneeRequest,
   ChangeTaskDueDateRequest,
+  ChangeTaskParentRequest,
   ChangeTaskPriorityRequest,
   ChangeTaskStatusRequest,
   CreateCommentRequest,
@@ -36,7 +37,7 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
   findStatuses: async () =>
     (await http.get<TaskStatus[]>(API_ROUTES.TASK_STATUSES)).map(toTaskStatus),
 
-  create: async ({ projectId, name, description, assigneeId, statusId, priority, dueDate }) => {
+  create: async ({ projectId, name, description, assigneeId, statusId, priority, dueDate, parentId }) => {
     const body: CreateTaskRequest = {
       projectId,
       name,
@@ -45,6 +46,7 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
       ...(statusId && { statusId }),
       ...(priority && { priority }),
       ...(dueDate && { dueDate }),
+      ...(parentId && { parentId }),
     };
 
     return toTask(await http.post<Task>(API_ROUTES.TASKS, body));
@@ -100,6 +102,15 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
 
   delete: async (id) => {
     await http.delete(API_ROUTES.TASK_BY_ID(id));
+  },
+
+  findSubtasks: async (id) =>
+    (await http.get<Task[]>(API_ROUTES.TASK_SUBTASKS(id))).map(toTask),
+
+  changeParent: async (id, parentId) => {
+    const body: ChangeTaskParentRequest = { parentId };
+
+    return toTask(await http.patch<Task>(API_ROUTES.TASK_PARENT(id), body));
   },
 
   findComments: async (taskId) =>

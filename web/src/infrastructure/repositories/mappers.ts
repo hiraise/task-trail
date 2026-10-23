@@ -98,6 +98,9 @@ export const toTask = (dto: TaskDto): Task => ({
   archivedAt: dto.archivedAt ?? undefined,
   projectArchived: dto.projectArchived,
   labels: dto.labels.map(toLabel),
+  parentId: dto.parentId ?? undefined,
+  subtasksTotal: dto.subtasksTotal,
+  subtasksDone: dto.subtasksDone,
   createdAt: dto.createdAt,
   updatedAt: dto.updatedAt,
 });
