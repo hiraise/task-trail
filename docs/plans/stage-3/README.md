@@ -27,8 +27,8 @@ approved before step 2 — the first web step; server steps 1 and 3 may be done 
 
 | # | Step | File | Status |
 | --- | --- | --- | --- |
-| 0 | Mockups of all stage 3 screens | [00-mockups.md](00-mockups.md) | next |
-| 1 | Priority — server | [01-priority-server.md](01-priority-server.md) | |
+| 0 | Mockups of all stage 3 screens | [00-mockups.md](00-mockups.md) | done |
+| 1 | Priority — server | [01-priority-server.md](01-priority-server.md) | next |
 | 2 | Priority — web, the shared card line `TaskMeta` | [02-priority-web.md](02-priority-web.md) | |
 | 3 | Due date — server | [03-due-date-server.md](03-due-date-server.md) | |
 | 4 | Due date — web | [04-due-date-web.md](04-due-date-web.md) | |
@@ -207,8 +207,10 @@ full `Task` (search: `grep -rn "projectArchived:" web/src --include=*.tsx --incl
 ## Design
 
 New screens follow the mockups approved in step 0 ([00-mockups.md](00-mockups.md)) — the canvas
-«TaskTrail — этап 3» on claude.ai; step files name its artboards. Existing screens are in Figma (the
-file key is in CLAUDE.md): the task page, the kanban and the lists. Tokens and components —
+[«TaskTrail — этап 3»](https://claude.ai/artifact/HxcqoKqupKL65NSs5nTPMC) on claude.ai; step files
+name its artboards by letter. Token values, icons and agreed deviations — «Approved values» in
+00-mockups.md. Existing screens are in Figma (the file key is in CLAUDE.md): the task page, the kanban
+and the lists. Tokens and components —
 [docs/design-system.md](../../design-system.md). A state found neither in the mockups nor in a step
 file needs the customer's approval (ADR-0025).
 

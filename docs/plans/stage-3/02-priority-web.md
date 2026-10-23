@@ -50,8 +50,9 @@ Sort option label in `SortItems.types.ts`: `{ value: "priority", label: "По п
 
 ## Icons and tokens
 
-- Icons from «Approved values» of step 0: the priority icon(s) in `web/src/assets/icons/`, registered in
-  `ICONS` (`shared/config/icons.ts`) — at least `ICONS.priority` for the field row.
+- Icons from «Approved values» of step 0: the four priority icons in `web/src/assets/icons/`, registered in
+  `ICONS` (`shared/config/icons.ts`) as `priorityUrgent`, `priorityHigh`, `priorityNormal`, `priorityLow`.
+  There is no generic priority icon: the field row and the form show the icon of the current value.
 - Tokens `--priority-urgent`, `--priority-high`, `--priority-low` in `web/src/styles/globals.css` with the
   approved values (light theme, and dark if `globals.css` has a dark block).
 
@@ -113,7 +114,10 @@ Show `<TaskMeta task={task} />` under the task name:
   `showChangePriority(props): Promise<TaskPriorityId | undefined>`.
 - `useTaskActions`: `changePriority` — opens `showChangePriority({ priority: task.priority })` and calls
   the mutation only if the value changed.
-- `TaskInfo`: a third `TaskField` after «Проект»: `icon={ICONS.priority}`,
+- `TaskField` gets an optional `iconNode?: ReactNode` rendered in place of `<Icon as={icon}>`; `icon`
+  becomes optional (pass one of the two).
+- `TaskInfo`: a third `TaskField` after «Проект»:
+  `iconNode={<PriorityIcon priority={task.priority} size="24px" />}`,
   `label={tasksTexts.priority}`, `value={tasksTexts.priorities[task.priority]}`,
   `onClick={archived ? undefined : changePriority}`.
 
@@ -121,7 +125,9 @@ Show `<TaskMeta task={task} />` under the task name:
 
 - `features/tasks/store/createTaskFormStore.ts`: `priority: TaskPriorityId` and `setPriority`; put
   `priority: DEFAULT_TASK_PRIORITY` into its `empty` object — `reset` sets `empty`.
-- `CreateTaskForm.tsx`: a `SelectionField` after the project field: `icon={ICONS.priority}`,
+- `SelectionField` gets the same optional `iconNode` as `TaskField`.
+- `CreateTaskForm.tsx`: a `SelectionField` after the project field:
+  `iconNode={<PriorityIcon priority={priority} size="18px" />}`,
   `placeholder={tasksTexts.priority}` (required prop), `value={tasksTexts.priorities[priority]}`,
   `onClick` — `showChangePriority({ priority })`, then `setPriority`. Submit sends `priority`.
 
