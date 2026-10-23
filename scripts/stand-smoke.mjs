@@ -2,7 +2,8 @@
 // The stack administrator signs in, refreshes the session and opens Swagger; creates a project with
 // a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
 // mail, from the API response), gets a task with the key <project key>-1, changes its status, writes,
-// edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027), uploads
+// edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027), finds
+// it by key and by part of its name (ADR-0030), uploads
 // an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
 // a user of the stack. Run: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
@@ -139,6 +140,12 @@ try {
   await call(member, "PATCH", `/v1/tasks/${task?.id}/status`, 409, { json: { statusId: "done" } });
   const restored = await call(member, "PATCH", `/v1/tasks/${task?.id}/archived`, 200, { json: { archived: false } });
   check(restored?.archivedAt === null, "the task is restored from the archive");
+
+  // Search (ADR-0030): the task by its key in lower case comes first; by part of its name
+  const byKey = await call(member, "GET", `/v1/search?q=${encodeURIComponent(task?.key?.toLowerCase())}`, 200);
+  check(byKey?.tasks?.[0]?.id === task?.id, `search by key ${task?.key} finds the task first`);
+  const byName = await call(member, "GET", `/v1/search?q=${encodeURIComponent("дымовая зад")}`, 200);
+  check(byName?.tasks?.some?.((item) => item.id === task?.id), "search by part of the name finds the task");
 
   // Boards (ADR-0029): the member sees the task on the board, leaves it; the owner deletes it
   const board = await call(admin, "POST", "/v1/boards", 201, {

@@ -7,22 +7,23 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 
 ## Where we are
 
-- **Now:** stage 2, plan — [docs/plans/stage-2/](plans/stage-2/README.md). Steps 0–5 are done:
+- **Now:** stage 2, plan — [docs/plans/stage-2/](plans/stage-2/README.md). Steps 0–6 are done:
   English code comments; project keys and task keys `DS-12`
   ([ADR-0026](adr/0026-project-and-task-keys.md)); a reversible archive of tasks and projects
   ([ADR-0027](adr/0027-reversible-archive.md)) and list sorting; the task feed — comments and change
   history ([ADR-0028](adr/0028-task-activity-feed.md)); boards — list, creation, board info
-  ([ADR-0029](adr/0029-boards-over-projects.md)); the kanban with drag and drop and the task modal.
-  Next step — 6, search on the server; then 7, search in the web.
+  ([ADR-0029](adr/0029-boards-over-projects.md)); the kanban with drag and drop and the task modal;
+  search on the server — `GET /v1/search` ([ADR-0030](adr/0030-search-by-substring.md)).
+  Next step — 7, search in the web.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
-  the archive of tasks and projects; task comments and history; boards; service administration.
+  the archive of tasks and projects; task comments and history; boards; search; service administration.
   Tests check responses against the contract ([ADR-0019](adr/0019-server-contract-tests.md)).
 - **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping
   and errors — [ADR-0024](adr/0024-web-api-mapping-and-errors.md)): sign-in and profile, projects and
   members, tasks, the archive and list sorting, the task feed, boards with the kanban, the admin
-  section. Search is a stub — stage 2.
+  section. Search is a stub until step 7 of stage 2.
 - **Local stack** — `scripts/dev.sh up` (README, «Локальный стенд»): the server, the web, PostgreSQL
   and Mailpit; the first `up` creates an administrator and connects mail.
 - **Design** of new screens — `docs/design-system.md` and a mockup approved by the customer

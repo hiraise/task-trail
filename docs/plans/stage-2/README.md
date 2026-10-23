@@ -28,8 +28,8 @@ contract and the web are separate steps ([ADR-0032](../../adr/0032-one-session-p
 | 3 | Task activity: comments and history | [03-task-activity.md](03-task-activity.md) | done |
 | 4 | Boards: list, creation, board info | [04-boards.md](04-boards.md) | done |
 | 5 | Kanban and the task modal | [05-kanban.md](05-kanban.md) | done |
-| 6 | Search on the server | [06-search-server.md](06-search-server.md) | next |
-| 7 | Search in the web | [07-search-web.md](07-search-web.md) | planned |
+| 6 | Search on the server | [06-search-server.md](06-search-server.md) | done |
+| 7 | Search in the web | [07-search-web.md](07-search-web.md) | next |
 
 Finished a step — set its status to `done` here and point "next" at the following step, in the same PR;
 update "Where we are" in [the roadmap](../../roadmap.md).

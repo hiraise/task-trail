@@ -4,6 +4,7 @@ import (
 	"context"
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
+	"task-trail/internal/domain/repository"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -64,6 +65,23 @@ func (r *PGTaskRepository) ListAssigned(ctx context.Context, userID entity.UserI
 		WHERE t.assignee_id = $1 AND t.deleted_at IS NULL
 			AND (t.archived_at IS NOT NULL OR p.archived_at IS NOT NULL) = $2` + newestFirst
 	return r.list(ctx, query, userID, archived)
+}
+
+// Search: a task of a deleted project is deleted too (ProjectRepository.SoftDelete), so t.deleted_at is enough.
+func (r *PGTaskRepository) Search(ctx context.Context, viewerID entity.UserID, pattern string, key *repository.TaskKeyQuery, limit int) ([]*entity.Task, error) {
+	args := pgx.NamedArgs{"viewer": viewerID, "pattern": pattern, "limit": limit, "key": nil, "number": nil}
+	if key != nil {
+		args["key"], args["number"] = string(key.Key), key.Number
+	}
+	query := `
+		SELECT ` + taskColumns + taskTables + `
+		JOIN project_members m ON m.project_id = t.project_id AND m.user_id = @viewer
+		WHERE t.deleted_at IS NULL
+			AND (t.name ILIKE @pattern ESCAPE '\' OR t.description ILIKE @pattern ESCAPE '\'
+				OR (p.key || '-' || t.number) ILIKE @pattern ESCAPE '\')
+		ORDER BY COALESCE(p.key = @key::text AND t.number = @number::int, false) DESC, t.updated_at DESC, t.id
+		LIMIT @limit`
+	return r.list(ctx, query, args)
 }
 
 func (r *PGTaskRepository) list(ctx context.Context, query string, args ...any) ([]*entity.Task, error) {

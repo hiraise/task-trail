@@ -386,6 +386,15 @@ export type Board = {
     tasksCount: number;
 };
 
+/**
+ * Search results by group, in the shapes of the lists (ADR-0030)
+ */
+export type SearchResult = {
+    projects: Array<Project>;
+    boards: Array<Board>;
+    tasks: Array<Task>;
+};
+
 export type CreateBoardRequest = {
     name: BoardName;
     projectIds: Array<Uuid>;
@@ -2513,6 +2522,44 @@ export type ListBoardTasksResponses = {
 };
 
 export type ListBoardTasksResponse = ListBoardTasksResponses[keyof ListBoardTasksResponses];
+
+export type SearchData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * What to look for; 1–100 characters after trimming, otherwise `422` with `details.q`
+         */
+        q: string;
+    };
+    url: '/v1/search';
+};
+
+export type SearchErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type SearchError = SearchErrors[keyof SearchErrors];
+
+export type SearchResponses = {
+    /**
+     * What was found
+     */
+    200: SearchResult;
+};
+
+export type SearchResponse = SearchResponses[keyof SearchResponses];
 
 export type GetServiceSettingsData = {
     body?: never;

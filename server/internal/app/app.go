@@ -10,6 +10,7 @@ import (
 	"task-trail/internal/application/service/board"
 	"task-trail/internal/application/service/file"
 	"task-trail/internal/application/service/project"
+	"task-trail/internal/application/service/search"
 	"task-trail/internal/application/service/task"
 	"task-trail/internal/application/service/user"
 	"task-trail/internal/domain/factory"
@@ -66,6 +67,7 @@ type Server struct {
 	Project *project.ProjectModule
 	Task    *task.TaskModule
 	Board   *board.BoardModule
+	Search  *search.SearchModule
 	Admin   *admin.AdminModule
 }
 
@@ -185,14 +187,16 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		EventRepo:      eventRepo,
 		EventFactory:   eventFactory,
 	})
+	boardRepo := persistent.NewBoardRepo(pool, userFactory)
 	boardModule := board.New(board.Deps{
 		TxManager:    txManager,
 		Clock:        clk,
-		BoardRepo:    persistent.NewBoardRepo(pool, userFactory),
+		BoardRepo:    boardRepo,
 		BoardFactory: factory.NewBoardFactory(idGen, clk),
 		MemberRepo:   memberRepo,
 		UserRepo:     userRepo,
 	})
+	searchModule := search.New(search.Deps{ProjectRepo: projectRepo, BoardRepo: boardRepo, TaskRepo: taskRepo})
 	adminModule := admin.New(admin.Deps{
 		TxManager:    txManager,
 		Clock:        clk,
@@ -206,7 +210,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	http.NewRouter(engine, contextManager,
 		middleware.NewAuth(accessTokenService, contextManager),
 		middleware.NewAdmin(accessModule.AdminCheck, contextManager),
-		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule, Board: boardModule, Admin: adminModule})
+		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule, Board: boardModule, Search: searchModule, Admin: adminModule})
 	return &Server{
 		Engine:  engine,
 		Access:  accessModule,
@@ -215,6 +219,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		Project: projectModule,
 		Task:    taskModule,
 		Board:   boardModule,
+		Search:  searchModule,
 		Admin:   adminModule,
 	}, nil
 }
