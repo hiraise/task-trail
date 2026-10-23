@@ -6,10 +6,10 @@ exist yet.
 
 ## Model, mapper, repository
 
-- `Task`: `parentId?: TaskId`, `subtasksTotal: number`, `subtasksDone: number`; `TaskEventKind` gets
-  `"parent_changed"` (it uses the existing `fromKey`/`toKey`).
-- `toTask` with tests; the task DTOs of `describe("toTask")` and `describe("toSearchResult")` and other
-  fixtures get `parentId: null, subtasksTotal: 0, subtasksDone: 0`.
+- `Task`: `parentId?: TaskId`, `subtasksTotal: number`, `subtasksDone: number`. Step 8 already added
+  `"parent_changed"` to `TaskEventKind`, its feed line and the `events.parent*` texts (see «Feed»).
+- `toTask` with tests; the task DTOs of `describe("toTask")` and `describe("toSearchResult")` already
+  have `parentId: null, subtasksTotal: 0, subtasksDone: 0` (step 8); other fixtures get them too.
 - `NewTask.parentId?: TaskId`; `apiTaskRepository.create` sends it.
 - `TaskRepository`: `findSubtasks(id): Promise<Task[]>`, `changeParent(id, parentId: TaskId | null):
   Promise<Task>` *(new)*; routes `TASK_SUBTASKS(id)`, `TASK_PARENT(id)`.
@@ -35,8 +35,8 @@ A `parentId` change must refresh the old parent too:
 `subtaskOf: "Подзадача"`, `makeSubtask: "Сделать подзадачей…"`, `detachFromParent: "Отвязать от
 родителя"`, `chooseParent: "Выберите родительскую задачу"`, `noParentCandidates: "Нет задач, к которым
 можно привязать"`, `createSubtaskFailed: "Не удалось создать подзадачу"`, `changeParentFailed: "Не
-удалось изменить родителя"`, `events.parentSet: "Стала подзадачей {key}"`, `events.parentRemoved: "Больше
-не подзадача {key}"`, `events.parentChanged: "Подзадача: {from} → {to}"`.
+удалось изменить родителя"`. The `events.parentSet`, `events.parentRemoved` and `events.parentChanged`
+texts are in place since step 8.
 
 ## Icons
 
@@ -100,8 +100,9 @@ After the due date, before labels: when `subtasksTotal > 0` — `ICONS.subtasks`
 
 ## Feed
 
-`feed.ts` `DESCRIBE.parent_changed`: only `toKey` → `parentSet`; only `fromKey` → `parentRemoved`; both →
-`parentChanged`. Tests in `feed.test.ts`.
+Done in step 8, so that the web build does not break before this step: `feed.ts`
+`DESCRIBE.parent_changed` — only `toKey` → `parentSet`; only `fromKey` → `parentRemoved`; both →
+`parentChanged`, with tests in `feed.test.ts`. Nothing left here.
 
 ## Stack
 

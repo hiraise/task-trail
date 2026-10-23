@@ -30,6 +30,9 @@ type task struct {
 	ArchivedAt      *string `json:"archivedAt"`
 	ProjectArchived bool    `json:"projectArchived"`
 	Labels          []label `json:"labels"`
+	ParentID        *string `json:"parentId"`
+	SubtasksTotal   int     `json:"subtasksTotal"`
+	SubtasksDone    int     `json:"subtasksDone"`
 	CreatedAt       string  `json:"createdAt"`
 	UpdatedAt       string  `json:"updatedAt"`
 }

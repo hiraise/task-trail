@@ -76,12 +76,24 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 		if err != nil {
 			return err
 		}
+		var parent *entity.Task
+		if data.ParentID != nil {
+			if parent, err = e.parent(ctx, *data.ParentID); err != nil {
+				return err
+			}
+		}
 		number, err := e.projects.NextTaskNumber(ctx, project.ID)
 		if err != nil {
 			return err
 		}
 		if task, err = s.factory.New(author, project.Key, number, entity.TaskDraft{Name: data.Name, Description: data.Description, Status: data.Status, Priority: data.Priority, DueDate: data.DueDate}, assignee); err != nil {
 			return err
+		}
+		// The project is locked above; a parent of another project fails AttachTo (ADR-0036)
+		if parent != nil {
+			if err := task.AttachTo(parent, false, task.CreatedAt); err != nil {
+				return err
+			}
 		}
 		if err := e.tasks.Create(ctx, task); err != nil {
 			return err
@@ -193,7 +205,8 @@ func (s *ChangeAssigneeService) Execute(ctx context.Context, userID, taskID stri
 // MoveTaskService moves a task to another project: a member of both projects moves it; both projects
 // are active (ADR-0027).
 // The task gets the next number of the new project and its key (ADR-0026); a move to the task's own
-// project changes nothing. The assignee stays if they are a member of the new project.
+// project changes nothing. The assignee stays if they are a member of the new project. The task
+// leaves its parent, and its own subtasks are detached (ADR-0036).
 type MoveTaskService struct {
 	editor *editor
 }
@@ -226,6 +239,10 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 			return nil, err
 		}
 		fromKey, fromAssignee := task.Key(), task.AssigneeID
+		parentKey, err := e.parentKey(ctx, task)
+		if err != nil {
+			return nil, err
+		}
 		task.MoveTo(target, projects[target].Key, number, assignee, now)
 		// Labels do not cross projects (ADR-0035)
 		if err := e.labels.ClearTask(ctx, task.ID); err != nil {
@@ -238,7 +255,18 @@ func (s *MoveTaskService) Execute(ctx context.Context, userID, taskID, projectID
 		if !equal(fromAssignee, task.AssigneeID) {
 			events = append(events, e.newEvent.AssigneeChanged(task.ID, actor, fromAssignee, task.AssigneeID, now))
 		}
-		return events, nil
+		// A subtask leaves its parent, the subtasks of a parent stay in their project (ADR-0036)
+		if parentKey != nil {
+			task.Detach(now)
+			events = append(events, e.newEvent.ParentChanged(task.ID, actor, parentKey, nil, now))
+		}
+		detached, err := e.detachSubtasks(ctx, task.ID, fromKey, actor, now)
+		if err != nil {
+			return nil, err
+		}
+		// The counters were read before the detach; the response shows the task after it
+		task.SubtasksTotal, task.SubtasksDone = 0, 0
+		return append(events, detached...), nil
 	})
 }
 
@@ -319,7 +347,7 @@ func (s *SetTaskArchivedService) Execute(ctx context.Context, userID, taskID str
 }
 
 // DeleteTaskService soft-deletes a task (ADR-0001): an archived one too, but not in an archived
-// project (ADR-0027).
+// project (ADR-0027). Its subtasks are detached and stay (ADR-0036).
 type DeleteTaskService struct {
 	editor *editor
 }
@@ -334,7 +362,15 @@ func (s *DeleteTaskService) Execute(ctx context.Context, userID, taskID string) 
 		if err := projects[task.ProjectID].RequireActive(); err != nil {
 			return err
 		}
-		return e.tasks.SoftDelete(ctx, task.ID, e.clock.Now())
+		now := e.clock.Now()
+		events, err := e.detachSubtasks(ctx, task.ID, task.Key(), entity.UserID(userID), now)
+		if err != nil {
+			return err
+		}
+		if err := e.record(ctx, events...); err != nil {
+			return err
+		}
+		return e.tasks.SoftDelete(ctx, task.ID, now)
 	})
 }
 

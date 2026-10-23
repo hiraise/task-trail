@@ -18,6 +18,8 @@ type CreateTask struct {
 	Priority entity.TaskPriority
 	// DueDate — the due date of the new task (00:00 UTC) or nil (ADR-0034).
 	DueDate *time.Time
+	// ParentID — the parent in the same project or nil (ADR-0036).
+	ParentID *string
 }
 
 // TaskChanges is what to change in a task: Name if not nil; the description if DescriptionSet,

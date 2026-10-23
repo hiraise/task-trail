@@ -24,9 +24,13 @@ type Task struct {
 	ArchivedAt      *time.Time `json:"archivedAt"`
 	ProjectArchived bool       `json:"projectArchived"`
 	// Labels — ordered by name, never null (ADR-0035)
-	Labels    []Label   `json:"labels"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Labels []Label `json:"labels"`
+	// ParentID and the counters of non-archived subtasks (ADR-0036)
+	ParentID      *string   `json:"parentId"`
+	SubtasksTotal int       `json:"subtasksTotal"`
+	SubtasksDone  int       `json:"subtasksDone"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 func NewTask(t *entity.Task) Task {
@@ -39,6 +43,11 @@ func NewTask(t *entity.Task) Task {
 	if t.DueDate != nil {
 		d := entity.FormatDueDate(*t.DueDate)
 		dueDate = &d
+	}
+	var parent *string
+	if t.ParentID != nil {
+		id := string(*t.ParentID)
+		parent = &id
 	}
 	labels := make([]Label, 0, len(t.Labels))
 	for i := range t.Labels {
@@ -60,6 +69,9 @@ func NewTask(t *entity.Task) Task {
 		ArchivedAt:      utc(t.ArchivedAt),
 		ProjectArchived: t.ProjectArchived,
 		Labels:          labels,
+		ParentID:        parent,
+		SubtasksTotal:   t.SubtasksTotal,
+		SubtasksDone:    t.SubtasksDone,
 		CreatedAt:       t.CreatedAt.UTC(),
 		UpdatedAt:       t.UpdatedAt.UTC(),
 	}

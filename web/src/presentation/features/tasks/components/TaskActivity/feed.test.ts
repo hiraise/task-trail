@@ -82,6 +82,12 @@ describe("describeEvent", () => {
     expect(line({ kind: "assignee_changed", fromUser: anna })).toBe("Ответственный снят");
   });
 
+  it("tells a changed, a set and a removed parent apart", () => {
+    expect(line({ kind: "parent_changed", fromKey: "DS-1", toKey: "DS-4" })).toBe("Подзадача: DS-1 → DS-4");
+    expect(line({ kind: "parent_changed", toKey: "DS-4" })).toBe("Стала подзадачей DS-4");
+    expect(line({ kind: "parent_changed", fromKey: "DS-1" })).toBe("Больше не подзадача DS-1");
+  });
+
   it("shows the other kinds", () => {
     expect(line({ kind: "created" })).toBe("Задача создана");
     expect(line({ kind: "moved", fromKey: "DS-5", toKey: "CM-12" })).toBe("Перенесена: DS-5 → CM-12");

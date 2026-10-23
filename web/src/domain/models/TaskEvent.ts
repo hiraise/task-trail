@@ -12,12 +12,14 @@ export type TaskEventKind =
   | "assignee_changed"
   | "moved"
   | "archived"
-  | "restored";
+  | "restored"
+  | "parent_changed";
 
 /**
  * A row of task history. Change fields are set only by the kinds that use them:
  * `status_changed` — statuses, `priority_changed` — priorities,
- * `due_date_changed` — days `YYYY-MM-DD` (undefined — no due date), `assignee_changed` — users (undefined — no assignee), `moved` — keys.
+ * `due_date_changed` — days `YYYY-MM-DD` (undefined — no due date), `assignee_changed` — users (undefined — no assignee), `moved` — keys,
+ * `parent_changed` — the keys of the old and the new parent (undefined — no parent, ADR-0036).
  */
 export interface TaskEvent {
   id: string;

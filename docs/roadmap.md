@@ -29,11 +29,14 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   search, creating a label with a color and the limit of 10, chips on the cards (at most 3 and «+N»);
   step 7 is done — project labels management in the web: «Метки» in the project menu opens «Метки
   проекта», where the owner and admins create, rename, recolor and delete labels, others see the list;
-  the next step is step 8 — subtasks on the server.
+  step 8 is done — subtasks on the server ([ADR-0036](adr/0036-subtasks.md)): `Task.parentId`,
+  `subtasksTotal`, `subtasksDone`, `parentId` on create, `PATCH /v1/tasks/{taskId}/parent`,
+  `GET /v1/tasks/{taskId}/subtasks`, the `parent_changed` event, subtasks detached on a move or delete
+  of the parent; the next step is step 9 — subtasks in the web.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
-  the archive of tasks and projects; task comments and history; project labels; boards; search; service
+  the archive of tasks and projects; task comments and history; project labels; subtasks; boards; search; service
   administration.
   Tests check responses against the contract ([ADR-0019](adr/0019-server-contract-tests.md)).
 - **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping

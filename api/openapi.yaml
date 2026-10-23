@@ -842,7 +842,7 @@ paths:
       tags: [tasks]
       operationId: createTask
       summary: Create a task
-      description: "Role: any in the project; the project is not archived. Status — `statusId`, without it — the status with `isDefault`; author — the current user. A task created from a board column passes the column's status (ADR-0029)."
+      description: "Role: any in the project; the project is not archived. Status — `statusId`, without it — the status with `isDefault`; author — the current user. A task created from a board column passes the column's status (ADR-0029). With `parentId` the task is a subtask of an active task of the same project that is not a subtask itself (ADR-0036)."
       requestBody:
         required: true
         content:
@@ -857,8 +857,16 @@ paths:
               schema: { $ref: "#/components/schemas/Task" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
-        "409": { $ref: "#/components/responses/ProjectArchived" }
-        "422": { $ref: "#/components/responses/AssigneeInvalid" }
+        "409":
+          description: "`PROJECT_ARCHIVED` — the project is archived; `TASK_ARCHIVED` — the parent is archived"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+        "422":
+          description: "`ASSIGNEE_NOT_MEMBER`, `TASK_PARENT_INVALID` or `VALIDATION_FAILED`"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
 
   /v1/tasks/{taskId}:
     parameters:
@@ -1018,6 +1026,63 @@ paths:
         "409": { $ref: "#/components/responses/TaskReadOnly" }
         "422": { $ref: "#/components/responses/AssigneeInvalid" }
 
+  /v1/tasks/{taskId}/parent:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    patch:
+      tags: [tasks]
+      operationId: changeTaskParent
+      summary: Attach a task to a parent or detach it
+      description: |
+        Role: any in the task's project; neither the task nor its project is archived (ADR-0036). The
+        parent is an active task of the same project, not a subtask and not the task itself; a task
+        with subtasks does not become a subtask. `parentId: null` detaches the task. Writes
+        `parent_changed` on the task if the parent changed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ChangeTaskParentRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Parent changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: "`TASK_ARCHIVED` — the task or the parent is archived; `PROJECT_ARCHIVED` — the project is archived (ADR-0027)"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+        "422":
+          description: "`TASK_PARENT_INVALID` — the parent breaks the rules of ADR-0036 or is not found; `VALIDATION_FAILED`"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+
+  /v1/tasks/{taskId}/subtasks:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    get:
+      tags: [tasks]
+      operationId: listSubtasks
+      summary: Subtasks of a task
+      description: "Role: any in the task's project. By number, archived subtasks included (ADR-0036)."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Subtasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Task" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
   /v1/tasks/{taskId}/project:
     parameters:
       - $ref: "#/components/parameters/TaskId"
@@ -1029,7 +1094,8 @@ paths:
         Role: any in both projects; neither project nor the task is archived. The task gets the next
         number of the new project and its key;
         a move to the task's own project changes nothing (ADR-0026). If the assignee is not a member
-        of the new project, the task is left without an assignee. The status is kept.
+        of the new project, the task is left without an assignee. The status is kept. A subtask leaves
+        its parent; the subtasks of a moved task are detached and stay in their project (ADR-0036).
       requestBody:
         required: true
         content:
@@ -1803,6 +1869,7 @@ components:
         - PROJECT_KEY_TAKEN
         - TASK_ARCHIVED
         - PROJECT_ARCHIVED
+        - TASK_PARENT_INVALID
         - COMMENT_EDIT_EXPIRED
         - BOARD_PROJECT_UNAVAILABLE
         - BOARD_MEMBER_UNAVAILABLE
@@ -2103,7 +2170,7 @@ components:
           description: The new set of the task's labels, all of its project; empty — no labels
     Task:
       type: object
-      required: [id, projectId, number, key, name, description, statusId, priority, dueDate, authorId, assigneeId, archivedAt, projectArchived, labels, createdAt, updatedAt]
+      required: [id, projectId, number, key, name, description, statusId, priority, dueDate, authorId, assigneeId, archivedAt, projectArchived, labels, parentId, subtasksTotal, subtasksDone, createdAt, updatedAt]
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         projectId: { $ref: "#/components/schemas/Uuid" }
@@ -2138,6 +2205,18 @@ components:
           maxItems: 10
           items: { $ref: "#/components/schemas/Label" }
           description: Ordered by name (ADR-0035)
+        parentId:
+          type: [string, "null"]
+          format: uuid
+          description: The parent task (ADR-0036); `null` — not a subtask
+        subtasksTotal:
+          type: integer
+          minimum: 0
+          description: Non-archived subtasks (ADR-0036)
+        subtasksDone:
+          type: integer
+          minimum: 0
+          description: Non-archived subtasks in a resolved status (ADR-0036)
         createdAt: { $ref: "#/components/schemas/DateTime" }
         updatedAt: { $ref: "#/components/schemas/DateTime" }
     CreateTaskRequest:
@@ -2160,6 +2239,10 @@ components:
           type: [string, "null"]
           format: date
           description: The due date of the new task (ADR-0034); absent or `null` — no due date.
+        parentId:
+          type: [string, "null"]
+          format: uuid
+          description: The parent in the same project (ADR-0036); absent or `null` — not a subtask.
     UpdateTaskRequest:
       type: object
       minProperties: 1
@@ -2203,6 +2286,14 @@ components:
         assigneeId:
           type: [string, "null"]
           format: uuid
+    ChangeTaskParentRequest:
+      type: object
+      required: [parentId]
+      properties:
+        parentId:
+          type: [string, "null"]
+          format: uuid
+          description: The parent task; `null` detaches the task (ADR-0036)
 
     CommentText:
       type: string
@@ -2236,11 +2327,12 @@ components:
         text: { $ref: "#/components/schemas/CommentText" }
     TaskEventKind:
       type: string
-      enum: [created, edited, status_changed, priority_changed, due_date_changed, assignee_changed, moved, archived, restored]
+      enum: [created, edited, status_changed, priority_changed, due_date_changed, assignee_changed, moved, archived, restored, parent_changed]
       description: |
         What changed (ADR-0028): `created`; `edited` — the name or description, without the old text;
         `status_changed`; `priority_changed` (ADR-0033); `due_date_changed` (ADR-0034); `assignee_changed` — also when the assignee left or was removed from the
-        project; `moved` — to another project, the task key changed; `archived`; `restored`.
+        project; `moved` — to another project, the task key changed; `archived`; `restored`;
+        `parent_changed` — the task was attached to a parent, detached or lost its parent (ADR-0036).
     TaskEvent:
       type: object
       required: [id, taskId, kind, actor, createdAt, fromStatusId, toStatusId, fromPriority, toPriority, fromDueDate, toDueDate, fromUser, toUser, fromKey, toKey]
@@ -2249,7 +2341,8 @@ components:
         `status_changed` — `fromStatusId`, `toStatusId`; `priority_changed` — `fromPriority`,
         `toPriority`; `due_date_changed` — `fromDueDate`, `toDueDate` (`null` — no due date);
         `assignee_changed` — `fromUser`, `toUser`
-        (`null` — no assignee); `moved` — `fromKey`, `toKey`.
+        (`null` — no assignee); `moved` — `fromKey`, `toKey`; `parent_changed` — `fromKey`, `toKey`,
+        the keys of the old and the new parent (`null` — no parent).
       properties:
         id: { $ref: "#/components/schemas/Uuid" }
         taskId: { $ref: "#/components/schemas/Uuid" }

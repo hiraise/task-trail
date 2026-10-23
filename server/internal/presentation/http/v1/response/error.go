@@ -20,6 +20,7 @@ const (
 	CodeLastAdmin               ErrorCode = "LAST_ADMIN"
 	CodeProjectKeyTaken         ErrorCode = "PROJECT_KEY_TAKEN"
 	CodeTaskArchived            ErrorCode = "TASK_ARCHIVED"
+	CodeTaskParentInvalid       ErrorCode = "TASK_PARENT_INVALID"
 	CodeProjectArchived         ErrorCode = "PROJECT_ARCHIVED"
 	CodeCommentEditExpired      ErrorCode = "COMMENT_EDIT_EXPIRED"
 	CodeBoardProjectUnavailable ErrorCode = "BOARD_PROJECT_UNAVAILABLE"

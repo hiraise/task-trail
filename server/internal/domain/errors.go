@@ -28,6 +28,8 @@ const (
 	ProjectKeyTaken ErrorCode = "PROJECT_KEY_TAKEN"
 	// The task is archived: only restoring and deleting are allowed (ADR-0027)
 	TaskArchived ErrorCode = "TASK_ARCHIVED"
+	// A subtask is a task of the same project without subtasks, its parent is not a subtask (ADR-0036)
+	TaskParentInvalid ErrorCode = "TASK_PARENT_INVALID"
 	// The project is archived: it, its members and tasks do not change (ADR-0027)
 	ProjectArchived ErrorCode = "PROJECT_ARCHIVED"
 	// The board owner is not a member of the project put on the board (ADR-0029)
@@ -160,6 +162,10 @@ func ErrOwnerCannotLeave(data ...any) *DomainError {
 
 func ErrAssigneeNotMember(data ...any) *DomainError {
 	return NewErr(sourceCodeOffset, AssigneeNotMember, nil, data...)
+}
+
+func ErrTaskParentInvalid(data ...any) *DomainError {
+	return NewErr(sourceCodeOffset, TaskParentInvalid, nil, data...)
 }
 
 func ErrProjectKeyTaken(sourceErr error, data ...any) *DomainError {

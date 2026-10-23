@@ -34,9 +34,15 @@ type Task struct {
 	// from projects.archived_at.
 	ProjectArchived bool
 	// Labels — read-only, repositories fill it from task_labels, ordered by name (ADR-0035).
-	Labels    []Label
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Labels []Label
+	// ParentID — the parent task, nil — not a subtask; set only through AttachTo (ADR-0036).
+	ParentID *TaskID
+	// SubtasksTotal and SubtasksDone — read-only, repositories fill them: non-deleted, non-archived
+	// subtasks, and those of them in a resolved status.
+	SubtasksTotal int
+	SubtasksDone  int
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 // TaskDraft — the fields a new task is created with. An empty Priority means PriorityNormal;
@@ -188,6 +194,28 @@ func (t *Task) MoveTo(projectID ProjectID, projectKey ProjectKey, number int, as
 	if !stays {
 		t.AssigneeID = nil
 	}
+	t.UpdatedAt = now
+}
+
+// AttachTo makes the task a subtask of parent (ADR-0036): one level, the same project, not itself.
+// hasSubtasks — whether the task has subtasks of its own. An archived parent — TASK_ARCHIVED.
+func (t *Task) AttachTo(parent *Task, hasSubtasks bool, now time.Time) error {
+	switch {
+	case parent.ID == t.ID, parent.ProjectID != t.ProjectID, parent.ParentID != nil, hasSubtasks:
+		return domain.ErrTaskParentInvalid("taskID", t.ID, "parentID", parent.ID)
+	}
+	if err := parent.RequireActive(); err != nil {
+		return err
+	}
+	id := parent.ID
+	t.ParentID = &id
+	t.UpdatedAt = now
+	return nil
+}
+
+// Detach makes the task an ordinary task, not a subtask.
+func (t *Task) Detach(now time.Time) {
+	t.ParentID = nil
 	t.UpdatedAt = now
 }
 

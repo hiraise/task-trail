@@ -57,6 +57,21 @@ func (mr *MockTaskRepositoryMockRecorder) Create(ctx, task any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockTaskRepository)(nil).Create), ctx, task)
 }
 
+// DetachSubtasks mocks base method.
+func (m *MockTaskRepository) DetachSubtasks(ctx context.Context, parentID entity.TaskID, now time.Time) ([]entity.TaskID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DetachSubtasks", ctx, parentID, now)
+	ret0, _ := ret[0].([]entity.TaskID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DetachSubtasks indicates an expected call of DetachSubtasks.
+func (mr *MockTaskRepositoryMockRecorder) DetachSubtasks(ctx, parentID, now any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachSubtasks", reflect.TypeOf((*MockTaskRepository)(nil).DetachSubtasks), ctx, parentID, now)
+}
+
 // Get mocks base method.
 func (m *MockTaskRepository) Get(ctx context.Context, id entity.TaskID) (*entity.Task, error) {
 	m.ctrl.T.Helper()
@@ -70,6 +85,21 @@ func (m *MockTaskRepository) Get(ctx context.Context, id entity.TaskID) (*entity
 func (mr *MockTaskRepositoryMockRecorder) Get(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTaskRepository)(nil).Get), ctx, id)
+}
+
+// HasSubtasks mocks base method.
+func (m *MockTaskRepository) HasSubtasks(ctx context.Context, id entity.TaskID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HasSubtasks", ctx, id)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HasSubtasks indicates an expected call of HasSubtasks.
+func (mr *MockTaskRepositoryMockRecorder) HasSubtasks(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasSubtasks", reflect.TypeOf((*MockTaskRepository)(nil).HasSubtasks), ctx, id)
 }
 
 // ListAssigned mocks base method.
@@ -100,6 +130,21 @@ func (m *MockTaskRepository) ListInProject(ctx context.Context, projectID entity
 func (mr *MockTaskRepositoryMockRecorder) ListInProject(ctx, projectID, archived any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListInProject", reflect.TypeOf((*MockTaskRepository)(nil).ListInProject), ctx, projectID, archived)
+}
+
+// ListSubtasks mocks base method.
+func (m *MockTaskRepository) ListSubtasks(ctx context.Context, parentID entity.TaskID) ([]*entity.Task, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListSubtasks", ctx, parentID)
+	ret0, _ := ret[0].([]*entity.Task)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListSubtasks indicates an expected call of ListSubtasks.
+func (mr *MockTaskRepositoryMockRecorder) ListSubtasks(ctx, parentID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListSubtasks", reflect.TypeOf((*MockTaskRepository)(nil).ListSubtasks), ctx, parentID)
 }
 
 // Search mocks base method.

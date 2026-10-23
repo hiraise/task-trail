@@ -165,3 +165,36 @@ func TestSetLabels(t *testing.T) {
 		t.Fatal("no labels must be an empty slice")
 	}
 }
+
+// A subtask: one level, the same project, not itself, the parent active (ADR-0036).
+func TestTaskAttachTo(t *testing.T) {
+	later := taskTime.Add(time.Hour)
+	grand := entity.TaskID("grand")
+	archived := taskTime
+	for name, c := range map[string]struct {
+		parent      entity.Task
+		hasSubtasks bool
+		code        domain.ErrorCode
+	}{
+		"itself":                  {entity.Task{ID: "task", ProjectID: "design"}, false, domain.TaskParentInvalid},
+		"another project":         {entity.Task{ID: "parent", ProjectID: "backend"}, false, domain.TaskParentInvalid},
+		"a subtask as the parent": {entity.Task{ID: "parent", ProjectID: "design", ParentID: &grand}, false, domain.TaskParentInvalid},
+		"a task with subtasks":    {entity.Task{ID: "parent", ProjectID: "design"}, true, domain.TaskParentInvalid},
+		"an archived parent":      {entity.Task{ID: "parent", ProjectID: "design", ArchivedAt: &archived}, false, domain.TaskArchived},
+	} {
+		task := &entity.Task{ID: "task", ProjectID: "design", UpdatedAt: taskTime}
+		if err := task.AttachTo(&c.parent, c.hasSubtasks, later); !domain.HasCode(err, c.code) || task.ParentID != nil || !task.UpdatedAt.Equal(taskTime) {
+			t.Errorf("%s: %v, %+v", name, err, task)
+		}
+	}
+
+	task := &entity.Task{ID: "task", ProjectID: "design", UpdatedAt: taskTime}
+	if err := task.AttachTo(&entity.Task{ID: "parent", ProjectID: "design"}, false, later); err != nil || task.ParentID == nil ||
+		*task.ParentID != "parent" || !task.UpdatedAt.Equal(later) {
+		t.Fatalf("attach: %v, %+v", err, task)
+	}
+	task.Detach(later.Add(time.Hour))
+	if task.ParentID != nil || !task.UpdatedAt.Equal(later.Add(time.Hour)) {
+		t.Fatalf("detach: %+v", task)
+	}
+}

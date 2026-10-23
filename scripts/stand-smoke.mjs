@@ -4,8 +4,8 @@
 // mail, from the API response), gets a task with the key <project key>-1, changes its status, writes,
 // edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027),
 // changes its priority (ADR-0033) and due date (ADR-0034), tags it with a label the invitee creates and the
-// owner deletes (ADR-0035), finds it by key and by part of its name (ADR-0030), uploads
-// an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
+// owner deletes (ADR-0035), adds and deletes a subtask (ADR-0036), finds it by key and by part of its
+// name (ADR-0030), uploads an avatar of the maximum size through the proxy. At the end the project is deleted; the invitee stays
 // a user of the stack. Run: scripts/dev.sh smoke.
 import { ADMIN, MAIL, WEB, createSession, randomProjectKey } from "./stand-api.mjs";
 
@@ -162,6 +162,16 @@ try {
   await call(admin, "DELETE", `/v1/projects/${projectId}/labels/${smokeLabel?.id}`, 204);
   const unlabeled = await call(member, "GET", `/v1/tasks/${task?.id}`, 200);
   check(unlabeled?.labels?.length === 0, "the deleted label left the task");
+
+  // Subtasks (ADR-0036): a subtask of the task is counted by the parent and listed; then deleted
+  const subtask = await call(member, "POST", "/v1/tasks", 201, {
+    json: { projectId, name: "Дымовая подзадача", parentId: task?.id },
+  });
+  const parent = await call(member, "GET", `/v1/tasks/${task?.id}`, 200);
+  check(subtask?.parentId === task?.id && parent?.subtasksTotal === 1, `the task got a subtask → ${parent?.subtasksTotal}`);
+  const subtasks = await call(member, "GET", `/v1/tasks/${task?.id}/subtasks`, 200);
+  check(subtasks?.length === 1 && subtasks[0]?.id === subtask?.id, "the subtask is in the task's subtasks");
+  await call(member, "DELETE", `/v1/tasks/${subtask?.id}`, 204);
 
   // Search (ADR-0030): the task by its key in lower case comes first; by part of its name
   const byKey = await call(member, "GET", `/v1/search?q=${encodeURIComponent(task?.key?.toLowerCase())}`, 200);

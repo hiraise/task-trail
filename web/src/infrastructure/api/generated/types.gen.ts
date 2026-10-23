@@ -25,7 +25,7 @@ export type Password = string;
 
 export type Username = string;
 
-export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'COMMENT_EDIT_EXPIRED' | 'BOARD_PROJECT_UNAVAILABLE' | 'BOARD_MEMBER_UNAVAILABLE' | 'LABEL_NAME_TAKEN' | 'LABEL_UNAVAILABLE' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
+export type ErrorCode = 'UNAUTHENTICATED' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'NOT_FOUND' | 'VALIDATION_FAILED' | 'REGISTRATION_CLOSED' | 'WRONG_PASSWORD' | 'PASSWORD_SAME_AS_OLD' | 'LINK_INVALID' | 'INVITATION_ACCEPTED' | 'ASSIGNEE_NOT_MEMBER' | 'OWNER_CANNOT_LEAVE' | 'LAST_ADMIN' | 'PROJECT_KEY_TAKEN' | 'TASK_ARCHIVED' | 'PROJECT_ARCHIVED' | 'TASK_PARENT_INVALID' | 'COMMENT_EDIT_EXPIRED' | 'BOARD_PROJECT_UNAVAILABLE' | 'BOARD_MEMBER_UNAVAILABLE' | 'LABEL_NAME_TAKEN' | 'LABEL_UNAVAILABLE' | 'FILE_TOO_LARGE' | 'FILE_TYPE_NOT_ALLOWED' | 'MAIL_DISABLED' | 'MAIL_SEND_FAILED' | 'MAIL_CONNECTION_FAILED' | 'SECRET_REQUIRED' | 'INTERNAL';
 
 export type ApiError = {
     code: ErrorCode;
@@ -301,6 +301,18 @@ export type Task = {
      * Ordered by name (ADR-0035)
      */
     labels: Array<Label>;
+    /**
+     * The parent task (ADR-0036); `null` — not a subtask
+     */
+    parentId: string | null;
+    /**
+     * Non-archived subtasks (ADR-0036)
+     */
+    subtasksTotal: number;
+    /**
+     * Non-archived subtasks in a resolved status (ADR-0036)
+     */
+    subtasksDone: number;
     createdAt: DateTime;
     updatedAt: DateTime;
 };
@@ -322,6 +334,10 @@ export type CreateTaskRequest = {
      * The due date of the new task (ADR-0034); absent or `null` — no due date.
      */
     dueDate?: string | null;
+    /**
+     * The parent in the same project (ADR-0036); absent or `null` — not a subtask.
+     */
+    parentId?: string | null;
 };
 
 export type UpdateTaskRequest = {
@@ -359,6 +375,13 @@ export type ChangeTaskAssigneeRequest = {
     assigneeId: string | null;
 };
 
+export type ChangeTaskParentRequest = {
+    /**
+     * The parent task; `null` detaches the task (ADR-0036)
+     */
+    parentId: string | null;
+};
+
 /**
  * Plain text; the server trims spaces at the ends before validation (ADR-0028)
  */
@@ -390,17 +413,19 @@ export type UpdateCommentRequest = {
 /**
  * What changed (ADR-0028): `created`; `edited` — the name or description, without the old text;
  * `status_changed`; `priority_changed` (ADR-0033); `due_date_changed` (ADR-0034); `assignee_changed` — also when the assignee left or was removed from the
- * project; `moved` — to another project, the task key changed; `archived`; `restored`.
+ * project; `moved` — to another project, the task key changed; `archived`; `restored`;
+ * `parent_changed` — the task was attached to a parent, detached or lost its parent (ADR-0036).
  *
  */
-export type TaskEventKind = 'created' | 'edited' | 'status_changed' | 'priority_changed' | 'due_date_changed' | 'assignee_changed' | 'moved' | 'archived' | 'restored';
+export type TaskEventKind = 'created' | 'edited' | 'status_changed' | 'priority_changed' | 'due_date_changed' | 'assignee_changed' | 'moved' | 'archived' | 'restored' | 'parent_changed';
 
 /**
  * A row of task history. Change fields are always present and `null` unless the kind uses them:
  * `status_changed` — `fromStatusId`, `toStatusId`; `priority_changed` — `fromPriority`,
  * `toPriority`; `due_date_changed` — `fromDueDate`, `toDueDate` (`null` — no due date);
  * `assignee_changed` — `fromUser`, `toUser`
- * (`null` — no assignee); `moved` — `fromKey`, `toKey`.
+ * (`null` — no assignee); `moved` — `fromKey`, `toKey`; `parent_changed` — `fromKey`, `toKey`,
+ * the keys of the old and the new parent (`null` — no parent).
  *
  */
 export type TaskEvent = {
@@ -1858,11 +1883,11 @@ export type CreateTaskErrors = {
      */
     404: ApiError;
     /**
-     * `PROJECT_ARCHIVED` — the project is archived: restore it first (ADR-0027)
+     * `PROJECT_ARCHIVED` — the project is archived; `TASK_ARCHIVED` — the parent is archived
      */
     409: ApiError;
     /**
-     * `ASSIGNEE_NOT_MEMBER` — the assignee is not a project member; `VALIDATION_FAILED`
+     * `ASSIGNEE_NOT_MEMBER`, `TASK_PARENT_INVALID` or `VALIDATION_FAILED`
      */
     422: ApiError;
     /**
@@ -2170,6 +2195,84 @@ export type ChangeTaskAssigneeResponses = {
 };
 
 export type ChangeTaskAssigneeResponse = ChangeTaskAssigneeResponses[keyof ChangeTaskAssigneeResponses];
+
+export type ChangeTaskParentData = {
+    body: ChangeTaskParentRequest;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/parent';
+};
+
+export type ChangeTaskParentErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `TASK_ARCHIVED` — the task or the parent is archived; `PROJECT_ARCHIVED` — the project is archived (ADR-0027)
+     */
+    409: ApiError;
+    /**
+     * `TASK_PARENT_INVALID` — the parent breaks the rules of ADR-0036 or is not found; `VALIDATION_FAILED`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ChangeTaskParentError = ChangeTaskParentErrors[keyof ChangeTaskParentErrors];
+
+export type ChangeTaskParentResponses = {
+    /**
+     * Parent changed
+     */
+    200: Task;
+};
+
+export type ChangeTaskParentResponse = ChangeTaskParentResponses[keyof ChangeTaskParentResponses];
+
+export type ListSubtasksData = {
+    body?: never;
+    path: {
+        taskId: Uuid;
+    };
+    query?: never;
+    url: '/v1/tasks/{taskId}/subtasks';
+};
+
+export type ListSubtasksErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ListSubtasksError = ListSubtasksErrors[keyof ListSubtasksErrors];
+
+export type ListSubtasksResponses = {
+    /**
+     * Subtasks
+     */
+    200: Array<Task>;
+};
+
+export type ListSubtasksResponse = ListSubtasksResponses[keyof ListSubtasksResponses];
 
 export type MoveTaskData = {
     body: MoveTaskRequest;
