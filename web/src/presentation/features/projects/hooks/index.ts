@@ -9,7 +9,7 @@ export { useLeaveProject } from "./useLeaveProject";
 export { useMembersMenuItems } from "./useMembersMenuItems";
 export { useProject } from "./useProject";
 export { useProjectDetail } from "./useProjectDetail";
-export { useProjectMembers } from "./useProjectMembers";
+export { useProjectMembers, useProjectsMemberIds } from "./useProjectMembers";
 export { useProjectMenuItems } from "./useProjectMenuItems";
 export { useProjects } from "./useProjects";
 export { useRemoveMember } from "./useRemoveMember";

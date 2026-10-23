@@ -219,12 +219,12 @@ func TestCreateTask(t *testing.T) {
 	events := d.expectEvents(1)
 	description := "Основная кнопка"
 	got, err := module.Create.Execute(context.Background(), string(userID),
-		dto.CreateTask{ProjectID: string(designID), Name: "Кнопка", Description: &description, AssigneeID: &ivan})
+		dto.CreateTask{ProjectID: string(designID), Name: "Кнопка", Description: &description, AssigneeID: &ivan, Status: entity.StatusInProgress})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if got.ID == "" || got.ProjectID != designID || got.Number != 3 || got.Key() != "DS-3" || got.Name != "Кнопка" || *got.Description != description ||
-		got.Status != entity.StatusOpen || got.AuthorID != userID || *got.AssigneeID != ivanID ||
+		got.Status != entity.StatusInProgress || got.AuthorID != userID || *got.AssigneeID != ivanID ||
 		!got.CreatedAt.Equal(now) || !got.UpdatedAt.Equal(now) {
 		t.Fatalf("task: %+v", got)
 	}

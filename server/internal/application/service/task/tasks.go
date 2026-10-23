@@ -80,7 +80,7 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 		if err != nil {
 			return err
 		}
-		if task, err = s.factory.New(author, project.Key, number, data.Name, data.Description, assignee); err != nil {
+		if task, err = s.factory.New(author, project.Key, number, data.Name, data.Description, data.Status, assignee); err != nil {
 			return err
 		}
 		if err := e.tasks.Create(ctx, task); err != nil {

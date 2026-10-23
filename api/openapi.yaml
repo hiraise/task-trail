@@ -757,7 +757,7 @@ paths:
       tags: [tasks]
       operationId: createTask
       summary: Create a task
-      description: "Role: any in the project; the project is not archived. Status — `open`, author — the current user."
+      description: "Role: any in the project; the project is not archived. Status — `statusId`, without it — the status with `isDefault`; author — the current user. A task created from a board column passes the column's status (ADR-0029)."
       requestBody:
         required: true
         content:
@@ -1886,6 +1886,9 @@ components:
         assigneeId:
           type: [string, "null"]
           format: uuid
+        statusId:
+          $ref: "#/components/schemas/TaskStatusId"
+          description: The status of the new task; absent — the status with `isDefault`.
     UpdateTaskRequest:
       type: object
       minProperties: 1

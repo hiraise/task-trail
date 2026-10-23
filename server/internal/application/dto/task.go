@@ -8,6 +8,8 @@ type CreateTask struct {
 	Description *string
 	// AssigneeID is the assignee or nil.
 	AssigneeID *string
+	// Status — the status of the new task; the request without statusId gets the default one.
+	Status entity.TaskStatus
 }
 
 // TaskChanges is what to change in a task: Name if not nil; the description if DescriptionSet,

@@ -20,7 +20,7 @@ interface BoardTasksProps {
 
 /**
  * "Tasks on the board" (frames 1021:81575, 1775:151903): key, name and assignee avatar, sorting.
- * The server picks the tasks (ADR-0029); the kanban replaces this list in step 5.
+ * The server picks the tasks (ADR-0029). Board info shows this list; the board page — the kanban.
  */
 export function BoardTasks({ board, className }: BoardTasksProps) {
   const { sort, openSort } = useListSort("board-tasks");

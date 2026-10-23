@@ -11,8 +11,11 @@ import { tasksTexts } from "@/shared/locales/tasks";
 
 import { invalidateTaskLists } from "./taskCache";
 
-/** Creates a task (default status, the current user as author) and opens it. */
-export function useCreateTask() {
+/**
+ * Creates a task (the current user as author) and opens it; `openTask: false` — stays on the page,
+ * as on the kanban, where the new card appears in its column.
+ */
+export function useCreateTask({ openTask = true } = {}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -22,6 +25,7 @@ export function useCreateTask() {
       queryClient.setQueryData(QUERY_KEYS.task.detail(task.id), task);
       invalidateTaskLists(queryClient, task.projectId, { countChanged: true });
       toast.success(tasksTexts.taskCreated);
+      if (!openTask) return;
       navigate({
         to: "/projects/$id/tasks/$taskId",
         params: { id: task.projectId, taskId: task.id },

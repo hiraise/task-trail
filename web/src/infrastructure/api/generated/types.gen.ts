@@ -262,6 +262,10 @@ export type CreateTaskRequest = {
     name: string;
     description?: string | null;
     assigneeId?: string | null;
+    /**
+     * The status of the new task; absent — the status with `isDefault`.
+     */
+    statusId?: TaskStatusId;
 };
 
 export type UpdateTaskRequest = {

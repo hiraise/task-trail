@@ -72,6 +72,9 @@ on the right.
 ## Modals, menus and notifications
 
 - Modal — `BaseModal` via `useGlobalModals`: a bottom sheet on a phone, a dialog on wider screens.
+  A whole entity over a page — `Dialog` with `wide` (880 px, the content scrolls inside) and
+  `onDismiss` (a click on the background or Escape closes it), like the task over the kanban
+  (`TaskModal`).
   Confirmation — `showConfirm` (`ConfirmModal`): a question as the title, what will happen, a button
   with a verb.
 - Actions on a list row: wider than a phone — the «…» menu (`DropdownMenu`); on a phone — tapping

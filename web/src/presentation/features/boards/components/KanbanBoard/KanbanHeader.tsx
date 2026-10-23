@@ -7,6 +7,7 @@ interface KanbanHeaderProps {
   taskCount: number;
 }
 
+/** A column header: the status and its task count; no tasks — no count (comment 976:39083). */
 export function KanbanHeader({ name, taskCount }: KanbanHeaderProps) {
   return (
     <div className={styles.container}>

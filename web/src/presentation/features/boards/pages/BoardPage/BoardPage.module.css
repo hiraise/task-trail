@@ -43,6 +43,14 @@
   border-bottom-right-radius: 0;
 }
 
+/* The kanban fills the rest of the screen and scrolls inside itself */
+.kanban {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 /* Space for the "Create task" button */
 .tasks {
   flex: 1;
@@ -79,5 +87,11 @@
 
   .section:last-child {
     border-radius: 8px;
+  }
+
+  .kanban,
+  .kanban:last-child {
+    padding: 0;
+    background-color: var(--bg-primary);
   }
 }

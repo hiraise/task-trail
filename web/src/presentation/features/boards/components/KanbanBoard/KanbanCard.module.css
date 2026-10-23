@@ -1,0 +1,48 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border-left: 2px solid var(--border-accent);
+  background-color: var(--bg-secondary-2);
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  user-select: none;
+  /* The page still scrolls under a finger: a card is picked up by a long press (TouchSensor) */
+  touch-action: manipulation;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--border-accent);
+  outline-offset: 1px;
+}
+
+.key {
+  align-self: flex-start;
+  color: var(--text-secondary);
+}
+
+.key:hover {
+  text-decoration: underline;
+}
+
+.name {
+  overflow-wrap: anywhere;
+}
+
+/* The place where the dragged card lands: the same height, an outline instead of the content */
+.placeholder {
+  border: 1px dashed var(--border-accent);
+  background-color: transparent;
+}
+
+.placeholder > * {
+  visibility: hidden;
+}
+
+.lifted {
+  border: 1px solid var(--border-accent);
+  box-shadow: var(--shade-02);
+  cursor: grabbing;
+}
