@@ -7,6 +7,7 @@ import {
   toProject,
   toProjectDetails,
   toProjectMember,
+  toSearchResult,
   toServiceSettings,
   toTask,
   toTaskComment,
@@ -186,6 +187,50 @@ describe("toTask", () => {
     expect(
       toTask({ ...dto, archivedAt: "2026-10-23T10:00:00Z", projectArchived: true }),
     ).toMatchObject({ archivedAt: "2026-10-23T10:00:00Z", projectArchived: true });
+  });
+});
+
+describe("toSearchResult", () => {
+  it("maps each group with the list mappers, keeping the order", () => {
+    const result = toSearchResult({
+      projects: [
+        {
+          id,
+          name: "Дизайн",
+          description: null,
+          key: "DS",
+          archivedAt: "2026-10-23T10:00:00Z",
+          createdAt: "2026-10-22T08:00:00Z",
+          updatedAt: "2026-10-22T09:00:00Z",
+          tasksCount: 2,
+        },
+      ],
+      boards: [],
+      tasks: [
+        {
+          id: avatarId,
+          projectId: id,
+          number: 1,
+          key: "DS-1",
+          name: "Первая",
+          description: null,
+          statusId: "open",
+          authorId: id,
+          assigneeId: null,
+          archivedAt: null,
+          projectArchived: true,
+          createdAt: "2026-10-22T08:00:00Z",
+          updatedAt: "2026-10-22T09:00:00Z",
+        },
+      ],
+    });
+
+    expect(result.projects).toEqual([expect.objectContaining({ key: "DS", description: undefined })]);
+    expect(result.projects[0].archivedAt).toBe("2026-10-23T10:00:00Z");
+    expect(result.boards).toEqual([]);
+    expect(result.tasks).toEqual([
+      expect.objectContaining({ key: "DS-1", assigneeId: undefined, projectArchived: true }),
+    ]);
   });
 });
 

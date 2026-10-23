@@ -3,6 +3,7 @@ export * from "./apiAuthRepository";
 export * from "./apiBoardRepository";
 export * from "./apiProjectMemberRepository";
 export * from "./apiProjectRepository";
+export * from "./apiSearchRepository";
 export * from "./apiSettingsRepository";
 export * from "./apiTaskRepository";
 export * from "./apiUserRepository";

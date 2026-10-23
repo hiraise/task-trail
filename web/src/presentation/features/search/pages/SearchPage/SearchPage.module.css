@@ -1,0 +1,115 @@
+/* Up to 767 px — phone: the field with a cancel button, results below, no bottom bar (frame 1220:96797).
+   From 768 px — a white card (frame 1897:183080); breakpoints — presentation/shared/hooks/useDevice.ts. */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100dvh;
+  padding: 16px 20px 0;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.searchIcon {
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  color: var(--icon-secondary);
+}
+
+.field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.input {
+  width: 100%;
+  height: 40px;
+  padding: 12px 40px 12px 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  caret-color: var(--text-accent);
+  color: var(--text-primary);
+}
+
+.input::placeholder {
+  color: var(--text-secondary);
+}
+
+.input:focus {
+  outline: none;
+}
+
+/* The browser's own clear button: the page draws its own one */
+.input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.field .clear {
+  display: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.cancel {
+  all: unset;
+  flex-shrink: 0;
+  padding: 8px 0 8px 4px;
+  cursor: pointer;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.projects {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wideOnly {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .page {
+    gap: 12px;
+    height: 100%;
+    padding: 16px 20px 0;
+    border-radius: 12px;
+    background-color: var(--bg-card);
+    box-shadow: var(--shade-01);
+  }
+
+  .phoneOnly {
+    display: none;
+  }
+
+  .wideOnly {
+    display: flex;
+  }
+
+  .field .clear {
+    display: inline-flex;
+  }
+}

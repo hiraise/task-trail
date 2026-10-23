@@ -1,0 +1,38 @@
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+}
+
+/* 16 px on a phone, 20 px wider (frames 1220:96797, 1897:183080) */
+.title {
+  font-family: var(--font-family);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.toggle {
+  transition: transform 0.2s ease;
+}
+
+/* The arrow points up while the group is open */
+.toggle.expanded {
+  transform: rotate(180deg);
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-size: 20px;
+    line-height: 24px;
+    color: var(--text-primary);
+  }
+}

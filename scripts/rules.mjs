@@ -184,7 +184,7 @@ function checkWebImports() {
 
 // Components with Mobile/Desktop in the name do not grow in number: a new screen is one adaptive
 // component (ADR-0008). Merged a pair — lower the limit; exceeding it is an error, going below is a hint.
-const DEVICE_SPLIT_LIMIT = { Mobile: 8, Desktop: 5 };
+const DEVICE_SPLIT_LIMIT = { Mobile: 7, Desktop: 4 };
 
 function checkDeviceSplit() {
   const components = FILES.filter(

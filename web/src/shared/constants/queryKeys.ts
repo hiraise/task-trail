@@ -66,6 +66,8 @@ export const QUERY_KEYS = {
     detail: (id: BoardId) => ["board", id] as const,
     tasks: (id: BoardId) => ["board", id, "tasks"] as const,
   },
+  /** Search results (ADR-0030): not invalidated, they are refetched each time the page opens */
+  search: (q: string) => ["search", q] as const,
   invalidate: {
     project: (projectId: ProjectId) => ["project", projectId] as const,
     task: (taskId: TaskId) => ["task", taskId] as const,

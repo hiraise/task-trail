@@ -3,6 +3,7 @@ export * from "./BottomSheet";
 export * from "./CheckBox";
 export * from "./Dialog";
 export * from "./DropdownMenu";
+export * from "./HighlightedText";
 export * from "./Icon";
 export * from "./IconButton";
 export * from "./Input";

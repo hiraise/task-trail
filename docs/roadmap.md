@@ -7,14 +7,14 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 
 ## Where we are
 
-- **Now:** stage 2, plan — [docs/plans/stage-2/](plans/stage-2/README.md). Steps 0–6 are done:
+- **Now:** stage 2 is done (2026-10-23), plan — [docs/plans/stage-2/](plans/stage-2/README.md):
   English code comments; project keys and task keys `DS-12`
   ([ADR-0026](adr/0026-project-and-task-keys.md)); a reversible archive of tasks and projects
   ([ADR-0027](adr/0027-reversible-archive.md)) and list sorting; the task feed — comments and change
   history ([ADR-0028](adr/0028-task-activity-feed.md)); boards — list, creation, board info
   ([ADR-0029](adr/0029-boards-over-projects.md)); the kanban with drag and drop and the task modal;
-  search on the server — `GET /v1/search` ([ADR-0030](adr/0030-search-by-substring.md)).
-  Next step — 7, search in the web.
+  search — `GET /v1/search` and the search screen ([ADR-0030](adr/0030-search-by-substring.md)).
+  Next — stage 3: there is no plan yet; ask the customer which item comes first.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
@@ -23,7 +23,7 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 - **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping
   and errors — [ADR-0024](adr/0024-web-api-mapping-and-errors.md)): sign-in and profile, projects and
   members, tasks, the archive and list sorting, the task feed, boards with the kanban, the admin
-  section. Search is a stub until step 7 of stage 2.
+  section, search.
 - **Local stack** — `scripts/dev.sh up` (README, «Локальный стенд»): the server, the web, PostgreSQL
   and Mailpit; the first `up` creates an administrator and connects mail.
 - **Design** of new screens — `docs/design-system.md` and a mockup approved by the customer
@@ -36,7 +36,7 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
    ADRs, `scripts/dev.sh check` and CI, the local stack.
 2. **Stage 1 — done (2026-10-22).** The API contract and a server that implements it; the web moved
    onto it; the old API reference removed. Details — ADRs 0011–0025 and git history.
-3. **Stage 2 — in progress.** The core of [ADR-0004](adr/0004-lightweight-tracker-scope.md): task
+3. **Stage 2 — done (2026-10-23).** The core of [ADR-0004](adr/0004-lightweight-tracker-scope.md): task
    keys, archive, comments with history, boards, search. Plan — [docs/plans/stage-2/](plans/stage-2/README.md).
 4. **Stage 3.** The "after the core" items of ADR-0004, each with its own ADR: priority, due date,
    labels, notifications, attachments, subtasks. No design yet — a mockup per

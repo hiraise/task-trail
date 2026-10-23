@@ -59,6 +59,8 @@ export const API_ROUTES = {
   BOARD_MEMBER: (boardId: BoardId, userId: UserId) => `${BOARDS}/${boardId}/members/${userId}`,
   LEAVE_BOARD: (id: BoardId) => `${BOARDS}/${id}/leave`,
   BOARD_TASKS: (id: BoardId) => `${BOARDS}/${id}/tasks`,
+  // SEARCH API (ADR-0030)
+  SEARCH: `${API_VERSION}/search`,
   // USERS API
   CURRENT_USER: USERS_ME,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
