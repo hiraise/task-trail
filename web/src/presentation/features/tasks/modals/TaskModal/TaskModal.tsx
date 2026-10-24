@@ -8,7 +8,7 @@ import { hasErrorCode } from "@/shared/errors/types";
 import { tasksTexts } from "@/shared/locales/tasks";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { TaskActivity, TaskInfo, TaskSubtasks } from "../../components";
+import { TaskActivity, TaskAttachments, TaskInfo, TaskSubtasks } from "../../components";
 import { useTaskDetail, useTaskMenuItems } from "../../hooks";
 
 import styles from "./TaskModal.module.css";
@@ -47,6 +47,12 @@ export function TaskModal({ isOpen, onClose }: BaseModalProps) {
               task={data.task}
               readOnly={isTaskArchived(data.task)}
               className={styles.subtasks}
+            />
+            <TaskAttachments
+              task={data.task}
+              role={data.project.role}
+              readOnly={isTaskArchived(data.task)}
+              className={styles.attachments}
             />
             <section className={styles.activity}>
               <TaskActivity task={data.task} role={data.project.role} />

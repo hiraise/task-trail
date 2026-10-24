@@ -57,6 +57,8 @@ export const API_ROUTES = {
   TASK_COMMENTS: (id: TaskId) => `${TASKS}/${id}/comments`,
   TASK_COMMENT: (id: TaskId, commentId: CommentId) => `${TASKS}/${id}/comments/${commentId}`,
   TASK_EVENTS: (id: TaskId) => `${TASKS}/${id}/events`,
+  TASK_ATTACHMENTS: (id: TaskId) => `${TASKS}/${id}/attachments`,
+  TASK_ATTACHMENT: (id: TaskId, fileId: string) => `${TASKS}/${id}/attachments/${fileId}`,
   TASK_STATUSES: `${API_VERSION}/task-statuses`,
   // BOARDS API (ADR-0029)
   BOARDS: BOARDS,

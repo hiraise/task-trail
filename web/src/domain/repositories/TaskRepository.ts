@@ -1,3 +1,4 @@
+import type { Attachment } from "../models/Attachment";
 import type { Task } from "../models/Task";
 import type { TaskComment } from "../models/TaskComment";
 import type { TaskEvent } from "../models/TaskEvent";
@@ -67,4 +68,10 @@ export interface TaskRepository {
   deleteComment(taskId: TaskId, commentId: CommentId): Promise<void>;
   /** The task change history, newest first */
   findEvents(taskId: TaskId): Promise<TaskEvent[]>;
+  /** The task's attachments, newest first; any member of its project (ADR-0037) */
+  findAttachments(id: TaskId): Promise<Attachment[]>;
+  /** Any type up to 25 MB; neither the task nor its project is archived */
+  uploadAttachment(id: TaskId, file: File): Promise<Attachment>;
+  /** The uploader, the project owner or a project admin */
+  deleteAttachment(id: TaskId, fileId: string): Promise<void>;
 }

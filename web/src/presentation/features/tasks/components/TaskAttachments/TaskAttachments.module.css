@@ -1,0 +1,125 @@
+/* Artboard B of stage 3: the attachments block — rows of a 48 px preview or file icon, the name and
+   «size · author · date»; two columns when the block is wide (the 1200 page and the kanban modal) */
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  container-type: inline-size;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.title {
+  margin: 0;
+}
+
+.add {
+  flex: none;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.secondary {
+  color: var(--text-secondary);
+}
+
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px 16px;
+  margin: 0 -8px;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.row:hover {
+  background-color: var(--bg-secondary-2);
+}
+
+.pending {
+  opacity: 0.6;
+}
+
+.pending:hover {
+  background-color: transparent;
+}
+
+/* The download button takes the whole row except the menu */
+.main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 8px;
+  border: none;
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+button.main {
+  cursor: pointer;
+}
+
+.preview,
+.thumb {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+}
+
+.preview {
+  object-fit: cover;
+  background-color: var(--bg-secondary);
+}
+
+.thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--icon-secondary);
+  background-color: var(--bg-secondary);
+}
+
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.name,
+.meta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.row > :last-child:not(.main) {
+  margin-right: 4px;
+}
+
+@container (min-width: 640px) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

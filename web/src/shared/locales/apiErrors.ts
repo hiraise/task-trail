@@ -24,7 +24,7 @@ export const apiErrorTexts: Partial<Record<ApiErrorCode, string>> = {
   LABEL_NAME_TAKEN: "Метка с таким названием уже есть в проекте",
   LABEL_UNAVAILABLE: "Метка не найдена в проекте задачи — обновите страницу",
   COMMENT_EDIT_EXPIRED: "Комментарий можно изменить только в первые 24 часа",
-  FILE_TOO_LARGE: "Файл больше 5 МБ",
+  FILE_TOO_LARGE: "Файл слишком большой",
   FILE_TYPE_NOT_ALLOWED: "Подходят только изображения JPEG, PNG и WebP",
   // MAIL_DISABLED and MAIL_SEND_FAILED address whoever requests a password reset email; the admin's
   // test email shows its own texts (features/admin/hooks/useSendTestMail.ts)
