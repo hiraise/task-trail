@@ -77,6 +77,21 @@ func (mr *MockNotificationRepositoryMockRecorder) Create(ctx any, notifications 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockNotificationRepository)(nil).Create), varargs...)
 }
 
+// CreateDueReminders mocks base method.
+func (m *MockNotificationRepository) CreateDueReminders(ctx context.Context, dueSoon, overdue time.Time, resolved []entity.TaskStatus, now time.Time) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateDueReminders", ctx, dueSoon, overdue, resolved, now)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateDueReminders indicates an expected call of CreateDueReminders.
+func (mr *MockNotificationRepositoryMockRecorder) CreateDueReminders(ctx, dueSoon, overdue, resolved, now any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateDueReminders", reflect.TypeOf((*MockNotificationRepository)(nil).CreateDueReminders), ctx, dueSoon, overdue, resolved, now)
+}
+
 // DeleteOlderThan mocks base method.
 func (m *MockNotificationRepository) DeleteOlderThan(ctx context.Context, before time.Time) (int64, error) {
 	m.ctrl.T.Helper()
@@ -122,6 +137,21 @@ func (mr *MockNotificationRepositoryMockRecorder) ListForUser(ctx, userID, limit
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListForUser", reflect.TypeOf((*MockNotificationRepository)(nil).ListForUser), ctx, userID, limit)
 }
 
+// ListToEmail mocks base method.
+func (m *MockNotificationRepository) ListToEmail(ctx context.Context, from, to time.Time, limit int) ([]*repository.EmailView, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListToEmail", ctx, from, to, limit)
+	ret0, _ := ret[0].([]*repository.EmailView)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListToEmail indicates an expected call of ListToEmail.
+func (mr *MockNotificationRepositoryMockRecorder) ListToEmail(ctx, from, to, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListToEmail", reflect.TypeOf((*MockNotificationRepository)(nil).ListToEmail), ctx, from, to, limit)
+}
+
 // MarkAllRead mocks base method.
 func (m *MockNotificationRepository) MarkAllRead(ctx context.Context, userID entity.UserID, now time.Time) error {
 	m.ctrl.T.Helper()
@@ -134,6 +164,20 @@ func (m *MockNotificationRepository) MarkAllRead(ctx context.Context, userID ent
 func (mr *MockNotificationRepositoryMockRecorder) MarkAllRead(ctx, userID, now any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkAllRead", reflect.TypeOf((*MockNotificationRepository)(nil).MarkAllRead), ctx, userID, now)
+}
+
+// MarkEmailed mocks base method.
+func (m *MockNotificationRepository) MarkEmailed(ctx context.Context, id entity.NotificationID, now time.Time) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MarkEmailed", ctx, id, now)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MarkEmailed indicates an expected call of MarkEmailed.
+func (mr *MockNotificationRepositoryMockRecorder) MarkEmailed(ctx, id, now any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkEmailed", reflect.TypeOf((*MockNotificationRepository)(nil).MarkEmailed), ctx, id, now)
 }
 
 // SetReadAt mocks base method.

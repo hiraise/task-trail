@@ -6,6 +6,7 @@ import (
 
 	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
+	"task-trail/internal/domain/factory"
 	"task-trail/internal/domain/repository"
 
 	"github.com/jackc/pgx/v5"
@@ -14,10 +15,11 @@ import (
 
 type PGNotificationRepository struct {
 	PgRepository
+	userFactory *factory.UserFactory
 }
 
-func NewNotificationRepo(db *pgxpool.Pool) *PGNotificationRepository {
-	return &PGNotificationRepository{PgRepository: PgRepository{pg: db}}
+func NewNotificationRepo(db *pgxpool.Pool, userFactory *factory.UserFactory) *PGNotificationRepository {
+	return &PGNotificationRepository{PgRepository: PgRepository{pg: db}, userFactory: userFactory}
 }
 
 // notificationData — notifications.data: only the fields the kind sets.
@@ -28,13 +30,16 @@ type notificationData struct {
 	DueDate    *string            `json:"dueDate,omitempty"`
 }
 
-// visibleNotifications — the FROM part of every read: a user sees notifications of tasks that are
-// not deleted, in projects where they are still a member (ADR-0038). $1 is the user.
-const visibleNotifications = `
+// notificationsFrom — the visibility joins: notifications of tasks that are not deleted, in projects
+// where the user is still a member (ADR-0038).
+const notificationsFrom = `
 	FROM notifications n
 	JOIN tasks t ON t.id = n.task_id AND t.deleted_at IS NULL
 	JOIN projects p ON p.id = t.project_id
-	JOIN project_members m ON m.project_id = t.project_id AND m.user_id = n.user_id
+	JOIN project_members m ON m.project_id = t.project_id AND m.user_id = n.user_id`
+
+// visibleNotifications — the FROM part of every read of one user's notifications. $1 is the user.
+const visibleNotifications = notificationsFrom + `
 	WHERE n.user_id = $1`
 
 const notificationViewColumns = `n.id, n.user_id, n.task_id, n.actor_id, n.kind, n.data, n.created_at, n.read_at,
@@ -122,22 +127,109 @@ func (r *PGNotificationRepository) DeleteOlderThan(ctx context.Context, before t
 	return tag.RowsAffected(), nil
 }
 
-// scanNotificationView reads the notificationViewColumns columns.
-func scanNotificationView(row pgx.Row) (*repository.NotificationView, error) {
-	var id, userID, taskID, kind string
-	var actorID *string
-	var data notificationData
-	n := &entity.Notification{}
-	view := &repository.NotificationView{Notification: n}
-	if err := row.Scan(&id, &userID, &taskID, &actorID, &kind, &data, &n.CreatedAt, &n.ReadAt, &n.EmailedAt,
-		&view.TaskKey, &view.TaskName); err != nil {
-		return nil, err
+func (r *PGNotificationRepository) ListToEmail(ctx context.Context, from, to time.Time, limit int) ([]*repository.EmailView, error) {
+	rows, err := r.getDb(ctx).Query(ctx, `SELECT `+userColumnsOf("u")+`, `+notificationViewColumns+notificationsFrom+`
+		JOIN users u ON u.id = n.user_id AND u.deleted_at IS NULL AND u.email_notifications
+		WHERE n.read_at IS NULL AND n.emailed_at IS NULL AND n.created_at BETWEEN @from AND @to
+		ORDER BY n.created_at, n.seq LIMIT @limit`,
+		pgx.NamedArgs{"from": from, "to": to, "limit": limit})
+	if err != nil {
+		return nil, r.handleError(err)
 	}
-	n.ID, n.UserID, n.TaskID, n.Kind = entity.NotificationID(id), entity.UserID(userID), entity.TaskID(taskID), entity.NotificationKind(kind)
-	if actorID != nil {
-		actor := entity.UserID(*actorID)
+	views, err := ScanRows(rows, func(row pgx.Rows) (*repository.EmailView, error) {
+		v := &repository.EmailView{}
+		t := newNotificationTargets(&v.View)
+		recipient, err := scanUser(row, r.userFactory, t.dest()...)
+		if err != nil {
+			return nil, err
+		}
+		v.Recipient = recipient
+		t.fill()
+		return v, nil
+	})
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return views, nil
+}
+
+func (r *PGNotificationRepository) MarkEmailed(ctx context.Context, id entity.NotificationID, now time.Time) error {
+	tag, err := r.getDb(ctx).Exec(ctx, `UPDATE notifications SET emailed_at = $1 WHERE id = $2`, now, id)
+	if err != nil {
+		return r.handleError(err)
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrEntityNotFound(1, nil, "notificationID", id)
+	}
+	return nil
+}
+
+// createDueReminders writes one kind of reminder for the tasks due on @date. The IDs come from
+// gen_random_uuid() and not from IDGenerator: it is a bulk insert in one statement, and the IDs
+// are random UUIDv4 as well. uq_notifications_reminder skips a reminder already written.
+const createDueReminders = `
+	INSERT INTO notifications (id, user_id, task_id, actor_id, kind, data, created_at)
+	SELECT gen_random_uuid(), t.assignee_id, t.id, NULL, @kind,
+		jsonb_build_object('dueDate', to_char(t.due_date, 'YYYY-MM-DD')), @now
+	FROM tasks t JOIN projects p ON p.id = t.project_id
+	WHERE t.due_date = @date AND t.assignee_id IS NOT NULL AND t.deleted_at IS NULL
+		AND t.archived_at IS NULL AND p.archived_at IS NULL AND p.deleted_at IS NULL
+		AND t.status <> ALL(@resolved::text[])
+	ON CONFLICT DO NOTHING`
+
+func (r *PGNotificationRepository) CreateDueReminders(ctx context.Context, dueSoon, overdue time.Time, resolved []entity.TaskStatus, now time.Time) (int64, error) {
+	var total int64
+	for _, k := range []struct {
+		kind entity.NotificationKind
+		date time.Time
+	}{{entity.NotifyDueSoon, dueSoon}, {entity.NotifyOverdue, overdue}} {
+		tag, err := r.getDb(ctx).Exec(ctx, createDueReminders, pgx.NamedArgs{
+			"kind": k.kind, "date": k.date, "resolved": toStrings(resolved), "now": now,
+		})
+		if err != nil {
+			return total, r.handleError(err)
+		}
+		total += tag.RowsAffected()
+	}
+	return total, nil
+}
+
+// notificationTargets — Scan targets of the notificationViewColumns columns; fill builds the view.
+type notificationTargets struct {
+	view                     *repository.NotificationView
+	id, userID, taskID, kind string
+	actorID                  *string
+	data                     notificationData
+}
+
+func newNotificationTargets(view *repository.NotificationView) *notificationTargets {
+	view.Notification = &entity.Notification{}
+	return &notificationTargets{view: view}
+}
+
+func (t *notificationTargets) dest() []any {
+	n := t.view.Notification
+	return []any{&t.id, &t.userID, &t.taskID, &t.actorID, &t.kind, &t.data, &n.CreatedAt, &n.ReadAt, &n.EmailedAt,
+		&t.view.TaskKey, &t.view.TaskName}
+}
+
+func (t *notificationTargets) fill() {
+	n, data := t.view.Notification, t.data
+	n.ID, n.UserID, n.TaskID, n.Kind = entity.NotificationID(t.id), entity.UserID(t.userID), entity.TaskID(t.taskID), entity.NotificationKind(t.kind)
+	if t.actorID != nil {
+		actor := entity.UserID(*t.actorID)
 		n.ActorID = &actor
 	}
 	n.FromStatus, n.ToStatus, n.Text, n.DueDate = data.FromStatus, data.ToStatus, data.Text, data.DueDate
+}
+
+// scanNotificationView reads the notificationViewColumns columns.
+func scanNotificationView(row pgx.Row) (*repository.NotificationView, error) {
+	view := &repository.NotificationView{}
+	t := newNotificationTargets(view)
+	if err := row.Scan(t.dest()...); err != nil {
+		return nil, err
+	}
+	t.fill()
 	return view, nil
 }

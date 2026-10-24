@@ -12,6 +12,7 @@ import (
 	"task-trail/internal/domain/repository"
 	"task-trail/internal/infrastructure/repository/persistent"
 	"task-trail/internal/infrastructure/service/id"
+	"task-trail/test/clock"
 	"task-trail/test/testdb"
 )
 
@@ -20,7 +21,7 @@ import (
 func TestNotificationRepository(t *testing.T) {
 	pool := testdb.New(t)
 	ctx := context.Background()
-	repo := persistent.NewNotificationRepo(pool)
+	repo := persistent.NewNotificationRepo(pool, factory.NewUserFactory(id.New(), clock.New(now)))
 	f := factory.NewNotificationFactory(id.New())
 	anna := createUser(t, pool, "anna@example.com", "Анна")
 	ivan := createUser(t, pool, "ivan@example.com", "Иван")
@@ -144,5 +145,129 @@ func requireUnread(t *testing.T, repo *persistent.PGNotificationRepository, user
 	t.Helper()
 	if count, err := repo.CountUnread(context.Background(), userID); err != nil || count != want {
 		t.Fatalf("unread of %s: %d, %v; want %d", userID, count, err, want)
+	}
+}
+
+// The email job reads unread, not emailed notifications of the window, oldest first, only of users
+// who keep emails on; a marked one is not read again (ADR-0038).
+func TestNotificationRepositoryListToEmail(t *testing.T) {
+	pool := testdb.New(t)
+	ctx := context.Background()
+	repo := persistent.NewNotificationRepo(pool, factory.NewUserFactory(id.New(), clock.New(now)))
+	f := factory.NewNotificationFactory(id.New())
+	anna := createUser(t, pool, "anna@example.com", "Анна")
+	ivan := createUser(t, pool, "ivan@example.com", "Иван")
+	project := createProject(t, pool, "Дизайн-система")
+	for _, u := range []*entity.UserAccount{anna, ivan} {
+		if _, err := pool.Exec(ctx, `INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, 'member')`, project, u.ID); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := pool.Exec(ctx, `UPDATE users SET email_notifications = FALSE WHERE id = $1`, anna.ID); err != nil {
+		t.Fatal(err)
+	}
+	task := entity.TaskID(insertTask(t, pool, project, anna, ivan))
+	write := func(user *entity.UserAccount, at time.Time) *entity.Notification {
+		t.Helper()
+		n := f.New(user.ID, task, nil, entity.NotifyAssigned, at)
+		if err := repo.Create(ctx, n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+	from, to := now.Add(-24*time.Hour), now.Add(-5*time.Minute)
+	second := write(ivan, now.Add(-10*time.Minute))
+	first := write(ivan, now.Add(-time.Hour))
+	read := write(ivan, now.Add(-10*time.Minute))
+	emailed := write(ivan, now.Add(-10*time.Minute))
+	write(ivan, now.Add(-25*time.Hour))
+	write(ivan, now.Add(-time.Minute))
+	write(anna, now.Add(-10*time.Minute))
+	if err := repo.SetReadAt(ctx, read.ID, &now); err != nil {
+		t.Fatal(err)
+	}
+	if err := repo.MarkEmailed(ctx, emailed.ID, now); err != nil {
+		t.Fatal(err)
+	}
+
+	list, err := repo.ListToEmail(ctx, from, to, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ids []entity.NotificationID
+	for _, v := range list {
+		ids = append(ids, v.View.Notification.ID)
+		if v.Recipient.ID != ivan.ID || v.Recipient.Email != ivan.Email || v.View.TaskName != "Задача" || v.View.TaskKey == "" {
+			t.Fatalf("view: %+v %+v", v.Recipient, v.View)
+		}
+	}
+	if !slices.Equal(ids, []entity.NotificationID{first.ID, second.ID}) {
+		t.Fatalf("to email: %v", ids)
+	}
+	if limited, err := repo.ListToEmail(ctx, from, to, 1); err != nil || len(limited) != 1 {
+		t.Fatalf("limit: %d, %v", len(limited), err)
+	}
+	if err := repo.MarkEmailed(ctx, first.ID, now); err != nil {
+		t.Fatal(err)
+	}
+	if list, err := repo.ListToEmail(ctx, from, to, 50); err != nil || len(list) != 1 || list[0].View.Notification.ID != second.ID {
+		t.Fatalf("after mark: %d, %v", len(list), err)
+	}
+	requireCode(t, repo.MarkEmailed(ctx, entity.NotificationID(id.New().Generate()), now), domain.EntityNotFound)
+}
+
+// Reminders go to the assignee of an active, unresolved task once per task, kind and date (ADR-0038).
+func TestNotificationRepositoryCreateDueReminders(t *testing.T) {
+	pool := testdb.New(t)
+	ctx := context.Background()
+	repo := persistent.NewNotificationRepo(pool, factory.NewUserFactory(id.New(), clock.New(now)))
+	anna := createUser(t, pool, "anna@example.com", "Анна")
+	ivan := createUser(t, pool, "ivan@example.com", "Иван")
+	project := createProject(t, pool, "Дизайн-система")
+	if _, err := pool.Exec(ctx, `INSERT INTO project_members (project_id, user_id, role) VALUES ($1, $2, 'member')`, project, ivan.ID); err != nil {
+		t.Fatal(err)
+	}
+	tomorrow, yesterday := "2026-10-22", "2026-10-20"
+	task := func(due string, assignee *entity.UserAccount, set string) entity.TaskID {
+		t.Helper()
+		taskID := insertTask(t, pool, project, anna, assignee)
+		if _, err := pool.Exec(ctx, `UPDATE tasks SET due_date = $1`+set+` WHERE id = $2`, due, taskID); err != nil {
+			t.Fatal(err)
+		}
+		return entity.TaskID(taskID)
+	}
+	soon := task(tomorrow, ivan, "")
+	late := task(yesterday, ivan, "")
+	task("2026-10-23", ivan, "")
+	task(tomorrow, ivan, ", status = 'done'")
+	task(yesterday, ivan, ", archived_at = now()")
+	task(tomorrow, nil, "")
+	dueSoon := time.Date(2026, 10, 22, 0, 0, 0, 0, time.UTC)
+	overdue := time.Date(2026, 10, 20, 0, 0, 0, 0, time.UTC)
+	resolved := []entity.TaskStatus{entity.StatusDone}
+
+	if n, err := repo.CreateDueReminders(ctx, dueSoon, overdue, resolved, now); err != nil || n != 2 {
+		t.Fatalf("first run: %d, %v", n, err)
+	}
+	if n, err := repo.CreateDueReminders(ctx, dueSoon, overdue, resolved, now.Add(time.Hour)); err != nil || n != 0 {
+		t.Fatalf("second run: %d, %v", n, err)
+	}
+	list, err := repo.ListForUser(ctx, ivan.ID, 100)
+	if err != nil || len(list) != 2 {
+		t.Fatalf("reminders: %d, %v", len(list), err)
+	}
+	got := map[entity.TaskID]*entity.Notification{}
+	for _, v := range list {
+		got[v.Notification.TaskID] = v.Notification
+	}
+	for taskID, want := range map[entity.TaskID]struct {
+		kind entity.NotificationKind
+		date string
+	}{soon: {entity.NotifyDueSoon, tomorrow}, late: {entity.NotifyOverdue, yesterday}} {
+		n := got[taskID]
+		if n == nil || n.Kind != want.kind || n.DueDate == nil || *n.DueDate != want.date || n.ActorID != nil ||
+			n.UserID != ivan.ID || !n.CreatedAt.Equal(now) {
+			t.Fatalf("reminder of %s: %+v", taskID, n)
+		}
 	}
 }
