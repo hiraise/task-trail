@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 
+import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { isTaskArchived, type Task } from "@/domain/models/Task";
 import type { ProjectRole } from "@/domain/types";
 import { useGetCurrentUser } from "@/presentation/shared/hooks";
 import { tasksTexts } from "@/shared/locales/tasks";
 
+import { useProjectMembers } from "../../../projects/hooks";
 import { useCreateComment, useTaskComments, useTaskEvents, useTaskStatuses } from "../../hooks";
 
 import { CommentInput } from "./CommentInput";
@@ -13,6 +15,8 @@ import { EventItem } from "./EventItem";
 import { buildFeed } from "./feed";
 import styles from "./TaskActivity.module.css";
 import listStyles from "./FeedItem.module.css";
+
+const NO_MEMBERS: ProjectMember[] = [];
 
 interface TaskActivityProps {
   task: Task;
@@ -31,6 +35,7 @@ export function TaskActivity({ task, role }: TaskActivityProps) {
   const { data: statuses } = useTaskStatuses();
   const { data: me } = useGetCurrentUser();
   const { mutateAsync: create } = useCreateComment(task.id);
+  const { data: members = NO_MEMBERS } = useProjectMembers(task.projectId);
 
   const feed = useMemo(
     () => (comments.data && events.data ? buildFeed(comments.data, events.data) : undefined),
@@ -41,7 +46,7 @@ export function TaskActivity({ task, role }: TaskActivityProps) {
   return (
     <div className={styles.container}>
       <h4>{tasksTexts.comments.title}</h4>
-      {!readOnly && <CommentInput submitText={tasksTexts.comments.send} onSubmit={create} />}
+      {!readOnly && <CommentInput members={members} submitText={tasksTexts.comments.send} onSubmit={create} />}
       {comments.error || events.error ? (
         <p className={`body-reg-2 ${styles.status}`} role="status">
           {tasksTexts.comments.loadFailed}
@@ -56,6 +61,7 @@ export function TaskActivity({ task, role }: TaskActivityProps) {
                 userId={me?.id}
                 role={role}
                 readOnly={readOnly}
+                members={members}
               />
             ) : (
               <EventItem key={item.id} event={item.event} statusName={statusName} />

@@ -44,3 +44,9 @@
   line-height: 18px;
   color: var(--text-secondary);
 }
+
+/* A mention in a comment (ADR-0039, stage 3 artboard G) */
+.mention {
+  color: var(--text-accent);
+  font-weight: 500;
+}

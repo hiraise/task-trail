@@ -43,7 +43,7 @@ approved before step 2 — the first web step; server steps 1 and 3 may be done 
 | 13 | Notification emails and due date reminders — server | [13-notification-emails-server.md](13-notification-emails-server.md) | done |
 | 14 | Notifications — web | [14-notifications-web.md](14-notifications-web.md) | done |
 | 15 | Mentions — server | [15-mentions-server.md](15-mentions-server.md) | done |
-| 16 | Mentions — web | [16-mentions-web.md](16-mentions-web.md) | next |
+| 16 | Mentions — web | [16-mentions-web.md](16-mentions-web.md) | done |
 
 Finished a step — set its status to `done` here and `next` on the following step, in the same PR;
 update "Where we are" in [the roadmap](../../roadmap.md). The PR of step 16 also updates the root

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
+import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { isCommentEditable, type TaskComment } from "@/domain/models/TaskComment";
 import type { ProjectRole } from "@/domain/types";
 import { DropdownMenu, IconButton } from "@/presentation/shared";
@@ -8,6 +9,7 @@ import type { MenuItem } from "@/presentation/shared/ui/DropdownMenu";
 import { ICONS } from "@/shared/config/icons";
 import { tasksTexts } from "@/shared/locales/tasks";
 import { linkify } from "@/shared/utils/linkify";
+import { splitMentions } from "@/shared/utils/mentions";
 import { canDeleteComment } from "@/shared/utils/userRole";
 
 import { useDeleteComment, useEditComment } from "../../hooks";
@@ -23,14 +25,17 @@ interface CommentItemProps {
   role: ProjectRole;
   /** The task is archived: comments are read-only (ADR-0027) */
   readOnly: boolean;
+  /** Members of the task's project: mention suggestions while editing */
+  members: ProjectMember[];
 }
 
 /**
  * A comment (frames 1152:75644, 1581:76985). Edit — the author during the first 24 hours,
  * delete — the author, the owner and admins (ADR-0028); without items there is no menu button.
- * Editing replaces the card with the field, as in frames 1161:75166 and 1892:103244.
+ * Editing replaces the card with the field, as in frames 1161:75166 and 1892:103244. A mention token
+ * shows as a highlighted `@Name` with the name from the token (ADR-0039).
  */
-export function CommentItem({ comment, userId, role, readOnly }: CommentItemProps) {
+export function CommentItem({ comment, userId, role, readOnly, members }: CommentItemProps) {
   const [editing, setEditing] = useState(false);
   const { mutateAsync: edit } = useEditComment(comment.taskId);
   const { mutate: remove } = useDeleteComment(comment.taskId);
@@ -41,6 +46,7 @@ export function CommentItem({ comment, userId, role, readOnly }: CommentItemProp
     return (
       <CommentInput
         initialValue={comment.text}
+        members={members}
         submitText={tasksTexts.comments.save}
         autoFocus
         onCancel={() => setEditing(false)}
@@ -85,7 +91,17 @@ export function CommentItem({ comment, userId, role, readOnly }: CommentItemProp
           <DropdownMenu trigger={<IconButton icon={ICONS.menu} size="24px" />} items={menuItems} />
         )}
       </div>
-      <p className={styles.text}>{linkify(comment.text)}</p>
+      <p className={styles.text}>
+        {splitMentions(comment.text).map((part, index) =>
+          part.type === "mention" ? (
+            <span key={index} className={styles.mention}>
+              @{part.name}
+            </span>
+          ) : (
+            <Fragment key={index}>{linkify(part.text)}</Fragment>
+          ),
+        )}
+      </p>
     </article>
   );
 }

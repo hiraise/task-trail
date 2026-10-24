@@ -39,3 +39,41 @@
 .buttons > button {
   padding: 10px 32px;
 }
+
+/* Mention suggestions under the field (stage 3 artboard G): as wide as the field on a phone */
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: var(--reference-width);
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  border-radius: 12px;
+  background: var(--bg-card);
+  box-shadow: var(--shade-02);
+  z-index: 1000;
+}
+
+@media (min-width: 768px) {
+  .suggestions {
+    width: 320px;
+  }
+}
+
+.suggestion {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.suggestion[aria-selected="true"],
+.suggestion:hover {
+  background: var(--bg-secondary-2);
+}
