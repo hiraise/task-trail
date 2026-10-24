@@ -7,6 +7,7 @@ export const ROUTES = {
   passwordRecoveryConfirm: "/auth/password-recovery/confirm",
   authReset: "/auth/reset",
   search: "/search",
+  notifications: "/notifications",
   projects: "/projects",
   boards: "/boards",
   tasks: "/tasks",
@@ -24,4 +25,5 @@ export const BOTTOM_NAV_PATHS = [
   ROUTES.boards,
   ROUTES.tasks,
   ROUTES.profile,
+  ROUTES.notifications,
 ] as const;

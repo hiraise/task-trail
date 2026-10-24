@@ -3,6 +3,8 @@ import { motion as m } from "framer-motion";
 import { Link, useRouterState } from "@tanstack/react-router";
 
 import { Icon } from "@/presentation/shared/ui";
+
+import { UnreadBadge } from "../../UnreadBadge";
 import { normalize } from "@/shared/utils/formatters";
 
 import type { NavMenuItem } from "./Drawer.config";
@@ -19,15 +21,19 @@ export function NavItem({ item, isExpanded }: NavItemProps) {
 
   return (
     <Link to={item.href} className={clsx(styles.navItem, { [styles.active]: isActive })}>
-      <Icon as={item.icon} size="24px" />
+      <span className={styles.icon}>
+        <Icon as={item.icon} size="24px" />
+        {!isExpanded && <UnreadBadge count={item.badge ?? 0} className={styles.cornerBadge} />}
+      </span>
       <m.span
-        className="body-med-2"
+        className={clsx("body-med-2", styles.label)}
         initial={false}
         animate={{ opacity: isExpanded ? 1 : 0, x: isExpanded ? 0 : -10 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
       >
         {item.label}
       </m.span>
+      {isExpanded && <UnreadBadge count={item.badge ?? 0} />}
     </Link>
   );
 }

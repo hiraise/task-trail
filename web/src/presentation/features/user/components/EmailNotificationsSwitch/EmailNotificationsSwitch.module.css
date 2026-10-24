@@ -1,0 +1,45 @@
+/* Artboard F: on a phone a row above sign-out, from 768 px a block in the profile card. */
+.switch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+}
+
+.label {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 550;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.hint {
+  padding-left: 32px;
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+@media (min-width: 768px) {
+  .row {
+    min-height: 24px;
+  }
+
+  .label {
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: 500;
+  }
+
+  .hint {
+    font-size: 12px;
+  }
+}

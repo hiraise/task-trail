@@ -8,6 +8,8 @@ export interface NavMenuItem {
   href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   label: string;
+  /** The unread counter next to the label (UnreadBadge) */
+  badge?: number;
 }
 
 export const navItems: NavMenuItem[] = [
@@ -40,8 +42,15 @@ export const adminItem: NavMenuItem = {
   label: TEXTS.drawer.admin,
 };
 
-export const searchItem = {
+export const searchItem: NavMenuItem = {
   href: ROUTES.search,
   icon: ASSETS.icons.search,
   label: TEXTS.drawer.search,
+};
+
+/** Notifications (ADR-0038): the unread counter comes from the layout */
+export const notificationsItem: NavMenuItem = {
+  href: ROUTES.notifications,
+  icon: ASSETS.icons.bell,
+  label: TEXTS.drawer.notifications,
 };

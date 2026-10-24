@@ -1,0 +1,136 @@
+/* Up to 767 px — phone: the title on gray, the list below it down to the bottom navigation bar.
+   From 768 px — a header with the read-all button and a white card, like TasksPage
+   (breakpoints — presentation/shared/hooks/useDevice.ts). */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  height: 100dvh;
+  background: var(--bg-primary-contrast);
+}
+
+.phoneTopBar {
+  padding: 8px 20px 12px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  background-color: var(--bg-secondary);
+}
+
+.phoneTitle {
+  padding: 12px;
+  border-radius: 12px;
+  background-color: var(--bg-primary);
+}
+
+.wideTopBar {
+  display: none;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 20px calc(var(--bottom-nav-height) + 20px);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  background-color: var(--bg-primary);
+}
+
+.phoneActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.readAll:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.error {
+  margin: 0;
+  padding: 12px;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.placeholder {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+}
+
+.placeholderAvatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--bg-secondary);
+}
+
+.placeholderLines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  padding-top: 2px;
+}
+
+.placeholderLines > span {
+  height: 12px;
+  border-radius: 4px;
+  background-color: var(--bg-secondary);
+}
+
+.placeholderLines > span:nth-child(1) {
+  height: 14px;
+  width: 90%;
+}
+
+.placeholderLines > span:nth-child(2) {
+  width: 70%;
+}
+
+.placeholderLines > span:nth-child(3) {
+  width: 35%;
+}
+
+@media (min-width: 768px) {
+  .page {
+    gap: 16px;
+    height: 100%;
+    background: transparent;
+  }
+
+  .phoneTopBar,
+  .phoneActions {
+    display: none;
+  }
+
+  .wideTopBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+
+  .content {
+    gap: 16px;
+    padding: 20px;
+    border-radius: 12px;
+    background-color: var(--bg-card);
+    box-shadow: var(--shade-01);
+  }
+}

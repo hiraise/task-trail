@@ -30,6 +30,12 @@ export const QUERY_KEYS = {
     current: ["user", "current"] as const,
     detail: (id: UserId) => ["user", id] as const,
   },
+  /** Notifications of the current user (ADR-0038) */
+  notification: {
+    all: ["notification"] as const,
+    list: ["notification", "list"] as const,
+    unread: ["notification", "unread"] as const,
+  },
   task: {
     all: ["task"] as const,
     /** Both lists of tasks assigned to the current user — a prefix for invalidation */

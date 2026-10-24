@@ -1,6 +1,11 @@
 import type { UserRepository } from "@/domain/repositories/UserRepository";
 
-import type { CurrentUser, UpdateCurrentUserRequest, User } from "../api/generated";
+import type {
+  CurrentUser,
+  EmailNotificationsRequest,
+  UpdateCurrentUserRequest,
+  User,
+} from "../api/generated";
 import { API_ROUTES } from "../config/apiRoutes";
 import axiosClient from "../http/axiosClient";
 import type { HttpClient } from "../http/HttpClient";
@@ -29,6 +34,14 @@ const createUserRepository = (http: HttpClient): UserRepository => ({
     });
 
     return toCurrentUser(dto);
+  },
+
+  setEmailNotifications: async (enabled) => {
+    const body: EmailNotificationsRequest = { enabled };
+
+    return toCurrentUser(
+      await http.patch<CurrentUser>(API_ROUTES.USERS_ME_EMAIL_NOTIFICATIONS, body),
+    );
   },
 
   findById: async (id) => toUser(await http.get<User>(API_ROUTES.USER_BY_ID(id))),

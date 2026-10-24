@@ -1,0 +1,84 @@
+/* Values — artboard F and «Approved values» (deviation 7) of the stage 3 mockups. */
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.row:hover {
+  background-color: var(--bg-secondary-2);
+}
+
+.unread {
+  background-color: var(--bg-secondary-2);
+}
+
+.reminder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--bg-secondary);
+  color: var(--icon-secondary);
+}
+
+.overdue {
+  color: var(--icon-critical);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* body-reg-2 with a taller line: the sentence may wrap */
+.sentence {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+/* body-med-2 */
+.actor {
+  font-weight: 500;
+}
+
+/* body-reg-2, gray */
+.text {
+  font-size: 14px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+/* caption-reg, gray */
+.caption {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.oneLine {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background-color: var(--icon-accent);
+}

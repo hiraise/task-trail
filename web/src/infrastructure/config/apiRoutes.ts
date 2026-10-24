@@ -12,6 +12,7 @@ const PROJECTS = `${API_VERSION}/projects`;
 const TASKS = `${API_VERSION}/tasks`;
 const BOARDS = `${API_VERSION}/boards`;
 const FILES = `${API_VERSION}/files`;
+const NOTIFICATIONS = `${API_VERSION}/notifications`;
 const INVITATIONS = `${AUTH}/invitations`;
 const ADMIN = `${API_VERSION}/admin`;
 const ADMIN_SETTINGS = `${ADMIN}/settings`;
@@ -74,7 +75,13 @@ export const API_ROUTES = {
   CURRENT_USER: USERS_ME,
   UPLOAD_AVATAR: `${USERS_ME}/avatar`,
   USER_TASKS: `${USERS_ME}/tasks`,
+  USERS_ME_EMAIL_NOTIFICATIONS: `${USERS_ME}/email-notifications`,
   USER_BY_ID: (id: UserId) => `${USERS}/${id}`,
+  // NOTIFICATIONS API (ADR-0038)
+  NOTIFICATIONS: NOTIFICATIONS,
+  NOTIFICATIONS_UNREAD_COUNT: `${NOTIFICATIONS}/unread-count`,
+  NOTIFICATIONS_READ_ALL: `${NOTIFICATIONS}/read-all`,
+  NOTIFICATION: (id: string) => `${NOTIFICATIONS}/${id}`,
   // FILES API
   FILE: (id: string) => `${FILES}/${id}`,
   // ADMIN API: service administrator only (ADR-0014)

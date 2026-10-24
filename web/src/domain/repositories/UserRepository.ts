@@ -8,4 +8,6 @@ export interface UserRepository {
   /** `null` removes the name */
   updateCurrentUser(username: string | null): Promise<CurrentUser>;
   uploadAvatar(file: File): Promise<CurrentUser>;
+  /** Notification emails on or off (ADR-0038) */
+  setEmailNotifications(enabled: boolean): Promise<CurrentUser>;
 }

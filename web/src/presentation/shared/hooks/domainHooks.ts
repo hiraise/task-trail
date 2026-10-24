@@ -19,4 +19,7 @@ export { useProjectMembers, useProjects } from "@/presentation/features/projects
 // Task domain hooks
 export { useProjectTasks, useTaskStatuses } from "@/presentation/features/tasks/hooks";
 
+// Notification domain hooks: the bell counter in the layout (ADR-0038)
+export { useUnreadNotifications } from "@/presentation/features/notifications/hooks";
+
 // Add more domain hooks as needed...

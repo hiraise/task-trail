@@ -1,10 +1,16 @@
 import { Icon, MenuButton } from "@/presentation/shared";
 import { useLogout } from "@/presentation/shared/hooks";
 import { ICONS } from "@/shared/config/icons";
+import { notificationsTexts } from "@/shared/locales/notifications";
 import { ROUTES } from "@/shared/config/routes";
 import { TEXTS } from "@/shared/locales/texts";
 
-import { ChangePasswordForm, PersonalDataForm, ProfileHero } from "../../components";
+import {
+  ChangePasswordForm,
+  EmailNotificationsSwitch,
+  PersonalDataForm,
+  ProfileHero,
+} from "../../components";
 import { useGetCurrentUser } from "../../hooks";
 
 import styles from "./ProfilePage.module.css";
@@ -12,7 +18,8 @@ import styles from "./ProfilePage.module.css";
 /**
  * Profile. On a phone: the header, buttons to separate pages for data and password (for an administrator,
  * also to the administrator section: wider, it is in the side menu) and sign-out at the bottom;
- * from 768 px, a card with forms right on the page. CSS switches the layout.
+ * from 768 px, a card with forms right on the page. The notification emails switch is on both:
+ * above sign-out on a phone, the third block of the card wider. CSS switches the layout.
  */
 export function ProfilePage() {
   const { data: user } = useGetCurrentUser();
@@ -48,6 +55,14 @@ export function ProfilePage() {
         <div className={styles.block}>
           <h4>{TEXTS.profile.changePassword}</h4>
           <ChangePasswordForm layout="inline" />
+        </div>
+      </div>
+
+      {/* Outside .menu and .forms: shown on every width (artboard F) */}
+      <div className={styles.notifications}>
+        <h4 className={styles.wideOnly}>{notificationsTexts.title}</h4>
+        <div className={styles.notificationsBox}>
+          <EmailNotificationsSwitch />
         </div>
       </div>
 

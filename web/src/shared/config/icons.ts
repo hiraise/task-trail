@@ -6,6 +6,7 @@ import ArrowLeft from "@/assets/icons/ArrowLeft.svg?react";
 import ArrowLeftWithPadding from "@/assets/icons/ArrowLeftWithPadding.svg?react";
 import ArrowRight from "@/assets/icons/ArrowRight.svg?react";
 import ArrowRightWithPadding from "@/assets/icons/ArrowRightWithPadding.svg?react";
+import BellIcon from "@/assets/icons/BellIcon.svg?react";
 import CalendarIcon from "@/assets/icons/CalendarIcon.svg?react";
 import CameraIcon from "@/assets/icons/camera.svg?react";
 import CheckIcon from "@/assets/icons/check.svg?react";
@@ -85,6 +86,8 @@ export const ICONS = {
   paperclip: PaperclipIcon,
   file: FileIcon,
   download: DownloadIcon,
+  // Notifications (ADR-0038)
+  bell: BellIcon,
 };
 
 // Design elements

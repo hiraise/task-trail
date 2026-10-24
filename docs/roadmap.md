@@ -45,7 +45,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   read-all), old ones deleted after 90 days, `PATCH /v1/users/me/email-notifications` and
   `CurrentUser.emailNotifications`; step 13 is done — a job every minute emails unread notifications
   5 minutes to a day old while mail is connected, the hourly job writes `due_soon` and `overdue`
-  reminders from 06:00 UTC; the next step is step 14 — notifications in the web.
+  reminders from 06:00 UTC; step 14 is done — notifications in the web: the bell with the unread
+  counter in `Drawer` and `BottomNavBar`, the «Уведомления» page, the profile switch of notification
+  emails; the next step is step 15 — mentions on the server.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
@@ -55,7 +57,7 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 - **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping
   and errors — [ADR-0024](adr/0024-web-api-mapping-and-errors.md)): sign-in and profile, projects and
   members, tasks, the archive and list sorting, the task feed, boards with the kanban, the admin
-  section, search.
+  section, search, notifications.
 - **Local stack** — `scripts/dev.sh up` (README, «Локальный стенд»): the server, the web, PostgreSQL
   and Mailpit; the first `up` creates an administrator and connects mail.
 - **Design** of new screens — `docs/design-system.md` and a mockup approved by the customer

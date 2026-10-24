@@ -19,6 +19,25 @@
   color: var(--icon-secondary);
 }
 
+/* The bell (stage 3 mockups, artboard F): on its page white with a dark icon, like the current
+   menu item; the counter sits on the corner with a ring of the page color. */
+.bell {
+  position: relative;
+}
+
+.bellCurrent {
+  background-color: var(--bg-card);
+  color: var(--icon-primary);
+  box-shadow: inset 0 0 0 6px var(--bg-primary-contrast);
+}
+
+.bellBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  box-shadow: 0 0 0 2px var(--bg-primary);
+}
+
 .menu {
   display: flex;
   align-items: center;
