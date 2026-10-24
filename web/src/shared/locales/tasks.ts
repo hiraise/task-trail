@@ -105,6 +105,8 @@ export const tasksTexts = {
     editFailed: "Не удалось изменить комментарий",
     deleteFailed: "Не удалось удалить комментарий",
     loadFailed: "Не удалось загрузить комментарии и историю",
+    // The suggestion list after «@» (ADR-0039)
+    members: "Участники проекта",
   },
   // Task history lines (ADR-0028); {from}, {to}, {name} — interpolate
   events: {

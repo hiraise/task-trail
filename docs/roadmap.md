@@ -7,50 +7,16 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 
 ## Where we are
 
-- **Now:** stage 2 is done (2026-10-23), plan — [docs/plans/stage-2/](plans/stage-2/README.md):
-  English code comments; project keys and task keys `DS-12`
-  ([ADR-0026](adr/0026-project-and-task-keys.md)); a reversible archive of tasks and projects
-  ([ADR-0027](adr/0027-reversible-archive.md)) and list sorting; the task feed — comments and change
-  history ([ADR-0028](adr/0028-task-activity-feed.md)); boards — list, creation, board info
-  ([ADR-0029](adr/0029-boards-over-projects.md)); the kanban with drag and drop and the task modal;
-  search — `GET /v1/search` and the search screen ([ADR-0030](adr/0030-search-by-substring.md)).
-  Next — stage 3, plan — [docs/plans/stage-3/](plans/stage-3/README.md) with ADRs 0033–0039, accepted
-  on 2026-10-23; step 0 is done — the mockups of all stage 3 screens are approved; step 1 is done —
-  priority on the server ([ADR-0033](adr/0033-task-priority.md)): `Task.priority`,
-  `PATCH /v1/tasks/{taskId}/priority`, the `priority_changed` event; step 2 is done — priority in
-  the web: the field and picker on the task page, the new task form, icons on the cards (`TaskMeta`),
-  the «По приоритету» sort; step 3 is done — due date on the server
-  ([ADR-0034](adr/0034-task-due-date.md)): `Task.dueDate`, `PATCH /v1/tasks/{taskId}/due-date`, the
-  `due_date_changed` event; step 4 is done — due date in the web: the «Срок» row and picker on the task
-  page, the new task form, the chip on the cards with «Сегодня»/«Завтра» and overdue in red, the «По сроку»
-  sort; step 5 is done — labels on the server ([ADR-0035](adr/0035-project-labels.md)): labels of
-  a project `/v1/projects/{projectId}/labels`, `PUT /v1/tasks/{taskId}/labels`, `Task.labels` in every
-  task response; step 6 is done — labels on a task in the web: the «Метки» row and the picker with
-  search, creating a label with a color and the limit of 10, chips on the cards (at most 3 and «+N»);
-  step 7 is done — project labels management in the web: «Метки» in the project menu opens «Метки
-  проекта», where the owner and admins create, rename, recolor and delete labels, others see the list;
-  step 8 is done — subtasks on the server ([ADR-0036](adr/0036-subtasks.md)): `Task.parentId`,
-  `subtasksTotal`, `subtasksDone`, `parentId` on create, `PATCH /v1/tasks/{taskId}/parent`,
-  `GET /v1/tasks/{taskId}/subtasks`, the `parent_changed` event, subtasks detached on a move or delete
-  of the parent; step 9 is done — subtasks in the web: the «Подзадачи» block with progress and quick
-  adding on the task page and in the kanban modal, the parent link, «Сделать подзадачей…» and «Отвязать
-  от родителя» in the task menu, «2/5» on the cards; step 10 is done — attachments on the server
-  ([ADR-0037](adr/0037-task-attachments.md)): `/v1/tasks/{taskId}/attachments` (list, upload up to
-  25 MB, delete by the uploader, the owner or admins), `GET /v1/files/{fileId}` serves an attachment
-  only to members of its project, the stack proxy accepts 25 MB; step 11 is done — attachments in the
-  web: the «Вложения» block on the task page and in the kanban modal with image previews, upload of
-  several files, download through the API client and delete with a confirmation; step 12 is done —
-  notifications on the server ([ADR-0038](adr/0038-notifications.md)): `assigned`, `status_changed`
-  and `commented` are written with the change, `/v1/notifications` (list, unread count, read marks,
-  read-all), old ones deleted after 90 days, `PATCH /v1/users/me/email-notifications` and
-  `CurrentUser.emailNotifications`; step 13 is done — a job every minute emails unread notifications
-  5 minutes to a day old while mail is connected, the hourly job writes `due_soon` and `overdue`
-  reminders from 06:00 UTC; step 14 is done — notifications in the web: the bell with the unread
-  counter in `Drawer` and `BottomNavBar`, the «Уведомления» page, the profile switch of notification
-  emails; step 15 is done — mentions on the server ([ADR-0039](adr/0039-comment-mentions.md)): a token
-  `@[Name](userId)` in a comment notifies a mentioned project member with `mentioned` instead of
-  `commented`, an edit notifies only the members it adds, notification texts show `@Name`; the next
-  step is step 16 — mentions in the web.
+- **Now:** stage 3 is done (2026-10-24), plan — [docs/plans/stage-3/](plans/stage-3/README.md): the
+  "after the core" items of [ADR-0004](adr/0004-lightweight-tracker-scope.md) — task priority
+  ([ADR-0033](adr/0033-task-priority.md)), due date with reminders
+  ([ADR-0034](adr/0034-task-due-date.md)), project labels ([ADR-0035](adr/0035-project-labels.md)),
+  subtasks ([ADR-0036](adr/0036-subtasks.md)), attachments
+  ([ADR-0037](adr/0037-task-attachments.md)), notifications in the web and by email
+  ([ADR-0038](adr/0038-notifications.md)), mentions in comments with member suggestions after «@»
+  ([ADR-0039](adr/0039-comment-mentions.md)). Stage 2 (the core: task keys, archive, the task feed,
+  boards, search) — [docs/plans/stage-2/](plans/stage-2/README.md).
+  Next — ask the customer: stage 4 (the Android client) or items outside the stages below.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
@@ -60,7 +26,7 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 - **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping
   and errors — [ADR-0024](adr/0024-web-api-mapping-and-errors.md)): sign-in and profile, projects and
   members, tasks, the archive and list sorting, the task feed, boards with the kanban, the admin
-  section, search, notifications.
+  section, search, notifications and mentions.
 - **Local stack** — `scripts/dev.sh up` (README, «Локальный стенд»): the server, the web, PostgreSQL
   and Mailpit; the first `up` creates an administrator and connects mail.
 - **Design** of new screens — `docs/design-system.md` and a mockup approved by the customer
@@ -75,8 +41,8 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
    onto it; the old API reference removed. Details — ADRs 0011–0025 and git history.
 3. **Stage 2 — done (2026-10-23).** The core of [ADR-0004](adr/0004-lightweight-tracker-scope.md): task
    keys, archive, comments with history, boards, search. Plan — [docs/plans/stage-2/](plans/stage-2/README.md).
-4. **Stage 3.** The "after the core" items of ADR-0004, each with its own ADR (0033–0039): priority,
-   due date, labels, subtasks, attachments, notifications with emails and reminders, mentions. Mockups
+4. **Stage 3 — done (2026-10-24).** The "after the core" items of ADR-0004, each with its own ADR
+   (0033–0039): priority, due date, labels, subtasks, attachments, notifications with emails and reminders, mentions. Mockups
    of all screens first (step 0, ADR-0025). Plan — [docs/plans/stage-3/](plans/stage-3/README.md).
 5. **Stage 4.** An Android client on the same API. First an ADR about the stack; an example of the
    process — the Babylog project (`hiraise/Babylog`).
@@ -97,7 +63,6 @@ Also planned, outside the stages:
 - A list of pending invitations («Приглашённые пользователи» in Figma) — not in the contract;
   [ADR-0016](adr/0016-invite-only-signup-first-admin.md) defers it.
 - The home page «Недавно просмотренные» (a Figma draft) — left out of stage 2 by the customer.
-- Mentions in comments — stage 3 (ADR-0004, [ADR-0028](adr/0028-task-activity-feed.md)).
 
 ## Keep in mind
 
