@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-10-23
-- **Affects:** table `task_attachments` and `files.size` in `server/migrations/`, `entity.File` and `entity.Attachment`, `server/internal/application/service/file/` and attachment services in `server/internal/application/service/task/`, `GET /v1/files/{fileId}` and its router in `server/internal/presentation/http/v1/file.go`, attachments in the API contract, `client_max_body_size` in `stand/nginx.conf.template`, the attachments block in `web/src/presentation/features/tasks/`
+- **Affects:** table `task_attachments` and `files.size` in `server/migrations/`, `entity.File` and `entity.Attachment`, `server/internal/application/service/file/` and attachment services in `server/internal/application/service/task/`, `GET /v1/files/{fileId}` and its router in `server/internal/presentation/http/v1/file.go`, attachments in the API contract, `client_max_body_size` in `web/docker/nginx.conf.template`, the attachments block in `web/src/presentation/features/tasks/`
 
 ## Context
 

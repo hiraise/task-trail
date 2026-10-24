@@ -66,7 +66,7 @@ detected by the content; everything except JPEG, PNG and WebP is served for down
 - An attachment ([ADR-0037](../docs/adr/0037-task-attachments.md)) is a file of any type up to 25 MB;
   it is served only to members of its task's project: without a session — `401`, to others — `404`.
 - A proxy in front of the server must accept request bodies up to 25 MB plus 64 KB for multipart
-  headers: the local stack sets `client_max_body_size` in `stand/nginx.conf.template`.
+  headers: the web image sets `client_max_body_size` in `web/docker/nginx.conf.template`.
 
 A replaced avatar or a deleted attachment stops being served immediately, and the cleanup erases it from disk — at server
 start and then once an hour. The cleanup also erases files older than a day that are not in the

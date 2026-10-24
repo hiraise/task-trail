@@ -26,8 +26,8 @@ func BindUpdateCurrentUser(c *gin.Context) (*string, error) {
 }
 
 // multipartOverhead is the request body allowance for multipart boundaries and part headers beyond the file.
-// The largest body, entity.MaxAttachmentSize+multipartOverhead, mirrors client_max_body_size of the stand
-// proxy (stand/nginx.conf.template): change it here — change it there too (ADR-0013, ADR-0037).
+// The largest body, entity.MaxAttachmentSize+multipartOverhead, mirrors client_max_body_size of the web
+// image proxy (web/docker/nginx.conf.template): change it here — change it there too (ADR-0013, ADR-0037).
 // The smaller avatar limit is checked by the server only.
 const multipartOverhead = 64 << 10
 

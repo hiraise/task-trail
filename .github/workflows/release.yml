@@ -1,0 +1,44 @@
+# Release (ADR-0042): a vX.Y.Z tag on a commit of main builds the server and web images, pushes them
+# to GitHub Container Registry and creates a GitHub release with deploy/compose.yaml. The build is
+# scripts/dev.sh images, so it can be repeated locally.
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: write
+  packages: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Релиз
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Only what passed CI on main is released: main changes only through a PR with green CI (ADR-0009)
+      - name: The tag is on main
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - name: Sign in to GitHub Container Registry
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Build and push the images
+        run: scripts/dev.sh images "${GITHUB_REF_NAME#v}" --push
+
+      - name: GitHub release with the compose file
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "$GITHUB_REF_NAME" deploy/compose.yaml --verify-tag --generate-notes --title "TaskTrail $GITHUB_REF_NAME"

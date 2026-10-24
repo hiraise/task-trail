@@ -9,7 +9,7 @@ COPY api/ api/
 COPY server/ server/
 RUN go build -C server/cmd/app -o /build/app
 
-FROM alpine
+FROM alpine:3.24
 WORKDIR /app
 # Migrations are embedded in the binary (server/migrations/migrations.go), no need to copy them separately
 COPY --from=builder /build/app app

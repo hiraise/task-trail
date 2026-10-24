@@ -460,7 +460,7 @@ function checkCommentLanguage() {
     const name = basename(path);
     if (/\.(go|css)$/.test(path)) scanC(path, false);
     else if (/\.(ts|tsx|js|mjs)$/.test(path)) scanC(path, true);
-    else if (/\.(sh|ya?ml)$/.test(path) || name === "Makefile" || name.startsWith("Dockerfile") || /^stand\/.*\.template$/.test(path)) {
+    else if (/\.(sh|ya?ml)$/.test(path) || name === "Makefile" || name.startsWith("Dockerfile") || /\.template$/.test(path)) {
       scanLines(path, "#");
     } else if (path.endsWith(".sql")) scanLines(path, "--");
   }

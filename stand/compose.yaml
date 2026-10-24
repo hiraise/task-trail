@@ -54,15 +54,11 @@ services:
       mailpit:
         condition: service_started
 
+  # The same image as in a release (ADR-0042): its nginx serves the build and proxies /api to the server
   web:
     build:
       context: ../web
       dockerfile: docker/Dockerfile
-      args:
-        API_URL: /api
-        ROOT_PATH: ""
-    volumes:
-      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:

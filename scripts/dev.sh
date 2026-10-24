@@ -9,6 +9,9 @@ GOLANGCI_LINT_VERSION=2.15.0
 # Playwright for screenshots of the local stack (ADR-0040): a tool for agents, not a web dependency
 PLAYWRIGHT_VERSION=1.56.1
 
+# Release images (ADR-0042): GitHub Container Registry, one repository per image
+IMAGE_PREFIX=ghcr.io/hiraise/task-trail
+
 # Local stack (ADR-0010): server from server/, web from web/, PostgreSQL and a mail catcher
 COMPOSE=(docker compose -f "$ROOT/stand/compose.yaml")
 
@@ -32,6 +35,12 @@ Local stack in Docker:
   logs [service]  logs: server, web, postgres, mailpit
   screens <dir> <path>... [--widths 393,768,1200] [--click <selector>]...
                   full-page screenshots of the running stack, signed in as the administrator
+
+Release (ADR-0042):
+  images <version> [--push]
+                  build the server and web images tagged <version> (e.g. 1.0.0) and, for the newest
+                  release, latest; with --push, upload them to GitHub Container Registry (CI does it
+                  on a vX.Y.Z tag)
 
 Branches and CI:
   ci [<pr>|main]  wait for CI of a PR (default: the PR of the current branch) or of the last commit
@@ -189,6 +198,37 @@ ensure_docker() {
 	exit 1
 }
 
+# Release images are built from the same Dockerfiles as the local stack, for the platform of the machine:
+# CI runs on linux/amd64, so released images are linux/amd64. latest is the newest release: a patch of
+# an older line (1.1.5 after 1.2.0) gets only its own tag
+images() {
+	local version=${1:-} push=${2:-}
+	if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { [ -n "$push" ] && [ "$push" != --push ]; }; then
+		echo "Usage: scripts/dev.sh images <version, e.g. 1.0.0> [--push]" >&2
+		exit 2
+	fi
+	ensure_docker
+	local tags=("$version") newest
+	newest=$( (git -C "$ROOT" tag -l 'v[0-9]*.[0-9]*.[0-9]*' | sed 's/^v//'; echo "$version") | sort -V | tail -1)
+	[ "$newest" = "$version" ] && tags+=(latest)
+	local labels=(--label "org.opencontainers.image.source=https://github.com/hiraise/task-trail"
+		--label "org.opencontainers.image.version=$version" --label "org.opencontainers.image.licenses=MIT")
+	for image in server web; do
+		local args=()
+		for tag in "${tags[@]}"; do args+=(-t "$IMAGE_PREFIX-$image:$tag"); done
+		echo "== images: $image ${tags[*]}"
+		if [ "$image" = server ]; then
+			docker build "${labels[@]}" "${args[@]}" -f "$ROOT/server/docker/Dockerfile" "$ROOT"
+		else
+			docker build "${labels[@]}" "${args[@]}" -f "$ROOT/web/docker/Dockerfile" "$ROOT/web"
+		fi
+		if [ "$push" = --push ]; then
+			for tag in "${tags[@]}"; do docker push "$IMAGE_PREFIX-$image:$tag"; done
+		fi
+	done
+	echo "== images: done"
+}
+
 # The first account and mail are set up via the admin API, not the server environment (ADR-0015):
 # scripts/stand-setup.mjs, which also prints the addresses and sign-in
 stand_up() {
@@ -338,6 +378,10 @@ check)
 rules) rules ;;
 server) server ;;
 web) web ;;
+images)
+	shift
+	images "$@"
+	;;
 up) stand_up ;;
 smoke) node "$ROOT/scripts/stand-smoke.mjs" ;;
 down) "${COMPOSE[@]}" down ;;

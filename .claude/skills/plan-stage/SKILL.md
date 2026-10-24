@@ -35,6 +35,9 @@ stage's plan in `docs/plans/`. Read it for its form, not its content.
 3. A stage with new screens starts with step 0 — mockups of all of them, approved by the customer
    ([ADR-0025](../../../docs/adr/0025-design-system-in-repo.md)).
 4. A server part and a web part are separate steps (ADR-0032).
+5. The last step's «Done when» includes deleting `docs/plans/stage-N/`, after moving design values
+   and mockup links into `docs/design-system.md` and shared rules into ADRs
+   ([ADR-0041](../../../docs/adr/0041-delete-finished-stage-plans.md)).
 
 ## 4. Check and hand over
 

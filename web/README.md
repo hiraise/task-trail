@@ -1,8 +1,8 @@
 # TaskTrail — web client
 
 A React and TypeScript SPA: login, first account and invitations, projects and members, tasks,
-profile, the archive, the task feed, boards (list, creation, board info), the admin section. The kanban
-and search are only laid out so far — they come in stage 2 ([plan](../docs/plans/stage-2/README.md)).
+profile, the archive, the task feed, boards with the kanban, search, notifications and mentions,
+the admin section.
 
 |                       Desktop                        |                       Phone                       |
 | :--------------------------------------------------: | :-----------------------------------------------: |
@@ -30,7 +30,9 @@ All repository checks at once — `scripts/dev.sh check` from the root.
 
 ## Environment
 
-Variables are read at build time:
+Variables are read at build time. The Docker image (`docker/Dockerfile`) builds with `VITE_API_URL=/api`
+and an empty `VITE_ROOT_PATH`: its nginx (`docker/nginx.conf.template`) proxies `/api/` to the `server`
+service ([ADR-0042](../docs/adr/0042-release-images-and-compose.md)).
 
 | Variable | Default | What it sets |
 | --- | --- | --- |
