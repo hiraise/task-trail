@@ -3,7 +3,8 @@
 // a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
 // mail, from the API response), gets a task with the key <project key>-1 and a notification about it, reads
 // all notifications (ADR-0038), changes its status, writes,
-// edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027),
+// edits and deletes a comment, gets "mentioned" for a comment of the owner (ADR-0039) and reads the history
+// (ADR-0028), archives and restores it (ADR-0027),
 // changes its priority (ADR-0033) and due date (ADR-0034), tags it with a label the invitee creates and the
 // owner deletes (ADR-0035), adds and deletes a subtask (ADR-0036), finds it by key and by part of its
 // name (ADR-0030), attaches, downloads and deletes a file (ADR-0037), uploads an avatar of the maximum
@@ -138,6 +139,11 @@ try {
   check(edited?.text === "Исправлено" && edited?.editedAt !== null, "the author edited the comment");
   await call(admin, "DELETE", `${comments}/${comment?.id}`, 204);
   check((await call(member, "GET", comments, 200))?.length === 0, "the project owner deleted the comment");
+  // Mentions (ADR-0039): the admin mentions the assignee by token; the newest notification is "mentioned"
+  const mention = await call(admin, "POST", comments, 201, { json: { text: `Посмотри, @[${invitee.username}](${joined?.id})` } });
+  const mentioned = (await call(member, "GET", "/v1/notifications", 200))?.[0];
+  check(mentioned?.kind === "mentioned" && mentioned?.text === `Посмотри, @${invitee.username}`, `the mentioned assignee got "mentioned" → ${mentioned?.kind}`);
+  await call(admin, "DELETE", `${comments}/${mention?.id}`, 204);
   const history = await call(member, "GET", `/v1/tasks/${task?.id}/events`, 200);
   check(history?.map?.((event) => event.kind).join() === "status_changed,created", `the task history → ${history?.map?.((event) => event.kind)}`);
   check(history?.[0]?.fromStatusId === "open" && history?.[0]?.toStatusId === "in_progress", "the history shows open → in_progress");

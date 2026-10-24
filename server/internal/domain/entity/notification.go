@@ -68,9 +68,11 @@ func TaskRecipients(task *Task, actor UserID) []UserID {
 // commentExcerptRunes — how much of a comment a notification keeps (ADR-0038).
 const commentExcerptRunes = 200
 
-// CommentExcerpt — the start of a comment for a notification: whitespace runs, line breaks
-// included, become one space; longer than 200 runes — cut with "…".
+// CommentExcerpt — the start of a comment for a notification: a mention token becomes "@Name"
+// (ADR-0039), whitespace runs, line breaks included, become one space; longer than 200 runes — cut
+// with "…".
 func CommentExcerpt(text string) string {
+	text = mentionToken.ReplaceAllString(text, "@$1")
 	s := strings.Join(strings.Fields(text), " ")
 	if utf8.RuneCountInString(s) <= commentExcerptRunes {
 		return s

@@ -154,6 +154,20 @@ func (e *editor) notifyEach(task *entity.Task, recipients []entity.UserID, actor
 	return notifications
 }
 
+// mentioned — those of ids who are members of the task's project, without the author, in the order of
+// ids (ADR-0039).
+func (e *editor) mentioned(ctx context.Context, task *entity.Task, author entity.UserID, ids []entity.UserID) ([]entity.UserID, error) {
+	ids = slices.DeleteFunc(ids, func(id entity.UserID) bool { return id == author })
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	members, err := e.members.FilterMembers(ctx, task.ProjectID, ids)
+	if err != nil {
+		return nil, err
+	}
+	return slices.DeleteFunc(ids, func(id entity.UserID) bool { return !slices.Contains(members, id) }), nil
+}
+
 // assigned — the notification of a new assignee; none when there is no assignee or the actor
 // assigned themselves (ADR-0038).
 func (e *editor) assigned(task *entity.Task, actor entity.UserID, now time.Time) []*entity.Notification {

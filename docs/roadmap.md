@@ -47,11 +47,14 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   5 minutes to a day old while mail is connected, the hourly job writes `due_soon` and `overdue`
   reminders from 06:00 UTC; step 14 is done — notifications in the web: the bell with the unread
   counter in `Drawer` and `BottomNavBar`, the «Уведомления» page, the profile switch of notification
-  emails; the next step is step 15 — mentions on the server.
+  emails; step 15 is done — mentions on the server ([ADR-0039](adr/0039-comment-mentions.md)): a token
+  `@[Name](userId)` in a comment notifies a mentioned project member with `mentioned` instead of
+  `commented`, an edit notifies only the members it adds, notification texts show `@Name`; the next
+  step is step 16 — mentions in the web.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
-  the archive of tasks and projects; task comments and history; project labels; subtasks; attachments; notifications; boards; search; service
+  the archive of tasks and projects; task comments and history; project labels; subtasks; attachments; notifications and mentions; boards; search; service
   administration.
   Tests check responses against the contract ([ADR-0019](adr/0019-server-contract-tests.md)).
 - **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping

@@ -97,3 +97,20 @@ func (r *PGProjectMemberRepository) Remove(ctx context.Context, projectID entity
 	}
 	return nil
 }
+
+func (r *PGProjectMemberRepository) FilterMembers(ctx context.Context, projectID entity.ProjectID, ids []entity.UserID) ([]entity.UserID, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+	rows, err := r.getDb(ctx).Query(ctx,
+		`SELECT user_id FROM project_members WHERE project_id = $1 AND user_id = ANY($2::uuid[])`,
+		projectID, toStrings(ids))
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	members, err := pgx.CollectRows(rows, pgx.RowTo[entity.UserID])
+	if err != nil {
+		return nil, r.handleError(err)
+	}
+	return members, nil
+}

@@ -200,3 +200,76 @@ func TestEmailNotificationsSwitch(t *testing.T) {
 		t.Fatalf("on: %+v", got)
 	}
 }
+
+// mentionOf is the comment token of a mention (ADR-0039).
+func mentionOf(name, userID string) string {
+	return "@[" + name + "](" + userID + ")"
+}
+
+// A mentioned member hears "mentioned" instead of "commented"; a non-member and the writer hear
+// nothing; an edit notifies only the members it adds; the email shows "@Name" (ADR-0039).
+func TestNotificationMentions(t *testing.T) {
+	s := apitest.New(t, contract.Load(t))
+	admin := registerAdmin(t, s)
+	design := createProject(t, s, "Дизайн-система").Project.ID
+	backend := createProject(t, s, "Бэкенд").Project.ID
+	olga := signUp(t, s, backend, "olga@example.com", "Ольга")
+	login(t, s, "admin@example.com", password)
+	maria := signUp(t, s, design, "maria@example.com", "Мария")
+	login(t, s, "admin@example.com", password)
+	ivan := signUp(t, s, design, "ivan@example.com", "Иван")
+	asAdmin := session(t, s, "admin@example.com")
+	asMaria := session(t, s, "maria@example.com")
+	smtp := withMail(s, t)
+
+	// Maria's task, Ivan assigned; the admin mentions Ivan: he hears "mentioned", Maria — "commented"
+	button := createTask(t, asMaria, design, "Кнопка", ivan.ID)
+	s.Clock.Advance(time.Minute)
+	first := writeComment(t, asAdmin, button.ID, "Посмотри,\n"+mentionOf("Иван", strings.ToUpper(ivan.ID)))
+	list := requireNotifications(t, s, "mentioned Кнопка", "assigned Кнопка")
+	if n := list[0]; n.Text == nil || *n.Text != "Посмотри, @Иван" || n.Actor == nil || n.Actor.ID != admin.ID {
+		t.Fatalf("mentioned: %+v", n)
+	}
+	list = requireNotifications(t, asMaria, "commented Кнопка")
+	if *list[0].Text != "Посмотри, @Иван" {
+		t.Fatalf("commented: %q", *list[0].Text)
+	}
+
+	// A non-member's token and the writer's own are kept as written and notify nobody
+	text := "Спроси " + mentionOf("Ольга", olga.ID) + " и " + mentionOf("Я", admin.ID)
+	if c := writeComment(t, asAdmin, button.ID, text); c.Text != text {
+		t.Fatalf("text: %q", c.Text)
+	}
+	requireNotifications(t, s, "commented Кнопка", "mentioned Кнопка", "assigned Кнопка")
+	requireNotifications(t, asMaria, "commented Кнопка", "commented Кнопка")
+	requireNotifications(t, asAdmin)
+	requireNotifications(t, session(t, s, "olga@example.com"))
+
+	// An edit adding Maria notifies her only; Ivan, kept, hears nothing new
+	s.Clock.Advance(time.Minute)
+	rec := asAdmin.Do(http.MethodPatch, "/v1/tasks/"+button.ID+"/comments/"+first.ID,
+		map[string]string{"text": first.Text + " и " + mentionOf("Мария", maria.ID)})
+	apitest.RequireStatus(t, rec, http.StatusOK)
+	list = requireNotifications(t, asMaria, "mentioned Кнопка", "commented Кнопка", "commented Кнопка")
+	if *list[0].Text != "Посмотри, @Иван и @Мария" || list[0].CreatedAt != "2026-10-21T12:02:00Z" {
+		t.Fatalf("mentioned by an edit: %+v", list[0])
+	}
+	requireNotifications(t, s, "commented Кнопка", "mentioned Кнопка", "assigned Кнопка")
+
+	// The email of "mentioned" shows the name, not the token
+	s.Clock.Advance(6 * time.Minute)
+	if _, err := s.App.Notification.SendEmails.Execute(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	var found bool
+	for _, m := range smtp.Messages() {
+		text := m.Text(t)
+		if strings.Contains(text, "@[") {
+			t.Errorf("a token in the email:\n%s", text)
+		}
+		found = found || slices.Equal(m.To, []string{"ivan@example.com"}) && strings.Contains(text, "«Посмотри, @Иван»")
+	}
+	if !found {
+		t.Errorf("no email to Ivan with the mention among %d", len(smtp.Messages()))
+	}
+}

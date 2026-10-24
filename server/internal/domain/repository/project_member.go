@@ -23,4 +23,7 @@ type ProjectMemberRepository interface {
 	// UpdateRole writes the role and update time.
 	UpdateRole(ctx context.Context, member *entity.ProjectMember) error
 	Remove(ctx context.Context, projectID entity.ProjectID, userID entity.UserID) error
+	// FilterMembers — those of ids who are members of the project, in no particular order; an empty
+	// ids returns nil without a query (mentions, ADR-0039).
+	FilterMembers(ctx context.Context, projectID entity.ProjectID, ids []entity.UserID) ([]entity.UserID, error)
 }

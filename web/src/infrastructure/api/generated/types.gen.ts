@@ -387,7 +387,7 @@ export type ChangeTaskParentRequest = {
 };
 
 /**
- * Plain text; the server trims spaces at the ends before validation (ADR-0028)
+ * Plain text; the server trims spaces at the ends before validation (ADR-0028). A mention is the token `@[Name](userId)` (ADR-0039).
  */
 export type CommentText = string;
 
