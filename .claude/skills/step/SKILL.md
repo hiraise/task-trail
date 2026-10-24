@@ -13,7 +13,7 @@ Rules — [CLAUDE.md](../../../CLAUDE.md); how to read code without filling the 
 
 1. The step: the number from the customer (`$ARGUMENTS`), otherwise the step marked `next` in the
    step table of the current stage README; `docs/roadmap.md` links the stage. Plans of finished
-   stages are history: do not read them.
+   stages are deleted (ADR-0041).
 2. `git fetch`, then a worktree from `origin/main`:
    `git worktree add ../task-trail-<slug> -b <feat|fix|docs>/<slug> origin/main`; work there.
 3. Read the stage README, the step file and the ADRs it names — before writing code. The step names
@@ -34,7 +34,8 @@ Rules — [CLAUDE.md](../../../CLAUDE.md); how to read code without filling the 
 ## 3. Finish
 
 1. The step's docs in the same branch: its status `done` and `next` on the following step in the stage
-   README, "Where we are" in the roadmap, what the step file asks for (`docs/design-system.md`, README).
+   README, "Where we are" in the roadmap, what the step file asks for (`docs/design-system.md`, README). The last step of the stage
+   also deletes `docs/plans/stage-N/` after moving out what later work needs (ADR-0041).
 2. `scripts/dev.sh check` is green; `scripts/dev.sh up`, `scripts/dev.sh smoke`.
 3. A web step — `/ui-check` with the step file and the paths of its «Stack» scenario; fix the
    deviations it reports and check again.

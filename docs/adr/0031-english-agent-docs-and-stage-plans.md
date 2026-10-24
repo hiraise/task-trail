@@ -29,7 +29,8 @@ an agent implementing a step needs only that step.
 - An agent implementing a step reads `CLAUDE.md`, the stage `README.md` and its step file. Each step
   file must be enough on its own, together with the ADRs it names.
 - Finished a step: mark it done in the stage `README.md` in the same PR and update
-  "Where we are" in the roadmap. Plans of finished steps stay as history; decisions live in ADRs.
+  "Where we are" in the roadmap. Plans of finished steps stay as history; decisions live in ADRs. *(Replaced by
+  [ADR-0041](0041-delete-finished-stage-plans.md): the plan of a finished stage is deleted.)*
 - ADR fields and sections are in English: `Status` (`Proposed`, `Accepted`, `Deprecated`,
   `Superseded by [ADR-NNNN](…)`), `Date`, `Affects`, `Supersedes`.
 

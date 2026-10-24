@@ -16,6 +16,10 @@ this file in the same PR if a rule changed.
 3. States — separate artboards: empty, loading, errors by `ApiError` codes, modals, notifications.
 4. Code — after the customer's "yes". A new shared component or design token goes here too.
 
+Mockups of stage 3 screens (priority, due date, labels, subtasks, attachments, notifications,
+mentions) — the canvas [«TaskTrail — этап 3»](https://claude.ai/artifact/HxcqoKqupKL65NSs5nTPMC);
+artboard titles start with a letter, «the stage 3 canvas, artboard B» below refers to them.
+
 Existing screens are drawn in Figma (the file is in [CLAUDE.md](../CLAUDE.md)). It is a reference
 for them, not a place for new mockups.
 

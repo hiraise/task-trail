@@ -1,8 +1,8 @@
 # TaskTrail — web client
 
 A React and TypeScript SPA: login, first account and invitations, projects and members, tasks,
-profile, the archive, the task feed, boards (list, creation, board info), the admin section. The kanban
-and search are only laid out so far — they come in stage 2 ([plan](../docs/plans/stage-2/README.md)).
+profile, the archive, the task feed, boards with the kanban, search, notifications and mentions,
+the admin section.
 
 |                       Desktop                        |                       Phone                       |
 | :--------------------------------------------------: | :-----------------------------------------------: |
