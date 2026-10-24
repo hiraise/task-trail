@@ -1,5 +1,6 @@
 # Dependency updates (ADR-0021). Every Dependabot PR goes through CI; an update without a behavior
 # change needs no ADR (ADR-0006). Major versions come in separate PRs.
+# PRs come into main; retarget one to the open release branch before merging (ADR-0043).
 version: 2
 updates:
   - package-ecosystem: gomod

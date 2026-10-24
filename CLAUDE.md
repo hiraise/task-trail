@@ -33,7 +33,7 @@ Only the customer can change the principles, and only with a new ADR.
 | Web client design | [ADR-0008](docs/adr/0008-web-architecture.md) | agents |
 | Design | `docs/design-system.md`: tokens, layout, components; a new screen needs a mockup approved by the customer ([ADR-0025](docs/adr/0025-design-system-in-repo.md)). Screens drawn earlier — Figma, file `UXrW16oivWuiKjTmVJgXcT` (393, 768 and 1200+ px), not extended | agents |
 | Working rules | `CLAUDE.md` | agents |
-| Repeatable procedures: a plan step (`/step`), checking screens (`/ui-check`), handing over a task (`/pr`), merging a PR (`/merge`), planning a stage (`/plan-stage`) | `.claude/skills/` | agents |
+| Repeatable procedures: a plan step (`/step`), checking screens (`/ui-check`), handing over a task (`/pr`), merging a PR (`/merge`), opening and shipping a release (`/release`), planning a stage (`/plan-stage`) | `.claude/skills/` | agents |
 
 - No specific task from the customer — start with `docs/roadmap.md`: it links to the current stage
   plan, and the plan names the next step.
@@ -120,9 +120,11 @@ in an ADR, and the README links to it.
 
 ## Branches and PRs
 
-- Each task gets its own branch from a fresh `origin/main`: the local `main` lags behind until it is
-  updated. A parallel session works in a separate worktree: `git fetch`, then
-  `git worktree add ../task-trail-<task> -b <branch> origin/main`.
+- Work goes through releases ([ADR-0043](docs/adr/0043-release-branches.md)): each task gets its own
+  branch from a fresh `origin/release/X.Y.Z` — the open release branch — and its PR targets that
+  branch; a release reaches `main` with `/release`, and the merge tags `vX.Y.Z`. No open release
+  branch, or several — ask the customer. A parallel session works in a separate worktree:
+  `git fetch`, then `git worktree add ../task-trail-<task> -b <branch> origin/release/X.Y.Z`.
 - A plan step fits one agent session and gets its own branch and PR; a session starts from
   the repository, not from an earlier chat; a step stopped halfway leaves a `## Progress` section
   in its step file ([ADR-0032](docs/adr/0032-one-session-plan-steps.md)).
@@ -134,7 +136,8 @@ in an ADR, and the README links to it.
   stack (`scripts/dev.sh up`, [ADR-0010](docs/adr/0010-local-development.md)). Show a server change
   the web does not display yet in the stack's Swagger (`/api/docs/`), with tests and the output
   of `scripts/dev.sh check`. Open the PR only after the customer says yes.
-- Changes reach `main` only through a PR (`gh pr create`). The customer merges PRs; the agent merges
-  only when asked and with green CI, following the `/merge` skill.
+- Changes reach a release branch and `main` only through a PR (`gh pr create`); `main` accepts only
+  release PRs. The customer merges PRs; the agent merges only when asked and with green CI,
+  following the `/merge` skill.
 - Read CI results briefly: `gh pr checks`, on failure — `gh run view <id> --log-failed`. Repeat
   the failed step locally with the same `scripts/dev.sh` command; do not download the full log.

@@ -13,6 +13,7 @@ compose file; the proxy, certificates and how the stack is run are up to the per
 
 - Release by a git tag `vX.Y.Z` (semver) on a commit of `main`; the customer cuts it, or an agent when
   asked: `git tag v1.0.0 origin/main && git push origin v1.0.0`. The workflow refuses a tag off `main`.
+  Replaced by [ADR-0043](0043-release-branches.md): the workflow tags the merge commit of a release PR.
 - The workflow builds images with `scripts/dev.sh images <X.Y.Z> --push` and pushes
   `ghcr.io/hiraise/task-trail-server` and `ghcr.io/hiraise/task-trail-web`, `linux/amd64`, tagged
   `X.Y.Z`; the newest release also gets `latest`. Then a GitHub release with notes and
