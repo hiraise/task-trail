@@ -418,8 +418,9 @@ paths:
       operationId: getFile
       summary: File content
       description: |
-        An avatar is served without sign-in: the ID is random, and `<img>` cannot refresh the session.
-        An attachment — only to members of its project (ADR-0013).
+        An avatar is served without sign-in: the ID is random, and `<img>` cannot refresh the session
+        (ADR-0013). An attachment needs a session of a member of its task's project: without a valid session —
+        `401`, so the client refreshes the session and retries; a non-member or a deleted task — `404` (ADR-0037).
       security:
         - {}
         - cookieAuth: []
@@ -441,6 +442,11 @@ paths:
             "*/*":
               schema:
                 description: The type is the file's MIME type saved at upload
+        "401":
+          description: "`UNAUTHENTICATED` — an attachment without a valid session"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
         "404": { $ref: "#/components/responses/NotFound" }
 
   /v1/projects:
@@ -1275,6 +1281,83 @@ paths:
                 items: { $ref: "#/components/schemas/TaskEvent" }
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/tasks/{taskId}/attachments:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+    get:
+      tags: [tasks]
+      operationId: listTaskAttachments
+      summary: Task attachments
+      description: "Role: any in the task's project. Newest first (ADR-0037)."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Attachments
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Attachment" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    post:
+      tags: [tasks]
+      operationId: uploadTaskAttachment
+      summary: Attach a file
+      description: |
+        Role: any in the task's project; neither the task nor its project is archived (ADR-0027).
+        Any type up to 25 MB (ADR-0037); the type is detected from the file content (ADR-0013).
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  contentMediaType: application/octet-stream
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "201":
+          description: File attached
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Attachment" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
+        "422":
+          description: "`FILE_TOO_LARGE` or `VALIDATION_FAILED`"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+
+  /v1/tasks/{taskId}/attachments/{fileId}:
+    parameters:
+      - $ref: "#/components/parameters/TaskId"
+      - name: fileId
+        in: path
+        required: true
+        schema: { $ref: "#/components/schemas/Uuid" }
+    delete:
+      tags: [tasks]
+      operationId: deleteTaskAttachment
+      summary: Delete an attachment
+      description: |
+        The uploader, the project owner or a project admin (ADR-0037); neither the task nor its project is
+        archived. The file is marked deleted, cleanup erases it from disk (ADR-0013). A file of another
+        task — `404`.
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "204":
+          description: Attachment deleted
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/TaskReadOnly" }
 
   /v1/boards:
     get:
@@ -2315,6 +2398,28 @@ components:
           type: [string, "null"]
           format: date-time
           description: When the text was last edited; `null` — never
+    Attachment:
+      type: object
+      required: [id, taskId, name, mimeType, size, author, createdAt]
+      properties:
+        id:
+          $ref: "#/components/schemas/Uuid"
+          description: File ID for `GET /v1/files/{fileId}`
+        taskId: { $ref: "#/components/schemas/Uuid" }
+        name:
+          type: string
+          description: The original file name without a path
+        mimeType:
+          type: string
+          description: Detected from the content, may carry parameters like `charset`
+        size:
+          type: integer
+          minimum: 0
+          description: Bytes
+        author:
+          $ref: "#/components/schemas/User"
+          description: The uploader; shown even if they have left the project
+        createdAt: { $ref: "#/components/schemas/DateTime" }
     CreateCommentRequest:
       type: object
       required: [text]

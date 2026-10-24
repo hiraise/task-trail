@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"task-trail/internal/application/dto"
+	"task-trail/internal/domain"
 	"task-trail/internal/domain/entity"
 	"task-trail/internal/domain/repository"
 	"task-trail/internal/domain/service"
@@ -23,11 +24,17 @@ type Deps struct {
 	FileRepo    repository.FileRepository
 	FileStorage service.FileStorage
 	OrphanAge   time.Duration
+	// AttachmentRepo, TaskRepo and MemberRepo — access to task attachments (ADR-0037).
+	AttachmentRepo repository.AttachmentRepository
+	TaskRepo       repository.TaskRepository
+	MemberRepo     repository.ProjectMemberRepository
 }
 
 func New(d Deps) *FileModule {
 	return &FileModule{
-		Download: &DownloadService{fileRepository: d.FileRepo, storage: d.FileStorage},
+		Download: &DownloadService{
+			fileRepository: d.FileRepo, storage: d.FileStorage, attachments: d.AttachmentRepo, tasks: d.TaskRepo, members: d.MemberRepo,
+		},
 		Cleanup: &CleanupService{
 			clock:          d.Clock,
 			fileRepository: d.FileRepo,
@@ -37,15 +44,36 @@ func New(d Deps) *FileModule {
 	}
 }
 
-// DownloadService serves a file by ID. For now all files are avatars, served without sign-in:
-// the ID is random, and <img> cannot refresh the session (ADR-0013). Attachments (stage 3) are only for
-// members of their project: once they appear, check membership here.
+// DownloadService serves a file by ID. An avatar is served without sign-in: the ID is random, and <img>
+// cannot refresh the session (ADR-0013). An attachment is only for members of its task's project (ADR-0037).
 type DownloadService struct {
 	fileRepository repository.FileRepository
 	storage        service.FileStorage
+	attachments    repository.AttachmentRepository
+	tasks          repository.TaskRepository
+	members        repository.ProjectMemberRepository
 }
 
-func (s *DownloadService) Execute(ctx context.Context, id string) (dto.FileContent, error) {
+// Execute — viewerID is empty for a guest.
+func (s *DownloadService) Execute(ctx context.Context, viewerID, id string) (dto.FileContent, error) {
+	taskID, err := s.attachments.TaskOf(ctx, entity.FileID(id))
+	if err != nil {
+		return dto.FileContent{}, err
+	}
+	if taskID != nil {
+		// An attachment is only for members of its task's project (ADR-0037); a guest is asked to sign in
+		if viewerID == "" {
+			return dto.FileContent{}, domain.ErrAccessTokenNotFound()
+		}
+		// A deleted task — ENTITY_NOT_FOUND
+		task, err := s.tasks.Get(ctx, *taskID)
+		if err != nil {
+			return dto.FileContent{}, err
+		}
+		if _, err := s.members.Get(ctx, task.ProjectID, entity.UserID(viewerID)); err != nil {
+			return dto.FileContent{}, err
+		}
+	}
 	file, err := s.fileRepository.Get(ctx, entity.FileID(id))
 	if err != nil {
 		return dto.FileContent{}, err

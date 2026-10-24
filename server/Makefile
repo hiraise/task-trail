@@ -19,6 +19,7 @@ mock:
 	mockgen -source=internal/domain/repository/label.go -destination=test/mocks/mock_label.go -package=mocks
 	mockgen -source=internal/domain/service/mailer.go -destination=test/mocks/mock_mailer.go -package=mocks
 	mockgen -source=internal/domain/repository/file.go -destination=test/mocks/mock_file.go -package=mocks
+	mockgen -source=internal/domain/repository/attachment.go -destination=test/mocks/mock_attachment.go -package=mocks
 	mockgen -source=internal/domain/service/file_storage.go -destination=test/mocks/mock_file_storage.go -package=mocks
 	mockgen -source=internal/domain/service/id_generator.go -destination=test/mocks/mock_id_generator.go -package=mocks -mock_names=Service=MockIdGenerator
 	mockgen -source=internal/application/transaction/transaction.go -destination=test/mocks/mock_transaction.go -package=mocks -mock_names=Service=MockTxManager

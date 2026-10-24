@@ -330,6 +330,57 @@ func (r *taskRoutes) deleteComment(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (r *taskRoutes) listAttachments(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	list, err := r.services.ListAttachments.Execute(c, r.userID(c), taskID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewAttachments(list))
+}
+
+func (r *taskRoutes) uploadAttachment(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	upload, err := request.BindAttachment(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	attachment, err := r.services.UploadAttachment.Execute(c, r.userID(c), taskID, upload)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, response.NewAttachment(*attachment))
+}
+
+func (r *taskRoutes) deleteAttachment(c *gin.Context) {
+	taskID, err := pathID(c, "taskId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	fileID, err := pathID(c, "fileId")
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if err := r.services.DeleteAttachment.Execute(c, r.userID(c), taskID, fileID); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 func (r *taskRoutes) listEvents(c *gin.Context) {
 	taskID, err := pathID(c, "taskId")
 	if err != nil {
@@ -406,4 +457,7 @@ func NewTaskRouter(
 	g.PATCH("/tasks/:taskId/comments/:commentId", r.updateComment)
 	g.DELETE("/tasks/:taskId/comments/:commentId", r.deleteComment)
 	g.GET("/tasks/:taskId/events", r.listEvents)
+	g.GET("/tasks/:taskId/attachments", r.listAttachments)
+	g.POST("/tasks/:taskId/attachments", r.uploadAttachment)
+	g.DELETE("/tasks/:taskId/attachments/:fileId", r.deleteAttachment)
 }

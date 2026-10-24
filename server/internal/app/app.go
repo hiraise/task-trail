@@ -147,19 +147,24 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		ProjectMemberRepo:    memberRepo,
 		Mailer:               mailer,
 	})
+	fileFactory := factory.NewFileFactory(idGen, clk)
+	attachmentRepo := persistent.NewAttachmentRepo(pool)
 	userModule := user.New(user.Deps{
 		TxManager:   txManager,
 		Clock:       clk,
 		UserRepo:    userRepo,
 		FileRepo:    fileRepo,
-		FileFactory: factory.NewFileFactory(idGen, clk),
+		FileFactory: fileFactory,
 		FileStorage: storage,
 	})
 	fileModule := file.New(file.Deps{
-		Clock:       clk,
-		FileRepo:    fileRepo,
-		FileStorage: storage,
-		OrphanAge:   orphanFileAge,
+		Clock:          clk,
+		FileRepo:       fileRepo,
+		FileStorage:    storage,
+		OrphanAge:      orphanFileAge,
+		AttachmentRepo: attachmentRepo,
+		TaskRepo:       taskRepo,
+		MemberRepo:     memberRepo,
 	})
 	projectModule := project.New(project.Deps{
 		TxManager:         txManager,
@@ -198,6 +203,10 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		EventRepo:      eventRepo,
 		EventFactory:   eventFactory,
 		LabelRepo:      labelRepo,
+		AttachmentRepo: attachmentRepo,
+		FileRepo:       fileRepo,
+		FileFactory:    fileFactory,
+		FileStorage:    storage,
 	})
 	boardRepo := persistent.NewBoardRepo(pool, userFactory)
 	boardModule := board.New(board.Deps{
@@ -221,6 +230,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 	middleware.Setup(engine, idGen, contextManager, l)
 	http.NewRouter(engine, contextManager,
 		middleware.NewAuth(accessTokenService, contextManager),
+		middleware.NewOptionalAuth(accessTokenService, contextManager),
 		middleware.NewAdmin(accessModule.AdminCheck, contextManager),
 		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule, Board: boardModule, Label: labelModule, Search: searchModule, Admin: adminModule})
 	return &Server{

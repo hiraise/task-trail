@@ -36,6 +36,12 @@ type Comment struct {
 	Author  *entity.UserAccount
 }
 
+// Attachment is a task attachment with its uploader (ADR-0037).
+type Attachment struct {
+	Attachment *entity.Attachment
+	Author     *entity.UserAccount
+}
+
 // TaskEvent is a task history row with the people it mentions; FromUser and ToUser are nil when
 // the event has no such assignee.
 type TaskEvent struct {

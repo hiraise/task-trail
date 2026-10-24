@@ -10,9 +10,10 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
     # The stripped prefix: Gin builds its redirect URLs from it (e.g. to a path without a trailing "/")
     proxy_set_header X-Forwarded-Prefix /api;
-    # Request body limit matches the server (ADR-0013): an avatar up to 5 MB (entity.MaxAvatarSize) plus 64 KB
-    # for multipart headers (multipartOverhead in server/internal/presentation/http/v1/request/user.go)
-    client_max_body_size 5184k;
+    # Request body limit follows the largest upload of the server (ADR-0013, ADR-0037): an attachment up to 25 MB
+    # (entity.MaxAttachmentSize) plus 64 KB for multipart headers (multipartOverhead in
+    # server/internal/presentation/http/v1/request/user.go); the avatar limit is checked by the server
+    client_max_body_size 25664k;
   }
 
   # Build files with a hash in the name: a missing one is a 404, not index.html instead of a script

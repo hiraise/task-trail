@@ -12,6 +12,9 @@ type FileID string
 // MaxAvatarSize — the avatar limit, 5 MB. The same limit is in the web and in the stand proxy (ADR-0013).
 const MaxAvatarSize = 5 << 20
 
+// MaxAttachmentSize — the task attachment limit, 25 MB; the stand proxy accepts bodies up to it (ADR-0037).
+const MaxAttachmentSize = 25 << 20
+
 // maxFileNameLength — how many characters of the original name to keep: the name is needed only for
 // "Save as", and no file system accepts a longer one.
 const maxFileNameLength = 255
@@ -33,6 +36,8 @@ type File struct {
 	// MimeType — the type detected from the contents, not from the request header.
 	MimeType string
 	OwnerID  UserID
+	// Size — bytes of the contents; 0 for files uploaded before ADR-0037.
+	Size int64
 	// CreatedAt — when the file was uploaded. A file never changes by ID, so this is also its update time.
 	CreatedAt time.Time
 }
@@ -57,6 +62,14 @@ func CheckAvatar(size int64, mimeType string) error {
 	}
 	if !imageTypes[mimeType] {
 		return domain.ErrFileTypeNotAllowed("mimeType", mimeType)
+	}
+	return nil
+}
+
+// CheckAttachment checks whether the file can be a task attachment: any type up to 25 MB (ADR-0037).
+func CheckAttachment(size int64) error {
+	if size > MaxAttachmentSize {
+		return domain.ErrFileTooLarge("size", size, "limit", MaxAttachmentSize)
 	}
 	return nil
 }

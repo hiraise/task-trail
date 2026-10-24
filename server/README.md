@@ -56,13 +56,19 @@ Swagger always shows the contract of the running version.
 
 ## Files
 
-The server stores avatars in the `FILES_DIR` directory ([ADR-0013](../docs/adr/0013-files-on-server-disk.md)):
-each file is named by its UUID from the `files` table; the original name and type are only in the
-database. Only the API serves them (`GET /v1/files/{fileId}`); there is no need to serve the
-directory through a proxy. An avatar is JPEG, PNG or WebP up to 5 MB; the type is detected by the
-content.
+The server stores avatars and task attachments in the `FILES_DIR` directory
+([ADR-0013](../docs/adr/0013-files-on-server-disk.md)): each file is named by its UUID from the `files`
+table; the original name, type and size are only in the database. Only the API serves them
+(`GET /v1/files/{fileId}`); there is no need to serve the directory through a proxy. The type is
+detected by the content; everything except JPEG, PNG and WebP is served for download.
 
-A replaced avatar stops being served immediately, and the cleanup erases it from disk — at server
+- An avatar is JPEG, PNG or WebP up to 5 MB; it is served without sign-in.
+- An attachment ([ADR-0037](../docs/adr/0037-task-attachments.md)) is a file of any type up to 25 MB;
+  it is served only to members of its task's project: without a session — `401`, to others — `404`.
+- A proxy in front of the server must accept request bodies up to 25 MB plus 64 KB for multipart
+  headers: the local stack sets `client_max_body_size` in `stand/nginx.conf.template`.
+
+A replaced avatar or a deleted attachment stops being served immediately, and the cleanup erases it from disk — at server
 start and then once an hour. The cleanup also erases files older than a day that are not in the
 database: an interrupted upload leaves them. The cleanup does not touch files with other names.
 A backup is the database, the `FILES_DIR` directory and `APP_SECRET` together

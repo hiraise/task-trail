@@ -30,7 +30,7 @@ func (s *UploadAvatarService) Execute(ctx context.Context, userID string, upload
 	if err := entity.CheckAvatar(int64(len(upload.Content)), mimeType); err != nil {
 		return nil, err
 	}
-	file := s.fileFactory.New(upload.Name, mimeType, entity.UserID(userID))
+	file := s.fileFactory.New(upload.Name, mimeType, entity.UserID(userID), int64(len(upload.Content)))
 	// The file is written before the transaction: a slow disk does not hold the user row lock
 	if err := s.storage.Save(ctx, file.ID, bytes.NewReader(upload.Content)); err != nil {
 		return nil, err

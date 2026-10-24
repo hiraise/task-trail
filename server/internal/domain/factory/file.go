@@ -15,13 +15,14 @@ func NewFileFactory(idGenerator service.IDGenerator, clock service.Clock) *FileF
 }
 
 // New creates a file record. ID is a random UUIDv4: avatars are served by it without sign-in (ADR-0013).
-// originalName — the name from the request; only the base name without a path is kept.
-func (f *FileFactory) New(originalName string, mimeType string, ownerID entity.UserID) *entity.File {
+// originalName — the name from the request; only the base name without a path is kept. size — bytes.
+func (f *FileFactory) New(originalName string, mimeType string, ownerID entity.UserID, size int64) *entity.File {
 	return &entity.File{
 		ID:           entity.FileID(f.idGenerator.Generate()),
 		OriginalName: entity.CleanFileName(originalName),
 		MimeType:     mimeType,
 		OwnerID:      ownerID,
+		Size:         size,
 		CreatedAt:    f.clock.Now(),
 	}
 }

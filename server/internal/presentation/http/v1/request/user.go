@@ -26,21 +26,32 @@ func BindUpdateCurrentUser(c *gin.Context) (*string, error) {
 }
 
 // multipartOverhead is the request body allowance for multipart boundaries and part headers beyond the file.
-// The body limit entity.MaxAvatarSize+multipartOverhead mirrors client_max_body_size of the stand
-// proxy (stand/nginx.conf.template): change it here — change it there too (ADR-0013).
+// The largest body, entity.MaxAttachmentSize+multipartOverhead, mirrors client_max_body_size of the stand
+// proxy (stand/nginx.conf.template): change it here — change it there too (ADR-0013, ADR-0037).
+// The smaller avatar limit is checked by the server only.
 const multipartOverhead = 64 << 10
 
-// avatarField is the multipart/form-data field with the avatar file (contract, PATCH /v1/users/me/avatar).
-const avatarField = "file"
+// uploadField is the multipart/form-data field with the file (contract: uploadAvatar, uploadTaskAttachment).
+const uploadField = "file"
 
-// BindAvatar reads the avatar file from multipart/form-data. The file is not read beyond
-// entity.MaxAvatarSize: the use case checks the size, and a body over the limit with allowance is FILE_TOO_LARGE.
+// BindAvatar reads the avatar file from multipart/form-data (see bindUpload).
 func BindAvatar(c *gin.Context) (dto.Upload, error) {
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, entity.MaxAvatarSize+multipartOverhead)
+	return bindUpload(c, entity.MaxAvatarSize)
+}
+
+// BindAttachment reads a task attachment from multipart/form-data (see bindUpload).
+func BindAttachment(c *gin.Context) (dto.Upload, error) {
+	return bindUpload(c, entity.MaxAttachmentSize)
+}
+
+// bindUpload reads the only file field. The file is not read beyond limit: the use case checks the size,
+// and a body over the limit with allowance is FILE_TOO_LARGE.
+func bindUpload(c *gin.Context, limit int64) (dto.Upload, error) {
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, limit+multipartOverhead)
 	reader, err := c.Request.MultipartReader()
 	if err != nil {
-		// offset 1: the error source in the log is the handler, not this function
-		return dto.Upload{}, domain.ErrInputValidation(1, err)
+		// offset 2: the error source in the log is the handler, not the Bind functions
+		return dto.Upload{}, domain.ErrInputValidation(2, err)
 	}
 	var upload *dto.Upload
 	for {
@@ -51,21 +62,21 @@ func BindAvatar(c *gin.Context) (dto.Upload, error) {
 		if err != nil {
 			return dto.Upload{}, bodyError(err)
 		}
-		if name := part.FormName(); name != avatarField || upload != nil {
-			return dto.Upload{}, domain.ErrInputValidation(1, FieldErrors{name: "неизвестное или повторное поле"})
+		if name := part.FormName(); name != uploadField || upload != nil {
+			return dto.Upload{}, domain.ErrInputValidation(2, FieldErrors{name: "неизвестное или повторное поле"})
 		}
-		content, err := io.ReadAll(io.LimitReader(part, entity.MaxAvatarSize+1))
+		content, err := io.ReadAll(io.LimitReader(part, limit+1))
 		if err != nil {
 			return dto.Upload{}, bodyError(err)
 		}
 		upload = &dto.Upload{Name: part.FileName(), Content: content}
-		if len(content) > entity.MaxAvatarSize {
+		if int64(len(content)) > limit {
 			// Do not read the rest: the file is too large anyway
 			break
 		}
 	}
 	if upload == nil {
-		return dto.Upload{}, domain.ErrInputValidation(1, FieldErrors{avatarField: "обязательное поле"})
+		return dto.Upload{}, domain.ErrInputValidation(2, FieldErrors{uploadField: "обязательное поле"})
 	}
 	return *upload, nil
 }
@@ -76,5 +87,5 @@ func bodyError(err error) error {
 	if errors.As(err, &tooLarge) {
 		return domain.ErrFileTooLarge("limit", tooLarge.Limit)
 	}
-	return domain.ErrInputValidation(2, err)
+	return domain.ErrInputValidation(3, err)
 }
