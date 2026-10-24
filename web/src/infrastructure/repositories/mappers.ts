@@ -1,4 +1,5 @@
 import type { AdminUser } from "@/domain/models/AdminUser";
+import type { Attachment } from "@/domain/models/Attachment";
 import type { Board } from "@/domain/models/Board";
 import type { InvitationResult } from "@/domain/models/Invitation";
 import type { Label } from "@/domain/models/Label";
@@ -15,6 +16,7 @@ import type { CurrentUser, User } from "@/domain/models/User";
 
 import type {
   AdminUser as AdminUserDto,
+  Attachment as AttachmentDto,
   Board as BoardDto,
   CurrentUser as CurrentUserDto,
   InvitationResult as InvitationResultDto,
@@ -134,6 +136,16 @@ export const toTaskComment = (dto: TaskCommentDto): TaskComment => ({
   text: dto.text,
   createdAt: dto.createdAt,
   editedAt: dto.editedAt ?? undefined,
+});
+
+export const toAttachment = (dto: AttachmentDto): Attachment => ({
+  id: dto.id,
+  taskId: dto.taskId,
+  name: dto.name,
+  mimeType: dto.mimeType,
+  size: dto.size,
+  author: toUser(dto.author),
+  createdAt: dto.createdAt,
 });
 
 export const toTaskEvent = (dto: TaskEventDto): TaskEvent => ({

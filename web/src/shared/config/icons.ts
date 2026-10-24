@@ -13,7 +13,9 @@ import CheckMarkIcon from "@/assets/icons/checkMark.svg?react";
 import BoardIcon from "@/assets/icons/circum_view-board.svg?react";
 import CloseIcon from "@/assets/icons/CloseIcon.svg?react";
 import DeleteIcon from "@/assets/icons/DeleteIcon.svg?react";
+import DownloadIcon from "@/assets/icons/DownloadIcon.svg?react";
 import EditIcon from "@/assets/icons/EditIcon.svg?react";
+import FileIcon from "@/assets/icons/FileIcon.svg?react";
 import HideIcon from "@/assets/icons/HideIcon.svg?react";
 import TaskIcon from "@/assets/icons/hugeicons_task-01.svg?react";
 import LabelIcon from "@/assets/icons/LabelIcon.svg?react";
@@ -25,6 +27,7 @@ import LogoMedium from "@/assets/icons/LogoMedium.svg?react";
 import MailIcon from "@/assets/icons/MailIcon.svg?react";
 import MenuIcon from "@/assets/icons/menu_icon.svg?react";
 import MenuHorizontalIcon from "@/assets/icons/MenuHorizontalIcon.svg?react";
+import PaperclipIcon from "@/assets/icons/PaperclipIcon.svg?react";
 import PlusIcon from "@/assets/icons/PlusIcon.svg?react";
 import PriorityHighIcon from "@/assets/icons/PriorityHighIcon.svg?react";
 import PriorityLowIcon from "@/assets/icons/PriorityLowIcon.svg?react";
@@ -78,6 +81,10 @@ export const ICONS = {
   calendar: CalendarIcon,
   label: LabelIcon,
   subtasks: SubtasksIcon,
+  // Attachments (ADR-0037)
+  paperclip: PaperclipIcon,
+  file: FileIcon,
+  download: DownloadIcon,
 };
 
 // Design elements

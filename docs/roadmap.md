@@ -37,8 +37,10 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   от родителя» in the task menu, «2/5» on the cards; step 10 is done — attachments on the server
   ([ADR-0037](adr/0037-task-attachments.md)): `/v1/tasks/{taskId}/attachments` (list, upload up to
   25 MB, delete by the uploader, the owner or admins), `GET /v1/files/{fileId}` serves an attachment
-  only to members of its project, the stack proxy accepts 25 MB; the next step is step 11 — attachments
-  in the web.
+  only to members of its project, the stack proxy accepts 25 MB; step 11 is done — attachments in the
+  web: the «Вложения» block on the task page and in the kanban modal with image previews, upload of
+  several files, download through the API client and delete with a confirmation; the next step is
+  step 12 — notifications on the server.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;

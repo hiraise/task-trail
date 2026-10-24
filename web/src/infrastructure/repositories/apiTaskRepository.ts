@@ -1,6 +1,7 @@
 import type { TaskRepository } from "@/domain/repositories/TaskRepository";
 
 import type {
+  Attachment,
   ChangeTaskAssigneeRequest,
   ChangeTaskDueDateRequest,
   ChangeTaskParentRequest,
@@ -21,8 +22,12 @@ import type {
 import { API_ROUTES } from "../config/apiRoutes";
 import axiosClient from "../http/axiosClient";
 import type { HttpClient } from "../http/HttpClient";
+import { FILE_TRANSFER_TIMEOUT_MS } from "../http/timeouts";
 
-import { toTask, toTaskComment, toTaskEvent, toTaskStatus } from "./mappers";
+import { toAttachment, toTask, toTaskComment, toTaskEvent, toTaskStatus } from "./mappers";
+
+// Multipart field with the attachment file — uploadTaskAttachment in the contract
+const ATTACHMENT_FIELD = "file";
 
 // Errors arrive from HttpClient already as AppError with the API code (http/apiError.ts).
 const createTaskRepository = (http: HttpClient): TaskRepository => ({
@@ -136,6 +141,26 @@ const createTaskRepository = (http: HttpClient): TaskRepository => ({
 
   findEvents: async (taskId) =>
     (await http.get<TaskEvent[]>(API_ROUTES.TASK_EVENTS(taskId))).map(toTaskEvent),
+
+  findAttachments: async (id) =>
+    (await http.get<Attachment[]>(API_ROUTES.TASK_ATTACHMENTS(id))).map(toAttachment),
+
+  uploadAttachment: async (id, file) => {
+    const form = new FormData();
+
+    form.append(ATTACHMENT_FIELD, file, file.name);
+
+    const dto = await http.post<Attachment>(API_ROUTES.TASK_ATTACHMENTS(id), form, {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: FILE_TRANSFER_TIMEOUT_MS,
+    });
+
+    return toAttachment(dto);
+  },
+
+  deleteAttachment: async (id, fileId) => {
+    await http.delete(API_ROUTES.TASK_ATTACHMENT(id, fileId));
+  },
 });
 
 export const taskRepository: TaskRepository = createTaskRepository(axiosClient);

@@ -42,6 +42,8 @@ export const QUERY_KEYS = {
     events: (id: TaskId) => ["task", id, "events"] as const,
     /** The task's subtasks (ADR-0036), under the task's prefix */
     subtasks: (id: TaskId) => ["task", id, "subtasks"] as const,
+    /** The task's attachments (ADR-0037), under the task's prefix */
+    attachments: (id: TaskId) => ["task", id, "attachments"] as const,
     /** Task statuses: one set shared by all projects */
     statuses: ["task-statuses"] as const,
   },

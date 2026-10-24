@@ -116,5 +116,6 @@ export const TEXTS = {
     userUpdateFailed: "Не удалось сохранить данные. Попробуйте ещё раз",
     avatarUpdated: "Аватарка обновлена",
     avatarUpdateFailed: "Не удалось обновить аватарку. Попробуйте ещё раз",
+    avatarTooLarge: "Файл больше 5 МБ",
   },
 };

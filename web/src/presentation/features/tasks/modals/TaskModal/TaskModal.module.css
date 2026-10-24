@@ -21,7 +21,8 @@
   border-bottom: 1px solid var(--border-secondary-2);
 }
 
-.subtasks {
+.subtasks,
+.attachments {
   padding: 16px 0;
   border-bottom: 1px solid var(--border-secondary-2);
 }

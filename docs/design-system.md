@@ -143,6 +143,23 @@ Subtasks (ADR-0036), artboards B and C of the stage 3 canvas.
   `--bg-secondary` (radius 8), rows of a `caption-reg` key over a `body-reg-2` name; a tap chooses, on
   768+ only «Отменить» below.
 
+## Attachments
+
+Attachments (ADR-0037), artboard B of the stage 3 canvas.
+
+- `TaskAttachments` — the «Вложения» block after «Подзадачи» on the task page (its own section card) and
+  in `TaskModal`: `h4` and «Добавить файл» (`SubmitButton variant="text"` with `ICONS.paperclip`) on the
+  right; it opens a file dialog with several files. One column; two when the block is 640 px wide or
+  more (a container query: the 1200 page and the kanban modal). Empty — «Файлов пока нет»; an archived
+  task has no add button and its menu keeps only «Скачать».
+- A row — padding 8, radius 12, `--bg-secondary-2` on hover: a 48 px preview (`object-fit: cover`,
+  radius 8) for JPEG, PNG and WebP, otherwise `ICONS.file` (`--icon-secondary`) on a 48 px
+  `--bg-secondary` square; the name (`body-med-2`, one line with «…») over «2,4 МБ · Автор ·
+  27.10.2026» (`caption-reg`, `--text-secondary`). A click on the row downloads; the «…» menu —
+  «Скачать» (`ICONS.download`) and «Удалить» for the uploader, the owner and admins (with a confirmation).
+- While uploading the button reads «Загружаем…» and is disabled; each waiting file has a row at 60 %
+  opacity with `ICONS.file` and «Загружаем…»; a file over 25 MB is not sent — a toast names it.
+
 - A radio row with an icon — `RadioButton` with `icon` (before the label, gap 8 px), like the priority
   picker `TaskPriorityList`.
 

@@ -7,3 +7,4 @@ export * from "./TaskPriorityList";
 export * from "./TaskStatusBadge";
 export * from "./TaskStatusList";
 export * from "./TaskSubtasks";
+export * from "./TaskAttachments";

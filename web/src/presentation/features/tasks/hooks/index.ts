@@ -21,3 +21,10 @@ export { useTaskMenuItems } from "./useTaskMenuItems";
 export { useTaskStatuses } from "./useTaskStatuses";
 export { useCreateComment, useDeleteComment, useEditComment } from "./useCommentMutations";
 export { useTaskComments, useTaskEvents } from "./useTaskFeed";
+export {
+  useDeleteAttachment,
+  useDownloadAttachment,
+  useTaskAttachments,
+  useUploadAttachments,
+  type PendingUpload,
+} from "./useAttachments";

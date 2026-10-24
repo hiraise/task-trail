@@ -44,3 +44,25 @@ export function normalize(str: string): string {
 export function formatDateTime(date: Date | string): string {
   return format(new Date(date), "d MMMM, HH:mm", { locale: ru });
 }
+
+const FILE_SIZE_UNITS = ["Б", "КБ", "МБ", "ГБ"];
+
+/**
+ * A file size in Russian units, like 512 B, 2.4 KB, 312 KB, 2.4 MB with a decimal comma (artboard B
+ * of stage 3). One decimal below 100, none from 100 and for bytes; a non-breaking space keeps
+ * the number with its unit.
+ */
+export function formatFileSize(bytes: number): string {
+  let value = bytes;
+  let unit = 0;
+
+  while (unit < FILE_SIZE_UNITS.length - 1 && Math.round(value * 10) / 10 >= 1024) {
+    value /= 1024;
+    unit += 1;
+  }
+
+  const digits = unit === 0 || value >= 99.95 ? 0 : 1;
+  const number = value.toFixed(digits).replace(".", ",");
+
+  return `${number}\u00a0${FILE_SIZE_UNITS[unit]}`;
+}

@@ -1,5 +1,6 @@
 import {
   toAdminUser,
+  toAttachment,
   toBoard,
   toCurrentUser,
   toInvitationResult,
@@ -342,6 +343,32 @@ describe("toPasswordResetLink", () => {
     const link = { url: "http://localhost:3000/auth/reset?token=abc", expiresAt: "2026-10-23T08:00:00Z" };
 
     expect(toPasswordResetLink(link)).toEqual(link);
+  });
+});
+
+describe("toAttachment", () => {
+  it("keeps the file fields; the author is a user with an avatar URL", () => {
+    const dto = {
+      id,
+      taskId: id,
+      name: "макет.png",
+      mimeType: "image/png",
+      size: 2_516_582,
+      author: { id, email: "anna@example.com", username: "Анна", avatarId },
+      createdAt: "2026-10-22T08:00:00Z",
+    };
+
+    const attachment = toAttachment(dto);
+
+    expect(attachment).toMatchObject({
+      id,
+      taskId: id,
+      name: "макет.png",
+      mimeType: "image/png",
+      size: 2_516_582,
+      createdAt: dto.createdAt,
+    });
+    expect(attachment.author.avatarUrl).toMatch(new RegExp(`/v1/files/${avatarId}$`));
   });
 });
 
