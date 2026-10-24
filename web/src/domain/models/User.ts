@@ -12,6 +12,8 @@ export interface User {
 export interface CurrentUser extends User {
   /** Service administrator (ADR-0014) */
   isAdmin: boolean;
+  /** Notification emails on (ADR-0038); they go only while mail is connected */
+  emailNotifications: boolean;
 }
 
 export const getUserDisplayName = (user: User): string => {

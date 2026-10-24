@@ -49,6 +49,13 @@ desktop from 1025 px.
   full width.
 - **Tablet and desktop.** `DesktopTemplate`: the `Drawer` sidebar and a column of cards with a 16 px
   gap. Card: `--bg-card`, radius 12, shadow `--shade-01`, padding 20–24 px.
+- **The bell** (ADR-0038, artboard F of the stage 3 canvas). On a phone — a round 48 px link with
+  `ICONS.bell` between search and the menu pill of `BottomNavBar`; on `/notifications` it is
+  `--bg-card` with an `--icon-primary` icon inside a 6 px ring of `--bg-primary-contrast`.
+  In `Drawer` — «Уведомления» after «Поиск» under the divider. The counter is `UnreadBadge`: in
+  `BottomNavBar` and the collapsed `Drawer` on the icon corner with a 2 px ring of the background, in
+  the expanded `Drawer` at the right end of the item. The layout reads the count with
+  `useUnreadNotifications` (polled every 60 s while the tab is visible) and passes it as a prop.
 - **One component per screen** (ADR-0008): phone items and cards are in one component,
   CSS switches between them (`@media (min-width: 768px)`), like `ProfilePage` and `AdminPage`.
 
@@ -181,6 +188,29 @@ Labels of a project (ADR-0035), artboards C and I of the stage 3 canvas.
   `ColorSwatches` and the preview chip with «Создать». `DialogButtons` with «Применить» on every width,
   full screen on a phone.
 - `CheckBox` takes `disabled` (opacity 0.4, no change, `aria-disabled`) and `aria-label`.
+
+## Notifications
+
+Notifications (ADR-0038), artboard F of the stage 3 canvas.
+
+- `UnreadBadge` (`presentation/shared/components/UnreadBadge`) — props `{ count, className }`;
+  nothing for 0, «99+» above 99, `aria-label` «N непрочитанных». A pill: height 18, min width 18,
+  padding `0 5px`, radius 9, `--icon-accent` background, `--text-primary-contrast` text 10/12 at
+  weight 600 (`caption-2-med` at 600). No new tokens.
+- `NotificationsPage` (`features/notifications`) — the title «Уведомления» and «Прочитать все»
+  (`SubmitButton variant="text"`, opacity 0.6 when there is nothing unread); on a phone the button is
+  at the top of the list on the right. A row `NotificationItem` — padding 12, radius 12, gap 12: the
+  actor's `UserAvatar` or, for reminders, `ICONS.calendar` in a 32 px `--bg-secondary` circle
+  (`--icon-critical` for overdue); the sentence 14/18 with the actor at weight 500; the comment start
+  in `body-reg-2` gray; «DS-12 · Название» and the time in `caption-reg` gray, one line with «…»;
+  unread — `--bg-secondary-2` and an 8 px `--icon-accent` dot. A click marks it read and opens the task.
+- Empty — `EmptyListState` with our picture (a bell in a light blue circle,
+  `assets/elements/notifications-empty.svg`); loading — six `aria-busy` placeholder rows on
+  `--bg-secondary`.
+- The profile switch «Письма об уведомлениях» — `CheckBox` and the text (the text toggles too), under it
+  the hint about 5 minutes or, without mail, «Почта не подключена администратором…» in
+  `--text-secondary`. On a phone above sign-out; wider — the third block of the profile card with `h4`
+  «Уведомления».
 
 ## People lists
 

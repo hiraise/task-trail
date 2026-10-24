@@ -1,0 +1,20 @@
+/* Values — «Approved values» of the stage 3 mockups: no new tokens (4.6:1). The type is
+   caption-2-med at weight 600; set here, since the global class would also set the text color. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background-color: var(--icon-accent);
+  color: var(--text-primary-contrast);
+  font-family: var(--font-family);
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}

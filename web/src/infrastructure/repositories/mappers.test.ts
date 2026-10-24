@@ -4,6 +4,7 @@ import {
   toBoard,
   toCurrentUser,
   toInvitationResult,
+  toNotification,
   toPasswordResetLink,
   toProject,
   toProjectDetails,
@@ -48,6 +49,56 @@ describe("toCurrentUser", () => {
     });
 
     expect(user.isAdmin).toBe(true);
+    expect(user.emailNotifications).toBe(false);
+  });
+});
+
+describe("toNotification", () => {
+  const dto = {
+    id,
+    kind: "status_changed" as const,
+    task: { id, key: "DS-12", name: "Макет" },
+    actor: { id, email: "anna@example.com", username: "Анна", avatarId },
+    createdAt: "2026-10-22T08:00:00Z",
+    readAt: null,
+    fromStatusId: "open" as const,
+    toStatusId: "done" as const,
+    text: null,
+    dueDate: null,
+  };
+
+  it("maps the actor, the task and the change fields; null becomes undefined", () => {
+    const notification = toNotification(dto);
+
+    expect(notification).toMatchObject({
+      id,
+      kind: "status_changed",
+      task: { id, key: "DS-12", name: "Макет" },
+      createdAt: dto.createdAt,
+      fromStatusId: "open",
+      toStatusId: "done",
+    });
+    expect(notification.actor?.avatarUrl).toMatch(new RegExp(`/v1/files/${avatarId}$`));
+    expect(notification.readAt).toBeUndefined();
+    expect(notification.text).toBeUndefined();
+    expect(notification.dueDate).toBeUndefined();
+  });
+
+  it("a reminder has no actor and keeps the due date", () => {
+    const notification = toNotification({
+      ...dto,
+      kind: "overdue",
+      actor: null,
+      fromStatusId: null,
+      toStatusId: null,
+      dueDate: "2026-10-21",
+      readAt: "2026-10-22T09:00:00Z",
+    });
+
+    expect(notification.actor).toBeUndefined();
+    expect(notification.dueDate).toBe("2026-10-21");
+    expect(notification.readAt).toBe("2026-10-22T09:00:00Z");
+    expect(notification.fromStatusId).toBeUndefined();
   });
 });
 

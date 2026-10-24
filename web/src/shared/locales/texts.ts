@@ -26,6 +26,7 @@ export const TEXTS = {
     myProfile: "Мой профиль",
     admin: "Администрирование",
     search: "Поиск",
+    notifications: "Уведомления",
     collapse: "Свернуть",
     expand: "Развернуть",
   },
@@ -34,6 +35,7 @@ export const TEXTS = {
     boards: "Доски",
     tasks: "Задачи",
     profile: "Профиль",
+    notifications: "Уведомления",
   },
   moveToArchive: {
     title: "Перемещение в архив",

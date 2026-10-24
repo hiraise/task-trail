@@ -19,6 +19,7 @@ import { Route as MainAdminMailRouteImport } from './routes/_main/admin/mail'
 import { Route as MainAdminServiceUrlRouteImport } from './routes/_main/admin/service-url'
 import { Route as MainAdminUsersRouteImport } from './routes/_main/admin/users'
 import { Route as MainBoardsIndexRouteImport } from './routes/_main/boards/index'
+import { Route as MainNotificationsIndexRouteImport } from './routes/_main/notifications/index'
 import { Route as MainProfileIndexRouteImport } from './routes/_main/profile/index'
 import { Route as MainProfileChangePasswordRouteImport } from './routes/_main/profile/change-password'
 import { Route as MainProfileEditPersonalDataRouteImport } from './routes/_main/profile/edit-personal-data'
@@ -86,6 +87,11 @@ const MainAdminUsersRoute = MainAdminUsersRouteImport.update({
 const MainBoardsIndexRoute = MainBoardsIndexRouteImport.update({
   id: '/boards/',
   path: '/boards/',
+  getParentRoute: () => MainRoute,
+} as any)
+const MainNotificationsIndexRoute = MainNotificationsIndexRouteImport.update({
+  id: '/notifications/',
+  path: '/notifications/',
   getParentRoute: () => MainRoute,
 } as any)
 const MainProfileIndexRoute = MainProfileIndexRouteImport.update({
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
   '/admin/': typeof MainAdminIndexRoute
   '/boards/': typeof MainBoardsIndexRoute
+  '/notifications/': typeof MainNotificationsIndexRoute
   '/profile/': typeof MainProfileIndexRoute
   '/projects/': typeof MainProjectsIndexRoute
   '/search/': typeof MainSearchIndexRoute
@@ -232,6 +239,7 @@ export interface FileRoutesByTo {
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
   '/admin': typeof MainAdminIndexRoute
   '/boards': typeof MainBoardsIndexRoute
+  '/notifications': typeof MainNotificationsIndexRoute
   '/profile': typeof MainProfileIndexRoute
   '/projects': typeof MainProjectsIndexRoute
   '/search': typeof MainSearchIndexRoute
@@ -264,6 +272,7 @@ export interface FileRoutesById {
   '/auth/password-recovery/confirm': typeof AuthPasswordRecoveryConfirmRoute
   '/_main/admin/': typeof MainAdminIndexRoute
   '/_main/boards/': typeof MainBoardsIndexRoute
+  '/_main/notifications/': typeof MainNotificationsIndexRoute
   '/_main/profile/': typeof MainProfileIndexRoute
   '/_main/projects/': typeof MainProjectsIndexRoute
   '/_main/search/': typeof MainSearchIndexRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/auth/password-recovery/confirm'
     | '/admin/'
     | '/boards/'
+    | '/notifications/'
     | '/profile/'
     | '/projects/'
     | '/search/'
@@ -324,6 +334,7 @@ export interface FileRouteTypes {
     | '/auth/password-recovery/confirm'
     | '/admin'
     | '/boards'
+    | '/notifications'
     | '/profile'
     | '/projects'
     | '/search'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/auth/password-recovery/confirm'
     | '/_main/admin/'
     | '/_main/boards/'
+    | '/_main/notifications/'
     | '/_main/profile/'
     | '/_main/projects/'
     | '/_main/search/'
@@ -448,6 +460,13 @@ declare module '@tanstack/react-router' {
       path: '/boards'
       fullPath: '/boards/'
       preLoaderRoute: typeof MainBoardsIndexRouteImport
+      parentRoute: typeof MainRoute
+    }
+    '/_main/notifications/': {
+      id: '/_main/notifications/'
+      path: '/notifications'
+      fullPath: '/notifications/'
+      preLoaderRoute: typeof MainNotificationsIndexRouteImport
       parentRoute: typeof MainRoute
     }
     '/_main/profile/': {
@@ -610,6 +629,7 @@ interface MainRouteChildren {
   MainProfileEditPersonalDataRoute: typeof MainProfileEditPersonalDataRoute
   MainTasksTaskIdRoute: typeof MainTasksTaskIdRoute
   MainBoardsIndexRoute: typeof MainBoardsIndexRoute
+  MainNotificationsIndexRoute: typeof MainNotificationsIndexRoute
   MainProfileIndexRoute: typeof MainProfileIndexRoute
   MainProjectsIndexRoute: typeof MainProjectsIndexRoute
   MainSearchIndexRoute: typeof MainSearchIndexRoute
@@ -629,6 +649,7 @@ const MainRouteChildren: MainRouteChildren = {
   MainProfileEditPersonalDataRoute: MainProfileEditPersonalDataRoute,
   MainTasksTaskIdRoute: MainTasksTaskIdRoute,
   MainBoardsIndexRoute: MainBoardsIndexRoute,
+  MainNotificationsIndexRoute: MainNotificationsIndexRoute,
   MainProfileIndexRoute: MainProfileIndexRoute,
   MainProjectsIndexRoute: MainProjectsIndexRoute,
   MainSearchIndexRoute: MainSearchIndexRoute,

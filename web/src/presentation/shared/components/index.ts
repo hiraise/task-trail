@@ -16,5 +16,6 @@ export * from "./RedirectScreen";
 export * from "./SubmitButton";
 export * from "./TabPanel";
 export * from "./TaskMeta";
+export * from "./UnreadBadge";
 export * from "./UserAvatar";
 export * from "./UserItem";

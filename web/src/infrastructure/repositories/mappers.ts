@@ -3,6 +3,7 @@ import type { Attachment } from "@/domain/models/Attachment";
 import type { Board } from "@/domain/models/Board";
 import type { InvitationResult } from "@/domain/models/Invitation";
 import type { Label } from "@/domain/models/Label";
+import type { Notification } from "@/domain/models/Notification";
 import type { PasswordResetLink } from "@/domain/models/PasswordResetLink";
 import type { Project, ProjectDetails } from "@/domain/models/Project";
 import type { ProjectMember } from "@/domain/models/ProjectMember";
@@ -23,6 +24,7 @@ import type {
   Label as LabelDto,
   MailSettings as MailSettingsDto,
   Member as MemberDto,
+  Notification as NotificationDto,
   PasswordResetLink as PasswordResetLinkDto,
   ProjectDetails as ProjectDetailsDto,
   Project as ProjectDto,
@@ -49,6 +51,7 @@ export const toUser = (dto: UserDto): User => ({
 export const toCurrentUser = (dto: CurrentUserDto): CurrentUser => ({
   ...toUser(dto),
   isAdmin: dto.isAdmin,
+  emailNotifications: dto.emailNotifications,
 });
 
 export const toProject = (dto: ProjectDto): Project => ({
@@ -164,6 +167,19 @@ export const toTaskEvent = (dto: TaskEventDto): TaskEvent => ({
   toUser: dto.toUser ? toUser(dto.toUser) : undefined,
   fromKey: dto.fromKey ?? undefined,
   toKey: dto.toKey ?? undefined,
+});
+
+export const toNotification = (dto: NotificationDto): Notification => ({
+  id: dto.id,
+  kind: dto.kind,
+  task: { id: dto.task.id, key: dto.task.key, name: dto.task.name },
+  actor: dto.actor ? toUser(dto.actor) : undefined,
+  createdAt: dto.createdAt,
+  readAt: dto.readAt ?? undefined,
+  fromStatusId: dto.fromStatusId ?? undefined,
+  toStatusId: dto.toStatusId ?? undefined,
+  text: dto.text ?? undefined,
+  dueDate: dto.dueDate ?? undefined,
 });
 
 export const toTaskStatus = (dto: TaskStatusDto): TaskStatus => ({

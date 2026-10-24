@@ -1,12 +1,19 @@
 import type { Transition } from "framer-motion";
+import clsx from "clsx";
 import { AnimatePresence, motion as m } from "framer-motion";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { ICONS } from "@/shared/config/icons";
 import { ROUTES } from "@/shared/config/routes";
+import { notificationsTexts } from "@/shared/locales/notifications";
+import { TEXTS } from "@/shared/locales/texts";
+import { interpolate } from "@/shared/utils/interpolate";
 import { normalize } from "@/shared/utils/formatters";
+import { useUnreadNotifications } from "@/presentation/shared/hooks";
 import { Icon } from "@/presentation/shared/ui";
+
+import { UnreadBadge } from "../../UnreadBadge";
 
 import type { NavItem } from "./BottomNavBar.config";
 import { navItems } from "./BottomNavBar.config";
@@ -14,11 +21,21 @@ import styles from "./BottomNavBar.module.css";
 
 export function BottomNavBar() {
   const pathName = useRouterState({ select: (s) => s.location.pathname });
+  const { data: unread } = useUnreadNotifications();
+  const onNotifications = normalize(pathName) === normalize(ROUTES.notifications);
 
   return (
     <div className={styles.container}>
       <Link className={styles.search} to={ROUTES.search}>
         <Icon as={ICONS.search} size="24px" inheritColor />
+      </Link>
+      <Link
+        className={clsx(styles.search, styles.bell, onNotifications && styles.bellCurrent)}
+        to={ROUTES.notifications}
+        aria-label={bellLabel(unread ?? 0)}
+      >
+        <Icon as={ICONS.bell} size="24px" inheritColor />
+        <UnreadBadge count={unread ?? 0} className={styles.bellBadge} />
       </Link>
       <div className={styles.menu}>
         {navItems.map((item) => {
@@ -33,6 +50,13 @@ export function BottomNavBar() {
       </div>
     </div>
   );
+}
+
+// The icon-only link carries the counter in its name: the title, a comma and the unread count
+function bellLabel(unread: number): string {
+  if (unread <= 0) return TEXTS.navBar.notifications;
+
+  return `${TEXTS.navBar.notifications}, ${interpolate(notificationsTexts.unreadCount, { count: String(unread) })}`;
 }
 
 const MotionLink = m.create(Link);

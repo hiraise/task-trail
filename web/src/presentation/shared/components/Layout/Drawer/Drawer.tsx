@@ -4,10 +4,10 @@ import { useState } from "react";
 
 import { ICONS } from "@/shared/config/icons";
 import { TEXTS } from "@/shared/locales/texts";
-import { useGetCurrentUser } from "@/presentation/shared/hooks";
+import { useGetCurrentUser, useUnreadNotifications } from "@/presentation/shared/hooks";
 import { Icon } from "@/presentation/shared/ui";
 
-import { adminItem, navItems, searchItem } from "./Drawer.config";
+import { adminItem, navItems, notificationsItem, searchItem } from "./Drawer.config";
 import styles from "./Drawer.module.css";
 import { NavItem } from "./NavItem";
 
@@ -54,6 +54,7 @@ function Logo({ isExpanded }: { isExpanded: boolean }) {
 
 function NavItems({ isExpanded }: { isExpanded: boolean }) {
   const { data: user } = useGetCurrentUser();
+  const { data: unread } = useUnreadNotifications();
   const items = user?.isAdmin ? [...navItems, adminItem] : navItems;
 
   return (
@@ -64,7 +65,10 @@ function NavItems({ isExpanded }: { isExpanded: boolean }) {
         ))}
       </div>
       <hr className={styles.divider} />
-      <NavItem item={searchItem} isExpanded={isExpanded} />
+      <div className={styles.menuItems}>
+        <NavItem item={searchItem} isExpanded={isExpanded} />
+        <NavItem item={{ ...notificationsItem, badge: unread }} isExpanded={isExpanded} />
+      </div>
     </nav>
   );
 }
