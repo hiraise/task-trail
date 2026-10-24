@@ -1,6 +1,6 @@
 import { autoUpdate, flip, offset, size, useFloating } from "@floating-ui/react";
 import { AnimatePresence, motion as m } from "framer-motion";
-import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 
 import type { ProjectMember } from "@/domain/models/ProjectMember";
 import { getUserDisplayName } from "@/domain/models/User";
@@ -66,6 +66,15 @@ export function CommentInput({
       }),
     ],
   });
+
+  // Editing starts with the caret after the text, where people continue typing
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+
+    if (!autoFocus || !textarea) return;
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    setCaret(textarea.value.length);
+  }, [autoFocus]);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -143,11 +152,7 @@ export function CommentInput({
             refs.setReference(node);
           }}
           value={value}
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded={suggestions.open}
-          aria-controls={suggestions.open ? listId : undefined}
-          aria-activedescendant={suggestions.open ? `${listId}-${suggestions.active}` : undefined}
+          {...comboboxProps(suggestions.open, listId, suggestions.active)}
           rows={3}
           placeholder={tasksTexts.comments.placeholder}
           aria-label={tasksTexts.comments.placeholder}
@@ -164,31 +169,14 @@ export function CommentInput({
           onKeyDown={handleKeyDown}
         />
         {suggestions.open && (
-          <ul
-            // eslint-disable-next-line react-hooks/refs
-            ref={refs.setFloating}
+          <MentionList
             id={listId}
-            role="listbox"
-            aria-label={tasksTexts.comments.members}
-            className={styles.suggestions}
+            items={suggestions.items}
+            active={suggestions.active}
+            onPick={pick}
+            floatingRef={refs.setFloating}
             style={floatingStyles}
-          >
-            {suggestions.items.map((member, index) => (
-              <li
-                key={member.id}
-                id={`${listId}-${index}`}
-                role="option"
-                aria-selected={index === suggestions.active}
-                className={styles.suggestion}
-                // Keep the focus in the field
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => pick(member)}
-              >
-                <UserAvatar src={member.avatarUrl} name={getUserDisplayName(member)} />
-                <span className="body-reg-2">{getUserDisplayName(member)}</span>
-              </li>
-            ))}
-          </ul>
+          />
         )}
       </div>
       <AnimatePresence mode="wait">
@@ -215,5 +203,53 @@ export function CommentInput({
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/** ARIA of the field that owns the suggestion list */
+const comboboxProps = (open: boolean, listId: string, active: number) => ({
+  role: "combobox",
+  "aria-autocomplete": "list" as const,
+  "aria-expanded": open,
+  "aria-controls": open ? listId : undefined,
+  "aria-activedescendant": open ? `${listId}-${active}` : undefined,
+});
+
+interface MentionListProps {
+  id: string;
+  items: ProjectMember[];
+  active: number;
+  onPick: (member: ProjectMember) => void;
+  floatingRef: (node: HTMLElement | null) => void;
+  style: CSSProperties;
+}
+
+/** The member suggestions under the comment field (stage 3 artboard G). */
+function MentionList({ id, items, active, onPick, floatingRef, style }: MentionListProps) {
+  return (
+    <ul
+      ref={floatingRef}
+      id={id}
+      role="listbox"
+      aria-label={tasksTexts.comments.members}
+      className={styles.suggestions}
+      style={style}
+    >
+      {items.map((member, index) => (
+        <li
+          key={member.id}
+          id={`${id}-${index}`}
+          role="option"
+          aria-selected={index === active}
+          className={styles.suggestion}
+          // Keep the focus in the field
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => onPick(member)}
+        >
+          <UserAvatar src={member.avatarUrl} name={getUserDisplayName(member)} />
+          <span className="body-reg-2">{getUserDisplayName(member)}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
