@@ -40,11 +40,15 @@ Release (ADR-0042):
   images <version> [--push]
                   build the server and web images tagged <version> (e.g. 1.0.0) and, for the newest
                   release, latest; with --push, upload them to GitHub Container Registry (CI does it
-                  on a vX.Y.Z tag)
+                  when a release PR is merged)
 
-Branches and CI:
-  ci [<pr>|main]  wait for CI of a PR (default: the PR of the current branch) or of the last commit
-                  on main; print one line per check and, on failure, the tail of the failed log
+Branches and CI (ADR-0043):
+  ci [<pr>|<branch>]
+                  wait for CI of a PR (default: the PR of the current branch) or of the last commit
+                  on a branch (main, release/X.Y.Z); print one line per check and, on failure,
+                  the tail of the failed log
+  pr-base <base> <head>
+                  fail if a PR into main does not come from a release/X.Y.Z branch (CI runs it)
   cleanup         remove worktrees and branches whose PRs are merged
 EOF
 }
@@ -286,25 +290,25 @@ ci() (
 	local target=${1:-} attempt names run sha conclusion failed
 	if [ -z "$target" ]; then
 		target=$(gh pr view --json number --jq .number 2>/dev/null) ||
-			{ echo "No PR for the current branch: pass a PR number or main" >&2; exit 1; }
+			{ echo "No PR for the current branch: pass a PR number or a branch" >&2; exit 1; }
 	fi
-	if [ "$target" = main ]; then
-		git fetch -q origin main
-		sha=$(git rev-parse origin/main)
+	if ! [[ "$target" =~ ^[0-9]+$ ]]; then
+		git fetch -q origin "$target"
+		sha=$(git rev-parse "origin/$target")
 		# The run of a fresh merge commit appears a few seconds after the merge
 		for attempt in $(seq 1 24); do
-			run=$(gh run list --workflow ci.yml --branch main --limit 5 --json databaseId,headSha \
+			run=$(gh run list --workflow ci.yml --branch "$target" --limit 5 --json databaseId,headSha \
 				--jq ".[] | select(.headSha == \"$sha\") | .databaseId" | head -1)
 			[ -n "$run" ] && break
 			sleep 5
 		done
 		if [ -z "$run" ]; then
-			echo "main ${sha:0:7}: no CI run after 2 minutes" >&2
+			echo "$target ${sha:0:7}: no CI run after 2 minutes" >&2
 			exit 1
 		fi
 		gh run watch "$run" --exit-status --interval 20 >/dev/null 2>&1 || true
 		conclusion=$(gh run view "$run" --json conclusion --jq .conclusion)
-		echo "main ${sha:0:7}: $conclusion (run $run)"
+		echo "$target ${sha:0:7}: $conclusion (run $run)"
 		[ "$conclusion" = success ] && exit 0
 		ci_failed_log "$run"
 		exit 1
@@ -331,6 +335,17 @@ ci() (
 	done
 	exit 1
 )
+
+# main holds only released code (ADR-0043): a PR into it comes only from a release branch.
+pr_base() {
+	local base=${1:-} head=${2:-}
+	if [ "$base" != main ] || [[ "$head" =~ ^release/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+		echo "== pr-base: ${head:-?} -> ${base:-?} ok"
+		return
+	fi
+	echo "A PR into main comes only from release/X.Y.Z, not from ${head} (ADR-0043): retarget it with gh pr edit <N> --base release/X.Y.Z" >&2
+	exit 1
+}
 
 # Removes worktrees of branches whose PR is merged (CLAUDE.md, "Branches and PRs"): the sources stay in git history.
 # A branch is merged if its last commit is the last commit of a merged PR; this also detects a merge
@@ -402,6 +417,10 @@ screens)
 ci)
 	shift
 	ci "$@"
+	;;
+pr-base)
+	shift
+	pr_base "$@"
 	;;
 cleanup) cleanup ;;
 "" | -h | --help | help) usage ;;

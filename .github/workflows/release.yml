@@ -1,34 +1,69 @@
-# Release (ADR-0042): a vX.Y.Z tag on a commit of main builds the server and web images, pushes them
-# to GitHub Container Registry and creates a GitHub release with deploy/compose.yaml. The build is
-# scripts/dev.sh images, so it can be repeated locally.
+# Release (ADR-0042, ADR-0043): a merged PR release/X.Y.Z → main tags vX.Y.Z on its merge commit, builds
+# the server and web images, pushes them to GitHub Container Registry and creates a GitHub release with
+# deploy/compose.yaml. The build is scripts/dev.sh images, so it can be repeated locally.
+# A tag created here with GITHUB_TOKEN starts no other workflow, so tagging and building are one job.
 name: Release
 
 on:
-  push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  pull_request:
+    types: [closed]
+    branches: [main]
 
 permissions:
   contents: write
   packages: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   release:
     name: Релиз
+    # Only a merged release branch of this repository, not a fork
+    if: >-
+      github.event.pull_request.merged &&
+      startsWith(github.event.pull_request.head.ref, 'release/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    env:
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      SHA: ${{ github.event.pull_request.merge_commit_sha }}
+      NOTES: ${{ github.event.pull_request.body }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
           persist-credentials: false
 
-      # Only what passed CI on main is released: main changes only through a PR with green CI (ADR-0009)
-      - name: The tag is on main
-        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+      - name: The version from the branch name
+        run: |
+          version=${HEAD_REF#release/}
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::The release branch is $HEAD_REF, expected release/X.Y.Z"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      # Only what passed CI is released: main changes only through a PR with green CI (ADR-0009)
+      - name: The merge commit is on main
+        run: git merge-base --is-ancestor "$SHA" origin/main
+
+      # A released tag is never moved (ADR-0042); a re-run of this job finds its own tag and goes on
+      - name: Tag the merge commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tagged=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/v$VERSION" \
+            --jq ".[] | select(.ref == \"refs/tags/v$VERSION\") | .object.sha")
+          if [ -z "$tagged" ]; then
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/v$VERSION" -f sha="$SHA" >/dev/null
+          elif [ "$tagged" != "$SHA" ]; then
+            echo "::error::v$VERSION already tags $tagged: a fix is a new version"
+            exit 1
+          fi
 
       - name: Sign in to GitHub Container Registry
         env:
@@ -36,9 +71,12 @@ jobs:
         run: echo "$TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
       - name: Build and push the images
-        run: scripts/dev.sh images "${GITHUB_REF_NAME#v}" --push
+        run: scripts/dev.sh images "$VERSION" --push
 
+      # The release PR description opens the notes; GitHub appends the merged PRs
       - name: GitHub release with the compose file
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "$GITHUB_REF_NAME" deploy/compose.yaml --verify-tag --generate-notes --title "TaskTrail $GITHUB_REF_NAME"
+        run: |
+          gh release create "v$VERSION" deploy/compose.yaml --verify-tag --generate-notes \
+            --title "TaskTrail v$VERSION" --notes "$NOTES"

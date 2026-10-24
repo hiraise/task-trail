@@ -1,11 +1,11 @@
-# Checks every PR and main (ADR-0009). The logic is in scripts/dev.sh, here is only the environment:
+# Checks every PR, main and release branches (ADR-0009, ADR-0043). The logic is in scripts/dev.sh, here is only the environment:
 # any step can be reproduced locally with the same command.
 name: CI
 
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, 'release/**']
   workflow_dispatch:
 
 permissions:
@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  # A new commit in a PR cancels the outdated run; a run on main that has started is not interrupted
+  # A new commit in a PR cancels the outdated run; a run on a branch that has started is not interrupted
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -36,6 +36,10 @@ jobs:
           node-version-file: web/package.json
           cache: npm
           cache-dependency-path: web/package-lock.json
+
+      - name: A PR into main comes from a release branch
+        if: github.event_name == 'pull_request'
+        run: scripts/dev.sh pr-base "$GITHUB_BASE_REF" "$GITHUB_HEAD_REF"
 
       - name: Project rules (ADRs, links, dependencies, screens)
         run: scripts/dev.sh rules
