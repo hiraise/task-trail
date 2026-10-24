@@ -2490,7 +2490,7 @@ components:
       type: string
       minLength: 1
       maxLength: 10000
-      description: Plain text; the server trims spaces at the ends before validation (ADR-0028)
+      description: Plain text; the server trims spaces at the ends before validation (ADR-0028). A mention is the token `@[Name](userId)` (ADR-0039).
     TaskComment:
       type: object
       required: [id, taskId, author, text, createdAt, editedAt]

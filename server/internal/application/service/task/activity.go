@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"errors"
+	"slices"
 
 	"task-trail/internal/application/dto"
 	"task-trail/internal/domain"
@@ -189,9 +190,22 @@ func (s *CreateCommentService) Execute(ctx context.Context, userID, taskID, text
 			return err
 		}
 		excerpt := entity.CommentExcerpt(comment.Text)
-		// Step 15 (ADR-0039): users mentioned in the comment get "mentioned" instead.
-		notifications := s.editor.notifyEach(task, entity.TaskRecipients(task, member.UserID), member.UserID,
-			entity.NotifyCommented, comment.CreatedAt, func(n *entity.Notification) { n.Text = &excerpt })
+		setText := func(n *entity.Notification) { n.Text = &excerpt }
+		mentioned, err := s.editor.mentioned(ctx, task, member.UserID, entity.ParseMentions(comment.Text))
+		if err != nil {
+			return err
+		}
+		// One notification per person per comment: the mentioned get "mentioned" instead of "commented"
+		// (ADR-0038, ADR-0039).
+		var commented []entity.UserID
+		for _, id := range entity.TaskRecipients(task, member.UserID) {
+			if !slices.Contains(mentioned, id) {
+				commented = append(commented, id)
+			}
+		}
+		notifications := s.editor.notifyEach(task, mentioned, member.UserID, entity.NotifyMentioned, comment.CreatedAt, setText)
+		notifications = append(notifications, s.editor.notifyEach(task, commented, member.UserID,
+			entity.NotifyCommented, comment.CreatedAt, setText)...)
 		return s.editor.notify(ctx, notifications...)
 	})
 	if err != nil {
@@ -214,11 +228,23 @@ func (s *EditCommentService) Execute(ctx context.Context, userID, taskID, commen
 		if err != nil {
 			return err
 		}
-		if err := c.Edit(member.UserID, text, s.editor.clock.Now()); err != nil {
+		before := c.Text
+		now := s.editor.clock.Now()
+		if err := c.Edit(member.UserID, text, now); err != nil {
 			return err
 		}
 		comment = c
-		return s.comments.Update(ctx, c)
+		if err := s.comments.Update(ctx, c); err != nil {
+			return err
+		}
+		// An edit notifies only the members it newly mentions and writes no "commented" (ADR-0039).
+		mentioned, err := s.editor.mentioned(ctx, task, member.UserID, entity.MentionsAdded(before, c.Text))
+		if err != nil {
+			return err
+		}
+		excerpt := entity.CommentExcerpt(c.Text)
+		return s.editor.notify(ctx, s.editor.notifyEach(task, mentioned, member.UserID, entity.NotifyMentioned, now,
+			func(n *entity.Notification) { n.Text = &excerpt })...)
 	})
 	if err != nil {
 		return nil, err
