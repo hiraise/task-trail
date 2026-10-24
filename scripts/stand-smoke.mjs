@@ -1,7 +1,8 @@
 // Smoke test of the running local stack (ADR-0010): calls the API through /api, like a browser.
 // The stack administrator signs in, refreshes the session and opens Swagger; creates a project with
 // a random key and an invitation; the invitee accepts it via the link from the email in Mailpit (without
-// mail, from the API response), gets a task with the key <project key>-1, changes its status, writes,
+// mail, from the API response), gets a task with the key <project key>-1 and a notification about it, reads
+// all notifications (ADR-0038), changes its status, writes,
 // edits and deletes a comment and reads the history (ADR-0028), archives and restores it (ADR-0027),
 // changes its priority (ADR-0033) and due date (ADR-0034), tags it with a label the invitee creates and the
 // owner deletes (ADR-0035), adds and deletes a subtask (ADR-0036), finds it by key and by part of its
@@ -115,6 +116,14 @@ try {
   check(task?.key === `${projectKey}-1`, `the first task's key is ${projectKey}-1 → ${task?.key}`);
   const myTasks = await call(member, "GET", "/v1/users/me/tasks", 200);
   check(myTasks?.some?.((item) => item.id === task?.id), "the task is in the assignee's \"My tasks\"");
+  // Notifications (ADR-0038): the assignee hears about the assignment and reads everything
+  const unreadBefore = await call(member, "GET", "/v1/notifications/unread-count", 200);
+  check(unreadBefore?.count >= 1, `the assignee has unread notifications → ${unreadBefore?.count}`);
+  const notifications = await call(member, "GET", "/v1/notifications", 200);
+  check(notifications?.some?.((n) => n.kind === "assigned" && n.task?.id === task?.id), "the assignee got \"assigned\" for the task");
+  await call(member, "POST", "/v1/notifications/read-all", 204);
+  const unreadAfter = await call(member, "GET", "/v1/notifications/unread-count", 200);
+  check(unreadAfter?.count === 0, `no unread notifications after read-all → ${unreadAfter?.count}`);
   const moved = await call(member, "PATCH", `/v1/tasks/${task?.id}/status`, 200, { json: { statusId: "in_progress" } });
   check(moved?.statusId === "in_progress", "assignee moved the task to in progress");
   const projectTasks = await call(admin, "GET", `/v1/projects/${projectId}/tasks`, 200);

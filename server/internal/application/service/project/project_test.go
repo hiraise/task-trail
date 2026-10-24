@@ -1,9 +1,9 @@
 package project_test
 
 import (
-	"slices"
 	"context"
 	"errors"
+	"slices"
 	"strings"
 	"sync"
 	"testing"

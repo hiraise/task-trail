@@ -23,9 +23,11 @@ func (f *UserFactory) New(email entity.Email, passwordHash string, username stri
 		Email:        email,
 		PasswordHash: passwordHash,
 		Username:     &username,
-		VerifiedAt:   &now,
-		CreatedAt:    now,
-		UpdatedAt:    now,
+		// Notification emails are on by default (ADR-0038).
+		EmailNotifications: true,
+		VerifiedAt:         &now,
+		CreatedAt:          now,
+		UpdatedAt:          now,
 	}
 }
 
@@ -36,6 +38,7 @@ func (f *UserFactory) Restore(
 	username *string,
 	avatarID *string,
 	isAdmin bool,
+	emailNotifications bool,
 	verifiedAt *time.Time,
 	createdAt time.Time,
 	updatedAt time.Time,
@@ -46,14 +49,15 @@ func (f *UserFactory) Restore(
 		avatar = &fileID
 	}
 	return &entity.UserAccount{
-		ID:           entity.UserID(id),
-		Email:        entity.Email(email),
-		PasswordHash: passwordHash,
-		Username:     username,
-		AvatarID:     avatar,
-		IsAdmin:      isAdmin,
-		VerifiedAt:   verifiedAt,
-		CreatedAt:    createdAt,
-		UpdatedAt:    updatedAt,
+		ID:                 entity.UserID(id),
+		Email:              entity.Email(email),
+		PasswordHash:       passwordHash,
+		Username:           username,
+		AvatarID:           avatar,
+		IsAdmin:            isAdmin,
+		EmailNotifications: emailNotifications,
+		VerifiedAt:         verifiedAt,
+		CreatedAt:          createdAt,
+		UpdatedAt:          updatedAt,
 	}
 }

@@ -44,6 +44,7 @@ describe("toCurrentUser", () => {
       username: null,
       avatarId: null,
       isAdmin: true,
+      emailNotifications: false,
     });
 
     expect(user.isAdmin).toBe(true);

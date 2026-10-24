@@ -15,6 +15,8 @@ type UserModule struct {
 	Rename       *RenameService
 	UploadAvatar *UploadAvatarService
 	Profile      *ProfileService
+	// SetEmailNotifications — the switch of notification emails (ADR-0038).
+	SetEmailNotifications *SetEmailNotificationsService
 }
 
 // Deps are the dependencies of the user module.
@@ -44,6 +46,11 @@ func New(d Deps) *UserModule {
 			storage:        d.FileStorage,
 		},
 		Profile: &ProfileService{userRepository: d.UserRepo},
+		SetEmailNotifications: &SetEmailNotificationsService{
+			txManager:      d.TxManager,
+			clock:          d.Clock,
+			userRepository: d.UserRepo,
+		},
 	}
 }
 

@@ -60,16 +60,18 @@ func TestUserRepository(t *testing.T) {
 		t.Fatal(err)
 	}
 	if got.ID != user.ID || got.PasswordHash != user.PasswordHash || *got.Username != "Иван" || !got.IsAdmin ||
-		got.AvatarID != nil || got.VerifiedAt == nil || !got.VerifiedAt.Equal(now) || !got.CreatedAt.Equal(now) {
+		got.AvatarID != nil || got.VerifiedAt == nil || !got.VerifiedAt.Equal(now) || !got.CreatedAt.Equal(now) ||
+		!got.EmailNotifications {
 		t.Fatalf("read %+v, written %+v", got, user)
 	}
 
 	got.PasswordHash = "$2a$12$new"
+	got.SetEmailNotifications(false, now)
 	got.UpdatedAt = now.Add(time.Hour)
 	if err := repo.Update(ctx, got); err != nil {
 		t.Fatal(err)
 	}
-	if byID, err := repo.GetByID(ctx, user.ID); err != nil || byID.PasswordHash != "$2a$12$new" || !byID.UpdatedAt.Equal(now.Add(time.Hour)) {
+	if byID, err := repo.GetByID(ctx, user.ID); err != nil || byID.PasswordHash != "$2a$12$new" || byID.EmailNotifications || !byID.UpdatedAt.Equal(now.Add(time.Hour)) {
 		t.Fatalf("after update: %+v, %v", byID, err)
 	}
 

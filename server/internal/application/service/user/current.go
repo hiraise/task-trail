@@ -48,3 +48,30 @@ func (s *RenameService) Execute(ctx context.Context, userID string, username *st
 	}
 	return user, nil
 }
+
+// SetEmailNotificationsService turns the current user's notification emails on or off (ADR-0038).
+type SetEmailNotificationsService struct {
+	txManager      transaction.TxManager
+	clock          service.Clock
+	userRepository repository.UserRepository
+}
+
+func (s *SetEmailNotificationsService) Execute(ctx context.Context, userID string, on bool) (*entity.UserAccount, error) {
+	var user *entity.UserAccount
+	f := func(ctx context.Context) error {
+		u, err := s.userRepository.GetForUpdate(ctx, entity.UserID(userID))
+		if err != nil {
+			return sessionUser(err, userID)
+		}
+		u.SetEmailNotifications(on, s.clock.Now())
+		if err := s.userRepository.Update(ctx, u); err != nil {
+			return err
+		}
+		user = u
+		return nil
+	}
+	if err := s.txManager.DoWithTx(ctx, f); err != nil {
+		return nil, err
+	}
+	return user, nil
+}

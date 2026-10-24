@@ -124,6 +124,10 @@ export type CurrentUser = User & {
      * Service administrator (ADR-0014)
      */
     isAdmin: boolean;
+    /**
+     * Notification emails; they go only while mail is connected (ADR-0038)
+     */
+    emailNotifications: boolean;
 };
 
 export type UpdateCurrentUserRequest = {
@@ -474,6 +478,72 @@ export type TaskEvent = {
     toKey: string | null;
 };
 
+/**
+ * What a notification is about and who gets it, never the person who acted (ADR-0038):
+ * `assigned` — the new assignee, also of a task created with an assignee; `status_changed` — the
+ * task author and the assignee; `commented` — the task author and the assignee; `mentioned` —
+ * a user mentioned in a comment, instead of `commented` (ADR-0039); `due_soon` — the assignee, the
+ * day before the due date; `overdue` — the assignee, the day after the due date if the task is
+ * not resolved.
+ *
+ */
+export type NotificationKind = 'assigned' | 'status_changed' | 'commented' | 'mentioned' | 'due_soon' | 'overdue';
+
+/**
+ * The task a notification is about, with its current key and name
+ */
+export type NotificationTask = {
+    id: Uuid;
+    key: string;
+    name: string;
+};
+
+/**
+ * A notification of the current user about a task (ADR-0038). Change fields are always present
+ * and `null` unless the kind uses them: `status_changed` — `fromStatusId`, `toStatusId`;
+ * `commented` and `mentioned` — `text`; `due_soon` and `overdue` — `dueDate`.
+ *
+ */
+export type Notification = {
+    id: Uuid;
+    kind: NotificationKind;
+    task: NotificationTask;
+    /**
+     * Who acted; `null` for due date reminders
+     */
+    actor: User | null;
+    createdAt: DateTime;
+    /**
+     * When the notification was read; `null` — unread
+     */
+    readAt: string | null;
+    fromStatusId: TaskStatusId | null;
+    toStatusId: TaskStatusId | null;
+    /**
+     * The start of the comment — 200 characters, then `…` if it was longer
+     */
+    text: string | null;
+    dueDate: string | null;
+};
+
+export type UnreadNotifications = {
+    count: number;
+};
+
+export type SetNotificationReadRequest = {
+    /**
+     * `true` — read, `false` — unread
+     */
+    read: boolean;
+};
+
+export type EmailNotificationsRequest = {
+    /**
+     * `true` — notification emails on, `false` — off (ADR-0038)
+     */
+    enabled: boolean;
+};
+
 export type BoardName = string;
 
 export type BoardProject = {
@@ -611,6 +681,8 @@ export type LabelId = Uuid;
 export type BoardId = Uuid;
 
 export type UserId = Uuid;
+
+export type NotificationId = Uuid;
 
 /**
  * `true` — archived items, `false` or absent — active ones (ADR-0027); another value — `422`
@@ -1054,6 +1126,39 @@ export type UploadAvatarResponses = {
 };
 
 export type UploadAvatarResponse = UploadAvatarResponses[keyof UploadAvatarResponses];
+
+export type SetEmailNotificationsData = {
+    body: EmailNotificationsRequest;
+    path?: never;
+    query?: never;
+    url: '/v1/users/me/email-notifications';
+};
+
+export type SetEmailNotificationsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type SetEmailNotificationsError = SetEmailNotificationsErrors[keyof SetEmailNotificationsErrors];
+
+export type SetEmailNotificationsResponses = {
+    /**
+     * Switch saved
+     */
+    200: CurrentUser;
+};
+
+export type SetEmailNotificationsResponse = SetEmailNotificationsResponses[keyof SetEmailNotificationsResponses];
 
 export type ListCurrentUserTasksData = {
     body?: never;
@@ -3190,6 +3295,132 @@ export type SearchResponses = {
 };
 
 export type SearchResponse = SearchResponses[keyof SearchResponses];
+
+export type ListNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/notifications';
+};
+
+export type ListNotificationsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ListNotificationsError = ListNotificationsErrors[keyof ListNotificationsErrors];
+
+export type ListNotificationsResponses = {
+    /**
+     * The newest 100 notifications
+     */
+    200: Array<Notification>;
+};
+
+export type ListNotificationsResponse = ListNotificationsResponses[keyof ListNotificationsResponses];
+
+export type CountUnreadNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/notifications/unread-count';
+};
+
+export type CountUnreadNotificationsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type CountUnreadNotificationsError = CountUnreadNotificationsErrors[keyof CountUnreadNotificationsErrors];
+
+export type CountUnreadNotificationsResponses = {
+    /**
+     * Unread notifications
+     */
+    200: UnreadNotifications;
+};
+
+export type CountUnreadNotificationsResponse = CountUnreadNotificationsResponses[keyof CountUnreadNotificationsResponses];
+
+export type SetNotificationReadData = {
+    body: SetNotificationReadRequest;
+    path: {
+        notificationId: Uuid;
+    };
+    query?: never;
+    url: '/v1/notifications/{notificationId}';
+};
+
+export type SetNotificationReadErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `NOT_FOUND` — the resource does not exist or the user is not a member of its project
+     */
+    404: ApiError;
+    /**
+     * `VALIDATION_FAILED` — the data failed validation, fields are in `details`
+     */
+    422: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type SetNotificationReadError = SetNotificationReadErrors[keyof SetNotificationReadErrors];
+
+export type SetNotificationReadResponses = {
+    /**
+     * Notification changed
+     */
+    200: Notification;
+};
+
+export type SetNotificationReadResponse = SetNotificationReadResponses[keyof SetNotificationReadResponses];
+
+export type ReadAllNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/notifications/read-all';
+};
+
+export type ReadAllNotificationsErrors = {
+    /**
+     * `UNAUTHENTICATED` — not signed in or the session has expired
+     */
+    401: ApiError;
+    /**
+     * `INTERNAL` — server error
+     */
+    500: ApiError;
+};
+
+export type ReadAllNotificationsError = ReadAllNotificationsErrors[keyof ReadAllNotificationsErrors];
+
+export type ReadAllNotificationsResponses = {
+    /**
+     * All notifications are read
+     */
+    204: void;
+};
+
+export type ReadAllNotificationsResponse = ReadAllNotificationsResponses[keyof ReadAllNotificationsResponses];
 
 export type GetServiceSettingsData = {
     body?: never;
