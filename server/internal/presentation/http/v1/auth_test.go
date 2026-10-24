@@ -23,6 +23,8 @@ type currentUser struct {
 	Username *string `json:"username"`
 	AvatarID *string `json:"avatarId"`
 	IsAdmin  bool    `json:"isAdmin"`
+	// EmailNotifications — notification emails are on (ADR-0038)
+	EmailNotifications bool `json:"emailNotifications"`
 }
 
 type publicSettings struct {

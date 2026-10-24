@@ -25,10 +25,12 @@ type UserAccount struct {
 	// AvatarID — the avatar file ID (ADR-0013) or nil.
 	AvatarID *FileID
 	// IsAdmin — a service administrator (ADR-0014).
-	IsAdmin    bool
-	VerifiedAt *time.Time
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	IsAdmin bool
+	// EmailNotifications — notification emails; they go only while mail is connected (ADR-0038).
+	EmailNotifications bool
+	VerifiedAt         *time.Time
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }
 
 func (u *UserAccount) VerifyOldPassword(pwd string, pwdService password.PasswordService) error {
@@ -74,6 +76,12 @@ func (u *UserAccount) ResetPassword(newPassword string, pwdHasher password.Passw
 // Rename changes the name; nil — no name, others see the email (DisplayName).
 func (u *UserAccount) Rename(username *string, now time.Time) {
 	u.Username = username
+	u.UpdatedAt = now
+}
+
+// SetEmailNotifications turns notification emails on or off (ADR-0038).
+func (u *UserAccount) SetEmailNotifications(on bool, now time.Time) {
+	u.EmailNotifications = on
 	u.UpdatedAt = now
 }
 

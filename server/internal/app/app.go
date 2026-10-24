@@ -10,6 +10,7 @@ import (
 	"task-trail/internal/application/service/board"
 	"task-trail/internal/application/service/file"
 	"task-trail/internal/application/service/label"
+	notifications "task-trail/internal/application/service/notification"
 	"task-trail/internal/application/service/project"
 	"task-trail/internal/application/service/search"
 	"task-trail/internal/application/service/task"
@@ -48,6 +49,8 @@ const (
 	// A person may not open a reset link from a letter or from the administrator right away
 	passwordResetLifetime = 24 * time.Hour
 	cleanupInterval       = time.Hour
+	// Notifications are kept for 90 days, then the hourly cleanup deletes them (ADR-0038)
+	notificationRetention = 90 * 24 * time.Hour
 	accessTokenCookie     = "at"
 	refreshTokenCookie    = "rt"
 	tokenIssuer           = "tasktrail"
@@ -71,6 +74,8 @@ type Server struct {
 	Label   *label.LabelModule
 	Search  *search.SearchModule
 	Admin   *admin.AdminModule
+	// Notification — the user's own notifications (ADR-0038).
+	Notification *notifications.NotificationModule
 }
 
 type options struct {
@@ -190,6 +195,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		LabelRepo:    labelRepo,
 		LabelFactory: factory.NewLabelFactory(idGen, clk),
 	})
+	notificationRepo := persistent.NewNotificationRepo(pool)
 	taskModule := task.New(task.Deps{
 		TxManager:      txManager,
 		Clock:          clk,
@@ -207,6 +213,16 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		FileRepo:       fileRepo,
 		FileFactory:    fileFactory,
 		FileStorage:    storage,
+
+		NotificationRepo:    notificationRepo,
+		NotificationFactory: factory.NewNotificationFactory(idGen),
+	})
+	notificationModule := notifications.New(notifications.Deps{
+		TxManager:        txManager,
+		Clock:            clk,
+		NotificationRepo: notificationRepo,
+		UserRepo:         userRepo,
+		Retention:        notificationRetention,
 	})
 	boardRepo := persistent.NewBoardRepo(pool, userFactory)
 	boardModule := board.New(board.Deps{
@@ -232,7 +248,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		middleware.NewAuth(accessTokenService, contextManager),
 		middleware.NewOptionalAuth(accessTokenService, contextManager),
 		middleware.NewAdmin(accessModule.AdminCheck, contextManager),
-		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule, Board: boardModule, Label: labelModule, Search: searchModule, Admin: adminModule})
+		v1.Modules{Access: accessModule, User: userModule, File: fileModule, Project: projectModule, Task: taskModule, Board: boardModule, Label: labelModule, Search: searchModule, Admin: adminModule, Notification: notificationModule})
 	return &Server{
 		Engine:  engine,
 		Access:  accessModule,
@@ -244,6 +260,8 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		Label:   labelModule,
 		Search:  searchModule,
 		Admin:   adminModule,
+
+		Notification: notificationModule,
 	}, nil
 }
 
@@ -273,6 +291,7 @@ func Run(cfg *config.Config) {
 	go cleanup(context.Background(), logger, cleanupInterval, []cleaner{
 		{"expired tokens and invitations deleted", server.Access.Cleanup},
 		{"unneeded files erased", server.File.Cleanup},
+		{"old notifications deleted", server.Notification.Cleanup},
 	})
 	if err := server.Engine.Run(":" + cfg.App.Port); err != nil {
 		logger.Error("http server start failed", "error", err.Error())
@@ -280,7 +299,7 @@ func Run(cfg *config.Config) {
 	}
 }
 
-// cleaner — a periodic cleanup: expired tokens and invitations, unneeded files.
+// cleaner — a periodic cleanup: expired tokens and invitations, unneeded files, old notifications.
 // done — what to log when something is deleted.
 type cleaner struct {
 	done    string

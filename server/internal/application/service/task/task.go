@@ -64,12 +64,16 @@ type Deps struct {
 	FileRepo       repository.FileRepository
 	FileFactory    *factory.FileFactory
 	FileStorage    service.FileStorage
+	// NotificationRepo and NotificationFactory — notifications about changes (ADR-0038).
+	NotificationRepo    repository.NotificationRepository
+	NotificationFactory *factory.NotificationFactory
 }
 
 func New(d Deps) *TaskModule {
 	e := &editor{
 		txManager: d.TxManager, clock: d.Clock, projects: d.ProjectRepo, members: d.MemberRepo, tasks: d.TaskRepo,
 		events: d.EventRepo, newEvent: d.EventFactory, labels: d.LabelRepo,
+		notifications: d.NotificationRepo, newNotification: d.NotificationFactory,
 	}
 	feed := &feed{members: d.MemberRepo, tasks: d.TaskRepo, users: d.UserRepo}
 	return &TaskModule{
@@ -111,6 +115,9 @@ type editor struct {
 	events    repository.TaskEventRepository
 	newEvent  *factory.TaskEventFactory
 	labels    repository.LabelRepository
+	// notifications and newNotification — notifications of the people a change concerns (ADR-0038).
+	notifications   repository.NotificationRepository
+	newNotification *factory.NotificationFactory
 }
 
 // record writes task history rows in the current transaction (ADR-0028).
@@ -121,6 +128,39 @@ func (e *editor) record(ctx context.Context, events ...*entity.TaskEvent) error 
 		}
 	}
 	return nil
+}
+
+// notify writes notifications in the current transaction, like history (ADR-0038).
+func (e *editor) notify(ctx context.Context, notifications ...*entity.Notification) error {
+	if len(notifications) == 0 {
+		return nil
+	}
+	return e.notifications.Create(ctx, notifications...)
+}
+
+// notifyEach makes a notification of the kind about the task for each recipient; set fills
+// the kind's fields, nil — none.
+func (e *editor) notifyEach(task *entity.Task, recipients []entity.UserID, actor entity.UserID,
+	kind entity.NotificationKind, now time.Time, set func(n *entity.Notification),
+) []*entity.Notification {
+	notifications := make([]*entity.Notification, 0, len(recipients))
+	for _, userID := range recipients {
+		n := e.newNotification.New(userID, task.ID, &actor, kind, now)
+		if set != nil {
+			set(n)
+		}
+		notifications = append(notifications, n)
+	}
+	return notifications
+}
+
+// assigned — the notification of a new assignee; none when there is no assignee or the actor
+// assigned themselves (ADR-0038).
+func (e *editor) assigned(task *entity.Task, actor entity.UserID, now time.Time) []*entity.Notification {
+	if task.AssigneeID == nil || *task.AssigneeID == actor {
+		return nil
+	}
+	return e.notifyEach(task, []entity.UserID{*task.AssigneeID}, actor, entity.NotifyAssigned, now, nil)
 }
 
 // lock locks the task's project and the also projects until the end of the transaction and finds the task,

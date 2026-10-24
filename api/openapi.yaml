@@ -53,6 +53,8 @@ tags:
     description: search across projects, boards and tasks (ADR-0030)
   - name: files
     description: files (ADR-0013)
+  - name: notifications
+    description: notifications about tasks (ADR-0038)
   - name: admin
     description: service settings and users — for the service administrator only (ADR-0014, ADR-0015)
 
@@ -364,6 +366,29 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ApiError" }
+
+  /v1/users/me/email-notifications:
+    patch:
+      tags: [users]
+      operationId: setEmailNotifications
+      summary: Turn notification emails on or off
+      description: |
+        Role: any signed-in user, for themselves. Notification emails are on by default; they go only
+        while mail is connected (ADR-0038, ADR-0017).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EmailNotificationsRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Switch saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CurrentUser" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
 
   /v1/users/me/tasks:
     get:
@@ -1596,6 +1621,81 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
         "422": { $ref: "#/components/responses/ValidationFailed" }
 
+  /v1/notifications:
+    get:
+      tags: [notifications]
+      operationId: listNotifications
+      summary: The current user's notifications
+      description: |
+        Role: any signed-in user, their own notifications. The newest 100, newest first; only
+        notifications of tasks that are not deleted, in projects where the user is still a member
+        (ADR-0038).
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: The newest 100 notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Notification" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /v1/notifications/unread-count:
+    get:
+      tags: [notifications]
+      operationId: countUnreadNotifications
+      summary: How many notifications are unread
+      description: |
+        Role: any signed-in user. Counts the same notifications the list shows; the web polls it every
+        60 seconds while the tab is visible (ADR-0038).
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Unread notifications
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UnreadNotifications" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
+  /v1/notifications/{notificationId}:
+    parameters:
+      - $ref: "#/components/parameters/NotificationId"
+    patch:
+      tags: [notifications]
+      operationId: setNotificationRead
+      summary: Mark a notification read or unread
+      description: |
+        Role: the notification's recipient; another user's notification is `404` (ADR-0038). Marking
+        a read notification read again keeps its `readAt`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetNotificationReadRequest" }
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "200":
+          description: Notification changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Notification" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationFailed" }
+
+  /v1/notifications/read-all:
+    post:
+      tags: [notifications]
+      operationId: readAllNotifications
+      summary: Mark all notifications read
+      description: "Role: any signed-in user, their own notifications (ADR-0038)."
+      responses:
+        "500": { $ref: "#/components/responses/Internal" }
+        "204":
+          description: All notifications are read
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+
   /v1/admin/settings:
     get:
       tags: [admin]
@@ -1818,6 +1918,11 @@ components:
       schema: { $ref: "#/components/schemas/Uuid" }
     UserId:
       name: userId
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/Uuid" }
+    NotificationId:
+      name: notificationId
       in: path
       required: true
       schema: { $ref: "#/components/schemas/Uuid" }
@@ -2071,11 +2176,14 @@ components:
       allOf:
         - $ref: "#/components/schemas/User"
         - type: object
-          required: [isAdmin]
+          required: [isAdmin, emailNotifications]
           properties:
             isAdmin:
               type: boolean
               description: Service administrator (ADR-0014)
+            emailNotifications:
+              type: boolean
+              description: Notification emails; they go only while mail is connected (ADR-0038)
     UpdateCurrentUserRequest:
       type: object
       required: [username]
@@ -2488,6 +2596,79 @@ components:
             - type: "null"
         fromKey: { type: [string, "null"] }
         toKey: { type: [string, "null"] }
+
+    NotificationKind:
+      type: string
+      enum: [assigned, status_changed, commented, mentioned, due_soon, overdue]
+      description: |
+        What a notification is about and who gets it, never the person who acted (ADR-0038):
+        `assigned` — the new assignee, also of a task created with an assignee; `status_changed` — the
+        task author and the assignee; `commented` — the task author and the assignee; `mentioned` —
+        a user mentioned in a comment, instead of `commented` (ADR-0039); `due_soon` — the assignee, the
+        day before the due date; `overdue` — the assignee, the day after the due date if the task is
+        not resolved.
+    NotificationTask:
+      type: object
+      required: [id, key, name]
+      description: The task a notification is about, with its current key and name
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        key: { type: string }
+        name: { type: string }
+    Notification:
+      type: object
+      required: [id, kind, task, actor, createdAt, readAt, fromStatusId, toStatusId, text, dueDate]
+      description: |
+        A notification of the current user about a task (ADR-0038). Change fields are always present
+        and `null` unless the kind uses them: `status_changed` — `fromStatusId`, `toStatusId`;
+        `commented` and `mentioned` — `text`; `due_soon` and `overdue` — `dueDate`.
+      properties:
+        id: { $ref: "#/components/schemas/Uuid" }
+        kind: { $ref: "#/components/schemas/NotificationKind" }
+        task: { $ref: "#/components/schemas/NotificationTask" }
+        actor:
+          description: Who acted; `null` for due date reminders
+          oneOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+        createdAt: { $ref: "#/components/schemas/DateTime" }
+        readAt:
+          type: [string, "null"]
+          format: date-time
+          description: When the notification was read; `null` — unread
+        fromStatusId:
+          oneOf:
+            - $ref: "#/components/schemas/TaskStatusId"
+            - type: "null"
+        toStatusId:
+          oneOf:
+            - $ref: "#/components/schemas/TaskStatusId"
+            - type: "null"
+        text:
+          type: [string, "null"]
+          description: The start of the comment — 200 characters, then `…` if it was longer
+        dueDate:
+          type: [string, "null"]
+          format: date
+    UnreadNotifications:
+      type: object
+      required: [count]
+      properties:
+        count: { type: integer, minimum: 0 }
+    SetNotificationReadRequest:
+      type: object
+      required: [read]
+      properties:
+        read:
+          type: boolean
+          description: "`true` — read, `false` — unread"
+    EmailNotificationsRequest:
+      type: object
+      required: [enabled]
+      properties:
+        enabled:
+          type: boolean
+          description: "`true` — notification emails on, `false` — off (ADR-0038)"
 
     BoardName:
       type: string

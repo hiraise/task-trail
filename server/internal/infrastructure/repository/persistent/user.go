@@ -31,15 +31,16 @@ func NewUserRepo(db *pgxpool.Pool, factory *factory.UserFactory) *PGUserReposito
 
 func (r *PGUserRepository) Create(ctx context.Context, entity *entity.UserAccount) error {
 	return r.insert(ctx, "users", map[string]any{
-		"id":            entity.ID,
-		"email":         entity.Email,
-		"password_hash": entity.PasswordHash,
-		"username":      entity.Username,
-		"avatar_id":     entity.AvatarID,
-		"is_admin":      entity.IsAdmin,
-		"verified_at":   entity.VerifiedAt,
-		"created_at":    entity.CreatedAt,
-		"updated_at":    entity.UpdatedAt,
+		"id":                  entity.ID,
+		"email":               entity.Email,
+		"password_hash":       entity.PasswordHash,
+		"username":            entity.Username,
+		"avatar_id":           entity.AvatarID,
+		"is_admin":            entity.IsAdmin,
+		"email_notifications": entity.EmailNotifications,
+		"verified_at":         entity.VerifiedAt,
+		"created_at":          entity.CreatedAt,
+		"updated_at":          entity.UpdatedAt,
 	})
 }
 
@@ -47,11 +48,11 @@ func (r *PGUserRepository) Update(ctx context.Context, entity *entity.UserAccoun
 	query := `
 		UPDATE users
 		SET email = $1, password_hash = $2, username = $3, avatar_id = $4, is_admin = $5,
-			verified_at = $6, updated_at = $7
+			verified_at = $6, updated_at = $7, email_notifications = $9
 		WHERE id = $8 AND deleted_at IS NULL`
 
 	tag, err := r.getDb(ctx).Exec(ctx, query, entity.Email, entity.PasswordHash, entity.Username, entity.AvatarID,
-		entity.IsAdmin, entity.VerifiedAt, entity.UpdatedAt, entity.ID)
+		entity.IsAdmin, entity.VerifiedAt, entity.UpdatedAt, entity.ID, entity.EmailNotifications)
 	if err != nil {
 		return r.handleError(err)
 	}
@@ -148,11 +149,11 @@ func (r *PGUserRepository) ListCandidates(ctx context.Context, userID entity.Use
 }
 
 // userColumns are the user columns for scanUser; userColumnsOf is the same with a table alias.
-const userColumns = `id, email, password_hash, username, avatar_id, is_admin, verified_at, created_at, updated_at`
+const userColumns = `id, email, password_hash, username, avatar_id, is_admin, email_notifications, verified_at, created_at, updated_at`
 
 func userColumnsOf(alias string) string {
 	return alias + `.id, ` + alias + `.email, ` + alias + `.password_hash, ` + alias + `.username, ` + alias + `.avatar_id, ` +
-		alias + `.is_admin, ` + alias + `.verified_at, ` + alias + `.created_at, ` + alias + `.updated_at`
+		alias + `.is_admin, ` + alias + `.email_notifications, ` + alias + `.verified_at, ` + alias + `.created_at, ` + alias + `.updated_at`
 }
 
 // getOne reads one user with a query that selects the userColumns columns.
@@ -168,14 +169,14 @@ func (r *PGUserRepository) getOne(ctx context.Context, query string, args ...any
 func scanUser(row pgx.Row, f *factory.UserFactory, extra ...any) (*entity.UserAccount, error) {
 	var id, email, passwordHash string
 	var username, avatarID *string
-	var isAdmin bool
+	var isAdmin, emailNotifications bool
 	var verifiedAt *time.Time
 	var createdAt, updatedAt time.Time
-	dest := append([]any{&id, &email, &passwordHash, &username, &avatarID, &isAdmin, &verifiedAt, &createdAt, &updatedAt}, extra...)
+	dest := append([]any{&id, &email, &passwordHash, &username, &avatarID, &isAdmin, &emailNotifications, &verifiedAt, &createdAt, &updatedAt}, extra...)
 	if err := row.Scan(dest...); err != nil {
 		return nil, err
 	}
-	return f.Restore(id, email, passwordHash, username, avatarID, isAdmin, verifiedAt, createdAt, updatedAt), nil
+	return f.Restore(id, email, passwordHash, username, avatarID, isAdmin, emailNotifications, verifiedAt, createdAt, updatedAt), nil
 }
 
 func (r *PGUserRepository) List(ctx context.Context) ([]*entity.UserAccount, error) {

@@ -42,6 +42,8 @@ type deps struct {
 	files       *mocks.MockFileRepository
 	storage     *mocks.MockFileStorage
 	users       *mocks.MockUserRepository
+	// notifications — notifications about changes (ADR-0038)
+	notifications *mocks.MockNotificationRepository
 }
 
 func newModule(t *testing.T) (*task.TaskModule, *deps) {
@@ -58,6 +60,8 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 		files:       mocks.NewMockFileRepository(ctrl),
 		storage:     mocks.NewMockFileStorage(ctrl),
 		users:       mocks.NewMockUserRepository(ctrl),
+
+		notifications: mocks.NewMockNotificationRepository(ctrl),
 	}
 	clk := clock.New(now)
 	return task.New(task.Deps{
@@ -76,6 +80,9 @@ func newModule(t *testing.T) (*task.TaskModule, *deps) {
 		FileRepo:       d.files,
 		FileFactory:    factory.NewFileFactory(id.New(), clk),
 		FileStorage:    d.storage,
+
+		NotificationRepo:    d.notifications,
+		NotificationFactory: factory.NewNotificationFactory(id.New()),
 	}), d
 }
 
@@ -87,6 +94,16 @@ func (d *deps) expectEvents(n int) *[]*entity.TaskEvent {
 	}
 	d.events.EXPECT().Create(txtest.InTx, gomock.Any()).Times(n).DoAndReturn(func(_ context.Context, e *entity.TaskEvent) error {
 		got = append(got, e)
+		return nil
+	})
+	return &got
+}
+
+// expectNotifications expects one write of notifications in a transaction and returns them.
+func (d *deps) expectNotifications() *[]*entity.Notification {
+	var got []*entity.Notification
+	d.notifications.EXPECT().Create(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, n ...*entity.Notification) error {
+		got = append(got, n...)
 		return nil
 	})
 	return &got
@@ -377,6 +394,7 @@ func TestCreateTask(t *testing.T) {
 		d.tasks.EXPECT().Create(txtest.InTx, gomock.Any()).Return(nil),
 	)
 	events := d.expectEvents(1)
+	notifications := d.expectNotifications()
 	description := "Основная кнопка"
 	dueDate := entity.NewDueDate(2026, time.October, 30)
 	got, err := module.Create.Execute(context.Background(), string(userID),
@@ -392,6 +410,56 @@ func TestCreateTask(t *testing.T) {
 	if e := (*events)[0]; e.Kind != entity.EventCreated || e.TaskID != got.ID || e.ActorID != userID || !e.CreatedAt.Equal(now) {
 		t.Errorf("event %+v", e)
 	}
+	if n := *notifications; len(n) != 1 || n[0].Kind != entity.NotifyAssigned || n[0].UserID != ivanID || n[0].TaskID != got.ID ||
+		*n[0].ActorID != userID || !n[0].CreatedAt.Equal(now) {
+		t.Errorf("notifications %+v", n)
+	}
+}
+
+// A status change notifies the author and the assignee except the actor; a new assignee gets
+// "assigned" unless they assigned themselves (ADR-0038).
+func TestChangeNotifies(t *testing.T) {
+	ivan := ivanID
+	expectEdit := func(d *deps, actor entity.UserID, task *entity.Task) {
+		txtest.Expect(d.tx)
+		d.tasks.EXPECT().Get(txtest.InTx, taskID).Return(task, nil).Times(2)
+		d.projects.EXPECT().GetForUpdate(txtest.InTx, designID).Return(project(designID), nil)
+		d.members.EXPECT().Get(txtest.InTx, designID, actor).Return(member(designID, actor), nil)
+		d.tasks.EXPECT().Update(txtest.InTx, gomock.Any()).Return(nil)
+		d.expectEvents(1)
+	}
+	t.Run("status by the assignee", func(t *testing.T) {
+		module, d := newModule(t)
+		expectEdit(d, ivanID, stored(designID, &ivan))
+		notifications := d.expectNotifications()
+		if _, err := module.ChangeStatus.Execute(context.Background(), string(ivanID), string(taskID), entity.StatusDone); err != nil {
+			t.Fatal(err)
+		}
+		if n := *notifications; len(n) != 1 || n[0].Kind != entity.NotifyStatusChanged || n[0].UserID != userID || *n[0].ActorID != ivanID ||
+			*n[0].FromStatus != entity.StatusInReview || *n[0].ToStatus != entity.StatusDone || !n[0].CreatedAt.Equal(now) {
+			t.Errorf("notifications %+v", n)
+		}
+	})
+	t.Run("assignee by the author", func(t *testing.T) {
+		module, d := newModule(t)
+		expectEdit(d, userID, stored(designID, nil))
+		d.members.EXPECT().Get(txtest.InTx, designID, ivanID).Return(member(designID, ivanID), nil)
+		notifications := d.expectNotifications()
+		if _, err := module.ChangeAssignee.Execute(context.Background(), string(userID), string(taskID), (*string)(&ivan)); err != nil {
+			t.Fatal(err)
+		}
+		if n := *notifications; len(n) != 1 || n[0].Kind != entity.NotifyAssigned || n[0].UserID != ivanID || *n[0].ActorID != userID {
+			t.Errorf("notifications %+v", n)
+		}
+	})
+	t.Run("self-assignment", func(t *testing.T) {
+		module, d := newModule(t)
+		expectEdit(d, ivanID, stored(designID, nil))
+		d.members.EXPECT().Get(txtest.InTx, designID, ivanID).Return(member(designID, ivanID), nil)
+		if _, err := module.ChangeAssignee.Execute(context.Background(), string(ivanID), string(taskID), (*string)(&ivan)); err != nil {
+			t.Fatal(err)
+		}
+	})
 }
 
 // The assignee is not a project member: ASSIGNEE_NOT_MEMBER, the task is neither created nor changed.

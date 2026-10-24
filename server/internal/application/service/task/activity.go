@@ -185,7 +185,14 @@ func (s *CreateCommentService) Execute(ctx context.Context, userID, taskID, text
 	var comment *entity.Comment
 	err := s.editor.commentChange(ctx, userID, taskID, func(ctx context.Context, task *entity.Task, member *entity.ProjectMember) error {
 		comment = s.factory.New(task.ID, member.UserID, text)
-		return s.comments.Create(ctx, comment)
+		if err := s.comments.Create(ctx, comment); err != nil {
+			return err
+		}
+		excerpt := entity.CommentExcerpt(comment.Text)
+		// Step 15 (ADR-0039): users mentioned in the comment get "mentioned" instead.
+		notifications := s.editor.notifyEach(task, entity.TaskRecipients(task, member.UserID), member.UserID,
+			entity.NotifyCommented, comment.CreatedAt, func(n *entity.Notification) { n.Text = &excerpt })
+		return s.editor.notify(ctx, notifications...)
 	})
 	if err != nil {
 		return nil, err

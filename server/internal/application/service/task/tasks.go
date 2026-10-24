@@ -98,7 +98,10 @@ func (s *CreateTaskService) Execute(ctx context.Context, userID string, data dto
 		if err := e.tasks.Create(ctx, task); err != nil {
 			return err
 		}
-		return e.record(ctx, e.newEvent.New(task.ID, author.UserID, entity.EventCreated, task.CreatedAt))
+		if err := e.record(ctx, e.newEvent.New(task.ID, author.UserID, entity.EventCreated, task.CreatedAt)); err != nil {
+			return err
+		}
+		return e.notify(ctx, e.assigned(task, author.UserID, task.CreatedAt)...)
 	}
 	if err := e.txManager.DoWithTx(ctx, f); err != nil {
 		return nil, err
@@ -135,13 +138,19 @@ type ChangeStatusService struct {
 
 func (s *ChangeStatusService) Execute(ctx context.Context, userID, taskID string, status entity.TaskStatus) (*entity.Task, error) {
 	e := s.editor
-	return e.edit(ctx, userID, taskID, nil, func(_ context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error) {
+	return e.edit(ctx, userID, taskID, nil, func(ctx context.Context, task *entity.Task, _ map[entity.ProjectID]*entity.Project, now time.Time) ([]*entity.TaskEvent, error) {
 		from := task.Status
 		task.ChangeStatus(status, now)
 		if from == status {
 			return nil, nil
 		}
-		return []*entity.TaskEvent{e.newEvent.StatusChanged(task.ID, entity.UserID(userID), from, status, now)}, nil
+		actor := entity.UserID(userID)
+		notifications := e.notifyEach(task, entity.TaskRecipients(task, actor), actor, entity.NotifyStatusChanged, now,
+			func(n *entity.Notification) { n.FromStatus, n.ToStatus = &from, &status })
+		if err := e.notify(ctx, notifications...); err != nil {
+			return nil, err
+		}
+		return []*entity.TaskEvent{e.newEvent.StatusChanged(task.ID, actor, from, status, now)}, nil
 	})
 }
 
@@ -197,6 +206,9 @@ func (s *ChangeAssigneeService) Execute(ctx context.Context, userID, taskID stri
 		}
 		if equal(from, task.AssigneeID) {
 			return nil, nil
+		}
+		if err := e.notify(ctx, e.assigned(task, entity.UserID(userID), now)...); err != nil {
+			return nil, err
 		}
 		return []*entity.TaskEvent{e.newEvent.AssigneeChanged(task.ID, entity.UserID(userID), from, task.AssigneeID, now)}, nil
 	})

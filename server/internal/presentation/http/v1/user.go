@@ -55,6 +55,20 @@ func (r *userRoutes) uploadAvatar(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewCurrentUser(u))
 }
 
+func (r *userRoutes) setEmailNotifications(c *gin.Context) {
+	on, err := request.BindEmailNotifications(c)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	u, err := r.services.SetEmailNotifications.Execute(c, utils.Must(r.cm.GetUserID(c)), on)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, response.NewCurrentUser(u))
+}
+
 func (r *userRoutes) get(c *gin.Context) {
 	userID, err := pathID(c, "userId")
 	if err != nil {
@@ -80,5 +94,6 @@ func NewUserRouter(
 	g.GET("/me", r.me)
 	g.PATCH("/me", r.updateMe)
 	g.PATCH("/me/avatar", r.uploadAvatar)
+	g.PATCH("/me/email-notifications", r.setEmailNotifications)
 	g.GET("/:userId", r.get)
 }

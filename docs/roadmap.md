@@ -39,12 +39,16 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   25 MB, delete by the uploader, the owner or admins), `GET /v1/files/{fileId}` serves an attachment
   only to members of its project, the stack proxy accepts 25 MB; step 11 is done — attachments in the
   web: the «Вложения» block on the task page and in the kanban modal with image previews, upload of
-  several files, download through the API client and delete with a confirmation; the next step is
-  step 12 — notifications on the server.
+  several files, download through the API client and delete with a confirmation; step 12 is done —
+  notifications on the server ([ADR-0038](adr/0038-notifications.md)): `assigned`, `status_changed`
+  and `commented` are written with the change, `/v1/notifications` (list, unread count, read marks,
+  read-all), old ones deleted after 90 days, `PATCH /v1/users/me/email-notifications` and
+  `CurrentUser.emailNotifications`; the next step is step 13 — notification emails and due date
+  reminders on the server.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;
-  the archive of tasks and projects; task comments and history; project labels; subtasks; attachments; boards; search; service
+  the archive of tasks and projects; task comments and history; project labels; subtasks; attachments; notifications; boards; search; service
   administration.
   Tests check responses against the contract ([ADR-0019](adr/0019-server-contract-tests.md)).
 - **Web** (`web/`) works on the contract (types — [ADR-0020](adr/0020-web-api-types.md), mapping

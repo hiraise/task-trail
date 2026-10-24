@@ -32,10 +32,12 @@ func NewUsers(users []*entity.UserAccount) []User {
 type CurrentUser struct {
 	User
 	IsAdmin bool `json:"isAdmin"`
+	// EmailNotifications — notification emails are on (ADR-0038).
+	EmailNotifications bool `json:"emailNotifications"`
 }
 
 func NewCurrentUser(u *entity.UserAccount) CurrentUser {
-	return CurrentUser{User: NewUser(u), IsAdmin: u.IsAdmin}
+	return CurrentUser{User: NewUser(u), IsAdmin: u.IsAdmin, EmailNotifications: u.EmailNotifications}
 }
 
 // PublicSettings are the settings the web needs before sign-in.

@@ -6,6 +6,7 @@ import (
 	"task-trail/internal/application/service/board"
 	"task-trail/internal/application/service/file"
 	"task-trail/internal/application/service/label"
+	"task-trail/internal/application/service/notification"
 	"task-trail/internal/application/service/project"
 	"task-trail/internal/application/service/search"
 	"task-trail/internal/application/service/task"
@@ -26,6 +27,8 @@ type Modules struct {
 	Label   *label.LabelModule
 	Search  *search.SearchModule
 	Admin   *admin.AdminModule
+	// Notification — the user's own notifications (ADR-0038).
+	Notification *notification.NotificationModule
 }
 
 func NewRouter(
@@ -47,4 +50,5 @@ func NewRouter(
 	NewLabelRouter(g, modules.Label, authMW, cm)
 	NewSearchRouter(g, modules.Search, authMW, cm)
 	NewAdminRouter(g, modules.Admin, modules.Access, authMW, adminMW, cm)
+	NewNotificationRouter(g, modules.Notification, authMW, cm)
 }

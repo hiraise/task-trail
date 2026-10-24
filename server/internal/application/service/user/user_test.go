@@ -198,6 +198,25 @@ func TestRename(t *testing.T) {
 	}
 }
 
+// The switch of notification emails is written with the time of the change (ADR-0038).
+func TestSetEmailNotifications(t *testing.T) {
+	for _, on := range []bool{false, true} {
+		module, d := newModule(t)
+		txtest.Expect(d.tx)
+		d.users.EXPECT().GetForUpdate(txtest.InTx, userID).Return(account(nil), nil)
+		d.users.EXPECT().Update(txtest.InTx, gomock.Any()).DoAndReturn(func(_ context.Context, u *entity.UserAccount) error {
+			if u.EmailNotifications != on || !u.UpdatedAt.Equal(now) {
+				t.Errorf("user: %+v", u)
+			}
+			return nil
+		})
+		got, err := module.SetEmailNotifications.Execute(context.Background(), string(userID), on)
+		if err != nil || got.EmailNotifications != on {
+			t.Fatalf("%+v, %v", got, err)
+		}
+	}
+}
+
 // The user was deleted but the access token is still alive: the session is invalid, 401, not 404.
 func TestCurrentUserGone(t *testing.T) {
 	module, d := newModule(t)
