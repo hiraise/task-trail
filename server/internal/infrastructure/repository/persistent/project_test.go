@@ -2,6 +2,7 @@ package persistent_test
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
@@ -187,6 +188,25 @@ func TestProjectMembers(t *testing.T) {
 	}
 	if len(got) != 3 || got[0] != "owner owner@example.com" || got[1] != "admin olga@example.com" || got[2] != "member ivan@example.com" {
 		t.Fatalf("members: %v", got)
+	}
+
+	// FilterMembers keeps the members of the project only (mentions, ADR-0039)
+	stranger := createUser(t, pool, "stranger@example.com", "Чужой")
+	if err := repo.Add(ctx, entity.NewMember(other, stranger.ID, now)); err != nil {
+		t.Fatal(err)
+	}
+	filtered, err := repo.FilterMembers(ctx, project, []entity.UserID{stranger.ID, olga.ID, "00000000-0000-0000-0000-000000000000", ivan.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []entity.UserID{olga.ID, ivan.ID}
+	slices.Sort(filtered)
+	slices.Sort(want)
+	if !slices.Equal(filtered, want) {
+		t.Errorf("FilterMembers = %v, want %v", filtered, want)
+	}
+	if filtered, err := repo.FilterMembers(ctx, project, nil); err != nil || filtered != nil {
+		t.Errorf("FilterMembers of none = %v, %v", filtered, err)
 	}
 
 	assigned := insertTask(t, pool, project, owner, ivan)

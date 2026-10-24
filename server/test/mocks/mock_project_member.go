@@ -56,6 +56,21 @@ func (mr *MockProjectMemberRepositoryMockRecorder) Add(ctx, member any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockProjectMemberRepository)(nil).Add), ctx, member)
 }
 
+// FilterMembers mocks base method.
+func (m *MockProjectMemberRepository) FilterMembers(ctx context.Context, projectID entity.ProjectID, ids []entity.UserID) ([]entity.UserID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilterMembers", ctx, projectID, ids)
+	ret0, _ := ret[0].([]entity.UserID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FilterMembers indicates an expected call of FilterMembers.
+func (mr *MockProjectMemberRepositoryMockRecorder) FilterMembers(ctx, projectID, ids any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterMembers", reflect.TypeOf((*MockProjectMemberRepository)(nil).FilterMembers), ctx, projectID, ids)
+}
+
 // Get mocks base method.
 func (m *MockProjectMemberRepository) Get(ctx context.Context, projectID entity.ProjectID, userID entity.UserID) (*entity.ProjectMember, error) {
 	m.ctrl.T.Helper()
