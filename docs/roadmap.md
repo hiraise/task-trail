@@ -47,8 +47,8 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
 
 No stages are planned after stage 3; there is no mobile app, the web client is adaptive. Also planned:
 
-- **Release** for self-hosting — images by tag and a compose file. A separate ADR when the customer
-  wants to use TaskTrail.
+- **Release** for self-hosting — images by a version tag and `deploy/compose.yaml`
+  ([ADR-0042](adr/0042-release-images-and-compose.md)); the first version — `v1.0.0`.
 - **The service administrator's power over projects** — after the plan above, with the customer's
   consent: a new ADR supersedes the bullet "gives no access to other people's projects" of
   [ADR-0014](adr/0014-service-administrator.md). Through the admin section: all projects of the

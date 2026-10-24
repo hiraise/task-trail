@@ -30,7 +30,9 @@ All repository checks at once — `scripts/dev.sh check` from the root.
 
 ## Environment
 
-Variables are read at build time:
+Variables are read at build time. The Docker image (`docker/Dockerfile`) builds with `VITE_API_URL=/api`
+and an empty `VITE_ROOT_PATH`: its nginx (`docker/nginx.conf.template`) proxies `/api/` to the `server`
+service ([ADR-0042](../docs/adr/0042-release-images-and-compose.md)).
 
 | Variable | Default | What it sets |
 | --- | --- | --- |

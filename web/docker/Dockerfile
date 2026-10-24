@@ -1,13 +1,13 @@
+# The web image (ADR-0042): the build is served by nginx, which also proxies /api to the server service.
+# The defaults are those of a release: the API on the same origin at /api, the app at the root.
 FROM node:24-alpine AS build
 WORKDIR /code
 
-ARG ROOT_PATH
-ARG API_URL
+ARG ROOT_PATH=""
+ARG API_URL=/api
 ENV VITE_API_URL=$API_URL
 ENV VITE_ROOT_PATH=$ROOT_PATH
 
-RUN echo $VITE_ROOT_PATH
-RUN echo $VITE_API_URL
 COPY package.json package-lock.json /code/
 RUN npm ci
 COPY index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json /code/
@@ -16,7 +16,7 @@ COPY public/ /code/public/
 RUN npm run build
 
 FROM nginx:1.30-alpine
-ARG ROOT_PATH
+ARG ROOT_PATH=""
 ENV ROOT_PATH=$ROOT_PATH
 COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /code/dist /usr/share/nginx/html${ROOT_PATH}

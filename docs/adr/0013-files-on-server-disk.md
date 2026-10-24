@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-10-21
-- **Affects:** the `files` table in `server/migrations/`, file upload and serving in `server/internal/`, `server/config/config.go`, `stand/compose.yaml`, `stand/nginx.conf.template`, avatar upload in `web/src/`
+- **Affects:** the `files` table in `server/migrations/`, file upload and serving in `server/internal/`, `server/config/config.go`, `stand/compose.yaml`, `web/docker/nginx.conf.template`, avatar upload in `web/src/`
 
 ## Context
 

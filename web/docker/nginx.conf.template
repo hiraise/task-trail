@@ -1,8 +1,31 @@
+# The web image's nginx (ADR-0042): SPA static files and an /api proxy to the server service on the same
+# origin, so no CORS. The same config runs on the local stack and on a server; ${ROOT_PATH} comes from the
+# image environment, nginx variables stay as they are.
 server {
   listen 3000;
   root /usr/share/nginx/html;
 
+  location /api/ {
+    proxy_pass http://server:8080/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    # The stripped prefix: Gin builds its redirect URLs from it (e.g. to a path without a trailing "/")
+    proxy_set_header X-Forwarded-Prefix /api;
+    # Request body limit follows the largest upload of the server (ADR-0013, ADR-0037): an attachment up to 25 MB
+    # (entity.MaxAttachmentSize) plus 64 KB for multipart headers (multipartOverhead in
+    # server/internal/presentation/http/v1/request/user.go); the avatar limit is checked by the server
+    client_max_body_size 25664k;
+  }
+
+  # Build files with a hash in the name: a missing one is a 404, not index.html instead of a script
+  location ${ROOT_PATH}/assets/ {
+    try_files $uri =404;
+  }
+
   location / {
+    # index.html is not cached: after a rebuild the browser gets the new build file names right away
+    add_header Cache-Control "no-cache";
     try_files $uri $uri/ ${ROOT_PATH}/index.html;
   }
 }

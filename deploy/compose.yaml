@@ -1,0 +1,62 @@
+# TaskTrail on your own server (ADR-0042): released images and PostgreSQL.
+# How to install, update and back up — the root README.md, the self-hosting section.
+# Variables are set in a .env file next to this file or in the environment of docker compose:
+#   TASKTRAIL_VERSION     image version (default latest — the newest release); e.g. 1.0.0 to roll back
+#   APP_SECRET            openssl rand -hex 32; keep it with the backup, a new one ends all sessions
+#   POSTGRES_PASSWORD     openssl rand -hex 24; letters and digits only, it goes into a URL
+#   TASKTRAIL_PORT        host port of the web (default 3000)
+# Put an HTTPS proxy in front of the web port: session cookies are Secure, sign-in needs HTTPS.
+# The server and the database are reachable only on the stack's own network.
+name: tasktrail
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tasktrail
+      POSTGRES_USER: tasktrail
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    # Since PostgreSQL 18 data lives in /var/lib/postgresql/<version>/docker, so the volume is mounted on
+    # /var/lib/postgresql: the next version upgrade will not need a new volume
+    volumes:
+      - database:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tasktrail -d tasktrail"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  server:
+    image: ghcr.io/hiraise/task-trail-server:${TASKTRAIL_VERSION:-latest}
+    restart: unless-stopped
+    environment:
+      # The web calls the API at /api, nginx of the web image strips the prefix; cookie paths are based on it
+      APP_ROOT_PATH: /api
+      PG_CONNECTION_STRING: postgresql://tasktrail:${POSTGRES_PASSWORD}@postgres:5432/tasktrail?sslmode=disable
+      APP_SECRET: ${APP_SECRET:?set APP_SECRET}
+      FILES_DIR: /app/files
+    volumes:
+      - files:/app/files
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/v1/settings/public"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/hiraise/task-trail-web:${TASKTRAIL_VERSION:-latest}
+    restart: unless-stopped
+    ports:
+      - "${TASKTRAIL_PORT:-3000}:3000"
+    depends_on:
+      server:
+        condition: service_healthy
+
+# A backup is both volumes and APP_SECRET together (server/README.md, «Files»)
+volumes:
+  database:
+  files:
