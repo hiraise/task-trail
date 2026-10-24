@@ -51,11 +51,16 @@ const (
 	cleanupInterval       = time.Hour
 	// Notifications are kept for 90 days, then the hourly cleanup deletes them (ADR-0038)
 	notificationRetention = 90 * 24 * time.Hour
-	accessTokenCookie     = "at"
-	refreshTokenCookie    = "rt"
-	tokenIssuer           = "tasktrail"
-	pgMaxPoolSize         = 10
-	passwordHashCost      = 12
+	// The job that emails unread notifications runs every minute (ADR-0038)
+	notificationEmailInterval = time.Minute
+	// An unread notification is emailed 5 minutes after it was created, until it is a day old (ADR-0038)
+	notificationEmailDelay  = 5 * time.Minute
+	notificationEmailMaxAge = 24 * time.Hour
+	accessTokenCookie       = "at"
+	refreshTokenCookie      = "rt"
+	tokenIssuer             = "tasktrail"
+	pgMaxPoolSize           = 10
+	passwordHashCost        = 12
 	// A file on disk without a database record younger than a day may be an upload still in progress (ADR-0013)
 	orphanFileAge = 24 * time.Hour
 	// A project invitation is valid for a week (ADR-0016): the letter states the term
@@ -195,7 +200,7 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		LabelRepo:    labelRepo,
 		LabelFactory: factory.NewLabelFactory(idGen, clk),
 	})
-	notificationRepo := persistent.NewNotificationRepo(pool)
+	notificationRepo := persistent.NewNotificationRepo(pool, userFactory)
 	taskModule := task.New(task.Deps{
 		TxManager:      txManager,
 		Clock:          clk,
@@ -222,7 +227,11 @@ func New(pool *pgxpool.Pool, cfg *config.Config, clk service.Clock, l logger.Log
 		Clock:            clk,
 		NotificationRepo: notificationRepo,
 		UserRepo:         userRepo,
+		SettingsRepo:     settingsRepo,
+		Mailer:           mailer,
 		Retention:        notificationRetention,
+		EmailDelay:       notificationEmailDelay,
+		EmailMaxAge:      notificationEmailMaxAge,
 	})
 	boardRepo := persistent.NewBoardRepo(pool, userFactory)
 	boardModule := board.New(board.Deps{
@@ -288,10 +297,14 @@ func Run(cfg *config.Config) {
 		logger.Error("server setup failed", "error", err.Error())
 		os.Exit(1)
 	}
-	go cleanup(context.Background(), logger, cleanupInterval, []cleaner{
+	go periodic(context.Background(), logger, cleanupInterval, []job{
 		{"expired tokens and invitations deleted", server.Access.Cleanup},
 		{"unneeded files erased", server.File.Cleanup},
 		{"old notifications deleted", server.Notification.Cleanup},
+		{"due date reminders created", server.Notification.Remind},
+	})
+	go periodic(context.Background(), logger, notificationEmailInterval, []job{
+		{"notification emails sent", server.Notification.SendEmails},
 	})
 	if err := server.Engine.Run(":" + cfg.App.Port); err != nil {
 		logger.Error("http server start failed", "error", err.Error())
@@ -299,26 +312,26 @@ func Run(cfg *config.Config) {
 	}
 }
 
-// cleaner — a periodic cleanup: expired tokens and invitations, unneeded files, old notifications.
-// done — what to log when something is deleted.
-type cleaner struct {
+// job — a periodic job: cleanups, due date reminders, notification emails.
+// done — what to log when the job did something.
+type job struct {
 	done    string
 	service interface {
 		Execute(ctx context.Context) (int64, error)
 	}
 }
 
-// cleanup runs cleanups at server start and then once per interval until ctx is cancelled.
-// A failure of one cleanup does not stop the others.
-func cleanup(ctx context.Context, l logger.Logger, interval time.Duration, cleaners []cleaner) {
+// periodic runs jobs at server start and then once per interval until ctx is cancelled.
+// A failure of one job does not stop the others.
+func periodic(ctx context.Context, l logger.Logger, interval time.Duration, jobs []job) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
-		for _, c := range cleaners {
-			if count, err := c.service.Execute(ctx); err != nil {
-				l.Error("cleanup failed", "cleanup", c.done, "error", err.Error())
+		for _, j := range jobs {
+			if count, err := j.service.Execute(ctx); err != nil {
+				l.Error("periodic job failed", "job", j.done, "error", err.Error())
 			} else if count > 0 {
-				l.Info(c.done, "count", count)
+				l.Info(j.done, "count", count)
 			}
 		}
 		select {

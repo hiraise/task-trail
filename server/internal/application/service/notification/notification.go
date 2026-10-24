@@ -1,5 +1,6 @@
 // Package notification holds the use cases of a user's own notifications (ADR-0038): the list,
-// the unread count, read marks and the cleanup of old ones. Task services write notifications.
+// the unread count, read marks, the cleanup of old ones, emails and due date reminders. Task services
+// write the other notifications.
 package notification
 
 import (
@@ -24,6 +25,8 @@ type NotificationModule struct {
 	SetRead     *SetReadService
 	ReadAll     *ReadAllService
 	Cleanup     *CleanupService
+	SendEmails  *SendEmailsService
+	Remind      *RemindService
 }
 
 // Deps are the dependencies of the notification module.
@@ -32,8 +35,12 @@ type Deps struct {
 	Clock            service.Clock
 	NotificationRepo repository.NotificationRepository
 	UserRepo         repository.UserRepository
+	SettingsRepo     repository.SettingsRepository
+	Mailer           service.Mailer
 	// Retention — how long notifications are kept (ADR-0038).
 	Retention time.Duration
+	// EmailDelay and EmailMaxAge — the age of an unread notification when it is emailed (ADR-0038).
+	EmailDelay, EmailMaxAge time.Duration
 }
 
 func New(d Deps) *NotificationModule {
@@ -46,6 +53,11 @@ func New(d Deps) *NotificationModule {
 		},
 		ReadAll: &ReadAllService{clock: d.Clock, notifications: d.NotificationRepo},
 		Cleanup: &CleanupService{clock: d.Clock, notifications: d.NotificationRepo, retention: d.Retention},
+		SendEmails: &SendEmailsService{
+			clock: d.Clock, settings: d.SettingsRepo, mailer: d.Mailer, notifications: d.NotificationRepo,
+			people: people, delay: d.EmailDelay, maxAge: d.EmailMaxAge,
+		},
+		Remind: &RemindService{clock: d.Clock, notifications: d.NotificationRepo},
 	}
 }
 

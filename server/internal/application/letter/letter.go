@@ -75,6 +75,51 @@ func MailTest(to entity.Email) service.Letter {
 	}
 }
 
+// TaskNotificationData — what a notification email says. FromStatus and ToStatus are status names,
+// DueDate is DD.MM.YYYY, Actor is empty for reminders.
+type TaskNotificationData struct {
+	Kind                 entity.NotificationKind
+	TaskKey, TaskName    string
+	Actor                string
+	FromStatus, ToStatus string
+	Text, DueDate        string
+	TaskURL, ProfileURL  string
+}
+
+// TaskNotification repeats a notification by email (ADR-0038): the subject names the task key and
+// what happened; a comment's start follows in the text.
+func TaskNotification(to entity.Email, n TaskNotificationData) service.Letter {
+	var event string
+	switch n.Kind {
+	case entity.NotifyAssigned:
+		event = n.Actor + " назначил(а) вас ответственным"
+	case entity.NotifyStatusChanged:
+		event = fmt.Sprintf("%s изменил(а) статус: %s → %s", n.Actor, n.FromStatus, n.ToStatus)
+	case entity.NotifyCommented:
+		event = n.Actor + " оставил(а) комментарий"
+	case entity.NotifyMentioned:
+		event = n.Actor + " упомянул(а) вас в комментарии"
+	case entity.NotifyDueSoon:
+		event = "Срок задачи — завтра, " + n.DueDate
+	case entity.NotifyOverdue:
+		event = "Срок задачи прошёл " + n.DueDate
+	default:
+		event = "Новое уведомление"
+	}
+	var text strings.Builder
+	text.WriteString("Здравствуйте!\n\n" + event + "\n")
+	if n.Text != "" && (n.Kind == entity.NotifyCommented || n.Kind == entity.NotifyMentioned) {
+		text.WriteString("\n«" + n.Text + "»\n")
+	}
+	fmt.Fprintf(&text, "\nЗадача: %s %s\n%s\n\nПисьма об уведомлениях отключаются в профиле: %s\n",
+		n.TaskKey, n.TaskName, n.TaskURL, n.ProfileURL)
+	return service.Letter{
+		To:      to,
+		Subject: oneLine(n.TaskKey + ": " + event),
+		Text:    text.String(),
+	}
+}
+
 // oneLine replaces line breaks and other control characters with spaces: an email subject is
 // a single header line.
 func oneLine(s string) string {

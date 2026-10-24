@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"task-trail/internal/application/letter"
+	"task-trail/internal/domain/entity"
 )
 
 func TestDuration(t *testing.T) {
@@ -61,5 +62,53 @@ func TestMailTest(t *testing.T) {
 	l := letter.MailTest("admin@example.com")
 	if l.To != "admin@example.com" || l.Subject == "" || !strings.Contains(l.Text, "тестовое письмо") {
 		t.Fatalf("email %+v", l)
+	}
+}
+
+// Every kind names what happened in the subject and the text; comments carry their start; the subject
+// stays one line.
+func TestTaskNotification(t *testing.T) {
+	base := letter.TaskNotificationData{
+		TaskKey: "DS-7", TaskName: "Кнопка", Actor: "Анна",
+		TaskURL: "https://example.com/tasks/7", ProfileURL: "https://example.com/profile",
+	}
+	for _, c := range []struct {
+		kind              entity.NotificationKind
+		change            func(*letter.TaskNotificationData)
+		subject, textPart string
+	}{
+		{entity.NotifyAssigned, nil, "DS-7: Анна назначил(а) вас ответственным", ""},
+		{entity.NotifyStatusChanged, func(d *letter.TaskNotificationData) { d.FromStatus, d.ToStatus = "Открыта", "В работе" },
+			"DS-7: Анна изменил(а) статус: Открыта → В работе", ""},
+		{entity.NotifyCommented, func(d *letter.TaskNotificationData) { d.Text = "Посмотри макет" },
+			"DS-7: Анна оставил(а) комментарий", "\n«Посмотри макет»\n"},
+		{entity.NotifyMentioned, func(d *letter.TaskNotificationData) { d.Text = "@Иван глянь" },
+			"DS-7: Анна упомянул(а) вас в комментарии", "\n«@Иван глянь»\n"},
+		{entity.NotifyDueSoon, func(d *letter.TaskNotificationData) { d.Actor, d.DueDate = "", "22.10.2026" },
+			"DS-7: Срок задачи — завтра, 22.10.2026", ""},
+		{entity.NotifyOverdue, func(d *letter.TaskNotificationData) { d.Actor, d.DueDate = "", "20.10.2026" },
+			"DS-7: Срок задачи прошёл 20.10.2026", ""},
+	} {
+		d := base
+		d.Kind = c.kind
+		if c.change != nil {
+			c.change(&d)
+		}
+		l := letter.TaskNotification("ivan@example.com", d)
+		if l.To != "ivan@example.com" || l.Subject != c.subject {
+			t.Errorf("%s: to %q, subject %q", c.kind, l.To, l.Subject)
+		}
+		event := strings.TrimPrefix(c.subject, "DS-7: ")
+		for _, part := range []string{"Здравствуйте!\n\n" + event + "\n", c.textPart, "\nЗадача: DS-7 Кнопка\nhttps://example.com/tasks/7\n",
+			"\nПисьма об уведомлениях отключаются в профиле: https://example.com/profile\n"} {
+			if !strings.Contains(l.Text, part) {
+				t.Errorf("%s: text lacks %q:\n%s", c.kind, part, l.Text)
+			}
+		}
+	}
+	d := base
+	d.Kind, d.TaskKey = entity.NotifyAssigned, "DS-7\r\nBcc: evil@example.com"
+	if l := letter.TaskNotification("ivan@example.com", d); strings.ContainsAny(l.Subject, "\r\n") {
+		t.Errorf("subject %q", l.Subject)
 	}
 }
