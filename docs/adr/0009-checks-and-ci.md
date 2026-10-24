@@ -16,7 +16,8 @@ and reproduce identically locally and in CI.
   (vet, tests with `-race`, golangci-lint) + `web` (linter, tests, types and build).
 - Pin the golangci-lint version in `scripts/dev.sh`; the script downloads it into `.cache/` itself.
 - Pin GitHub actions in `.github/workflows/` by commit SHA with the version in a comment.
-- Run CI on every PR and on push to `main`; merge a PR only with green CI.
+- Run CI on every PR and on push to `main`; merge a PR only with green CI. Push to `release/**`
+  too — [ADR-0043](0043-release-branches.md).
 
 ## Consequences
 
