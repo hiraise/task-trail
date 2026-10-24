@@ -34,7 +34,9 @@ the order.
 
 1. Commits — in English, split by the meaning of the change; `git push -u origin <branch>`.
 2. The PR title and description — in English. Write the description in a file in the scratchpad,
-   following the sample below: `gh pr create --base main --title "<what changed>" --body-file <file>`.
+   following the sample below. The base is the release branch the task branch started from, never
+   `main` ([ADR-0043](../../../docs/adr/0043-release-branches.md)):
+   `gh pr create --base release/X.Y.Z --title "<what changed>" --body-file <file>`.
 3. Replace the description entirely from the file:
    `gh api -X PATCH repos/hiraise/task-trail/pulls/<N> -F body=@<file>`.
 
@@ -63,7 +65,8 @@ the order.
 2. Give the customer, in Russian, the PR link and the CI result, and say the context can be cleared
    (`/clear`): the next step starts from the repository
    ([ADR-0032](../../../docs/adr/0032-one-session-plan-steps.md)), and `/merge <N>` and
-   `/code-review <N>` do not need this chat. The customer merges the PR.
+   `/code-review <N>` do not need this chat. The customer merges the PR into the release branch;
+   the release reaches `main` later with `/release`.
 3. The customer asks to merge the PR — the `/merge` skill with the PR number: it runs in its own
    context, relay its result. The customer merged it themselves — `scripts/dev.sh cleanup` of the
    main folder removes the worktree and the branch.

@@ -24,10 +24,11 @@
 
 ## Установка на свой сервер
 
-Каждая версия — git-тег `vX.Y.Z` на `main`: CI собирает образы `ghcr.io/hiraise/task-trail-server`
+Каждая версия — git-тег `vX.Y.Z` на `main`: CI ставит его сам, когда ветка релиза `release/X.Y.Z`
+вливается в `main`, собирает образы `ghcr.io/hiraise/task-trail-server`
 и `ghcr.io/hiraise/task-trail-web` (`linux/amd64`) с тегами `X.Y.Z` и `latest` (последний релиз)
 и публикует релиз на GitHub с описанием изменений и файлом `deploy/compose.yaml`
-([ADR-0042](docs/adr/0042-release-images-and-compose.md)).
+([ADR-0042](docs/adr/0042-release-images-and-compose.md), [ADR-0043](docs/adr/0043-release-branches.md)).
 
 `deploy/compose.yaml` — PostgreSQL, сервер и веб; наружу открыт только порт веба (`TASKTRAIL_PORT`,
 по умолчанию 3000), веб сам проксирует `/api` на сервер. Перед ним нужен HTTPS-прокси: cookie
@@ -72,12 +73,17 @@ docker compose -f deploy/compose.yaml pull && docker compose -f deploy/compose.y
 scripts/dev.sh check    # всё, что проверяет CI: правила, сервер, веб
 scripts/dev.sh server   # только сервер: vet, тесты, golangci-lint
 scripts/dev.sh web      # только веб: типы API из контракта, линтер, тесты, типы и сборка
-scripts/dev.sh ci 42    # дождаться CI пулл-реквеста 42 (или main) и вывести итог; при падении — лог до первой ошибки
-scripts/dev.sh images 1.0.0   # собрать образы релиза локально; CI собирает и публикует их по тегу v1.0.0
+scripts/dev.sh ci 42    # дождаться CI пулл-реквеста 42 (или ветки: main, release/1.1.0) и вывести итог; при падении — лог до первой ошибки
+scripts/dev.sh images 1.0.0   # собрать образы релиза локально; CI собирает и публикует их при выпуске релиза
 ```
 
-Выпуск версии — тег на коммите `main`: `git tag v1.0.0 origin/main && git push origin v1.0.0`. Дальше
-CI сам собирает образы и публикует релиз; на сервере остаётся скачать новые образы («Установка на свой сервер»).
+Разработка идёт релизами ([ADR-0043](docs/adr/0043-release-branches.md)). Под версию от `main`
+открывается ветка `release/X.Y.Z`; каждая задача — своя ветка от неё и пулл-реквест в неё. Готовый
+релиз — пулл-реквест `release/X.Y.Z` → `main`: его описание открывает заметки к релизу. После
+вливания CI сам ставит тег `vX.Y.Z`, собирает образы и публикует релиз; на сервере остаётся скачать
+новые образы («Установка на свой сервер»). В `main` попадают только ветки релизов — CI отклоняет
+остальные пулл-реквесты, а обновления Dependabot перед вливанием переводятся на ветку релиза.
+Срочное исправление — тоже релиз: ветка `release/X.Y.Z+1` от `main`.
 
 Переменные окружения сервера — в [server/README.md](server/README.md), веба — в [web/README.md](web/README.md).
 

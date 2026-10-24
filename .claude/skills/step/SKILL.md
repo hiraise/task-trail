@@ -14,8 +14,10 @@ Rules — [CLAUDE.md](../../../CLAUDE.md); how to read code without filling the 
 1. The step: the number from the customer (`$ARGUMENTS`), otherwise the step marked `next` in the
    step table of the current stage README; `docs/roadmap.md` links the stage. Plans of finished
    stages are deleted (ADR-0041).
-2. `git fetch`, then a worktree from `origin/main`:
-   `git worktree add ../task-trail-<slug> -b <feat|fix|docs>/<slug> origin/main`; work there.
+2. `git fetch`, then a worktree from the open release branch
+   ([ADR-0043](../../../docs/adr/0043-release-branches.md)) — the only one in
+   `git ls-remote --heads origin 'release/*'`; none or several — ask the customer (`/release` opens one):
+   `git worktree add ../task-trail-<slug> -b <feat|fix|docs>/<slug> origin/release/X.Y.Z`; work there.
 3. Read the stage README, the step file and the ADRs it names — before writing code. The step names
    the files to change: read those parts of them, not the folders around them.
 4. The step file has a `## Progress` section — continue from it.
