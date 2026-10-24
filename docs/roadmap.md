@@ -43,8 +43,9 @@ in [CLAUDE.md](../CLAUDE.md), step-by-step plans — in `docs/plans/`
   notifications on the server ([ADR-0038](adr/0038-notifications.md)): `assigned`, `status_changed`
   and `commented` are written with the change, `/v1/notifications` (list, unread count, read marks,
   read-all), old ones deleted after 90 days, `PATCH /v1/users/me/email-notifications` and
-  `CurrentUser.emailNotifications`; the next step is step 13 — notification emails and due date
-  reminders on the server.
+  `CurrentUser.emailNotifications`; step 13 is done — a job every minute emails unread notifications
+  5 minutes to a day old while mail is connected, the hourly job writes `due_soon` and `overdue`
+  reminders from 06:00 UTC; the next step is step 14 — notifications in the web.
 - **Server** (`server/`) implements the whole API contract `api/openapi.yaml` (conventions —
   [ADR-0018](adr/0018-api-conventions.md)): sign-in, the first account and invitations, password
   reset; users and files; projects with keys and members; fixed statuses and tasks with keys;

@@ -74,6 +74,17 @@ database: an interrupted upload leaves them. The cleanup does not touch files wi
 A backup is the database, the `FILES_DIR` directory and `APP_SECRET` together
 ([ADR-0015](../docs/adr/0015-settings-in-admin-ui.md)).
 
+## Periodic jobs
+
+The server runs them itself, at start and then on a schedule (`internal/app/app.go`); a failed job is
+logged and runs again next time.
+
+- Every hour: the cleanup of expired tokens and invitations, unneeded files and notifications older
+  than 90 days; due date reminders — from 06:00 UTC, once per task, kind and date
+  ([ADR-0038](../docs/adr/0038-notifications.md)).
+- Every minute: notification emails — unread notifications 5 minutes to a day old, while mail is
+  connected ([ADR-0038](../docs/adr/0038-notifications.md)).
+
 ## Commands
 
 With the same binary and the same environment as the server (`app --help` — the list):
